@@ -31,6 +31,7 @@ import Queue
 import paho.mqtt.client as mqtt
 import threading
 import json
+import weeutil.weeutil
 import weewx
 from weewx.engine import StdService
 
@@ -57,7 +58,7 @@ class MQTTSubscribeService(StdService):
         host = service_dict.get('host', 'weather-data.local')
         keepalive = service_dict.get('keepalive', 60)
         port = service_dict.get('port', 1883)
-        topic = service_dict.get('topic', 'weather/archive')
+        topic = service_dict.get('topic', 'weather/loop')
         username = service_dict.get('username', None)
         password = service_dict.get('password', None)
         # ToDo randomize this
@@ -102,15 +103,6 @@ class MQTTSubscribeService(StdService):
             json.loads(json_text, object_hook=self._byteify),
             ignore_dicts=True
     )
-
-    # An overly simplified function to aggregate multiple MQTT payloads into archive data
-    # This, just returns the last payload
-    # This will need major rework to really support aggregation
-    # In the future, this should be easily overridden to support customizing aggregation
-    def aggregate_archive_data(self, aggregate_data, archive_data):
-        # logdbg(archive_data)
-        return archive_data
-
         
     def shutDown(self):
         # when the service shuts down, 
@@ -123,16 +115,35 @@ class MQTTSubscribeService(StdService):
     # queue could have zero or more elements
     def new_archive_record(self, event):
         aggregate_data = None
+        end_ts = event.record['dateTime']
+        start_ts = end_ts - 300 # ToDo - get archive period
+        accumulator = weewx.accum.Accum(weeutil.weeutil.TimeSpan(start_ts, end_ts))
+        #logdbg(self.queue.qsize())
+        i = 0
+        # ToDo - ignore elements before start
+        # ToDo - "peek" at queue and stop if next element is after end
         while not self.queue.empty():
+            i = i+1
+            #logdbg(i)
+            
             try:
                 msg = self.queue.get_nowait()
                 # logdbg(msg.topic)
                 # logdbg(msg.payload)
                 archive_data = self.create_archive_data(msg.payload)
-                aggregate_data = self.aggregate_archive_data(aggregate_data, archive_data)
-            except Empty, e:
+                #logdbg(str(i) + " " + str(start_ts) + " " + str(end_ts) + " " + str(archive_data['dateTime']))
+                try:
+                    # ToDo - records with missing DateTime
+                    # ToDo - records with missing units
+                    accumulator.addRecord(archive_data)
+                except weewx.accum.OutOfSpan:
+                    logdbg(str(start_ts) + " " + str(end_ts) + " " + str(archive_data['dateTime']))
+                    #logdbg(archive_data)
+                #aggregate_data = self.aggregate_archive_data(aggregate_data, archive_data)
+            except Queue.Empty:
                 break
-        # logdbg(aggregate_data)        
+        aggregate_data = accumulator.getRecord()
+        #logdbg(aggregate_data)        
         event.record.update(aggregate_data)
 
 class MQTTSubscribeServiceThread(threading.Thread): 
