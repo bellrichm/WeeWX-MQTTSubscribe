@@ -27,13 +27,13 @@
 
 from __future__ import with_statement
 import syslog
-import Queue
 import paho.mqtt.client as mqtt
 import threading
 import json
 import weeutil.weeutil
 import weewx
 from weewx.engine import StdService
+from collections import deque
 
 def logmsg(dst, msg):
     print('MQTTSS: %s' % msg)
@@ -67,7 +67,7 @@ class MQTTSubscribeService(StdService):
         #ToDo log config options
         loginf("host is %s" % host)      
         
-        self.queue = Queue.Queue() 
+        self.queue = deque() 
         
         self.client = mqtt.Client(client_id=clientid)
         if username is not None and password is not None:
@@ -98,6 +98,7 @@ class MQTTSubscribeService(StdService):
     
     # Convert the MQTT payload into a dictionary of archive data usable by WeeWX
     # In theory, a subclass could override to massage different formatted payloads
+    # ToDo - move to thread so that queue data is consistent and can be "peeked"
     def create_archive_data(self, json_text):
         return self._byteify(
             json.loads(json_text, object_hook=self._byteify),
@@ -118,30 +119,31 @@ class MQTTSubscribeService(StdService):
         end_ts = event.record['dateTime']
         start_ts = end_ts - 300 # ToDo - get archive period
         accumulator = weewx.accum.Accum(weeutil.weeutil.TimeSpan(start_ts, end_ts))
-        #logdbg(self.queue.qsize())
+        logdbg(len(self.queue))
         i = 0
         # ToDo - ignore elements before start
         # ToDo - "peek" at queue and stop if next element is after end
-        while not self.queue.empty():
+        while len(self.queue) > 0:
             i = i+1
-            #logdbg(i)
+            # logdbg(i)
             
+
+            msg = self.queue.popleft()
+            # logdbg(msg.topic)
+            # logdbg(msg.payload)
+            archive_data = self.create_archive_data(msg.payload)
+            #logdbg(str(i) + " " + str(start_ts) + " " + str(end_ts) + " " + str(archive_data['dateTime']))
             try:
-                msg = self.queue.get_nowait()
-                # logdbg(msg.topic)
-                # logdbg(msg.payload)
-                archive_data = self.create_archive_data(msg.payload)
-                #logdbg(str(i) + " " + str(start_ts) + " " + str(end_ts) + " " + str(archive_data['dateTime']))
-                try:
-                    # ToDo - records with missing DateTime
-                    # ToDo - records with missing units
-                    accumulator.addRecord(archive_data)
-                except weewx.accum.OutOfSpan:
-                    logdbg(str(start_ts) + " " + str(end_ts) + " " + str(archive_data['dateTime']))
-                    #logdbg(archive_data)
-                #aggregate_data = self.aggregate_archive_data(aggregate_data, archive_data)
-            except Queue.Empty:
-                break
+                # ToDo - records with missing DateTime
+                # ToDo - records with missing units
+                accumulator.addRecord(archive_data)
+            except weewx.accum.OutOfSpan:
+                # ToDo - eventually this should never be executed
+                logdbg(str(start_ts) + " " + str(end_ts) + " " + str(archive_data['dateTime']))
+                #logdbg(archive_data)
+
+
+        # ToDo - handle empty queue
         aggregate_data = accumulator.getRecord()
         #logdbg(aggregate_data)        
         event.record.update(aggregate_data)
@@ -161,7 +163,7 @@ class MQTTSubscribeServiceThread(threading.Thread):
     def on_message(self, client, userdata, msg):
         #logdbg(msg.topic)
         #logdbg(msg.payload)
-        self.queue.put(msg,)
+        self.queue.append(msg,)
 
     def on_connect(self, client, userdata, flags, rc):
         logdbg("Connected with result code "+str(rc))
