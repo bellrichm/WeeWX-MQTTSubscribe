@@ -62,6 +62,10 @@ class MQTTSubscribeService(StdService):
         topic = service_dict.get('topic', 'weather/loop')
         username = service_dict.get('username', None)
         password = service_dict.get('password', None)
+        unit_system_name = service_dict.get('unit_system', 'US').strip().upper()
+        if unit_system_name not in weewx.units.unit_constants:
+            raise ValueError("MQTTSubscribeService: Unknown unit system: %s" % unit_system_name)
+        unit_system = weewx.units.unit_constants[unit_system_name]
         # ToDo randomize this
         clientid = service_dict.get('clientid', 'MQTTSubscribeService') 
 
@@ -74,7 +78,7 @@ class MQTTSubscribeService(StdService):
         if username is not None and password is not None:
             self.client.username_pw_set(username, password)
         
-        self.thread = MQTTSubscribeServiceThread(self, self.queue, self.client, label_map, host, keepalive, port, topic)
+        self.thread = MQTTSubscribeServiceThread(self, self.queue, self.client, label_map, unit_system, host, keepalive, port, topic)
         self.thread.start()
 
         self.bind(weewx.NEW_ARCHIVE_RECORD, self.new_archive_record)   
@@ -118,13 +122,14 @@ class MQTTSubscribeService(StdService):
         event.record.update(aggregate_data)
 
 class MQTTSubscribeServiceThread(threading.Thread): 
-    def __init__(self, service, queue, client, label_map, host, keepalive, port, topic):
+    def __init__(self, service, queue, client, label_map, unit_system, host, keepalive, port, topic):
         threading.Thread.__init__(self)
 
         self.service = service
         self.queue = queue
         self.client = client
         self.label_map = label_map
+        self.unit_system = unit_system
         self.host = host
         self.keepalive = keepalive
         self.port = port
@@ -164,7 +169,6 @@ class MQTTSubscribeServiceThread(threading.Thread):
 
     # Convert the MQTT payload into a dictionary of archive data usable by WeeWX
     # In theory, a subclass could override to massage different formatted payloads
-    # ToDo - handle missing unites, use a default from the configuration
     def create_archive_data(self, json_text):
 
         data = self._byteify(
@@ -173,6 +177,9 @@ class MQTTSubscribeServiceThread(threading.Thread):
 
         if 'dateTime' not in data:
             data['dateTime'] = time.time()
+
+        if 'usUnits' not in data:
+            data['usUnits'] = self.unit_system            
     
         return data
 
