@@ -28,6 +28,7 @@ import syslog
 import paho.mqtt.client as mqtt
 import threading
 import json
+import random
 import time
 import weeutil.weeutil
 import weewx
@@ -64,8 +65,7 @@ class MQTTSubscribeService(StdService):
         if unit_system_name not in weewx.units.unit_constants:
             raise ValueError("MQTTSubscribeService: Unknown unit system: %s" % unit_system_name)
         unit_system = weewx.units.unit_constants[unit_system_name]
-        # ToDo randomize this
-        clientid = service_dict.get('clientid', 'MQTTSubscribeService') 
+        clientid = service_dict.get('clientid', 'MQTTSubscribeService-' + str(random.randint(1000, 9999))) 
 
         #ToDo log config options
         loginf("host is %s" % host)      
