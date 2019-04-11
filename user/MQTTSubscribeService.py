@@ -13,8 +13,6 @@
 # - various ToDos in the code
 # - Additional documentation
 # - Fully support overriding of names in the MQTT payload via the label_map
-# - Handle units and any necessary conversion of the MQTT payload
-# - Handle aggregation of the MQTT payload - or at least ability to customize by overriding
 # - Python 3
 # - Tests
 #
@@ -118,8 +116,9 @@ class MQTTSubscribeService(StdService):
 
         # ToDo - handle empty queue
         aggregate_data = accumulator.getRecord()
-        #logdbg(aggregate_data)        
-        event.record.update(aggregate_data)
+        #logdbg(aggregate_data)     
+        target_data = weewx.units.to_std_system(aggregate_data, event.record['usUnits'])   
+        event.record.update(target_data)
 
 class MQTTSubscribeServiceThread(threading.Thread): 
     def __init__(self, service, queue, client, label_map, unit_system, host, keepalive, port, topic):
