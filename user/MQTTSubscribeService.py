@@ -52,7 +52,7 @@ class MQTTSubscribeService(StdService):
     def __init__(self, engine, config_dict):
         super(MQTTSubscribeService, self).__init__(engine, config_dict)
         
-        self.label_map = {}
+        label_map = {}
 
         service_dict = config_dict.get('MQTTSubscribeService', {})
         host = service_dict.get('host', 'weather-data.local')
@@ -73,37 +73,10 @@ class MQTTSubscribeService(StdService):
         if username is not None and password is not None:
             self.client.username_pw_set(username, password)
         
-        self.thread = MQTTSubscribeServiceThread(self, self.queue, self.client, host, keepalive, port, topic)
+        self.thread = MQTTSubscribeServiceThread(self, self.queue, self.client, label_map, host, keepalive, port, topic)
         self.thread.start()
 
-        self.bind(weewx.NEW_ARCHIVE_RECORD, self.new_archive_record)
-
-    def _byteify(self, data, ignore_dicts = False):
-        # if this is a unicode string, return its string representation
-        if isinstance(data, unicode):
-            return data.encode('utf-8')
-        # if this is a list of values, return list of byteified values
-        if isinstance(data, list):
-            return [ self._byteify(item, ignore_dicts=True) for item in data ]
-        # if this is a dictionary, return dictionary of byteified keys and values
-        # but only if we haven't already byteified it
-        if isinstance(data, dict) and not ignore_dicts:
-            data2 = {}
-            for key, value in data.items():
-                key2 = self._byteify(key, ignore_dicts=True)
-                data2[self.label_map.get(key2,key2)] = self._byteify(value, ignore_dicts=True)
-            return data2
-        # if it's anything else, return it in its original form
-        return data
-    
-    # Convert the MQTT payload into a dictionary of archive data usable by WeeWX
-    # In theory, a subclass could override to massage different formatted payloads
-    # ToDo - move to thread so that queue data is consistent and can be "peeked"
-    def create_archive_data(self, json_text):
-        return self._byteify(
-            json.loads(json_text, object_hook=self._byteify),
-            ignore_dicts=True
-    )
+        self.bind(weewx.NEW_ARCHIVE_RECORD, self.new_archive_record)   
         
     def shutDown(self):
         # when the service shuts down, 
@@ -125,17 +98,12 @@ class MQTTSubscribeService(StdService):
         # ToDo - "peek" at queue and stop if next element is after end
         while len(self.queue) > 0:
             i = i+1
-            # logdbg(i)
-            
+            # logdbg(i)          
 
-            msg = self.queue.popleft()
-            # logdbg(msg.topic)
-            # logdbg(msg.payload)
-            archive_data = self.create_archive_data(msg.payload)
+            archive_data = self.queue.popleft()
+            #logdbg(archive_data)
             #logdbg(str(i) + " " + str(start_ts) + " " + str(end_ts) + " " + str(archive_data['dateTime']))
             try:
-                # ToDo - records with missing DateTime
-                # ToDo - records with missing units
                 accumulator.addRecord(archive_data)
             except weewx.accum.OutOfSpan:
                 # ToDo - eventually this should never be executed
@@ -149,12 +117,13 @@ class MQTTSubscribeService(StdService):
         event.record.update(aggregate_data)
 
 class MQTTSubscribeServiceThread(threading.Thread): 
-    def __init__(self, service, queue, client, host, keepalive, port, topic):
+    def __init__(self, service, queue, client, label_map, host, keepalive, port, topic):
         threading.Thread.__init__(self)
 
         self.service = service
         self.queue = queue
         self.client = client
+        self.label_map = label_map
         self.host = host
         self.keepalive = keepalive
         self.port = port
@@ -163,7 +132,8 @@ class MQTTSubscribeServiceThread(threading.Thread):
     def on_message(self, client, userdata, msg):
         #logdbg(msg.topic)
         #logdbg(msg.payload)
-        self.queue.append(msg,)
+        data = self.create_archive_data(msg.payload)
+        self.queue.append(data,)
 
     def on_connect(self, client, userdata, flags, rc):
         logdbg("Connected with result code "+str(rc))
@@ -172,6 +142,34 @@ class MQTTSubscribeServiceThread(threading.Thread):
 
     def on_disconnect(self, client, userdata, rc):
         logdbg("Disconnected with result code "+str(rc))
+
+    def _byteify(self, data, ignore_dicts = False):
+        # if this is a unicode string, return its string representation
+        if isinstance(data, unicode):
+            return data.encode('utf-8')
+        # if this is a list of values, return list of byteified values
+        if isinstance(data, list):
+            return [ self._byteify(item, ignore_dicts=True) for item in data ]
+        # if this is a dictionary, return dictionary of byteified keys and values
+        # but only if we haven't already byteified it
+        if isinstance(data, dict) and not ignore_dicts:
+            data2 = {}
+            for key, value in data.items():
+                key2 = self._byteify(key, ignore_dicts=True)
+                data2[self.label_map.get(key2,key2)] = self._byteify(value, ignore_dicts=True)
+            return data2
+        # if it's anything else, return it in its original form
+        return data
+
+    # Convert the MQTT payload into a dictionary of archive data usable by WeeWX
+    # In theory, a subclass could override to massage different formatted payloads
+    # ToDo - handle missing date/time  - use current time
+    # ToDo - handle missing unites, use a default from the configuration
+    def create_archive_data(self, json_text):
+        return self._byteify(
+            json.loads(json_text, object_hook=self._byteify),
+            ignore_dicts=True
+    )
 
     def run(self):
         self.client.on_message = self.on_message
