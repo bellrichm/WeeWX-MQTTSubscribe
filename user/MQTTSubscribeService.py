@@ -94,21 +94,21 @@ class MQTTSubscribeService(StdService):
         accumulator = weewx.accum.Accum(weeutil.weeutil.TimeSpan(start_ts, end_ts))
         logdbg(len(self.queue))
         i = 0
-        # ToDo - ignore elements before start
-        # ToDo - "peek" at queue and stop if next element is after end
-        while len(self.queue) > 0:
+        while (len(self.queue) > 0 and self.queue[0]['dateTime'] < end_ts):
             i = i+1
             # logdbg(i)          
 
             archive_data = self.queue.popleft()
             #logdbg(archive_data)
             #logdbg(str(i) + " " + str(start_ts) + " " + str(end_ts) + " " + str(archive_data['dateTime']))
-            try:
-                accumulator.addRecord(archive_data)
-            except weewx.accum.OutOfSpan:
-                # ToDo - eventually this should never be executed
-                logdbg(str(start_ts) + " " + str(end_ts) + " " + str(archive_data['dateTime']))
-                #logdbg(archive_data)
+            
+            if archive_data['dateTime'] > start_ts:
+                try:
+                    accumulator.addRecord(archive_data)
+                except weewx.accum.OutOfSpan:
+                    # ToDo - This should never be executed - so log appropriately
+                    logdbg(str(start_ts) + " " + str(end_ts) + " " + str(archive_data['dateTime']))
+                    #logdbg(archive_data)
 
 
         # ToDo - handle empty queue
