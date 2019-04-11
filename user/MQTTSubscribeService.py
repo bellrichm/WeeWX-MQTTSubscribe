@@ -12,6 +12,7 @@
 # ToDos (in not particular order)
 # - various ToDos in the code
 # - Additional documentation
+# - cleanup the code
 # - Python 3
 # - Tests
 #
@@ -30,6 +31,7 @@ import json
 import random
 import time
 import weeutil.weeutil
+from weeutil.weeutil import to_sorted_string
 import weewx
 from weewx.engine import StdService
 from collections import deque
@@ -102,13 +104,10 @@ class MQTTSubscribeService(StdService):
             #logdbg(archive_data)
             #logdbg(str(i) + " " + str(start_ts) + " " + str(end_ts) + " " + str(archive_data['dateTime']))
             
-            if archive_data['dateTime'] > start_ts:
-                try:
-                    accumulator.addRecord(archive_data)
-                except weewx.accum.OutOfSpan:
-                    # ToDo - This should never be executed - so log appropriately
-                    logdbg(str(start_ts) + " " + str(end_ts) + " " + str(archive_data['dateTime']))
-                    #logdbg(archive_data)
+            try:
+                accumulator.addRecord(archive_data)
+            except weewx.accum.OutOfSpan:
+                loginf("Ignoring record outside of interval " + str(start_ts) + " " + str(end_ts) + str(archive_data['dateTime']) + " " + to_sorted_string(archive_data))
 
         if not accumulator.isEmpty:
             aggregate_data = accumulator.getRecord()
