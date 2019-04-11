@@ -30,6 +30,7 @@ import syslog
 import paho.mqtt.client as mqtt
 import threading
 import json
+import time
 import weeutil.weeutil
 import weewx
 from weewx.engine import StdService
@@ -163,13 +164,17 @@ class MQTTSubscribeServiceThread(threading.Thread):
 
     # Convert the MQTT payload into a dictionary of archive data usable by WeeWX
     # In theory, a subclass could override to massage different formatted payloads
-    # ToDo - handle missing date/time  - use current time
     # ToDo - handle missing unites, use a default from the configuration
     def create_archive_data(self, json_text):
-        return self._byteify(
+
+        data = self._byteify(
             json.loads(json_text, object_hook=self._byteify),
-            ignore_dicts=True
-    )
+            ignore_dicts=True)
+
+        if 'dateTime' not in data:
+            data['dateTime'] = time.time()
+    
+        return data
 
     def run(self):
         self.client.on_message = self.on_message
