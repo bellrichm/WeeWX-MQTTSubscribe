@@ -93,7 +93,7 @@ class MQTTSubscribeService(StdService):
     def new_archive_record(self, event):
         aggregate_data = None
         end_ts = event.record['dateTime']
-        start_ts = end_ts - 300 # ToDo - get archive period
+        start_ts = end_ts - event.record['interval'] * 60
         accumulator = weewx.accum.Accum(weeutil.weeutil.TimeSpan(start_ts, end_ts))
         logdbg(len(self.queue))
         i = 0
