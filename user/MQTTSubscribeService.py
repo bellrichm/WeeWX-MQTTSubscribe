@@ -91,7 +91,6 @@ class MQTTSubscribeService(StdService):
     # put appropriate logic here to process queue and update archive_record
     # queue could have zero or more elements
     def new_archive_record(self, event):
-        aggregate_data = None
         end_ts = event.record['dateTime']
         start_ts = end_ts - event.record['interval'] * 60
         accumulator = weewx.accum.Accum(weeutil.weeutil.TimeSpan(start_ts, end_ts))
@@ -113,12 +112,11 @@ class MQTTSubscribeService(StdService):
                     logdbg(str(start_ts) + " " + str(end_ts) + " " + str(archive_data['dateTime']))
                     #logdbg(archive_data)
 
-
-        # ToDo - handle empty queue
-        aggregate_data = accumulator.getRecord()
-        #logdbg(aggregate_data)     
-        target_data = weewx.units.to_std_system(aggregate_data, event.record['usUnits'])   
-        event.record.update(target_data)
+        if not accumulator.isEmpty:
+            aggregate_data = accumulator.getRecord()
+            #logdbg(aggregate_data)     
+            target_data = weewx.units.to_std_system(aggregate_data, event.record['usUnits'])   
+            event.record.update(target_data)
 
 class MQTTSubscribeServiceThread(threading.Thread): 
     def __init__(self, service, queue, client, label_map, unit_system, host, keepalive, port, topic):
