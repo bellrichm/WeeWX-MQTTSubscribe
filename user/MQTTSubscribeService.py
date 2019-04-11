@@ -12,7 +12,6 @@
 # ToDos (in not particular order)
 # - various ToDos in the code
 # - Additional documentation
-# - Fully support overriding of names in the MQTT payload via the label_map
 # - Python 3
 # - Tests
 #
@@ -52,9 +51,8 @@ class MQTTSubscribeService(StdService):
     def __init__(self, engine, config_dict):
         super(MQTTSubscribeService, self).__init__(engine, config_dict)
         
-        label_map = {}
-
         service_dict = config_dict.get('MQTTSubscribeService', {})
+        label_map = service_dict.get('label_map', {})
         host = service_dict.get('host', 'weather-data.local')
         keepalive = service_dict.get('keepalive', 60)
         port = service_dict.get('port', 1883)
