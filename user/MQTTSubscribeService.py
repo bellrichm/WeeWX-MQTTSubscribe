@@ -67,7 +67,6 @@ class MQTTSubscribeService(StdService):
         unit_system = weewx.units.unit_constants[unit_system_name]
         clientid = service_dict.get('clientid', 'MQTTSubscribeService-' + str(random.randint(1000, 9999))) 
 
-        #ToDo log config options
         loginf("Host is %s" % host)  
         loginf("Port is %s" % port) 
         loginf("Keep alive is %s" % keepalive) 
@@ -121,6 +120,8 @@ class MQTTSubscribeService(StdService):
             logdbg("Record prior to update is: %s" % to_sorted_string(event.record))   
             event.record.update(target_data)
             logdbg("Record after update is: %s" % to_sorted_string(event.record))   
+        else:
+            logdbg("Queue was empty")
 
 class MQTTSubscribeServiceThread(threading.Thread): 
     def __init__(self, service, queue, client, label_map, unit_system, host, keepalive, port, topic):
