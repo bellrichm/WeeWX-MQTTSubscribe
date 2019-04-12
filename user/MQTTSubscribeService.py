@@ -82,38 +82,34 @@ class MQTTSubscribeService(StdService):
         self.bind(weewx.NEW_ARCHIVE_RECORD, self.new_archive_record)   
         
     def shutDown(self):
-        # when the service shuts down, 
         self.client.disconnect() 
         if self.thread:
             self.thread.join()
             self.thread = None
 
-    # put appropriate logic here to process queue and update archive_record
-    # queue could have zero or more elements
     def new_archive_record(self, event):
         end_ts = event.record['dateTime']
         start_ts = end_ts - event.record['interval'] * 60
+        logdbg("Processing interval: %f %f" %(start_ts, end_ts))
         accumulator = weewx.accum.Accum(weeutil.weeutil.TimeSpan(start_ts, end_ts))
-        logdbg(len(self.queue))
-        i = 0
-        while (len(self.queue) > 0 and self.queue[0]['dateTime'] < end_ts):
-            i = i+1
-            # logdbg(i)          
 
+        while (len(self.queue) > 0 and self.queue[0]['dateTime'] < end_ts):
             archive_data = self.queue.popleft()
-            #logdbg(archive_data)
-            #logdbg(str(i) + " " + str(start_ts) + " " + str(end_ts) + " " + str(archive_data['dateTime']))
-            
+            logdbg("Processing: %s" % to_sorted_string(archive_data))
             try:
                 accumulator.addRecord(archive_data)
             except weewx.accum.OutOfSpan:
-                loginf("Ignoring record outside of interval " + str(start_ts) + " " + str(end_ts) + str(archive_data['dateTime']) + " " + to_sorted_string(archive_data))
+                loginf("Ignoring record outside of interval %f %f %f %s"
+                    %(start_ts, end_ts, archive_data['dateTime'], to_sorted_string(archive_data)))
 
         if not accumulator.isEmpty:
             aggregate_data = accumulator.getRecord()
-            #logdbg(aggregate_data)     
-            target_data = weewx.units.to_std_system(aggregate_data, event.record['usUnits'])   
+            logdbg("Data prior to conversion is: %s" % to_sorted_string(aggregate_data))     
+            target_data = weewx.units.to_std_system(aggregate_data, event.record['usUnits'])  
+            logdbg("Data after to conversion is: %s" % to_sorted_string(target_data))   
+            logdbg("Record prior to update is: %s" % to_sorted_string(event.record))   
             event.record.update(target_data)
+            logdbg("Record after update is: %s" % to_sorted_string(event.record))   
 
 class MQTTSubscribeServiceThread(threading.Thread): 
     def __init__(self, service, queue, client, label_map, unit_system, host, keepalive, port, topic):
@@ -130,18 +126,17 @@ class MQTTSubscribeServiceThread(threading.Thread):
         self.topic = topic
         
     def on_message(self, client, userdata, msg):
-        #logdbg(msg.topic)
-        #logdbg(msg.payload)
+        logdbg("For %s received: %s" %(msg.topic, msg.payload))
         data = self.create_archive_data(msg.payload)
+        logdbg("Added to queue: %s" % to_sorted_string(data))
         self.queue.append(data,)
 
     def on_connect(self, client, userdata, flags, rc):
-        logdbg("Connected with result code "+str(rc))
-        loginf("MQTT topic subscription: " + str(self.topic))
+        logdbg("Connected with result code %i" % rc)
         client.subscribe(self.topic)
 
     def on_disconnect(self, client, userdata, rc):
-        logdbg("Disconnected with result code "+str(rc))
+        logdbg("Disconnected with result code %i" %rc)
 
     def _byteify(self, data, ignore_dicts = False):
         # if this is a unicode string, return its string representation
@@ -164,7 +159,6 @@ class MQTTSubscribeServiceThread(threading.Thread):
     # Convert the MQTT payload into a dictionary of archive data usable by WeeWX
     # In theory, a subclass could override to massage different formatted payloads
     def create_archive_data(self, json_text):
-
         data = self._byteify(
             json.loads(json_text, object_hook=self._byteify),
             ignore_dicts=True)
