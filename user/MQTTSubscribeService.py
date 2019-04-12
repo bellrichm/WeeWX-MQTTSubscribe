@@ -68,7 +68,18 @@ class MQTTSubscribeService(StdService):
         clientid = service_dict.get('clientid', 'MQTTSubscribeService-' + str(random.randint(1000, 9999))) 
 
         #ToDo log config options
-        loginf("host is %s" % host)      
+        loginf("Host is %s" % host)  
+        loginf("Port is %s" % port) 
+        loginf("Keep alive is %s" % keepalive) 
+        loginf("Username is %s" % username) 
+        if password is not None:
+            loginf("Password is set")   
+        else:
+            loginf("Password is not set")
+        loginf("Client id is %s" % clientid) 
+        loginf("Topic is %s" % topic) 
+        loginf("Default units is %s %i" %(unit_system_name, unit_system))
+        loginf("Label map is %s" % label_map) 
         
         self.queue = deque() 
         
