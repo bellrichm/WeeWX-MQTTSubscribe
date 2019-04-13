@@ -37,7 +37,6 @@ from weewx.engine import StdService
 from collections import deque
 
 def logmsg(dst, msg):
-    print('MQTTSS: %s' % msg)
     syslog.syslog(dst, 'MQTTSS: %s' % msg)
 
 def logdbg(msg):
@@ -218,25 +217,35 @@ if __name__ == '__main__':
     archive_interval = 60
     archive_delay = 15
 
+    archive_record_count = 3
+
+    print("Creating %i archive records" % archive_record_count)
+    print("Archive interval is %i seconds" % archive_interval)
+    print("Archive delay is %i seconds" % archive_delay)
+
     engine = StdEngine(config_dict)
     service = MQTTSubscribeService(engine, config_dict)
 
-    current_time = int(time.time() + 0.5)
-    end_archive_period_ts = (int(current_time / archive_interval) + 1) * archive_interval
-    end_archive_delay_ts  =  end_archive_period_ts + archive_delay
-    sleep_amount = end_archive_delay_ts - current_time
+    i = 0 
+    while i < archive_record_count:
+        current_time = int(time.time() + 0.5)
+        end_archive_period_ts = (int(current_time / archive_interval) + 1) * archive_interval
+        end_archive_delay_ts  =  end_archive_period_ts + archive_delay
+        sleep_amount = end_archive_delay_ts - current_time
+        
+        print("Sleeping %i seconds" % sleep_amount)
+        time.sleep(sleep_amount)
 
-    time.sleep(sleep_amount)
+        record = {}
+        record['dateTime'] = end_archive_period_ts
+        record['interval'] = archive_interval / 60
+        record['usUnits'] = units 
 
-    record = {}
-    record['dateTime'] = end_archive_period_ts
-    record['interval'] = archive_interval / 60
-    record['usUnits'] = units 
-
-    new_archive_record_event = weewx.Event(weewx.NEW_ARCHIVE_RECORD,
-                                                record=record,
-                                                origin='hardware')
-    engine.dispatchEvent(new_archive_record_event)
-    print("Archive record is: %s" % to_sorted_string(new_archive_record_event.record))
+        new_archive_record_event = weewx.Event(weewx.NEW_ARCHIVE_RECORD,
+                                                    record=record,
+                                                    origin='hardware')
+        engine.dispatchEvent(new_archive_record_event)
+        print("Archive record is: %s" % to_sorted_string(new_archive_record_event.record))
+        i += 1
 
     service.shutDown()
