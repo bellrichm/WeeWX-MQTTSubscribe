@@ -192,4 +192,41 @@ class MQTTSubscribeServiceThread(threading.Thread):
 
         logdbg("Starting loop")
         self.client.loop_forever()
-        
+
+    # PYTHONPATH=bin python bin/user/MQTTSubscribeService.py
+
+if __name__ == '__main__':
+    from weewx.engine import StdEngine
+
+    config_dict = {
+        'Station': {
+            'altitude': [0, 'foot'],
+            'latitude': 0,
+            'station_type': 'Simulator',
+            'longitude': 0
+        },
+        'Simulator': {
+            'driver': 'weewx.drivers.simulator',
+        },
+        'Engine': {
+            'Services': {} 
+        }       
+    }
+
+    engine = StdEngine(config_dict)
+
+    service = MQTTSubscribeService(engine, config_dict)
+
+    time.sleep(5)
+
+    record = {}
+    record['dateTime'] = time.time()
+    record['interval'] = 5
+    record['usUnits'] = 1  
+    new_archive_record_event = weewx.Event(weewx.NEW_ARCHIVE_RECORD,
+                                                record=record,
+                                                origin='hardware')
+
+    engine.dispatchEvent(new_archive_record_event)
+
+    service.shutDown()
