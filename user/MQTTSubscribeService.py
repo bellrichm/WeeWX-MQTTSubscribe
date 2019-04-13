@@ -213,20 +213,30 @@ if __name__ == '__main__':
         }       
     }
 
-    engine = StdEngine(config_dict)
+    units = 1
 
+    archive_interval = 60
+    archive_delay = 15
+
+    engine = StdEngine(config_dict)
     service = MQTTSubscribeService(engine, config_dict)
 
-    time.sleep(5)
+    current_time = int(time.time() + 0.5)
+    end_archive_period_ts = (int(current_time / archive_interval) + 1) * archive_interval
+    end_archive_delay_ts  =  end_archive_period_ts + archive_delay
+    sleep_amount = end_archive_delay_ts - current_time
+
+    time.sleep(sleep_amount)
 
     record = {}
-    record['dateTime'] = time.time()
-    record['interval'] = 5
-    record['usUnits'] = 1  
+    record['dateTime'] = end_archive_period_ts
+    record['interval'] = archive_interval / 60
+    record['usUnits'] = units 
+
     new_archive_record_event = weewx.Event(weewx.NEW_ARCHIVE_RECORD,
                                                 record=record,
                                                 origin='hardware')
-
     engine.dispatchEvent(new_archive_record_event)
+    print("Archive record is: %s" % to_sorted_string(new_archive_record_event.record))
 
     service.shutDown()
