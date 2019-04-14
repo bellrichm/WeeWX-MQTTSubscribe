@@ -102,7 +102,7 @@ class MQTTSubscribeService(StdService):
         logdbg("Processing interval: %f %f" %(start_ts, end_ts))
         accumulator = weewx.accum.Accum(weeutil.weeutil.TimeSpan(start_ts, end_ts))
 
-        while (len(self.queue) > 0 and self.queue[0]['dateTime'] < end_ts):
+        while (len(self.queue) > 0 and self.queue[0]['dateTime'] <= end_ts):
             archive_data = self.queue.popleft()
             logdbg("Processing: %s" % to_sorted_string(archive_data))
             try:
