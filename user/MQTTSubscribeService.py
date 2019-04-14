@@ -214,6 +214,8 @@ if __name__ == '__main__':
     parser.add_option('--units', dest='units', type=int,
                       help='The units (integer value).',
                       default=1)
+    parser.add_option("--verbose", action="store_true", dest="verbose",
+                      help="Log extra output (debug=1).")
 
     (options, args) = parser.parse_args()
 
@@ -221,6 +223,12 @@ if __name__ == '__main__':
     archive_interval = options.interval
     archive_delay = options.delay
     units = options.units
+
+    syslog.openlog('wee_MQTTSS', syslog.LOG_PID | syslog.LOG_CONS)
+    if options.verbose:
+        syslog.setlogmask(syslog.LOG_UPTO(syslog.LOG_DEBUG))
+    else:
+        syslog.setlogmask(syslog.LOG_UPTO(syslog.LOG_INFO))
 
     config_path = os.path.abspath(args[0])
 
