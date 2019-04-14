@@ -192,6 +192,7 @@ class MQTTSubscribeServiceThread(threading.Thread):
         logdbg("Starting loop")
         self.client.loop_forever()
 
+# Run from WeeWX home directory
 # PYTHONPATH=bin python bin/user/MQTTSubscribeService.py
 if __name__ == '__main__':
     import optparse
@@ -199,7 +200,14 @@ if __name__ == '__main__':
     import configobj
     from weewx.engine import StdEngine
 
-    usage = ""
+    usage = """MQTTSubscribeService --help
+           wee_config CONFIG_FILE
+               [--records=RECORD_COUNT]  
+               [--interval=INTERVAL]  
+               [--delay=DELAY] 
+               [--units=UNITS]
+               [--verbose]  
+    """
 
     parser = optparse.OptionParser(usage=usage)
     parser.add_option('--records', dest='record_count', type=int,
@@ -212,7 +220,7 @@ if __name__ == '__main__':
                       help='The archive delay in seconds.',
                       default=15)
     parser.add_option('--units', dest='units', type=int,
-                      help='The units (integer value).',
+                      help='The default units if not in MQTT payload (integer value).',
                       default=1)
     parser.add_option("--verbose", action="store_true", dest="verbose",
                       help="Log extra output (debug=1).")
