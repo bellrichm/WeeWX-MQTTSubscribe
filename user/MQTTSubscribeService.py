@@ -192,12 +192,41 @@ class MQTTSubscribeServiceThread(threading.Thread):
         logdbg("Starting loop")
         self.client.loop_forever()
 
-    # PYTHONPATH=bin python bin/user/MQTTSubscribeService.py
-
+# PYTHONPATH=bin python bin/user/MQTTSubscribeService.py
 if __name__ == '__main__':
+    import optparse
+    import os
+    import configobj
     from weewx.engine import StdEngine
 
-    config_dict = {
+    usage = ""
+
+    parser = optparse.OptionParser(usage=usage)
+    parser.add_option('--records', dest='record_count', type=int,
+                      help='The number of archive records to create.',
+                      default=2)
+    parser.add_option('--interval', dest='interval', type=int,
+                      help='The archive interval in seconds.',
+                      default=300)
+    parser.add_option('--delay', dest='delay', type=int,
+                      help='The archive delay in seconds.',
+                      default=15)
+    parser.add_option('--units', dest='units', type=int,
+                      help='The units (integer value).',
+                      default=1)
+
+    (options, args) = parser.parse_args()
+
+    archive_record_count = options.record_count
+    archive_interval = options.interval
+    archive_delay = options.delay
+    units = options.units
+
+    config_path = os.path.abspath(args[0])
+
+    config_dict = configobj.ConfigObj(config_path, file_error=True)
+
+    min_config_dict = {
         'Station': {
             'altitude': [0, 'foot'],
             'latitude': 0,
@@ -212,18 +241,11 @@ if __name__ == '__main__':
         }       
     }
 
-    units = 1
-
-    archive_interval = 60
-    archive_delay = 15
-
-    archive_record_count = 3
-
     print("Creating %i archive records" % archive_record_count)
     print("Archive interval is %i seconds" % archive_interval)
     print("Archive delay is %i seconds" % archive_delay)
 
-    engine = StdEngine(config_dict)
+    engine = StdEngine(min_config_dict)
     service = MQTTSubscribeService(engine, config_dict)
 
     i = 0 
