@@ -1,26 +1,51 @@
+"""weewx service that subscribes to an MQTT Topic and augments the archive record
+
+Installation:
+    Put this file in the bin/user directory.
+    Update weewx.conf [MQTTSubscribeService] as needed to configure the service.
+    Update weewx.conf [Accumulator] for any custom fields.
+
+Overview:
+    This service consists of two threads. One thread waits on the MQTT topic
+    and when data is received it is added to the queue.
+
+    The other thread binds to the NEW_ARCHIVE_RECORD event. On this event,
+    it processes the queue of MQTT payloads and updates the archive record.
+
+Configuration:  
+[MQTTSubscribeService]
+    # The MQTT server 
+    host = localhost
+
+    # The port to connect to
+    port = 1883
+
+    # Maximum period in seconds allowed between communications with the broker
+    keepalive = 60
+
+    # username for broker authentication
+    username = 
+
+    # password for broker authentication
+    password = 
+
+    # Units for MQTT payloads without unit value
+    unit_system_name = US  # or 'METRIC' or 'METRICWX'
+
+    # The clientid to connect with
+    clientid = 
+
+    # The topic to subscribe to
+    topic = 
+
+    # Mapping to WeeWX names
+    [[label_map]]
+        temp1 = extraTemp1
+"""
+
 # Proof of concept of a service that subscribes to an MQTT topic 
 # and updates the archive record with the data in the MQTT topic
-#
-# This service consists of two threads. One thread waits on the MQTT
-# topic and when data is recieved it is the queue.
-#
-# The other thread handles the NEW_ARCHIVE_RECORD event. On this
-# event, it processes the queue of MQTT payloads and updates the archive record.
-# This implementation takes last payload in the queue and uses its data to 
-# update the archive record.
-#
-# ToDos (in not particular order)
-# - various ToDos in the code
-# - Additional documentation
-# - cleanup the code
-# - Python 3
-# - Tests
-#
-# Development motivations consist of, but is not limited to, the following:
-# - Get a better understanding of WeeWx internals
-# - Get a better understanding of MQTT
-# - Learn additional Python topics like, threading, Python 3, etc.
-#
+
 # Version 1.0.0
 
 from __future__ import with_statement
@@ -54,7 +79,7 @@ class MQTTSubscribeService(StdService):
         
         service_dict = config_dict.get('MQTTSubscribeService', {})
         label_map = service_dict.get('label_map', {})
-        host = service_dict.get('host', 'weather-data.local')
+        host = service_dict.get('host', 'weather-data.local') # ToDo - change to local host
         keepalive = service_dict.get('keepalive', 60)
         port = service_dict.get('port', 1883)
         topic = service_dict.get('topic', 'weather/loop')
@@ -219,6 +244,7 @@ if __name__ == '__main__':
     parser.add_option('--delay', dest='delay', type=int,
                       help='The archive delay in seconds.',
                       default=15)
+    # ToDo - change to character strings US, METRIC, METRICWX - keep consistent with WeeWX                      
     parser.add_option('--units', dest='units', type=int,
                       help='The default units if not in MQTT payload (integer value).',
                       default=1)
@@ -262,6 +288,8 @@ if __name__ == '__main__':
     print("Archive delay is %i seconds" % archive_delay)
 
     engine = StdEngine(min_config_dict)
+    # ToDo - initialize the accum dicts with config_dict
+    # weewx.accum.initialize(config_dict)
     service = MQTTSubscribeService(engine, config_dict)
 
     i = 0 
