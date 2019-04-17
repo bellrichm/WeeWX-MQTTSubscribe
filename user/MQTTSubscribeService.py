@@ -318,8 +318,8 @@ if __name__ == '__main__':
         print("Archive delay is %i seconds" % archive_delay)
 
         engine = StdEngine(min_config_dict)
-        # ToDo - initialize the accum dicts with config_dict
-        # weewx.accum.initialize(config_dict)
+
+        weewx.accum.initialize(config_dict)
 
         # override the configured binding with the parameter value
         weeutil.weeutil.merge_config(config_dict,
