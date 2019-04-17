@@ -245,7 +245,6 @@ class MQTTSubscribeServiceThread(threading.Thread):
 
 # Run from WeeWX home directory
 # PYTHONPATH=bin python bin/user/MQTTSubscribeService.py
-# ToDo - cleanup, for example rename archive_interval to interval...
 if __name__ == '__main__':
     import optparse
     import os
@@ -275,13 +274,17 @@ if __name__ == '__main__':
         parser.add_option("--units", choices=["US", "METRIC", "METRICWX"],
                         help="The default units if not in MQTT payload.",
                         default="US")
+        parser.add_option("--binding", choices=["archive", "loop"],
+                        help="The type of binding.",
+                        default="archive")
         parser.add_option("--verbose", action="store_true", dest="verbose",
                         help="Log extra output (debug=1).")
 
         (options, args) = parser.parse_args()
 
-        archive_record_count = options.record_count
-        archive_interval = options.interval
+        binding = options.binding
+        record_count = options.record_count
+        interval = options.interval
         archive_delay = options.delay
         units= weewx.units.unit_constants[options.units]
 
@@ -310,26 +313,30 @@ if __name__ == '__main__':
             }       
         }
 
-        print("Creating %i archive records" % archive_record_count)
-        print("Archive interval is %i seconds" % archive_interval)
+        print("Creating %i %s records" % (record_count, binding))
+        print("Interval is %i seconds" % interval)
         print("Archive delay is %i seconds" % archive_delay)
 
         engine = StdEngine(min_config_dict)
         # ToDo - initialize the accum dicts with config_dict
         # weewx.accum.initialize(config_dict)
+
+        # override the configured binding with the parameter value
+        weeutil.weeutil.merge_config(config_dict,
+                                    {'MQTTSubscribeService': {'binding': binding}})
         service = MQTTSubscribeService(engine, config_dict)
 
-        # ToDo - configure this
-        loop_interval = 2.5
-        archive_record_count = 30
-        # simulate_archive(engine, archive_record_count, archive_interval, archive_delay, units)
-        simulate_loop(engine, archive_record_count, loop_interval, units)
+        if binding == 'archive':
+            simulate_archive(engine, record_count, interval, archive_delay, units)
+        elif binding == 'loop':
+            simulate_loop(engine, record_count, interval, units)
 
         service.shutDown()
 
     def simulate_loop(engine, loop_record_count, loop_interval, units):
         i = 0 
-        while i < loop_record_count:           
+        while i < loop_record_count:
+            # ToDo - fine tune sleep so that it is every x seconds
             print("Sleeping %f seconds" % loop_interval)
             time.sleep(loop_interval)
 
