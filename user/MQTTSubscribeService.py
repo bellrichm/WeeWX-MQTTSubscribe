@@ -129,9 +129,9 @@ class MQTTSubscribeService(StdService):
         logdbg("Processing interval: %f %f" %(start_ts, end_ts))
         accumulator = weewx.accum.Accum(weeutil.weeutil.TimeSpan(start_ts, end_ts))
 
-        print(len(self.queue))
+        logdbg("Queue size is: %i" % len(self.queue))
 
-        # ToDo- fine tune foor loop? Due to short duration, packets are dropped
+        # When bound to loop with short interval, some MQTT payload will probably be missed
         while (len(self.queue) > 0 and self.queue[0]['dateTime'] <= end_ts):
             archive_data = self.queue.popleft()
             logdbg("Processing: %s" % to_sorted_string(archive_data))
@@ -159,7 +159,10 @@ class MQTTSubscribeService(StdService):
     def new_loop_packet(self, event):
         self.start_ts = self.end_ts
         self.end_ts = event.packet['dateTime']
-        self._process_data(self.start_ts, self.end_ts, event.packet)
+        target_data = self._process_data(self.start_ts, self.end_ts, event.packet)
+        event.packet.update(target_data)
+        logdbg("Packet after update is: %s" % to_sorted_string(event.packet))  
+
 
     # this works for hardware generation, but software generation does not 'quality control'
     # the archive record, so this data is not 'QC' in this case
@@ -242,6 +245,7 @@ class MQTTSubscribeServiceThread(threading.Thread):
 
 # Run from WeeWX home directory
 # PYTHONPATH=bin python bin/user/MQTTSubscribeService.py
+# ToDo - cleanup, for example rename archive_interval to interval...
 if __name__ == '__main__':
     import optparse
     import os
@@ -257,84 +261,112 @@ if __name__ == '__main__':
                [--verbose]  
     """
 
-    parser = optparse.OptionParser(usage=usage)
-    parser.add_option('--records', dest='record_count', type=int,
-                      help='The number of archive records to create.',
-                      default=2)
-    parser.add_option('--interval', dest='interval', type=int,
-                      help='The archive interval in seconds.',
-                      default=300)
-    parser.add_option('--delay', dest='delay', type=int,
-                      help='The archive delay in seconds.',
-                      default=15)
-    # ToDo - change to character strings US, METRIC, METRICWX - keep consistent with WeeWX                      
-    parser.add_option('--units', dest='units', type=int,
-                      help='The default units if not in MQTT payload (integer value).',
-                      default=1)
-    parser.add_option("--verbose", action="store_true", dest="verbose",
-                      help="Log extra output (debug=1).")
+    def main():
+        parser = optparse.OptionParser(usage=usage)
+        parser.add_option('--records', dest='record_count', type=int,
+                        help='The number of archive records to create.',
+                        default=2)
+        parser.add_option('--interval', dest='interval', type=int,
+                        help='The archive interval in seconds.',
+                        default=300)
+        parser.add_option('--delay', dest='delay', type=int,
+                        help='The archive delay in seconds.',
+                        default=15)
+        # ToDo - change to character strings US, METRIC, METRICWX - keep consistent with WeeWX                      
+        parser.add_option('--units', dest='units', type=int,
+                        help='The default units if not in MQTT payload (integer value).',
+                        default=1)
+        parser.add_option("--verbose", action="store_true", dest="verbose",
+                        help="Log extra output (debug=1).")
 
-    (options, args) = parser.parse_args()
+        (options, args) = parser.parse_args()
 
-    archive_record_count = options.record_count
-    archive_interval = options.interval
-    archive_delay = options.delay
-    units = options.units
+        archive_record_count = options.record_count
+        archive_interval = options.interval
+        archive_delay = options.delay
+        units = options.units
 
-    syslog.openlog('wee_MQTTSS', syslog.LOG_PID | syslog.LOG_CONS)
-    if options.verbose:
-        syslog.setlogmask(syslog.LOG_UPTO(syslog.LOG_DEBUG))
-    else:
-        syslog.setlogmask(syslog.LOG_UPTO(syslog.LOG_INFO))
+        syslog.openlog('wee_MQTTSS', syslog.LOG_PID | syslog.LOG_CONS)
+        if options.verbose:
+            syslog.setlogmask(syslog.LOG_UPTO(syslog.LOG_DEBUG))
+        else:
+            syslog.setlogmask(syslog.LOG_UPTO(syslog.LOG_INFO))
 
-    config_path = os.path.abspath(args[0])
+        config_path = os.path.abspath(args[0])
 
-    config_dict = configobj.ConfigObj(config_path, file_error=True)
+        config_dict = configobj.ConfigObj(config_path, file_error=True)
 
-    min_config_dict = {
-        'Station': {
-            'altitude': [0, 'foot'],
-            'latitude': 0,
-            'station_type': 'Simulator',
-            'longitude': 0
-        },
-        'Simulator': {
-            'driver': 'weewx.drivers.simulator',
-        },
-        'Engine': {
-            'Services': {} 
-        }       
-    }
+        min_config_dict = {
+            'Station': {
+                'altitude': [0, 'foot'],
+                'latitude': 0,
+                'station_type': 'Simulator',
+                'longitude': 0
+            },
+            'Simulator': {
+                'driver': 'weewx.drivers.simulator',
+            },
+            'Engine': {
+                'Services': {} 
+            }       
+        }
 
-    print("Creating %i archive records" % archive_record_count)
-    print("Archive interval is %i seconds" % archive_interval)
-    print("Archive delay is %i seconds" % archive_delay)
+        print("Creating %i archive records" % archive_record_count)
+        print("Archive interval is %i seconds" % archive_interval)
+        print("Archive delay is %i seconds" % archive_delay)
 
-    engine = StdEngine(min_config_dict)
-    # ToDo - initialize the accum dicts with config_dict
-    # weewx.accum.initialize(config_dict)
-    service = MQTTSubscribeService(engine, config_dict)
+        engine = StdEngine(min_config_dict)
+        # ToDo - initialize the accum dicts with config_dict
+        # weewx.accum.initialize(config_dict)
+        service = MQTTSubscribeService(engine, config_dict)
 
-    i = 0 
-    while i < archive_record_count:
-        current_time = int(time.time() + 0.5)
-        end_archive_period_ts = (int(current_time / archive_interval) + 1) * archive_interval
-        end_archive_delay_ts  =  end_archive_period_ts + archive_delay
-        sleep_amount = end_archive_delay_ts - current_time
-        
-        print("Sleeping %i seconds" % sleep_amount)
-        time.sleep(sleep_amount)
+        # ToDo - configure this
+        loop_interval = 2.5
+        archive_record_count = 30
+        # simulate_archive(engine, archive_record_count, archive_interval, archive_delay, units)
+        simulate_loop(engine, archive_record_count, loop_interval, units)
 
-        record = {}
-        record['dateTime'] = end_archive_period_ts
-        record['interval'] = archive_interval / 60
-        record['usUnits'] = units 
+        service.shutDown()
 
-        new_archive_record_event = weewx.Event(weewx.NEW_ARCHIVE_RECORD,
-                                                    record=record,
-                                                    origin='hardware')
-        engine.dispatchEvent(new_archive_record_event)
-        print("Archive record is: %s" % to_sorted_string(new_archive_record_event.record))
-        i += 1
+    def simulate_loop(engine, loop_record_count, loop_interval, units):
+        i = 0 
+        while i < loop_record_count:           
+            print("Sleeping %f seconds" % loop_interval)
+            time.sleep(loop_interval)
 
-    service.shutDown()
+            packet = {}
+            packet['dateTime'] = time.time()
+            packet['usUnits'] = units 
+
+            new_loop_packet_event = weewx.Event(weewx.NEW_LOOP_PACKET,
+                                                        packet=packet)
+            engine.dispatchEvent(new_loop_packet_event)
+            print("Loop packet is: %s" % to_sorted_string(new_loop_packet_event.packet))
+            i += 1
+
+
+    def simulate_archive(engine, archive_record_count, archive_interval, archive_delay, units):
+        i = 0 
+        while i < archive_record_count:
+            current_time = int(time.time() + 0.5)
+            end_archive_period_ts = (int(current_time / archive_interval) + 1) * archive_interval
+            end_archive_delay_ts  =  end_archive_period_ts + archive_delay
+            sleep_amount = end_archive_delay_ts - current_time
+            
+            print("Sleeping %i seconds" % sleep_amount)
+            time.sleep(sleep_amount)
+
+            record = {}
+            record['dateTime'] = end_archive_period_ts
+            record['interval'] = archive_interval / 60
+            record['usUnits'] = units 
+
+            new_archive_record_event = weewx.Event(weewx.NEW_ARCHIVE_RECORD,
+                                                        record=record,
+                                                        origin='hardware')
+            engine.dispatchEvent(new_archive_record_event)
+            print("Archive record is: %s" % to_sorted_string(new_archive_record_event.record))
+            i += 1
+
+
+    main()
