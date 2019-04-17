@@ -340,9 +340,12 @@ if __name__ == '__main__':
     def simulate_loop(engine, loop_record_count, loop_interval, units):
         i = 0 
         while i < loop_record_count:
-            # ToDo - fine tune sleep so that it is every x seconds
-            print("Sleeping %f seconds" % loop_interval)
-            time.sleep(loop_interval)
+            current_time = int(time.time() + 0.5)
+            end_loop_period_ts = (int(current_time / loop_interval) + 1) * loop_interval
+            sleep_amount = end_loop_period_ts - current_time
+
+            print("Sleeping %f seconds" % sleep_amount)
+            time.sleep(sleep_amount)
 
             packet = {}
             packet['dateTime'] = time.time()
