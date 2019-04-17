@@ -79,6 +79,7 @@ class MQTTSubscribeService(StdService):
         
         service_dict = config_dict.get('MQTTSubscribeService', {})
         label_map = service_dict.get('label_map', {})
+        binding = service_dict.get('binding', 'loop')
         host = service_dict.get('host', 'weather-data.local') # ToDo - change to local host
         keepalive = service_dict.get('keepalive', 60)
         port = service_dict.get('port', 1883)
@@ -115,9 +116,12 @@ class MQTTSubscribeService(StdService):
         self.thread = MQTTSubscribeServiceThread(self, self.queue, self.client, label_map, unit_system, host, keepalive, port, topic)
         self.thread.start()
 
-        # ToDo - configure this
-        #self.bind(weewx.NEW_ARCHIVE_RECORD, self.new_archive_record)  
-        self.bind(weewx.NEW_LOOP_PACKET, self.new_loop_packet)  
+        if (binding == 'archive'):
+            self.bind(weewx.NEW_ARCHIVE_RECORD, self.new_archive_record)
+        elif (binding == 'loop'):
+            self.bind(weewx.NEW_LOOP_PACKET, self.new_loop_packet)
+        else:
+            raise ValueError("MQTTSubscribeService: Unknown binding: %s" % binding)
         
     def shutDown(self):
         self.client.disconnect() 
