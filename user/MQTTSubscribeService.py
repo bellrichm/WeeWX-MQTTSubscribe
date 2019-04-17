@@ -272,10 +272,9 @@ if __name__ == '__main__':
         parser.add_option('--delay', dest='delay', type=int,
                         help='The archive delay in seconds.',
                         default=15)
-        # ToDo - change to character strings US, METRIC, METRICWX - keep consistent with WeeWX                      
-        parser.add_option('--units', dest='units', type=int,
-                        help='The default units if not in MQTT payload (integer value).',
-                        default=1)
+        parser.add_option("--units", choices=["US", "METRIC", "METRICWX"],
+                        help="The default units if not in MQTT payload.",
+                        default="US")
         parser.add_option("--verbose", action="store_true", dest="verbose",
                         help="Log extra output (debug=1).")
 
@@ -284,7 +283,7 @@ if __name__ == '__main__':
         archive_record_count = options.record_count
         archive_interval = options.interval
         archive_delay = options.delay
-        units = options.units
+        units= weewx.units.unit_constants[options.units]
 
         syslog.openlog('wee_MQTTSS', syslog.LOG_PID | syslog.LOG_CONS)
         if options.verbose:
