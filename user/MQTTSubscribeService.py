@@ -105,6 +105,8 @@ class MQTTSubscribeService(StdService):
         loginf("Label map is %s" % label_map) 
         
         self.queue = deque() 
+
+        self.end_ts = 0 # prime for processing loop packet
         
         self.client = mqtt.Client(client_id=clientid)
         if username is not None and password is not None:
@@ -113,7 +115,9 @@ class MQTTSubscribeService(StdService):
         self.thread = MQTTSubscribeServiceThread(self, self.queue, self.client, label_map, unit_system, host, keepalive, port, topic)
         self.thread.start()
 
-        self.bind(weewx.NEW_ARCHIVE_RECORD, self.new_archive_record)   
+        # ToDo - configure this
+        #self.bind(weewx.NEW_ARCHIVE_RECORD, self.new_archive_record)  
+        self.bind(weewx.NEW_LOOP_PACKET, self.new_loop_packet)  
         
     def shutDown(self):
         self.client.disconnect() 
@@ -121,12 +125,13 @@ class MQTTSubscribeService(StdService):
             self.thread.join()
             self.thread = None
 
-    def new_archive_record(self, event):
-        end_ts = event.record['dateTime']
-        start_ts = end_ts - event.record['interval'] * 60
+    def _process_data(self, start_ts, end_ts, record):
         logdbg("Processing interval: %f %f" %(start_ts, end_ts))
         accumulator = weewx.accum.Accum(weeutil.weeutil.TimeSpan(start_ts, end_ts))
 
+        print(len(self.queue))
+
+        # ToDo- fine tune foor loop? Due to short duration, packets are dropped
         while (len(self.queue) > 0 and self.queue[0]['dateTime'] <= end_ts):
             archive_data = self.queue.popleft()
             logdbg("Processing: %s" % to_sorted_string(archive_data))
@@ -136,16 +141,34 @@ class MQTTSubscribeService(StdService):
                 loginf("Ignoring record outside of interval %f %f %f %s"
                     %(start_ts, end_ts, archive_data['dateTime'], to_sorted_string(archive_data)))
 
+        target_data = {}
         if not accumulator.isEmpty:
             aggregate_data = accumulator.getRecord()
             logdbg("Data prior to conversion is: %s" % to_sorted_string(aggregate_data))     
-            target_data = weewx.units.to_std_system(aggregate_data, event.record['usUnits'])  
+            target_data = weewx.units.to_std_system(aggregate_data, record['usUnits'])  
             logdbg("Data after to conversion is: %s" % to_sorted_string(target_data))   
-            logdbg("Record prior to update is: %s" % to_sorted_string(event.record))   
-            event.record.update(target_data)
-            logdbg("Record after update is: %s" % to_sorted_string(event.record))   
+            logdbg("Record prior to update is: %s" % to_sorted_string(record))   
+            #event.record.update(target_data)
+            #logdbg("Record after update is: %s" % to_sorted_string(event.record))   
         else:
             logdbg("Queue was empty")
+
+        return target_data
+
+
+    def new_loop_packet(self, event):
+        self.start_ts = self.end_ts
+        self.end_ts = event.packet['dateTime']
+        self._process_data(self.start_ts, self.end_ts, event.packet)
+
+    # this works for hardware generation, but software generation does not 'quality control'
+    # the archive record, so this data is not 'QC' in this case
+    def new_archive_record(self, event):
+        end_ts = event.record['dateTime']
+        start_ts = end_ts - event.record['interval'] * 60
+        target_data = self._process_data(start_ts, end_ts, event.record)
+        event.record.update(target_data)
+        logdbg("Record after update is: %s" % to_sorted_string(event.record))  
 
 class MQTTSubscribeServiceThread(threading.Thread): 
     def __init__(self, service, queue, client, label_map, unit_system, host, keepalive, port, topic):
