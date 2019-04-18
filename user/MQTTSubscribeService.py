@@ -103,11 +103,6 @@ class MQTTSubscribeService(StdService):
         payload_type = service_dict.get('payload_type', None)
         clientid = service_dict.get('clientid', 'MQTTSubscribeService-' + str(random.randint(1000, 9999))) 
 
-        # ToDo - make config option
-        host = "weather-data.local"
-        payload_type = "json"
-        self.overlap = .1 
-
         loginf("Host is %s" % host)  
         loginf("Port is %s" % port) 
         loginf("Keep alive is %s" % keepalive) 
