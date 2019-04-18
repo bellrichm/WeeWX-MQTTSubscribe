@@ -95,7 +95,7 @@ class MQTTSubscribeService(StdService):
         topic = service_dict.get('topic', 'weather/loop')
         username = service_dict.get('username', None)
         password = service_dict.get('password', None)
-        self.overlap = service_dict.get('overlap', 0)
+        self.overlap = float(service_dict.get('overlap', 0))
         unit_system_name = service_dict.get('unit_system', 'US').strip().upper()
         if unit_system_name not in weewx.units.unit_constants:
             raise ValueError("MQTTSubscribeService: Unknown unit system: %s" % unit_system_name)
