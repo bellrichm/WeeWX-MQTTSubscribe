@@ -86,18 +86,24 @@ class MQTTSubscribeService(StdService):
         service_dict = config_dict.get('MQTTSubscribeService', {})
         label_map = service_dict.get('label_map', {})
         binding = service_dict.get('binding', 'loop')
-        host = service_dict.get('host', 'weather-data.local') # ToDo - change to local host
+        host = service_dict.get('host', 'localhost')
         keepalive = service_dict.get('keepalive', 60)
         port = service_dict.get('port', 1883)
         topic = service_dict.get('topic', 'weather/loop')
         username = service_dict.get('username', None)
         password = service_dict.get('password', None)
-        self.overlap = service_dict.get('overlap', .1) # ToDo - change default to 0
+        self.overlap = service_dict.get('overlap', 0)
         unit_system_name = service_dict.get('unit_system', 'US').strip().upper()
         if unit_system_name not in weewx.units.unit_constants:
             raise ValueError("MQTTSubscribeService: Unknown unit system: %s" % unit_system_name)
         unit_system = weewx.units.unit_constants[unit_system_name]
+        payload_type = service_dict.get('payload_type', None) # ToDo - add to documentation
         clientid = service_dict.get('clientid', 'MQTTSubscribeService-' + str(random.randint(1000, 9999))) 
+
+        # ToDo - make config option
+        host = "weather-data.local"
+        payload_type = "json"
+        self.overlap = .1 
 
         loginf("Host is %s" % host)  
         loginf("Port is %s" % port) 
@@ -110,7 +116,7 @@ class MQTTSubscribeService(StdService):
         loginf("Client id is %s" % clientid) 
         loginf("Topic is %s" % topic) 
         loginf("Default units is %s %i" %(unit_system_name, unit_system))
-        # ToDo - log binding and overlap
+        # ToDo - log binding and overlap and payload_type
         loginf("Label map is %s" % label_map) 
         
         self.queue = deque() 
@@ -121,7 +127,7 @@ class MQTTSubscribeService(StdService):
         if username is not None and password is not None:
             self.client.username_pw_set(username, password)
         
-        self.thread = MQTTSubscribeServiceThread(self, self.queue, self.client, label_map, unit_system, host, keepalive, port, topic)
+        self.thread = MQTTSubscribeServiceThread(self, self.queue, self.client, label_map, unit_system, payload_type, host, keepalive, port, topic)
         self.thread.start()
 
         if (binding == 'archive'):
@@ -182,7 +188,7 @@ class MQTTSubscribeService(StdService):
         logdbg("Record after update is: %s" % to_sorted_string(event.record))  
 
 class MQTTSubscribeServiceThread(threading.Thread): 
-    def __init__(self, service, queue, client, label_map, unit_system, host, keepalive, port, topic):
+    def __init__(self, service, queue, client, label_map, unit_system, payload_type, host, keepalive, port, topic):
         threading.Thread.__init__(self)
 
         self.service = service
@@ -190,15 +196,42 @@ class MQTTSubscribeServiceThread(threading.Thread):
         self.client = client
         self.label_map = label_map
         self.unit_system = unit_system
+        self.payload_type = payload_type
         self.host = host
         self.keepalive = keepalive
         self.port = port
         self.topic = topic
         
+    # sub class overrides this for specific MQTT payload formats
     def on_message(self, client, userdata, msg):
+        loginf("Method 'on_message' not implemented")
+
+    def on_json_message(self, client, userdata, msg):
         logdbg("For %s received: %s" %(msg.topic, msg.payload))
-        data = self.create_archive_data(msg.payload)
+        data = self._byteify(
+            json.loads(msg.payload, object_hook=self._byteify),
+            ignore_dicts=True)
+
+        if 'dateTime' not in data:
+            data['dateTime'] = time.time()
+
+        if 'usUnits' not in data:
+            data['usUnits'] = self.unit_system          
+        
         logdbg("Added to queue: %s" % to_sorted_string(data))
+        self.queue.append(data,)
+
+    def on_individual_message(self, client, userdata, msg):
+        logdbg("For %s received: %s" %(msg.topic, msg.payload))
+        
+        tkey = msg.topic.split("/", 1)[1]
+        key = tkey.encode('ascii', 'ignore') # ToDo - research
+        
+        data = {}
+        data['dateTime'] = time.time()
+        data['usUnits'] = self.unit_system 
+        data[self.label_map.get(key,key)] = msg.payload
+        
         self.queue.append(data,)
 
     def on_connect(self, client, userdata, flags, rc):
@@ -226,24 +259,14 @@ class MQTTSubscribeServiceThread(threading.Thread):
         # if it's anything else, return it in its original form
         return data
 
-    # Convert the MQTT payload into a dictionary of archive data usable by WeeWX
-    # In theory, a subclass could override to massage different formatted payloads
-    # ToDo - rename, not just archive also loop now
-    def create_archive_data(self, json_text):
-        data = self._byteify(
-            json.loads(json_text, object_hook=self._byteify),
-            ignore_dicts=True)
-
-        if 'dateTime' not in data:
-            data['dateTime'] = time.time()
-
-        if 'usUnits' not in data:
-            data['usUnits'] = self.unit_system            
-    
-        return data
-
     def run(self):
-        self.client.on_message = self.on_message
+        if self.payload_type == 'json':
+            self.client.on_message = self.on_json_message
+        elif self.payload_type =='individual':
+            self.client.on_message = self.on_individual_message
+        else:
+            self.client.on_message = self.on_message
+
         self.client.on_connect = self.on_connect
         self.client.on_disconnect = self.on_disconnect   
       
