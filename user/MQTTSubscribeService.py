@@ -110,6 +110,7 @@ class MQTTSubscribeService(StdService):
         loginf("Client id is %s" % clientid) 
         loginf("Topic is %s" % topic) 
         loginf("Default units is %s %i" %(unit_system_name, unit_system))
+        # ToDo - log binding and overlap
         loginf("Label map is %s" % label_map) 
         
         self.queue = deque() 
@@ -142,7 +143,6 @@ class MQTTSubscribeService(StdService):
 
         logdbg("Queue size is: %i" % len(self.queue))
 
-        # When bound to loop with short interval, some MQTT payload will probably be missed
         while (len(self.queue) > 0 and self.queue[0]['dateTime'] <= end_ts):
             archive_data = self.queue.popleft()
             logdbg("Processing: %s" % to_sorted_string(archive_data))
@@ -158,14 +158,11 @@ class MQTTSubscribeService(StdService):
             logdbg("Data prior to conversion is: %s" % to_sorted_string(aggregate_data))     
             target_data = weewx.units.to_std_system(aggregate_data, record['usUnits'])  
             logdbg("Data after to conversion is: %s" % to_sorted_string(target_data))   
-            logdbg("Record prior to update is: %s" % to_sorted_string(record))   
-            #event.record.update(target_data)
-            #logdbg("Record after update is: %s" % to_sorted_string(event.record))   
+            logdbg("Record prior to update is: %s" % to_sorted_string(record))    
         else:
             logdbg("Queue was empty")
 
         return target_data
-
 
     def new_loop_packet(self, event):
         start_ts = self.end_ts - self.overlap
@@ -174,9 +171,9 @@ class MQTTSubscribeService(StdService):
         event.packet.update(target_data)
         logdbg("Packet after update is: %s" % to_sorted_string(event.packet))  
 
-
     # this works for hardware generation, but software generation does not 'quality control'
-    # the archive record, so this data is not 'QC' in this case
+    # the archive record, so this data is not 'QC' in this case.
+    # If this is important, bind to the loop packet.
     def new_archive_record(self, event):
         end_ts = event.record['dateTime']
         start_ts = end_ts - event.record['interval'] * 60 - self.overlap
@@ -231,6 +228,7 @@ class MQTTSubscribeServiceThread(threading.Thread):
 
     # Convert the MQTT payload into a dictionary of archive data usable by WeeWX
     # In theory, a subclass could override to massage different formatted payloads
+    # ToDo - rename, not just archive also loop now
     def create_archive_data(self, json_text):
         data = self._byteify(
             json.loads(json_text, object_hook=self._byteify),
@@ -337,6 +335,7 @@ if __name__ == '__main__':
                                     {'MQTTSubscribeService': {'binding': binding}})
         service = MQTTSubscribeService(engine, config_dict)
 
+        # ToDo - move the if inside the subroutine
         if binding == 'archive':
             simulate_archive(engine, record_count, interval, archive_delay, units)
         elif binding == 'loop':
