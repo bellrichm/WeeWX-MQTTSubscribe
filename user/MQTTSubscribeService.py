@@ -317,7 +317,7 @@ if __name__ == '__main__':
         binding = options.binding
         record_count = options.record_count
         interval = options.interval
-        archive_delay = options.delay
+        delay = options.delay
         units= weewx.units.unit_constants[options.units]
 
         syslog.openlog('wee_MQTTSS', syslog.LOG_PID | syslog.LOG_CONS)
@@ -347,7 +347,7 @@ if __name__ == '__main__':
 
         print("Creating %i %s records" % (record_count, binding))
         print("Interval is %i seconds" % interval)
-        print("Archive delay is %i seconds" % archive_delay)
+        print("Delay is %i seconds" % delay)
 
         engine = StdEngine(min_config_dict)
 
@@ -358,57 +358,40 @@ if __name__ == '__main__':
                                     {'MQTTSubscribeService': {'binding': binding}})
         service = MQTTSubscribeService(engine, config_dict)
 
-        # ToDo - move the if inside the subroutine
-        if binding == 'archive':
-            simulate_archive(engine, record_count, interval, archive_delay, units)
-        elif binding == 'loop':
-            simulate_loop(engine, record_count, interval, units)
+        simulate(engine, binding, record_count, interval, delay, units)
 
         service.shutDown()
 
-    def simulate_loop(engine, loop_record_count, loop_interval, units):
+    def simulate(engine, binding, record_count, interval, delay, units):
         i = 0 
-        while i < loop_record_count:
+        while i < record_count:
             current_time = int(time.time() + 0.5)
-            end_loop_period_ts = (int(current_time / loop_interval) + 1) * loop_interval
-            sleep_amount = end_loop_period_ts - current_time
-
-            print("Sleeping %f seconds" % sleep_amount)
-            time.sleep(sleep_amount)
-
-            packet = {}
-            packet['dateTime'] = time.time()
-            packet['usUnits'] = units 
-
-            new_loop_packet_event = weewx.Event(weewx.NEW_LOOP_PACKET,
-                                                        packet=packet)
-            engine.dispatchEvent(new_loop_packet_event)
-            print("Loop packet is: %s" % to_sorted_string(new_loop_packet_event.packet))
-            i += 1
-
-
-    def simulate_archive(engine, archive_record_count, archive_interval, archive_delay, units):
-        i = 0 
-        while i < archive_record_count:
-            current_time = int(time.time() + 0.5)
-            end_archive_period_ts = (int(current_time / archive_interval) + 1) * archive_interval
-            end_archive_delay_ts  =  end_archive_period_ts + archive_delay
-            sleep_amount = end_archive_delay_ts - current_time
+            end_period_ts = (int(current_time / interval) + 1) * interval
+            end_delay_ts  =  end_period_ts + delay
+            sleep_amount = end_delay_ts - current_time
             
             print("Sleeping %i seconds" % sleep_amount)
             time.sleep(sleep_amount)
 
-            record = {}
-            record['dateTime'] = end_archive_period_ts
-            record['interval'] = archive_interval / 60
-            record['usUnits'] = units 
+            data = {}
+            data['dateTime'] = end_period_ts
+            data['usUnits'] = units 
 
-            new_archive_record_event = weewx.Event(weewx.NEW_ARCHIVE_RECORD,
-                                                        record=record,
-                                                        origin='hardware')
-            engine.dispatchEvent(new_archive_record_event)
-            print("Archive record is: %s" % to_sorted_string(new_archive_record_event.record))
+            if binding == 'archive':
+                data['interval'] = interval / 60
+                new_archive_record_event = weewx.Event(weewx.NEW_ARCHIVE_RECORD,
+                                                            record=data,
+                                                            origin='hardware')
+                engine.dispatchEvent(new_archive_record_event)
+                print("Archive Record is: %s" % to_sorted_string(new_archive_record_event.record))
+            elif binding == 'loop':
+                new_loop_packet_event = weewx.Event(weewx.NEW_LOOP_PACKET,
+                                                        packet=data)
+                engine.dispatchEvent(new_loop_packet_event)
+                print("Loop packet is: %s" % to_sorted_string(new_loop_packet_event.packet))
+            else:
+                pass
+
             i += 1
-
 
     main()
