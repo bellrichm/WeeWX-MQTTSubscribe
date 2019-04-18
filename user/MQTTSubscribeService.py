@@ -39,7 +39,10 @@ Configuration:
     topic = 
 
     # The binding, loop or archive
-    topic = loop
+    binding = loop
+
+    # The format of the MQTT payload. Currently support 'individual' or 'json'
+    payload_type = json
 
     # The amount to overlap the start time when processing the MQTT queue
     overlap = 0 
@@ -97,7 +100,7 @@ class MQTTSubscribeService(StdService):
         if unit_system_name not in weewx.units.unit_constants:
             raise ValueError("MQTTSubscribeService: Unknown unit system: %s" % unit_system_name)
         unit_system = weewx.units.unit_constants[unit_system_name]
-        payload_type = service_dict.get('payload_type', None) # ToDo - add to documentation
+        payload_type = service_dict.get('payload_type', None)
         clientid = service_dict.get('clientid', 'MQTTSubscribeService-' + str(random.randint(1000, 9999))) 
 
         # ToDo - make config option
@@ -115,8 +118,10 @@ class MQTTSubscribeService(StdService):
             loginf("Password is not set")
         loginf("Client id is %s" % clientid) 
         loginf("Topic is %s" % topic) 
+        loginf("Payload type is %s" % payload_type) 
+        loginf("Binding is %s" % binding) 
         loginf("Default units is %s %i" %(unit_system_name, unit_system))
-        # ToDo - log binding and overlap and payload_type
+        loginf("Overlap is %s" % self.overlap) 
         loginf("Label map is %s" % label_map) 
         
         self.queue = deque() 
