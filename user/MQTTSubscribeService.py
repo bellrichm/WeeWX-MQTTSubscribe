@@ -38,6 +38,12 @@ Configuration:
     # The topic to subscribe to
     topic = 
 
+    # The binding, loop or archive
+    topic = loop
+
+    # The amount to overlap the start time when processing the MQTT queue
+    overlap = 0 
+
     # Mapping to WeeWX names
     [[label_map]]
         temp1 = extraTemp1
@@ -86,6 +92,7 @@ class MQTTSubscribeService(StdService):
         topic = service_dict.get('topic', 'weather/loop')
         username = service_dict.get('username', None)
         password = service_dict.get('password', None)
+        self.overlap = service_dict.get('overlap', .1) # ToDo - change default to 0
         unit_system_name = service_dict.get('unit_system', 'US').strip().upper()
         if unit_system_name not in weewx.units.unit_constants:
             raise ValueError("MQTTSubscribeService: Unknown unit system: %s" % unit_system_name)
@@ -161,9 +168,9 @@ class MQTTSubscribeService(StdService):
 
 
     def new_loop_packet(self, event):
-        self.start_ts = self.end_ts
+        start_ts = self.end_ts - self.overlap
         self.end_ts = event.packet['dateTime']
-        target_data = self._process_data(self.start_ts, self.end_ts, event.packet)
+        target_data = self._process_data(start_ts, self.end_ts, event.packet)
         event.packet.update(target_data)
         logdbg("Packet after update is: %s" % to_sorted_string(event.packet))  
 
@@ -172,7 +179,7 @@ class MQTTSubscribeService(StdService):
     # the archive record, so this data is not 'QC' in this case
     def new_archive_record(self, event):
         end_ts = event.record['dateTime']
-        start_ts = end_ts - event.record['interval'] * 60
+        start_ts = end_ts - event.record['interval'] * 60 - self.overlap
         target_data = self._process_data(start_ts, end_ts, event.record)
         event.record.update(target_data)
         logdbg("Record after update is: %s" % to_sorted_string(event.record))  
