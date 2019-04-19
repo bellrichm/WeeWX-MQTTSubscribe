@@ -82,6 +82,114 @@ def loginf(msg):
 def logerr(msg):
     logmsg(syslog.LOG_ERR, msg)
 
+class MQTTSubscribe():
+    def __init__(self, client, queue, archive_queue, label_map, unit_system, payload_type, host, keepalive, port, username, password, topic, archive_topic):
+        self.client = client
+        self.queue = queue
+        self.archive_queue = archive_queue
+        self.label_map = label_map
+        self.unit_system = unit_system
+        self.payload_type = payload_type
+        self.host = host
+        self.keepalive = keepalive
+        self.port = port
+        self.topic = topic
+        self.archive_topic = archive_topic
+
+        loginf("Host is %s" % host)  
+        loginf("Port is %s" % port) 
+        loginf("Keep alive is %s" % keepalive) 
+        loginf("Username is %s" % username) 
+        if password is not None:
+            loginf("Password is set")   
+        else:
+            loginf("Password is not set")
+        loginf("Topic is %s" % topic) 
+        loginf("Archive topic is %s" % archive_topic) 
+        loginf("Payload type is %s" % payload_type) 
+        loginf("Default units is %i" % unit_system)
+        loginf("Label map is %s" % label_map) 
+
+        if self.payload_type == 'json':
+            self.client.on_message = self.on_json_message
+        elif self.payload_type =='individual':
+            self.client.on_message = self.on_individual_message
+        else:
+            self.client.on_message = self.on_message
+
+        self.client.on_connect = self.on_connect
+        self.client.on_disconnect = self.on_disconnect
+
+        if username is not None and password is not None:
+         self.client.username_pw_set(username, password)
+      
+        self.client.connect(host, port, keepalive)        
+
+    # sub class overrides this for specific MQTT payload formats
+    def on_message(self, client, userdata, msg):
+        loginf("Method 'on_message' not implemented")
+
+    def on_json_message(self, client, userdata, msg):
+        logdbg("For %s received: %s" %(msg.topic, msg.payload))
+        data = self._byteify(
+            json.loads(msg.payload, object_hook=self._byteify),
+            ignore_dicts=True)
+
+        if 'dateTime' not in data:
+            data['dateTime'] = time.time()
+
+        if 'usUnits' not in data:
+            data['usUnits'] = self.unit_system          
+        
+        logdbg("Added to queue: %s" % to_sorted_string(data))
+
+        if msg.topic == self.archive_topic:
+            import time
+            print(time.time())
+            self.archive_queue.append(data,) 
+        else:       
+            self.queue.append(data,)
+
+    def on_individual_message(self, client, userdata, msg):
+        logdbg("For %s received: %s" %(msg.topic, msg.payload))
+        
+        tkey = msg.topic.split("/", 1)[1]
+        key = tkey.encode('ascii', 'ignore') # ToDo - research
+        
+        data = {}
+        data['dateTime'] = time.time()
+        data['usUnits'] = self.unit_system 
+        data[self.label_map.get(key,key)] = msg.payload
+        
+        self.queue.append(data,)
+
+    def on_connect(self, client, userdata, flags, rc):
+        logdbg("Connected with result code %i" % rc)
+        client.subscribe(self.topic)
+        if self.archive_topic:
+          client.subscribe(self.archive_topic)
+
+    def on_disconnect(self, client, userdata, rc):
+        logdbg("Disconnected with result code %i" %rc)
+
+    def _byteify(self, data, ignore_dicts = False):
+        # if this is a unicode string, return its string representation
+        if isinstance(data, unicode):
+            return data.encode('utf-8')
+        # if this is a list of values, return list of byteified values
+        if isinstance(data, list):
+            return [ self._byteify(item, ignore_dicts=True) for item in data ]
+        # if this is a dictionary, return dictionary of byteified keys and values
+        # but only if we haven't already byteified it
+        if isinstance(data, dict) and not ignore_dicts:
+            data2 = {}
+            for key, value in data.items():
+                key2 = self._byteify(key, ignore_dicts=True)
+                data2[self.label_map.get(key2,key2)] = self._byteify(value, ignore_dicts=True)
+            return data2
+        # if it's anything else, return it in its original form
+        return data        
+
 class MQTTSubscribeService(StdService):
     def __init__(self, engine, config_dict):
         super(MQTTSubscribeService, self).__init__(engine, config_dict)
@@ -103,33 +211,21 @@ class MQTTSubscribeService(StdService):
         payload_type = service_dict.get('payload_type', None)
         clientid = service_dict.get('clientid', 'MQTTSubscribeService-' + str(random.randint(1000, 9999))) 
 
-        loginf("Host is %s" % host)  
-        loginf("Port is %s" % port) 
-        loginf("Keep alive is %s" % keepalive) 
-        loginf("Username is %s" % username) 
-        if password is not None:
-            loginf("Password is set")   
-        else:
-            loginf("Password is not set")
-        loginf("Client id is %s" % clientid) 
-        loginf("Topic is %s" % topic) 
-        loginf("Payload type is %s" % payload_type) 
+        loginf("Client id is %s" % clientid)
         loginf("Binding is %s" % binding) 
         loginf("Default units is %s %i" %(unit_system_name, unit_system))
         loginf("Overlap is %s" % self.overlap) 
-        loginf("Label map is %s" % label_map) 
         
-        self.queue = deque() 
+        self.queue = deque()
+        archive_topic = None # not supported by the service
+        self.archive_queue = None 
 
         self.end_ts = 0 # prime for processing loop packet
         
         self.client = mqtt.Client(client_id=clientid)
-        if username is not None and password is not None:
-            self.client.username_pw_set(username, password)
-        
-        self.thread = MQTTSubscribeServiceThread(self, self.queue, self.client, label_map, unit_system, payload_type, host, keepalive, port, topic)
+        self.thread = MQTTSubscribeServiceThread(self, self.client, self.queue, self.archive_queue, label_map, unit_system, payload_type, host, keepalive, port, username, password, topic, archive_topic)
         self.thread.start()
-
+ 
         if (binding == 'archive'):
             self.bind(weewx.NEW_ARCHIVE_RECORD, self.new_archive_record)
         elif (binding == 'loop'):
@@ -187,91 +283,12 @@ class MQTTSubscribeService(StdService):
         event.record.update(target_data)
         logdbg("Record after update is: %s" % to_sorted_string(event.record))  
 
-class MQTTSubscribeServiceThread(threading.Thread): 
-    def __init__(self, service, queue, client, label_map, unit_system, payload_type, host, keepalive, port, topic):
+class MQTTSubscribeServiceThread(MQTTSubscribe, threading.Thread): 
+    def __init__(self, service, client, queue, archive_queue, label_map, unit_system, payload_type, host, keepalive, port, username, password, topic, archive_topic):
         threading.Thread.__init__(self)
-
-        self.service = service
-        self.queue = queue
-        self.client = client
-        self.label_map = label_map
-        self.unit_system = unit_system
-        self.payload_type = payload_type
-        self.host = host
-        self.keepalive = keepalive
-        self.port = port
-        self.topic = topic
-        
-    # sub class overrides this for specific MQTT payload formats
-    def on_message(self, client, userdata, msg):
-        loginf("Method 'on_message' not implemented")
-
-    def on_json_message(self, client, userdata, msg):
-        logdbg("For %s received: %s" %(msg.topic, msg.payload))
-        data = self._byteify(
-            json.loads(msg.payload, object_hook=self._byteify),
-            ignore_dicts=True)
-
-        if 'dateTime' not in data:
-            data['dateTime'] = time.time()
-
-        if 'usUnits' not in data:
-            data['usUnits'] = self.unit_system          
-        
-        logdbg("Added to queue: %s" % to_sorted_string(data))
-        self.queue.append(data,)
-
-    def on_individual_message(self, client, userdata, msg):
-        logdbg("For %s received: %s" %(msg.topic, msg.payload))
-        
-        tkey = msg.topic.split("/", 1)[1]
-        key = tkey.encode('ascii', 'ignore') # ToDo - research
-        
-        data = {}
-        data['dateTime'] = time.time()
-        data['usUnits'] = self.unit_system 
-        data[self.label_map.get(key,key)] = msg.payload
-        
-        self.queue.append(data,)
-
-    def on_connect(self, client, userdata, flags, rc):
-        logdbg("Connected with result code %i" % rc)
-        client.subscribe(self.topic)
-
-    def on_disconnect(self, client, userdata, rc):
-        logdbg("Disconnected with result code %i" %rc)
-
-    def _byteify(self, data, ignore_dicts = False):
-        # if this is a unicode string, return its string representation
-        if isinstance(data, unicode):
-            return data.encode('utf-8')
-        # if this is a list of values, return list of byteified values
-        if isinstance(data, list):
-            return [ self._byteify(item, ignore_dicts=True) for item in data ]
-        # if this is a dictionary, return dictionary of byteified keys and values
-        # but only if we haven't already byteified it
-        if isinstance(data, dict) and not ignore_dicts:
-            data2 = {}
-            for key, value in data.items():
-                key2 = self._byteify(key, ignore_dicts=True)
-                data2[self.label_map.get(key2,key2)] = self._byteify(value, ignore_dicts=True)
-            return data2
-        # if it's anything else, return it in its original form
-        return data
+        MQTTSubscribe.__init__(self, client, queue, archive_queue, label_map, unit_system, payload_type, host, keepalive, port, username, password, topic, archive_topic)
 
     def run(self):
-        if self.payload_type == 'json':
-            self.client.on_message = self.on_json_message
-        elif self.payload_type =='individual':
-            self.client.on_message = self.on_individual_message
-        else:
-            self.client.on_message = self.on_message
-
-        self.client.on_connect = self.on_connect
-        self.client.on_disconnect = self.on_disconnect   
-      
-        self.client.connect(self.host, self.port, self.keepalive)
-
         logdbg("Starting loop")
         self.client.loop_forever()
 
