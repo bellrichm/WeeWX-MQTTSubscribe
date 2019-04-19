@@ -326,11 +326,15 @@ if __name__ == '__main__':
         parser.add_option("--binding", choices=["archive", "loop"],
                         help="The type of binding.",
                         default="archive")
+        parser.add_option("--type", choices=["driver", "service"],
+                        help="The simulation type.",
+                        default="service")                        
         parser.add_option("--verbose", action="store_true", dest="verbose",
                         help="Log extra output (debug=1).")
 
         (options, args) = parser.parse_args()
 
+        simulation_type = options.type
         binding = options.binding
         record_count = options.record_count
         interval = options.interval
@@ -362,6 +366,7 @@ if __name__ == '__main__':
             }       
         }
 
+        print("Simulation is %s" % simulation_type)
         print("Creating %i %s records" % (record_count, binding))
         print("Interval is %i seconds" % interval)
         print("Delay is %i seconds" % delay)
@@ -373,13 +378,11 @@ if __name__ == '__main__':
         # override the configured binding with the parameter value
         weeutil.weeutil.merge_config(config_dict,
                                     {'MQTTSubscribeService': {'binding': binding}})
+        
+        simulate_service(engine, config_dict, binding, record_count, interval, delay, units)
+
+    def simulate_service(engine, config_dict, binding, record_count, interval, delay, units):
         service = MQTTSubscribeService(engine, config_dict)
-
-        simulate(engine, binding, record_count, interval, delay, units)
-
-        service.shutDown()
-
-    def simulate(engine, binding, record_count, interval, delay, units):
         i = 0 
         while i < record_count:
             current_time = int(time.time() + 0.5)
@@ -410,5 +413,7 @@ if __name__ == '__main__':
                 pass
 
             i += 1
+
+        service.shutDown()
 
     main()
