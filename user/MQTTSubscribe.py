@@ -58,6 +58,7 @@ Configuration:
 # Version 1.0.0
 
 from __future__ import with_statement
+import configobj
 import syslog
 import paho.mqtt.client as mqtt
 import threading
@@ -67,6 +68,7 @@ import time
 import weeutil.weeutil
 from weeutil.weeutil import to_sorted_string
 import weewx
+import weewx.drivers
 from weewx.engine import StdService
 from collections import deque
 
@@ -292,12 +294,80 @@ class MQTTSubscribeServiceThread(MQTTSubscribe, threading.Thread):
         logdbg("Starting loop")
         self.client.loop_forever()
 
+def loader(config_dict, engine):
+    config = configobj.ConfigObj(config_dict)
+    return MQTTSubscribeDriver(engine, **config['MQTTSubscribeDriver'])
+
+class MQTTSubscribeDriver(MQTTSubscribe, weewx.drivers.AbstractDevice):
+    """weewx driver that reads data from MQTT"""
+
+    def __init__(self, engine, **stn_dict):
+      self.engine = engine
+      label_map = stn_dict.get('label_map', {})
+      #binding = stn_dict.get('binding', 'loop')
+      host = stn_dict.get('host', 'localhost')
+      keepalive = stn_dict.get('keepalive', 60)
+      port = stn_dict.get('port', 1883)
+      topic = stn_dict.get('topic', 'weather/loop')
+      archive_topic = stn_dict.get('archive_topic', "weather/archive")
+      username = stn_dict.get('username', None)
+      password = stn_dict.get('password', None)
+      # self.overlap = float(stn_dict.get('overlap', 0))
+      unit_system_name = stn_dict.get('unit_system', 'US').strip().upper()
+      if unit_system_name not in weewx.units.unit_constants:
+          raise ValueError("MQTTSubscribeService: Unknown unit system: %s" % unit_system_name)
+      unit_system = weewx.units.unit_constants[unit_system_name]
+      payload_type = stn_dict.get('payload_type', None)
+      clientid = stn_dict.get('clientid', 'MQTTSubscribeDriver-' + str(random.randint(1000, 9999))) 
+      
+      # todo - additional logging ?
+        
+      queue = deque()
+      archive_queue = deque() 
+
+      client = mqtt.Client(client_id=clientid)
+      MQTTSubscribe.__init__(self, client, queue, archive_queue, label_map, unit_system, payload_type, host, keepalive, port, username, password, topic, archive_topic)
+
+      logdbg("Starting loop")
+      self.client.loop_start()
+
+    #def on_json_message(self, client, userdata, msg):     
+    #  print("test") 
+
+    def genLoopPackets(self):
+      import time
+      while True:
+        #print(len(self.queue))
+        while len(self.queue) > 0:
+          packet = self.queue.popleft()
+          print(weeutil.weeutil.timestamp_to_string(packet['dateTime']))
+          yield packet
+        time.sleep(2) # hack, maybe sleep for the loop interval?
+        
+    def genArchiveRecords(self, lastgood_ts):
+        import time
+        print("arriving")
+        print(lastgood_ts)
+        print(time.time())
+
+        time.sleep(5) # ToDo - temp hack, possibly add a loop to keep trying
+
+        while (len(self.archive_queue) > 0 and self.archive_queue[0]['dateTime'] <= lastgood_ts):
+            archive_record = self.archive_queue.popleft()
+            yield archive_record
+
+        print("leaving")
+
+    @property
+    def hardware_name(self):
+        return "MQTTSubscribeDriver"
+
 # Run from WeeWX home directory
 # PYTHONPATH=bin python bin/user/MQTTSubscribeService.py
 if __name__ == '__main__':
     import optparse
     import os
-    import configobj
+    #import configobj
     from weewx.engine import StdEngine
 
     usage = """MQTTSubscribeService --help
