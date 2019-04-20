@@ -13,7 +13,7 @@ Overview:
     it processes the queue of MQTT payloads and updates the archive record.
 
 Configuration:  
-[MQTTSubscribeService]
+[MQTTSubscribeService] or [MQTTSubscribeDriver]
     # The MQTT server 
     host = localhost
 
@@ -38,22 +38,29 @@ Configuration:
     # The topic to subscribe to
     topic = 
 
-    # The binding, loop or archive
-    binding = loop
-
     # The format of the MQTT payload. Currently support 'individual' or 'json'
     payload_type = json
-
-    # The amount to overlap the start time when processing the MQTT queue
-    overlap = 0 
 
     # Mapping to WeeWX names
     [[label_map]]
         temp1 = extraTemp1
-"""
 
-# Proof of concept of a service that subscribes to an MQTT topic 
-# and updates the archive record with the data in the MQTT topic
+    # The amount to overlap the start time when processing the MQTT queue
+    # Only used by the service
+    overlap = 0 
+
+    # The binding, loop or archive
+    # Only used by the service
+    binding = loop
+
+    # The amount of time to wait when the queue of MQTT payload is empty
+    # Only used by the driver
+    wait_before_retry = 2
+
+    # Payload in this topic is processed like an archive record
+    # Only used by the driver
+    archive_topic = 
+"""
 
 # Version 1.0.0
 
@@ -146,9 +153,6 @@ class MQTTSubscribe():
         logdbg("Added to queue: %s" % to_sorted_string(data))
 
         if msg.topic == self.archive_topic:
-            import time
-            print("archive has arrived")
-            print(time.time())
             self.archive_queue.append(data,) 
         else:       
             self.queue.append(data,)
@@ -314,6 +318,7 @@ class MQTTSubscribeDriver(MQTTSubscribe, weewx.drivers.AbstractDevice):
       username = stn_dict.get('username', None)
       password = stn_dict.get('password', None)
       # self.overlap = float(stn_dict.get('overlap', 0))
+      self.wait_before_retry = float(stn_dict.get('wait_before_retry', 2))
       unit_system_name = stn_dict.get('unit_system', 'US').strip().upper()
       if unit_system_name not in weewx.units.unit_constants:
           raise ValueError("MQTTSubscribeService: Unknown unit system: %s" % unit_system_name)
@@ -332,18 +337,16 @@ class MQTTSubscribeDriver(MQTTSubscribe, weewx.drivers.AbstractDevice):
       logdbg("Starting loop")
       self.client.loop_start()
 
-    #def on_json_message(self, client, userdata, msg):     
-    #  print("test") 
-
     def genLoopPackets(self):
       import time
       while True:
-        #print(len(self.queue))
+        print(len(self.queue))
         while len(self.queue) > 0:
           packet = self.queue.popleft()
           print(weeutil.weeutil.timestamp_to_string(packet['dateTime']))
           yield packet
-        time.sleep(2) # hack, maybe sleep for the loop interval?
+        print("    queued emptied")  
+        time.sleep(self.wait_before_retry) 
         
     def genArchiveRecords(self, lastgood_ts):
         import time
@@ -462,29 +465,39 @@ if __name__ == '__main__':
             # Find the function 'loader' within the module:
             loader_function = getattr(driver_module, 'loader') 
             driver = loader_function(config_dict, engine)  
-            i = 0 
-            interval = 300
-            delay = 25 # extar wait for MQTT payload
-            while i < record_count:
-                current_time = int(time.time() + 0.5)
-                end_period_ts = (int(current_time / interval) + 1) * interval                
-                end_delay_ts  =  end_period_ts + delay
-                sleep_amount = end_delay_ts - current_time
-                print("Sleeping %i seconds" % sleep_amount)
-                time.sleep(sleep_amount)
-                print("awake")      
-                
-                for record in driver.genArchiveRecords(end_period_ts):
-                    print("Record is: %s" % to_sorted_string(record))
-                
-                i +=1
 
-            """for packet in driver.genLoopPackets():
-                print("Packet is: %s" % to_sorted_string(packet))
-                i += 1
-                if i >= record_count:
-                    break"""
-            print(driver)         
+            binding = "archive"
+            if binding == "archive":
+                interval = 300
+                delay = 25 # extra wait for MQTT payload
+                simulate_driver_archive(driver, record_count, interval, delay)
+            elif binding == "loop":
+                record_count = 30
+                simulate_driver_packet(driver, record_count)
+
+    def simulate_driver_archive(driver, record_count, interval, delay):
+        i = 0
+        while i < record_count:
+            current_time = int(time.time() + 0.5)
+            end_period_ts = (int(current_time / interval) + 1) * interval                
+            end_delay_ts  =  end_period_ts + delay
+            sleep_amount = end_delay_ts - current_time
+            print("Sleeping %i seconds" % sleep_amount)
+            time.sleep(sleep_amount)
+                
+            for record in driver.genArchiveRecords(end_period_ts):
+                print("Record is: %s" % to_sorted_string(record))
+                
+            i += 1
+
+    def simulate_driver_packet(driver, record_count):
+        i = 0
+        for packet in driver.genLoopPackets():
+            print("Packet is: %s" % to_sorted_string(packet))
+            i += 1
+            if i >= record_count:
+                break
+
 
     def simulate_service(engine, config_dict, binding, record_count, interval, delay, units):
         service = MQTTSubscribeService(engine, config_dict)
