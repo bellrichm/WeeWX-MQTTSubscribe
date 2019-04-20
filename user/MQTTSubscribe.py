@@ -350,7 +350,7 @@ class MQTTSubscribeDriver(MQTTSubscribe, weewx.drivers.AbstractDevice):
         print(lastgood_ts)
         print(time.time())
 
-        time.sleep(5) # ToDo - temp hack, possibly add a loop to keep trying
+        time.sleep(10) # ToDo - temp hack, possibly add a loop to keep trying
 
         while (len(self.archive_queue) > 0 and self.archive_queue[0]['dateTime'] <= lastgood_ts):
             archive_record = self.archive_queue.popleft()
@@ -363,11 +363,11 @@ class MQTTSubscribeDriver(MQTTSubscribe, weewx.drivers.AbstractDevice):
         return "MQTTSubscribeDriver"
 
 # Run from WeeWX home directory
-# PYTHONPATH=bin python bin/user/MQTTSubscribeService.py
+# PYTHONPATH=bin python bin/user/MQTTSubscribe.py
 if __name__ == '__main__':
     import optparse
     import os
-    #import configobj
+    import sys
     from weewx.engine import StdEngine
 
     usage = """MQTTSubscribeService --help
@@ -398,7 +398,7 @@ if __name__ == '__main__':
                         default="archive")
         parser.add_option("--type", choices=["driver", "service"],
                         help="The simulation type.",
-                        default="service")                        
+                        default="driver")                        
         parser.add_option("--verbose", action="store_true", dest="verbose",
                         help="Log extra output (debug=1).")
 
@@ -449,7 +449,40 @@ if __name__ == '__main__':
         weeutil.weeutil.merge_config(config_dict,
                                     {'MQTTSubscribeService': {'binding': binding}})
         
-        simulate_service(engine, config_dict, binding, record_count, interval, delay, units)
+        if simulation_type =="service":
+            simulate_service(engine, config_dict, binding, record_count, interval, delay, units)
+        elif simulation_type == "driver":
+            driver = "user.MQTTSubscribe"
+            __import__(driver)
+            # This is a bit of Python wizardry. First, find the driver module
+            # in sys.modules.
+            driver_module = sys.modules[driver]
+            # Find the function 'loader' within the module:
+            loader_function = getattr(driver_module, 'loader') 
+            driver = loader_function(config_dict, engine)  
+            i = 0 
+            interval = 300
+            #delay = 25
+            while i < record_count:
+                current_time = int(time.time() + 0.5)
+                end_period_ts = (int(current_time / interval) + 1) * interval                
+                end_delay_ts  =  end_period_ts + delay
+                sleep_amount = end_delay_ts - current_time
+                print("Sleeping %i seconds" % sleep_amount)
+                time.sleep(sleep_amount)
+                print("awake")      
+                
+                for record in driver.genArchiveRecords(end_period_ts):
+                    print("Record is: %s" % to_sorted_string(record))
+                
+                i +=1
+
+            """for packet in driver.genLoopPackets():
+                print("Packet is: %s" % to_sorted_string(packet))
+                i += 1
+                if i >= record_count:
+                    break"""
+            print(driver)         
 
     def simulate_service(engine, config_dict, binding, record_count, interval, delay, units):
         service = MQTTSubscribeService(engine, config_dict)
