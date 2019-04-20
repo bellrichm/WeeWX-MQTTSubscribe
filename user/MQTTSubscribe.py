@@ -147,6 +147,7 @@ class MQTTSubscribe():
 
         if msg.topic == self.archive_topic:
             import time
+            print("archive has arrived")
             print(time.time())
             self.archive_queue.append(data,) 
         else:       
@@ -350,7 +351,8 @@ class MQTTSubscribeDriver(MQTTSubscribe, weewx.drivers.AbstractDevice):
         print(lastgood_ts)
         print(time.time())
 
-        time.sleep(10) # ToDo - temp hack, possibly add a loop to keep trying
+        #time.sleep(10) # ToDo - temp hack, possibly add a loop to keep trying
+        print("processing")
 
         while (len(self.archive_queue) > 0 and self.archive_queue[0]['dateTime'] <= lastgood_ts):
             archive_record = self.archive_queue.popleft()
@@ -462,7 +464,7 @@ if __name__ == '__main__':
             driver = loader_function(config_dict, engine)  
             i = 0 
             interval = 300
-            #delay = 25
+            delay = 25 # extar wait for MQTT payload
             while i < record_count:
                 current_time = int(time.time() + 0.5)
                 end_period_ts = (int(current_time / interval) + 1) * interval                
