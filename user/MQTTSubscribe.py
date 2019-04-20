@@ -73,7 +73,7 @@ import json
 import random
 import time
 import weeutil.weeutil
-from weeutil.weeutil import to_sorted_string
+from weeutil.weeutil import to_sorted_string, to_float
 import weewx
 import weewx.drivers
 from weewx.engine import StdService
@@ -137,6 +137,32 @@ class MQTTSubscribe():
     # sub class overrides this for specific MQTT payload formats
     def on_message(self, client, userdata, msg):
         loginf("Method 'on_message' not implemented")
+
+    # placeholder for keyword (name = value) payload
+    def on_keyword_message(self, client, userdata, msg):
+        logdbg("For %s received: %s" %(msg.topic, msg.payload))
+
+        for line in msg.payload:
+            eq_index = line.find('=')
+            # Ignore all lines that do not have an equal sign
+            if eq_index == -1:
+                continue
+            name = line[:eq_index].strip()
+            value = line[eq_index + 1:].strip()
+            data[self.label_map.get(name, name)] = to_float(value)
+
+        if 'dateTime' not in data:
+            data['dateTime'] = time.time()
+
+        if 'usUnits' not in data:
+            data['usUnits'] = self.unit_system          
+        
+        logdbg("Added to queue: %s" % to_sorted_string(data))
+
+        if msg.topic == self.archive_topic:
+            self.archive_queue.append(data,) 
+        else:       
+            self.queue.append(data,)
 
     def on_json_message(self, client, userdata, msg):
         logdbg("For %s received: %s" %(msg.topic, msg.payload))
@@ -466,7 +492,7 @@ if __name__ == '__main__':
             loader_function = getattr(driver_module, 'loader') 
             driver = loader_function(config_dict, engine)  
 
-            binding = "archive"
+            binding = "loop"
             if binding == "archive":
                 interval = 300
                 delay = 25 # extra wait for MQTT payload
