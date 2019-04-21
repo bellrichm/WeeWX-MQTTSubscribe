@@ -364,30 +364,21 @@ class MQTTSubscribeDriver(MQTTSubscribe, weewx.drivers.AbstractDevice):
       self.client.loop_start()
 
     def genLoopPackets(self):
-      import time
       while True:
-        print(len(self.queue))
+        logdbg("Packet queue is size %i" % len(self.queue))
         while len(self.queue) > 0:
           packet = self.queue.popleft()
-          print(weeutil.weeutil.timestamp_to_string(packet['dateTime']))
+          logdbg("Packet: %s" % to_sorted_string(packet))
           yield packet
-        print("    queued emptied")  
+        logdbg("Packet queue is empty.")  
         time.sleep(self.wait_before_retry) 
         
     def genArchiveRecords(self, lastgood_ts):
-        import time
-        print("arriving")
-        print(lastgood_ts)
-        print(time.time())
-
-        #time.sleep(10) # ToDo - temp hack, possibly add a loop to keep trying
-        print("processing")
-
+        logdbg("Archive queue is size %i and date is %f." %(len(self.archive_queue), lastgood_ts))
         while (len(self.archive_queue) > 0 and self.archive_queue[0]['dateTime'] <= lastgood_ts):
             archive_record = self.archive_queue.popleft()
+            logdbg("Archive record: %s" % to_sorted_string(archive_record))
             yield archive_record
-
-        print("leaving")
 
     @property
     def hardware_name(self):
@@ -492,7 +483,7 @@ if __name__ == '__main__':
             loader_function = getattr(driver_module, 'loader') 
             driver = loader_function(config_dict, engine)  
 
-            binding = "loop"
+            binding = "archive"
             if binding == "archive":
                 interval = 300
                 delay = 25 # extra wait for MQTT payload
