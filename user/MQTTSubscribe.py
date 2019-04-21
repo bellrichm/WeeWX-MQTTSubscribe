@@ -139,16 +139,20 @@ class MQTTSubscribe():
         loginf("Method 'on_message' not implemented")
 
     # placeholder for keyword (name = value) payload
+    # untested
     def on_keyword_message(self, client, userdata, msg):
         logdbg("For %s received: %s" %(msg.topic, msg.payload))
+        self.delimiter = "," # ToDo - make configurable
+        self.separator = "=" # ToDo - make configurable
 
-        for line in msg.payload:
-            eq_index = line.find('=')
-            # Ignore all lines that do not have an equal sign
+        fields = msg.payload.split(self.delimiter)
+        for field in fields:
+            eq_index = field.find(self.separator)
+            # Ignore all fields that do not have the separator
             if eq_index == -1:
                 continue
-            name = line[:eq_index].strip()
-            value = line[eq_index + 1:].strip()
+            name = field[:eq_index].strip()
+            value = field[eq_index + 1:].strip()
             data[self.label_map.get(name, name)] = to_float(value)
 
         if 'dateTime' not in data:
@@ -483,7 +487,6 @@ if __name__ == '__main__':
             loader_function = getattr(driver_module, 'loader') 
             driver = loader_function(config_dict, engine)  
 
-            binding = "archive"
             if binding == "archive":
                 interval = 300
                 delay = 25 # extra wait for MQTT payload
