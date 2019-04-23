@@ -1,0 +1,10 @@
+Miscellaneous notes:
+WeeWX performs quality control on both loop packets and archive records. But, if the archive reocord is created via software generation it is not quality controlled. This is because the data has already been quality contolled as loop packet data. This means that when SubscribeService is bound to new archive records and the controlling service (typically StdArchive) is using software generation, the fields added by SubscribeService are not quality controlled.
+
+When augment_record is true, StdArchive will augment the archive record with fields that are found only in the loop packets. This means that when the Subscribe service is bound to the loop packet it can let StdArchive get the data to the archive record.
+
+StdConvert converts loop packets into the appropriate units. Therefore SubscribeDriver does not have to. Note, SubscribeService still does because it is adding data to a loop packet or archive record and all the data must be in the same units.
+
+SubscribeDriver essentially emits each MQTT payload as a loop packet and lets WeeWX do its "magic" to handle partial packets, units, accumulation, augmentation, etc.
+
+It seems like binding the SubscribeService to loop packets is the more natural fit. This does mean that the MQTT payload has to be accumulated for every loop packet instead of every archive record. This additional processing may put more load on the system, but each cycle of accumulating loop packet will have less data to process. So...
