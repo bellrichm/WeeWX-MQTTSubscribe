@@ -121,9 +121,9 @@ class MQTTSubscribe():
         loginf("Label map is %s" % label_map)
 
         if self.payload_type == 'json':
-            self.client.on_message = self.on_json_message
+            self.client.on_message = self.on_message_json
         elif self.payload_type =='individual':
-            self.client.on_message = self.on_individual_message
+            self.client.on_message = self.on_message_individual
         else:
             self.client.on_message = self.on_message
 
@@ -141,7 +141,7 @@ class MQTTSubscribe():
 
     # placeholder for keyword (name = value) payload
     # untested
-    def on_keyword_message(self, client, userdata, msg):
+    def on_message_keyword(self, client, userdata, msg):
         logdbg("For %s received: %s" %(msg.topic, msg.payload))
         self.delimiter = "," # ToDo - make configurable
         self.separator = "=" # ToDo - make configurable
@@ -169,7 +169,7 @@ class MQTTSubscribe():
         else:
             self.queue.append(data,)
 
-    def on_json_message(self, client, userdata, msg):
+    def on_message_json(self, client, userdata, msg):
         logdbg("For %s received: %s" %(msg.topic, msg.payload))
         # ToDo - better way?
         if six.PY2:
@@ -192,7 +192,7 @@ class MQTTSubscribe():
         else:
             self.queue.append(data,)
 
-    def on_individual_message(self, client, userdata, msg):
+    def on_message_individual(self, client, userdata, msg):
         logdbg("For %s received: %s" %(msg.topic, msg.payload))
 
         tkey = msg.topic.split("/", 1)[1]
