@@ -62,8 +62,6 @@ Configuration:
     archive_topic =
 """
 
-# Version 1.0.0
-
 from __future__ import with_statement
 import six
 import configobj
@@ -74,26 +72,31 @@ import json
 import random
 import time
 import weeutil.weeutil
-from weeutil.weeutil import to_sorted_string, to_float
+from weeutil.weeutil import to_bool, to_sorted_string, to_float
 import weewx
 import weewx.drivers
 from weewx.engine import StdService
 from collections import deque
 
-def logmsg(dst, msg):
+VERSION='1.0.1'
+
+def logmsg(console, dst, msg):
     syslog.syslog(dst, 'MQTTSS: %s' % msg)
+    if console:
+        print('MQTTSS: %s' % msg)
 
-def logdbg(msg):
-    logmsg(syslog.LOG_DEBUG, msg)
+def logdbg(console, msg):
+    logmsg(console, syslog.LOG_DEBUG, msg)
 
-def loginf(msg):
-    logmsg(syslog.LOG_INFO, msg)
+def loginf(console, msg):
+    logmsg(console, syslog.LOG_INFO, msg)
 
 def logerr(msg):
-    logmsg(syslog.LOG_ERR, msg)
+    logmsg(console, syslog.LOG_ERR, msg)
 
 class MQTTSubscribe():
-    def __init__(self, client, queue, archive_queue, label_map, unit_system, payload_type, host, keepalive, port, username, password, topic, archive_topic):
+    def __init__(self, console, client, queue, archive_queue, label_map, unit_system, payload_type, host, keepalive, port, username, password, topic, archive_topic):
+        self.console = console
         self.client = client
         self.queue = queue
         self.archive_queue = archive_queue
@@ -106,19 +109,20 @@ class MQTTSubscribe():
         self.topic = topic
         self.archive_topic = archive_topic
 
-        loginf("Host is %s" % host)
-        loginf("Port is %s" % port)
-        loginf("Keep alive is %s" % keepalive)
-        loginf("Username is %s" % username)
+        loginf(self.console, "MQTTSubscribe version is %s" % VERSION)
+        loginf(self.console, "Host is %s" % host)
+        loginf(self.console, "Port is %s" % port)
+        loginf(self.console, "Keep alive is %s" % keepalive)
+        loginf(self.console, "Username is %s" % username)
         if password is not None:
-            loginf("Password is set")
+            loginf(self.console, "Password is set")
         else:
-            loginf("Password is not set")
-        loginf("Topic is %s" % topic)
-        loginf("Archive topic is %s" % archive_topic)
-        loginf("Payload type is %s" % payload_type)
-        loginf("Default units is %i" % unit_system)
-        loginf("Label map is %s" % label_map)
+            loginf(self.console, "Password is not set")
+        loginf(self.console, "Topic is %s" % topic)
+        loginf(self.console, "Archive topic is %s" % archive_topic)
+        loginf(self.console, "Payload type is %s" % payload_type)
+        loginf(self.console, "Default units is %i" % unit_system)
+        loginf(self.console, "Label map is %s" % label_map)
 
         if self.payload_type == 'json':
             self.client.on_message = self.on_message_json
@@ -137,12 +141,12 @@ class MQTTSubscribe():
 
     # sub class overrides this for specific MQTT payload formats
     def on_message(self, client, userdata, msg):
-        loginf("Method 'on_message' not implemented")
+        loginf(self.console, "Method 'on_message' not implemented")
 
     # placeholder for keyword (name = value) payload
     # untested
     def on_message_keyword(self, client, userdata, msg):
-        logdbg("For %s received: %s" %(msg.topic, msg.payload))
+        logdbg(self.console, "For %s received: %s" %(msg.topic, msg.payload))
         self.delimiter = "," # ToDo - make configurable
         self.separator = "=" # ToDo - make configurable
 
@@ -162,7 +166,7 @@ class MQTTSubscribe():
         if 'usUnits' not in data:
             data['usUnits'] = self.unit_system
 
-        logdbg("Added to queue: %s" % to_sorted_string(data))
+        logdbg(self.console, "Added to queue: %s" % to_sorted_string(data))
 
         if msg.topic == self.archive_topic:
             self.archive_queue.append(data,)
@@ -170,7 +174,7 @@ class MQTTSubscribe():
             self.queue.append(data,)
 
     def on_message_json(self, client, userdata, msg):
-        logdbg("For %s received: %s" %(msg.topic, msg.payload))
+        logdbg(self.console, "For %s received: %s" %(msg.topic, msg.payload))
         # ToDo - better way?
         if six.PY2:
             data = self._byteify(
@@ -185,7 +189,7 @@ class MQTTSubscribe():
         if 'usUnits' not in data:
             data['usUnits'] = self.unit_system
 
-        logdbg("Added to queue: %s" % to_sorted_string(data))
+        logdbg(self.console, "Added to queue: %s" % to_sorted_string(data))
 
         if msg.topic == self.archive_topic:
             self.archive_queue.append(data,)
@@ -193,7 +197,7 @@ class MQTTSubscribe():
             self.queue.append(data,)
 
     def on_message_individual(self, client, userdata, msg):
-        logdbg("For %s received: %s" %(msg.topic, msg.payload))
+        logdbg(self.console, "For %s received: %s" %(msg.topic, msg.payload))
 
         tkey = msg.topic.split("/", 1)[1]
         key = tkey.encode('ascii', 'ignore') # ToDo - research
@@ -206,13 +210,13 @@ class MQTTSubscribe():
         self.queue.append(data,)
 
     def on_connect(self, client, userdata, flags, rc):
-        logdbg("Connected with result code %i" % rc)
+        logdbg(self.console, "Connected with result code %i" % rc)
         client.subscribe(self.topic)
         if self.archive_topic:
           client.subscribe(self.archive_topic)
 
     def on_disconnect(self, client, userdata, rc):
-        logdbg("Disconnected with result code %i" %rc)
+        logdbg(self.console, "Disconnected with result code %i" %rc)
 
     def _byteify(self, data, ignore_dicts = False):
         # if this is a unicode string, return its string representation
@@ -245,6 +249,7 @@ class MQTTSubscribeService(StdService):
         topic = service_dict.get('topic', 'weather/loop')
         username = service_dict.get('username', None)
         password = service_dict.get('password', None)
+        self.console = to_bool(service_dict.get('console', False))
         self.overlap = float(service_dict.get('overlap', 0))
         unit_system_name = service_dict.get('unit_system', 'US').strip().upper()
         if unit_system_name not in weewx.units.unit_constants:
@@ -253,10 +258,10 @@ class MQTTSubscribeService(StdService):
         payload_type = service_dict.get('payload_type', None)
         clientid = service_dict.get('clientid', 'MQTTSubscribeService-' + str(random.randint(1000, 9999)))
 
-        loginf("Client id is %s" % clientid)
-        loginf("Binding is %s" % binding)
-        loginf("Default units is %s %i" %(unit_system_name, unit_system))
-        loginf("Overlap is %s" % self.overlap)
+        loginf(self.console, "Client id is %s" % clientid)
+        loginf(self.console, "Binding is %s" % binding)
+        loginf(self.console, "Default units is %s %i" %(unit_system_name, unit_system))
+        loginf(self.console, "Overlap is %s" % self.overlap)
 
         self.queue = deque()
         archive_topic = None # not supported by the service
@@ -265,7 +270,7 @@ class MQTTSubscribeService(StdService):
         self.end_ts = 0 # prime for processing loop packet
 
         self.client = mqtt.Client(client_id=clientid)
-        self.thread = MQTTSubscribeServiceThread(self, self.client, self.queue, self.archive_queue, label_map, unit_system, payload_type, host, keepalive, port, username, password, topic, archive_topic)
+        self.thread = MQTTSubscribeServiceThread(self, self.console, self.client, self.queue, self.archive_queue, label_map, unit_system, payload_type, host, keepalive, port, username, password, topic, archive_topic)
         self.thread.start()
 
         if (binding == 'archive'):
@@ -282,29 +287,29 @@ class MQTTSubscribeService(StdService):
             self.thread = None
 
     def _process_data(self, start_ts, end_ts, record):
-        logdbg("Processing interval: %f %f" %(start_ts, end_ts))
+        logdbg(self.console, "Processing interval: %f %f" %(start_ts, end_ts))
         accumulator = weewx.accum.Accum(weeutil.weeutil.TimeSpan(start_ts, end_ts))
 
-        logdbg("Queue size is: %i" % len(self.queue))
+        logdbg(self.console, "Queue size is: %i" % len(self.queue))
 
         while (len(self.queue) > 0 and self.queue[0]['dateTime'] <= end_ts):
             archive_data = self.queue.popleft()
-            logdbg("Processing: %s" % to_sorted_string(archive_data))
+            logdbg(self.console, "Processing: %s" % to_sorted_string(archive_data))
             try:
                 accumulator.addRecord(archive_data)
             except weewx.accum.OutOfSpan:
-                loginf("Ignoring record outside of interval %f %f %f %s"
+                loginf(self.console, "Ignoring record outside of interval %f %f %f %s"
                     %(start_ts, end_ts, archive_data['dateTime'], to_sorted_string(archive_data)))
 
         target_data = {}
         if not accumulator.isEmpty:
             aggregate_data = accumulator.getRecord()
-            logdbg("Data prior to conversion is: %s" % to_sorted_string(aggregate_data))
+            logdbg(self.console, "Data prior to conversion is: %s" % to_sorted_string(aggregate_data))
             target_data = weewx.units.to_std_system(aggregate_data, record['usUnits'])
-            logdbg("Data after to conversion is: %s" % to_sorted_string(target_data))
-            logdbg("Record prior to update is: %s" % to_sorted_string(record))
+            logdbg(self.console, "Data after to conversion is: %s" % to_sorted_string(target_data))
+            logdbg(self.console, "Record prior to update is: %s" % to_sorted_string(record))
         else:
-            logdbg("Queue was empty")
+            logdbg(self.console, "Queue was empty")
 
         return target_data
 
@@ -313,7 +318,7 @@ class MQTTSubscribeService(StdService):
         self.end_ts = event.packet['dateTime']
         target_data = self._process_data(start_ts, self.end_ts, event.packet)
         event.packet.update(target_data)
-        logdbg("Packet after update is: %s" % to_sorted_string(event.packet))
+        logdbg(self.console, "Packet after update is: %s" % to_sorted_string(event.packet))
 
     # this works for hardware generation, but software generation does not 'quality control'
     # the archive record, so this data is not 'QC' in this case.
@@ -323,15 +328,15 @@ class MQTTSubscribeService(StdService):
         start_ts = end_ts - event.record['interval'] * 60 - self.overlap
         target_data = self._process_data(start_ts, end_ts, event.record)
         event.record.update(target_data)
-        logdbg("Record after update is: %s" % to_sorted_string(event.record))
+        logdbg(self.console, "Record after update is: %s" % to_sorted_string(event.record))
 
 class MQTTSubscribeServiceThread(MQTTSubscribe, threading.Thread):
-    def __init__(self, service, client, queue, archive_queue, label_map, unit_system, payload_type, host, keepalive, port, username, password, topic, archive_topic):
+    def __init__(self, console, service, client, queue, archive_queue, label_map, unit_system, payload_type, host, keepalive, port, username, password, topic, archive_topic):
         threading.Thread.__init__(self)
-        MQTTSubscribe.__init__(self, client, queue, archive_queue, label_map, unit_system, payload_type, host, keepalive, port, username, password, topic, archive_topic)
+        MQTTSubscribe.__init__(self, console, client, queue, archive_queue, label_map, unit_system, payload_type, host, keepalive, port, username, password, topic, archive_topic)
 
     def run(self):
-        logdbg("Starting loop")
+        logdbg(self.console, "Starting loop")
         self.client.loop_forever()
 
 def loader(config_dict, engine):
@@ -352,6 +357,7 @@ class MQTTSubscribeDriver(MQTTSubscribe, weewx.drivers.AbstractDevice):
       archive_topic = stn_dict.get('archive_topic', "weather/archive")
       username = stn_dict.get('username', None)
       password = stn_dict.get('password', None)
+      self.console = to_bool(service_dict.get('console', False))
       # self.overlap = float(stn_dict.get('overlap', 0))
       self.wait_before_retry = float(stn_dict.get('wait_before_retry', 2))
       unit_system_name = stn_dict.get('unit_system', 'US').strip().upper()
@@ -367,26 +373,26 @@ class MQTTSubscribeDriver(MQTTSubscribe, weewx.drivers.AbstractDevice):
       archive_queue = deque()
 
       client = mqtt.Client(client_id=clientid)
-      MQTTSubscribe.__init__(self, client, queue, archive_queue, label_map, unit_system, payload_type, host, keepalive, port, username, password, topic, archive_topic)
+      MQTTSubscribe.__init__(self, self.console, client, queue, archive_queue, label_map, unit_system, payload_type, host, keepalive, port, username, password, topic, archive_topic)
 
-      logdbg("Starting loop")
+      logdbg(self.console, "Starting loop")
       self.client.loop_start()
 
     def genLoopPackets(self):
       while True:
-        logdbg("Packet queue is size %i" % len(self.queue))
+        logdbg(self.console, "Packet queue is size %i" % len(self.queue))
         while len(self.queue) > 0:
           packet = self.queue.popleft()
-          logdbg("Packet: %s" % to_sorted_string(packet))
+          logdbg(self.console, "Packet: %s" % to_sorted_string(packet))
           yield packet
-        logdbg("Packet queue is empty.")
+        logdbg(self.console, "Packet queue is empty.")
         time.sleep(self.wait_before_retry)
 
     def genArchiveRecords(self, lastgood_ts):
-        logdbg("Archive queue is size %i and date is %f." %(len(self.archive_queue), lastgood_ts))
+        logdbg(self.console, "Archive queue is size %i and date is %f." %(len(self.archive_queue), lastgood_ts))
         while (len(self.archive_queue) > 0 and self.archive_queue[0]['dateTime'] <= lastgood_ts):
             archive_record = self.archive_queue.popleft()
-            logdbg("Archive record: %s" % to_sorted_string(archive_record))
+            logdbg(self.console, "Archive record: %s" % to_sorted_string(archive_record))
             yield archive_record
 
     @property
@@ -432,6 +438,8 @@ if __name__ == '__main__':
                         default="driver")
         parser.add_option("--verbose", action="store_true", dest="verbose",
                         help="Log extra output (debug=1).")
+        parser.add_option("--console", action="store_true", dest="console",
+                        help="Log to console in addition to syslog.")
 
         (options, args) = parser.parse_args()
 
@@ -479,6 +487,14 @@ if __name__ == '__main__':
         # override the configured binding with the parameter value
         weeutil.weeutil.merge_config(config_dict,
                                     {'MQTTSubscribeService': {'binding': binding}})
+        
+        # if specified, override the console logging
+        if options.console:
+            weeutil.weeutil.merge_config(config_dict,
+                                     {'MQTTSubscribeService': {'console': True}})
+            weeutil.weeutil.merge_config(config_dict,
+                                     {'MQTTSubscribeDriver': {'console': True}})                                     
+
 
         if simulation_type =="service":
             simulate_service(engine, config_dict, binding, record_count, interval, delay, units)
