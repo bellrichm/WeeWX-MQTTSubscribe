@@ -10,6 +10,7 @@ from user.MQTTSubscribe import MQTTSubscribe, MQTTSubscribeService
 
 class TestInitialization(unittest.TestCase):
     def test_payload_type_json(self):
+        console = False
         mock_client = mock.Mock(spec=mqtt.Client)
         queue = None
         archive_queue = None
@@ -24,7 +25,7 @@ class TestInitialization(unittest.TestCase):
         topic = None
         archive_topic = None
 
-        SUT = MQTTSubscribe(mock_client, queue, archive_queue, label_map, unit_system, payload_type,
+        SUT = MQTTSubscribe(console, mock_client, queue, archive_queue, label_map, unit_system, payload_type,
                             host, keepalive, port, username, password, topic, archive_topic
                             )
 
@@ -33,6 +34,7 @@ class TestInitialization(unittest.TestCase):
         mock_client.connect.assert_called_once_with(host, port, keepalive)
 
     def test_payload_type_individual(self):
+        console = False
         mock_client = mock.Mock(spec=mqtt.Client)
         queue = None
         archive_queue = None
@@ -47,7 +49,7 @@ class TestInitialization(unittest.TestCase):
         topic = None
         archive_topic = None
 
-        SUT = MQTTSubscribe(mock_client, queue, archive_queue, label_map, unit_system, payload_type,
+        SUT = MQTTSubscribe(console, mock_client, queue, archive_queue, label_map, unit_system, payload_type,
                             host, keepalive, port, username, password, topic, archive_topic
                             )
 
@@ -56,6 +58,7 @@ class TestInitialization(unittest.TestCase):
         mock_client.connect.assert_called_once_with(host, port, keepalive)
 
     def test_payload_type_other(self):
+        console = False
         mock_client = mock.Mock(spec=mqtt.Client)
         queue = None
         archive_queue = None
@@ -70,7 +73,7 @@ class TestInitialization(unittest.TestCase):
         topic = None
         archive_topic = None
 
-        SUT = MQTTSubscribe(mock_client, queue, archive_queue, label_map, unit_system, payload_type,
+        SUT = MQTTSubscribe(console, mock_client, queue, archive_queue, label_map, unit_system, payload_type,
                             host, keepalive, port, username, password, topic, archive_topic
                             )
 
@@ -79,6 +82,7 @@ class TestInitialization(unittest.TestCase):
         mock_client.connect.assert_called_once_with(host, port, keepalive)
 
     def test_username_None(self):
+        console = False
         mock_client = mock.Mock(spec=mqtt.Client)
         queue = None
         archive_queue = None
@@ -93,7 +97,7 @@ class TestInitialization(unittest.TestCase):
         topic = None
         archive_topic = None
 
-        SUT = MQTTSubscribe(mock_client, queue, archive_queue, label_map, unit_system, payload_type,
+        SUT = MQTTSubscribe(console, mock_client, queue, archive_queue, label_map, unit_system, payload_type,
                             host, keepalive, port, username, password, topic, archive_topic
                             )
 
@@ -102,6 +106,7 @@ class TestInitialization(unittest.TestCase):
         mock_client.connect.assert_called_once_with(host, port, keepalive)
 
     def test_password_None(self):
+        console = False
         mock_client = mock.Mock(spec=mqtt.Client)
         queue = None
         archive_queue = None
@@ -116,7 +121,7 @@ class TestInitialization(unittest.TestCase):
         topic = None
         archive_topic = None
 
-        SUT = MQTTSubscribe(mock_client, queue, archive_queue, label_map, unit_system, payload_type,
+        SUT = MQTTSubscribe(console, mock_client, queue, archive_queue, label_map, unit_system, payload_type,
                             host, keepalive, port, username, password, topic, archive_topic
                             )
 
@@ -125,6 +130,7 @@ class TestInitialization(unittest.TestCase):
         mock_client.connect.assert_called_once_with(host, port, keepalive)
 
     def test_username_and_password_None(self):
+        console = False
         mock_client = mock.Mock(spec=mqtt.Client)
         queue = None
         archive_queue = None
@@ -139,7 +145,7 @@ class TestInitialization(unittest.TestCase):
         topic = None
         archive_topic = None
 
-        SUT = MQTTSubscribe(mock_client, queue, archive_queue, label_map, unit_system, payload_type,
+        SUT = MQTTSubscribe(console, mock_client, queue, archive_queue, label_map, unit_system, payload_type,
                             host, keepalive, port, username, password, topic, archive_topic
                             )
 
@@ -148,6 +154,7 @@ class TestInitialization(unittest.TestCase):
         mock_client.connect.assert_called_once_with(host, port, keepalive)
 
     def test_username_and_password_set(self):
+        console = False
         mock_client = mock.Mock(spec=mqtt.Client)
         queue = None
         archive_queue = None
@@ -162,7 +169,7 @@ class TestInitialization(unittest.TestCase):
         topic = None
         archive_topic = None
 
-        SUT = MQTTSubscribe(mock_client, queue, archive_queue, label_map, unit_system, payload_type,
+        SUT = MQTTSubscribe(console, mock_client, queue, archive_queue, label_map, unit_system, payload_type,
                             host, keepalive, port, username, password, topic, archive_topic
                             )
 
@@ -171,6 +178,7 @@ class TestInitialization(unittest.TestCase):
         mock_client.connect.assert_called_once_with(host, port, keepalive)
 
 class Teston_connect(unittest.TestCase):
+    console = False
     queue = None
     archive_queue = None
     label_map = {}
@@ -186,7 +194,7 @@ class Teston_connect(unittest.TestCase):
     def test_archive_topic_set(self):
         mock_client = mock.Mock(spec=mqtt.Client)
         archive_topic = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
-        SUT = MQTTSubscribe(mock_client, self.queue, self.archive_queue, self.label_map, self.unit_system, self.payload_type,
+        SUT = MQTTSubscribe(self.console, mock_client, self.queue, self.archive_queue, self.label_map, self.unit_system, self.payload_type,
                             self.host, self.keepalive, self.port, self.username, self.password, self.topic, archive_topic
                             )
 
@@ -199,7 +207,7 @@ class Teston_connect(unittest.TestCase):
     def test_archive_topic_not_set(self):
         mock_client = mock.Mock(spec=mqtt.Client)
         archive_topic = None
-        SUT = MQTTSubscribe(mock_client, self.queue, self.archive_queue, self.label_map, self.unit_system, self.payload_type,
+        SUT = MQTTSubscribe(self.console, mock_client, self.queue, self.archive_queue, self.label_map, self.unit_system, self.payload_type,
                             self.host, self.keepalive, self.port, self.username, self.password, self.topic, archive_topic
                             )
 
