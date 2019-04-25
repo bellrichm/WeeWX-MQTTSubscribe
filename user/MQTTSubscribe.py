@@ -78,7 +78,7 @@ import weewx.drivers
 from weewx.engine import StdService
 from collections import deque
 
-VERSION='1.0.1'
+VERSION='1.0.2'
 
 def logmsg(console, dst, msg):
     syslog.syslog(dst, 'MQTTSS: %s' % msg)
@@ -205,7 +205,7 @@ class MQTTSubscribe():
         data = {}
         data['dateTime'] = time.time()
         data['usUnits'] = self.unit_system
-        data[self.label_map.get(key,key)] = msg.payload
+        data[self.label_map.get(key,key)] = to_float(msg.payload)
 
         self.queue.append(data,)
 
