@@ -171,7 +171,42 @@ class TestInitialization(unittest.TestCase):
         mock_client.connect.assert_called_once_with(host, port, keepalive)
 
 class Teston_connect(unittest.TestCase):
-    pass
+    queue = None
+    archive_queue = None
+    label_map = {}
+    unit_system = random.randint(1, 10)
+    payload_type = None
+    host = 'host'
+    keepalive = random.randint(1, 10)
+    port = random.randint(1, 10)
+    username = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+    password = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+    topic = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+
+    def test_archive_topic_set(self):
+        mock_client = mock.Mock(spec=mqtt.Client)
+        archive_topic = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+        SUT = MQTTSubscribe(mock_client, self.queue, self.archive_queue, self.label_map, self.unit_system, self.payload_type,
+                            self.host, self.keepalive, self.port, self.username, self.password, self.topic, archive_topic
+                            )
+
+        rc = random.randint(1, 10)
+        SUT.on_connect(mock_client, None, None, rc,)
+
+        self.assertEqual(mock_client.subscribe.call_count, 2)
+        mock_client.subscribe.assert_called_with(archive_topic)
+
+    def test_archive_topic_not_set(self):
+        mock_client = mock.Mock(spec=mqtt.Client)
+        archive_topic = None
+        SUT = MQTTSubscribe(mock_client, self.queue, self.archive_queue, self.label_map, self.unit_system, self.payload_type,
+                            self.host, self.keepalive, self.port, self.username, self.password, self.topic, archive_topic
+                            )
+
+        rc = random.randint(1, 10)
+        SUT.on_connect(mock_client, None, None, rc,)
+
+        self.assertEqual(mock_client.subscribe.call_count, 1)
 
 class TestJsonPayload(unittest.TestCase):
     pass
