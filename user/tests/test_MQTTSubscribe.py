@@ -1,3 +1,5 @@
+from __future__ import with_statement
+
 import unittest
 import mock
 
@@ -59,7 +61,7 @@ class TestInitialization(unittest.TestCase):
         archive_queue = None
         label_map = {}
         unit_system = random.randint(1, 10)
-        payload_type = ''.join([random.choice(string.ascii_letters + string.digits) for n in xrange(32)])
+        payload_type = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
         host = 'host'
         keepalive = random.randint(1, 10)
         port = random.randint(1, 10)
@@ -87,7 +89,7 @@ class TestInitialization(unittest.TestCase):
         keepalive = random.randint(1, 10)
         port = random.randint(1, 10)
         username = None
-        password = ''.join([random.choice(string.ascii_letters + string.digits) for n in xrange(32)])
+        password = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
         topic = None
         archive_topic = None
 
@@ -109,7 +111,7 @@ class TestInitialization(unittest.TestCase):
         host = 'host'
         keepalive = random.randint(1, 10)
         port = random.randint(1, 10)
-        username = ''.join([random.choice(string.ascii_letters + string.digits) for n in xrange(32)])
+        username = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
         password = None
         topic = None
         archive_topic = None
@@ -155,8 +157,8 @@ class TestInitialization(unittest.TestCase):
         host = 'host'
         keepalive = random.randint(1, 10)
         port = random.randint(1, 10)
-        username = ''.join([random.choice(string.ascii_letters + string.digits) for n in xrange(32)])
-        password = ''.join([random.choice(string.ascii_letters + string.digits) for n in xrange(32)])
+        username = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+        password = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
         topic = None
         archive_topic = None
 
