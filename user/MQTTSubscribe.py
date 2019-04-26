@@ -30,7 +30,7 @@ Configuration:
     password =
 
     # Units for MQTT payloads without unit value
-    unit_system_name = US  # or 'METRIC' or 'METRICWX'
+    unit_system = US  # or 'METRIC' or 'METRICWX'
 
     # The clientid to connect with
     clientid =
