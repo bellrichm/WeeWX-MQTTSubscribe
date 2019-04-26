@@ -4,9 +4,11 @@ import unittest
 import mock
 
 from collections import deque
+import json
 import paho.mqtt.client as mqtt
 import random
 import string
+import time
 from user.MQTTSubscribe import MQTTSubscribe, MQTTSubscribeService
 
 class Msg():
@@ -224,7 +226,159 @@ class TestKeywordload(unittest.TestCase):
     pass
 
 class TestJsonPayload(unittest.TestCase):
-    pass
+    console = False
+    label_map = {}
+    unit_system = random.randint(1, 10)
+    payload_type = None
+    host = 'host'
+    keepalive = random.randint(1, 10)
+    port = random.randint(1, 10)
+    username = None
+    password = None
+
+    payload_dict = {
+        'inTemp': random.uniform(1, 100),
+        'outTemp':random.uniform(1, 100)
+    }
+
+    def test_invalid_json(self):
+        mock_client = mock.Mock(spec=mqtt.Client)
+        topic = 'foo/bar'
+        queue = deque()
+        archive_topic = 'foo/archive'
+        archive_queue = deque()
+
+        SUT = MQTTSubscribe(self.console, mock_client, queue, archive_queue, self.label_map, self.unit_system, self.payload_type,
+                            self.host, self.keepalive, self.port, self.username, self.password, topic, archive_topic
+                            )
+
+        msg = Msg()
+        msg.topic = topic
+        msg.payload = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+
+        with mock.patch('user.MQTTSubscribe.logerr') as mock_logerr:
+            SUT.on_message_json(None, None, msg)
+            self.assertEqual(mock_logerr.call_count, 2)
+
+    def test_empty_payload(self):
+        mock_client = mock.Mock(spec=mqtt.Client)
+        topic = 'foo/bar'
+        queue = deque()
+        archive_topic = 'foo/archive'
+        archive_queue = deque()
+
+        SUT = MQTTSubscribe(self.console, mock_client, queue, archive_queue, self.label_map, self.unit_system, self.payload_type,
+                            self.host, self.keepalive, self.port, self.username, self.password, topic, archive_topic
+                            )
+
+        msg = Msg()
+        msg.topic = topic
+        msg.payload = ''
+
+        with mock.patch('user.MQTTSubscribe.logerr') as mock_logerr:
+            SUT.on_message_json(None, None, msg)
+            self.assertEqual(mock_logerr.call_count, 2)
+
+    def test_missing_dateTime(self):
+        mock_client = mock.Mock(spec=mqtt.Client)
+        topic = 'foo/bar'
+        queue = deque()
+        archive_topic = 'foo/archive'
+        archive_queue = deque()
+
+        SUT = MQTTSubscribe(self.console, mock_client, queue, archive_queue, self.label_map, self.unit_system, self.payload_type,
+                            self.host, self.keepalive, self.port, self.username, self.password, topic, archive_topic
+                            )
+
+        payload_dict = dict(self.payload_dict)
+        payload_dict['usUnits'] = random.randint(1, 10)
+
+        msg = Msg()
+        msg.topic = topic
+        msg.payload = json.dumps(payload_dict)
+
+        SUT.on_message_json(None, None, msg)
+        self.assertEqual(len(archive_queue), 0)
+        self.assertEqual(len(queue), 1)
+        data = queue[0]
+        self.assertDictContainsSubset(payload_dict, data)
+        self.assertIn('dateTime', data)
+
+    def test_missing_units(self):
+        mock_client = mock.Mock(spec=mqtt.Client)
+        topic = 'foo/bar'
+        queue = deque()
+        archive_topic = 'foo/archive'
+        archive_queue = deque()
+
+        SUT = MQTTSubscribe(self.console, mock_client, queue, archive_queue, self.label_map, self.unit_system, self.payload_type,
+                            self.host, self.keepalive, self.port, self.username, self.password, topic, archive_topic
+                            )
+
+        payload_dict = dict(self.payload_dict)
+        payload_dict['dateTime'] = time.time()
+
+        msg = Msg()
+        msg.topic = topic
+        msg.payload = json.dumps(payload_dict)
+
+        SUT.on_message_json(None, None, msg)
+        self.assertEqual(len(archive_queue), 0)
+        self.assertEqual(len(queue), 1)
+        data = queue[0]
+        self.assertDictContainsSubset(payload_dict, data)
+        self.assertIn('usUnits', data)
+        self.assertEqual(data['usUnits'], self.unit_system)
+
+    def test_archive_queue(self):
+        mock_client = mock.Mock(spec=mqtt.Client)
+        topic = 'foo/bar'
+        queue = deque()
+        archive_topic = 'foo/archive'
+        archive_queue = deque()
+
+        SUT = MQTTSubscribe(self.console, mock_client, queue, archive_queue, self.label_map, self.unit_system, self.payload_type,
+                            self.host, self.keepalive, self.port, self.username, self.password, topic, archive_topic
+                            )
+
+        payload_dict = dict(self.payload_dict)
+        payload_dict['dateTime'] = time.time()
+        payload_dict['usUnits'] = random.randint(1, 10)
+
+        msg = Msg()
+        msg.topic = archive_topic
+        msg.payload = json.dumps(payload_dict)
+
+        SUT.on_message_json(None, None, msg)
+        self.assertEqual(len(archive_queue), 1)
+        self.assertEqual(len(queue), 0)
+        data = archive_queue[0]
+        self.assertDictEqual(data, payload_dict)
+
+    def test_normal_queue(self):
+        mock_client = mock.Mock(spec=mqtt.Client)
+        topic = 'foo/bar'
+        queue = deque()
+        archive_topic = 'foo/archive'
+        archive_queue = deque()
+
+        SUT = MQTTSubscribe(self.console, mock_client, queue, archive_queue, self.label_map, self.unit_system, self.payload_type,
+                            self.host, self.keepalive, self.port, self.username, self.password, topic, archive_topic
+                            )
+
+        payload_dict = dict(self.payload_dict)
+        payload_dict['dateTime'] = time.time()
+        payload_dict['usUnits'] = random.randint(1, 10)
+
+        msg = Msg()
+        msg.topic = topic
+        msg.payload = json.dumps(payload_dict)
+
+        SUT.on_message_json(None, None, msg)
+        self.assertEqual(len(archive_queue), 0)
+        self.assertEqual(len(queue), 1)
+        data = queue[0]
+        self.assertDictEqual(data, payload_dict)
 
 class TestIndividualPayload(unittest.TestCase):
     console = False
