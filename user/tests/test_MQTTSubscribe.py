@@ -3,10 +3,14 @@ from __future__ import with_statement
 import unittest
 import mock
 
+from collections import deque
 import paho.mqtt.client as mqtt
 import random
 import string
 from user.MQTTSubscribe import MQTTSubscribe, MQTTSubscribeService
+
+class Msg():
+    pass
 
 class TestInitialization(unittest.TestCase):
     def test_payload_type_json(self):
@@ -29,7 +33,7 @@ class TestInitialization(unittest.TestCase):
                             host, keepalive, port, username, password, topic, archive_topic
                             )
 
-        self.assertEquals(mock_client.on_message, SUT.on_message_json)
+        self.assertEqual(mock_client.on_message, SUT.on_message_json)
 
         mock_client.connect.assert_called_once_with(host, port, keepalive)
 
@@ -53,7 +57,7 @@ class TestInitialization(unittest.TestCase):
                             host, keepalive, port, username, password, topic, archive_topic
                             )
 
-        self.assertEquals(mock_client.on_message, SUT.on_message_individual)
+        self.assertEqual(mock_client.on_message, SUT.on_message_individual)
 
         mock_client.connect.assert_called_once_with(host, port, keepalive)
 
@@ -216,14 +220,160 @@ class Teston_connect(unittest.TestCase):
 
         self.assertEqual(mock_client.subscribe.call_count, 1)
 
+class TestKeywordload(unittest.TestCase):
+    pass
+
 class TestJsonPayload(unittest.TestCase):
     pass
 
 class TestIndividualPayload(unittest.TestCase):
-    pass
+    console = False
+    archive_queue = None
+    label_map = {}
+    unit_system = random.randint(1, 10)
+    payload_type = None
+    host = 'host'
+    keepalive = random.randint(1, 10)
+    port = random.randint(1, 10)
+    username = None
+    password = None
+    archive_topic = None
 
-class TestKeywoardPayload(unittest.TestCase):
-    pass
+    def test_bad_payload(self):
+        mock_client = mock.Mock(spec=mqtt.Client)
+        topic = 'foo/bar'
+        queue = deque()
+
+        SUT = MQTTSubscribe(self.console, mock_client, queue, self.archive_queue, self.label_map, self.unit_system, self.payload_type,
+                            self.host, self.keepalive, self.port, self.username, self.password, topic, self.archive_topic
+                            )
+
+        msg = Msg()
+        msg.topic = topic
+        msg.payload = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+
+        with mock.patch('user.MQTTSubscribe.logerr') as mock_logerr:
+            SUT.on_message_individual(None, None, msg)
+            self.assertEqual(mock_logerr.call_count, 2)
+
+    def test_empty_payload(self):
+        mock_client = mock.Mock(spec=mqtt.Client)
+        topic = 'foo/bar'
+        queue = deque()
+
+        SUT = MQTTSubscribe(self.console, mock_client, queue, self.archive_queue, self.label_map, self.unit_system, self.payload_type,
+                            self.host, self.keepalive, self.port, self.username, self.password, topic, self.archive_topic
+                            )
+
+        msg = Msg()
+        msg.topic = topic
+        msg.payload = ''
+
+        with mock.patch('user.MQTTSubscribe.logerr') as mock_logerr:
+            SUT.on_message_individual(None, None, msg)
+            self.assertEqual(mock_logerr.call_count, 2)
+
+    def test_None_payload(self):
+        mock_client = mock.Mock(spec=mqtt.Client)
+        fieldname = 'bar'
+        topic = 'foo/' + fieldname
+        queue = deque()
+
+        SUT = MQTTSubscribe(self.console, mock_client, queue, self.archive_queue, self.label_map, self.unit_system, self.payload_type,
+                            self.host, self.keepalive, self.port, self.username, self.password, topic, self.archive_topic
+                            )
+
+        msg = Msg()
+        msg.topic = topic
+        msg.payload = None
+
+        SUT.on_message_individual(None, None, msg)
+        self.assertEqual(len(queue), 1)
+        data = queue[0]
+        self.assertIn('dateTime', data)
+        self.assertIsInstance(data['dateTime'], float)
+        self.assertIn('usUnits', data)
+        self.assertEqual(data['usUnits'], self.unit_system)
+        self.assertIn(fieldname, data)
+        self.assertIsNone(data[fieldname])
+
+    def test_single_topic(self):
+        mock_client = mock.Mock(spec=mqtt.Client)
+        fieldname = 'bar'
+        topic = fieldname
+        queue = deque()
+
+        SUT = MQTTSubscribe(self.console, mock_client, queue, self.archive_queue, self.label_map, self.unit_system, self.payload_type,
+                            self.host, self.keepalive, self.port, self.username, self.password, topic, self.archive_topic
+                            )
+
+        msg = Msg()
+        msg.topic = topic
+        payload = random.uniform(1, 100)
+        msg.payload = str(payload)
+
+        SUT.on_message_individual(None, None, msg)
+        self.assertEqual(len(queue), 1)
+        data = queue[0]
+        self.assertIn('dateTime', data)
+        self.assertIsInstance(data['dateTime'], float)
+        self.assertIn('usUnits', data)
+        self.assertEqual(data['usUnits'], self.unit_system)
+        self.assertIn(fieldname, data)
+        self.assertIsInstance(data[fieldname], float)
+        self.assertAlmostEqual(data[fieldname], payload)
+
+    def test_multiple_topics(self):
+        mock_client = mock.Mock(spec=mqtt.Client)
+        fieldname = 'bar'
+        topic = 'foo1/foo2/' + fieldname
+        queue = deque()
+
+        SUT = MQTTSubscribe(self.console, mock_client, queue, self.archive_queue, self.label_map, self.unit_system, self.payload_type,
+                            self.host, self.keepalive, self.port, self.username, self.password, topic, self.archive_topic
+                            )
+
+        msg = Msg()
+        msg.topic = topic
+        payload = random.uniform(1, 100)
+        msg.payload = str(payload)
+
+        SUT.on_message_individual(None, None, msg)
+        self.assertEqual(len(queue), 1)
+        data = queue[0]
+        self.assertIn('dateTime', data)
+        self.assertIsInstance(data['dateTime'], float)
+        self.assertIn('usUnits', data)
+        self.assertEqual(data['usUnits'], self.unit_system)
+        self.assertIn(fieldname, data)
+        self.assertIsInstance(data[fieldname], float)
+        self.assertAlmostEqual(data[fieldname], payload)
+
+    def test_two_topics(self):
+        mock_client = mock.Mock(spec=mqtt.Client)
+        fieldname = 'bar'
+        topic = 'foo/' + fieldname
+        queue = deque()
+
+        SUT = MQTTSubscribe(self.console, mock_client, queue, self.archive_queue, self.label_map, self.unit_system, self.payload_type,
+                            self.host, self.keepalive, self.port, self.username, self.password, topic, self.archive_topic
+                            )
+
+        msg = Msg()
+        msg.topic = topic
+        payload = random.uniform(1, 100)
+        msg.payload = str(payload)
+
+        SUT.on_message_individual(None, None, msg)
+        self.assertEqual(len(queue), 1)
+        data = queue[0]
+        self.assertIn('dateTime', data)
+        self.assertIsInstance(data['dateTime'], float)
+        self.assertIn('usUnits', data)
+        self.assertEqual(data['usUnits'], self.unit_system)
+        self.assertIn(fieldname, data)
+        self.assertIsInstance(data[fieldname], float)
+        self.assertAlmostEqual(data[fieldname], payload)
 
 if __name__ == '__main__':
     unittest.main()
