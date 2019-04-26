@@ -72,13 +72,13 @@ import json
 import random
 import time
 import weeutil.weeutil
-from weeutil.weeutil import to_bool, to_sorted_string, to_float
+from weeutil.weeutil import to_bool, to_float, to_int, to_sorted_string
 import weewx
 import weewx.drivers
 from weewx.engine import StdService
 from collections import deque
 
-VERSION='1.0.2'
+VERSION='1.0.3'
 
 def logmsg(console, dst, msg):
     syslog.syslog(dst, 'MQTTSS: %s' % msg)
@@ -244,13 +244,13 @@ class MQTTSubscribeService(StdService):
         label_map = service_dict.get('label_map', {})
         binding = service_dict.get('binding', 'loop')
         host = service_dict.get('host', 'localhost')
-        keepalive = service_dict.get('keepalive', 60)
-        port = service_dict.get('port', 1883)
+        keepalive = to_int(service_dict.get('keepalive', 60))
+        port = to_int(service_dict.get('port', 1883))
         topic = service_dict.get('topic', 'weather/loop')
         username = service_dict.get('username', None)
         password = service_dict.get('password', None)
         self.console = to_bool(service_dict.get('console', False))
-        self.overlap = float(service_dict.get('overlap', 0))
+        self.overlap = to_float(service_dict.get('overlap', 0))
         unit_system_name = service_dict.get('unit_system', 'US').strip().upper()
         if unit_system_name not in weewx.units.unit_constants:
             raise ValueError("MQTTSubscribeService: Unknown unit system: %s" % unit_system_name)
@@ -351,13 +351,13 @@ class MQTTSubscribeDriver(MQTTSubscribe, weewx.drivers.AbstractDevice):
       label_map = stn_dict.get('label_map', {})
       #binding = stn_dict.get('binding', 'loop')
       host = stn_dict.get('host', 'localhost')
-      keepalive = stn_dict.get('keepalive', 60)
-      port = stn_dict.get('port', 1883)
+      keepalive = to_int(stn_dict.get('keepalive', 60))
+      port = to_int(stn_dict.get('port', 1883))
       topic = stn_dict.get('topic', 'weather/loop')
       archive_topic = stn_dict.get('archive_topic', "weather/archive")
       username = stn_dict.get('username', None)
       password = stn_dict.get('password', None)
-      self.console = to_bool(service_dict.get('console', False))
+      self.console = to_bool(stn_dict.get('console', False))
       # self.overlap = float(stn_dict.get('overlap', 0))
       self.wait_before_retry = float(stn_dict.get('wait_before_retry', 2))
       unit_system_name = stn_dict.get('unit_system', 'US').strip().upper()
@@ -509,11 +509,8 @@ if __name__ == '__main__':
             driver = loader_function(config_dict, engine)
 
             if binding == "archive":
-                interval = 300
-                delay = 25 # extra wait for MQTT payload
                 simulate_driver_archive(driver, record_count, interval, delay)
             elif binding == "loop":
-                record_count = 30
                 simulate_driver_packet(driver, record_count)
 
     def simulate_driver_archive(driver, record_count, interval, delay):
