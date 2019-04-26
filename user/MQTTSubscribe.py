@@ -78,7 +78,7 @@ import weewx.drivers
 from weewx.engine import StdService
 from collections import deque
 
-VERSION='1.0.3'
+VERSION='1.0.4'
 
 def logmsg(console, dst, msg):
     syslog.syslog(dst, 'MQTTSS: %s' % msg)
@@ -91,7 +91,7 @@ def logdbg(console, msg):
 def loginf(console, msg):
     logmsg(console, syslog.LOG_INFO, msg)
 
-def logerr(msg):
+def logerr(console, msg):
     logmsg(console, syslog.LOG_ERR, msg)
 
 class MQTTSubscribe():
@@ -199,15 +199,20 @@ class MQTTSubscribe():
     def on_message_individual(self, client, userdata, msg):
         logdbg(self.console, "For %s received: %s" %(msg.topic, msg.payload))
 
-        tkey = msg.topic.split("/", 1)[1]
-        key = tkey.encode('ascii', 'ignore') # ToDo - research
+        # Wrap all the processing in a try, so it doesn't crash and burn on any error
+        try:
+            tkey = msg.topic.split("/", 1)[1]
+            key = tkey.encode('ascii', 'ignore') # ToDo - research
 
-        data = {}
-        data['dateTime'] = time.time()
-        data['usUnits'] = self.unit_system
-        data[self.label_map.get(key,key)] = to_float(msg.payload)
+            data = {}
+            data['dateTime'] = time.time()
+            data['usUnits'] = self.unit_system
+            data[self.label_map.get(key,key)] = to_float(msg.payload)
 
-        self.queue.append(data,)
+            self.queue.append(data,)
+        except Exception as exception:
+            logerr(self.console, "on_message_individual failed with: %s" % exception)
+            logerr(self.console, "**** Ignoring topic=%s and payload=%s" % (msg.topic, msg.payload))
 
     def on_connect(self, client, userdata, flags, rc):
         logdbg(self.console, "Connected with result code %i" % rc)
@@ -487,13 +492,13 @@ if __name__ == '__main__':
         # override the configured binding with the parameter value
         weeutil.weeutil.merge_config(config_dict,
                                     {'MQTTSubscribeService': {'binding': binding}})
-        
+
         # if specified, override the console logging
         if options.console:
             weeutil.weeutil.merge_config(config_dict,
                                      {'MQTTSubscribeService': {'console': True}})
             weeutil.weeutil.merge_config(config_dict,
-                                     {'MQTTSubscribeDriver': {'console': True}})                                     
+                                     {'MQTTSubscribeDriver': {'console': True}})
 
 
         if simulation_type =="service":
