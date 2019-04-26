@@ -78,7 +78,7 @@ import weewx.drivers
 from weewx.engine import StdService
 from collections import deque
 
-VERSION='1.0.4'
+VERSION='1.0.5'
 
 def logmsg(console, dst, msg):
     syslog.syslog(dst, 'MQTTSS: %s' % msg)
@@ -175,26 +175,32 @@ class MQTTSubscribe():
 
     def on_message_json(self, client, userdata, msg):
         logdbg(self.console, "For %s received: %s" %(msg.topic, msg.payload))
-        # ToDo - better way?
-        if six.PY2:
-            data = self._byteify(
-                json.loads(msg.payload, object_hook=self._byteify),
-                ignore_dicts=True)
-        else:
-            data = json.loads(msg.payload.decode("utf-8"))
 
-        if 'dateTime' not in data:
-            data['dateTime'] = time.time()
+        # Wrap all the processing in a try, so it doesn't crash and burn on any error
+        try:
+            # ToDo - better way?
+            if six.PY2:
+                data = self._byteify(
+                    json.loads(msg.payload, object_hook=self._byteify),
+                    ignore_dicts=True)
+            else:
+                data = json.loads(msg.payload.decode("utf-8"))
 
-        if 'usUnits' not in data:
-            data['usUnits'] = self.unit_system
+            if 'dateTime' not in data:
+                data['dateTime'] = time.time()
+            if 'usUnits' not in data:
+                data['usUnits'] = self.unit_system
 
-        logdbg(self.console, "Added to queue: %s" % to_sorted_string(data))
+            logdbg(self.console, "Added to queue: %s" % to_sorted_string(data))
 
-        if msg.topic == self.archive_topic:
-            self.archive_queue.append(data,)
-        else:
-            self.queue.append(data,)
+            if msg.topic == self.archive_topic:
+                self.archive_queue.append(data,)
+            else:
+                self.queue.append(data,)
+        except Exception as exception:
+            logerr(self.console, "on_message_json failed with: %s" % exception)
+            logerr(self.console, "**** Ignoring topic=%s and payload=%s" % (msg.topic, msg.payload))
+
 
     def on_message_individual(self, client, userdata, msg):
         logdbg(self.console, "For %s received: %s" %(msg.topic, msg.payload))
