@@ -2,7 +2,8 @@ import unittest
 import mock
 
 import time
-import paho.mqtt.client as mqtt
+import paho.mqtt.client
+import random
 import weewx
 from collections import deque
 
@@ -13,37 +14,6 @@ class Msg():
     pass
 
 class TestStringMethods(unittest.TestCase):
-
-    def test_first(self):
-        #print("test 01")
-        m = mock.Mock(spec=mqtt.Client)
-        queue = deque()
-        test = MQTTSubscribe(
-            m,
-            queue,
-            None,
-            {},
-            1,
-            None,
-            None,
-            None,
-            None,
-            None,
-            None,
-            None,
-            None
-        )
-        self.assertEquals(m.on_message, test.on_message)
-
-        msg = Msg()
-        msg.topic = 'weather/foo'
-        msg.payload = 'bar'
-        data = test.on_message_individual(
-            None,
-            None,
-            msg
-        )
-        #print("test 02")
 
     def test_second(self):
         print("test 01")
@@ -64,7 +34,27 @@ class TestStringMethods(unittest.TestCase):
                                                     record=data,
                                                     origin='hardware')
 
-        test.new_archive_record(new_archive_record_event)
+        payload_dict = {
+            'inTemp': random.uniform(1, 100),
+            'outTemp':random.uniform(1, 100),
+            'usUnits': 1,
+            'dateTime': current_time
+        }
+        test.queue.append(payload_dict, )
+
+        with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
+            with mock.patch('user.MQTTSubscribe.weewx.units.to_std_system') as mock_to_std_system:
+                with mock.patch('user.MQTTSubscribe.weewx.accum.Accum') as mock_Accum:
+                    mock_to_std_system.return_value = payload_dict
+
+                    type(mock_Accum.return_value).isEmpty = mock.PropertyMock(return_value = False)
+                    type(mock_Accum.return_value).getRecord = mock.Mock(return_value=payload_dict)
+
+                    test.new_archive_record(new_archive_record_event)
+
+                    print(mock_client)
+                    print(mock_to_std_system)
+                    print(mock_Accum)
         print("test 03")
         test.shutDown()
 
