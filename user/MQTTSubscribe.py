@@ -78,7 +78,7 @@ import weewx.drivers
 from weewx.engine import StdService
 from collections import deque
 
-VERSION='1.0.5'
+VERSION='1.1.0rc01'
 
 def logmsg(console, dst, msg):
     syslog.syslog(dst, 'MQTTSS: %s' % msg)
@@ -207,7 +207,7 @@ class MQTTSubscribe():
 
         # Wrap all the processing in a try, so it doesn't crash and burn on any error
         try:
-            tkey = msg.topic.split("/", 1)[1]
+            tkey = msg.topic.rpartition('/')[2]
             key = tkey.encode('ascii', 'ignore') # ToDo - research
 
             data = {}
