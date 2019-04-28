@@ -412,7 +412,7 @@ class MQTTSubscribeDriver(MQTTSubscribe, weewx.drivers.AbstractDevice):
 
 # Run from WeeWX home directory
 # PYTHONPATH=bin python bin/user/MQTTSubscribe.py
-if __name__ == '__main__':
+if __name__ == '__main__': # pragma: no cover
     import optparse
     import os
     import sys
