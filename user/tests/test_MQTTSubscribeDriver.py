@@ -56,7 +56,7 @@ class TestgenLoopPackets(unittest.TestCase):
                 mock_time.sleep.assert_called()
                 self.assertDictEqual(thread.packet, queue_data)
 
-    def test_queue_empty(self):
+    def test_queue(self):
         current_time = int(time.time() + 0.5)
         inTemp = random.uniform(1, 100)
         outTemp = random.uniform(1, 100)
@@ -78,6 +78,91 @@ class TestgenLoopPackets(unittest.TestCase):
 
                 mock_time.sleep.assert_not_called()
                 self.assertDictEqual(packet, queue_data)
+
+class TestgenArchiveRecords(unittest.TestCase):
+
+    mock_StdEngine = mock.Mock(spec=weewx.engine.StdEngine)
+
+    def test_empty_queue(self):
+        current_time = int(time.time() + 0.5)
+        inTemp = random.uniform(1, 100)
+        outTemp = random.uniform(1, 100)
+
+        queue_data = {
+            'inTemp': inTemp,
+            'outTemp':outTemp,
+            'usUnits': 1,
+            'dateTime': current_time
+        }
+
+        with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
+            SUT = MQTTSubscribeDriver(self.mock_StdEngine)
+            record = None
+
+            gen=SUT.genArchiveRecords(0)
+            try:
+                record=next(gen)
+            except StopIteration:
+                pass
+
+            self.assertIsNone(record)
+
+    def test_queue_element_in_future(self):
+        current_time = int(time.time() + 0.5)
+        inTemp = random.uniform(1, 100)
+        outTemp = random.uniform(1, 100)
+
+        queue_data = {
+            'inTemp': inTemp,
+            'outTemp':outTemp,
+            'usUnits': 1,
+            'dateTime': current_time
+        }
+
+        with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
+            SUT = MQTTSubscribeDriver(self.mock_StdEngine)
+            record = None
+
+
+            SUT.archive_queue.append(queue_data, )
+            gen=SUT.genArchiveRecords(0)
+            try:
+                record=next(gen)
+            except StopIteration:
+                pass
+
+            self.assertIsNone(record)
+
+    def test_queue(self):
+        queue_data = [{
+            'inTemp': random.uniform(1, 100),
+            'outTemp': random.uniform(1, 100),
+            'usUnits': 1,
+            'dateTime': int(time.time() + 0.5)
+            },
+            {
+            'inTemp': random.uniform(1, 100),
+            'outTemp': random.uniform(1, 100),
+            'usUnits': 1,
+            'dateTime': int(time.time() + 1.5)
+            }]
+
+        with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
+            SUT = MQTTSubscribeDriver(self.mock_StdEngine)
+            records = list()
+
+            for q in queue_data:
+                SUT.archive_queue.append(q, )
+
+            gen=SUT.genArchiveRecords(int(time.time() + 10.5))
+            try:
+                while True:
+                    records.append(next(gen))
+            except StopIteration:
+                pass
+
+            self.assertListEqual(records, queue_data)
+
 
 if __name__ == '__main__':
     unittest.main()
