@@ -41,6 +41,10 @@ Configuration:
     # The format of the MQTT payload. Currently support 'individual' or 'json'
     payload_type = json
 
+    # When True, the full topic (weather/outTemp) is used as the fieldname. When false, the topic
+    # furthest to the right is used. Only used when payload is 'individual'.
+    full_topic_fieldname = False
+
     # Mapping to WeeWX names
     [[label_map]]
         temp1 = extraTemp1
@@ -78,7 +82,7 @@ import weewx.drivers
 from weewx.engine import StdService
 from collections import deque
 
-VERSION='1.1.0rc01'
+VERSION='1.1.0rc02'
 
 def logmsg(console, dst, msg):
     syslog.syslog(dst, 'MQTTSS: %s' % msg)
@@ -95,7 +99,7 @@ def logerr(console, msg):
     logmsg(console, syslog.LOG_ERR, msg)
 
 class MQTTSubscribe():
-    def __init__(self, console, client, queue, archive_queue, label_map, unit_system, payload_type, host, keepalive, port, username, password, topic, archive_topic):
+    def __init__(self, console, client, queue, archive_queue, label_map, unit_system, payload_type, full_topic_fieldname, host, keepalive, port, username, password, topic, archive_topic):
         self.console = console
         self.client = client
         self.queue = queue
@@ -103,6 +107,7 @@ class MQTTSubscribe():
         self.label_map = label_map
         self.unit_system = unit_system
         self.payload_type = payload_type
+        self.full_topic_fieldname = full_topic_fieldname
         self.host = host
         self.keepalive = keepalive
         self.port = port
@@ -147,8 +152,8 @@ class MQTTSubscribe():
     # untested
     def on_message_keyword(self, client, userdata, msg):
         logdbg(self.console, "For %s received: %s" %(msg.topic, msg.payload))
-        self.delimiter = "," # ToDo - make configurable
-        self.separator = "=" # ToDo - make configurable
+        self.delimiter = "," # ToDo - make configurable - option to be keyword_delimiter
+        self.separator = "=" # ToDo - make configurable - option to be keyword_sepatator
 
         fields = msg.payload.split(self.delimiter)
         for field in fields:
@@ -207,8 +212,11 @@ class MQTTSubscribe():
 
         # Wrap all the processing in a try, so it doesn't crash and burn on any error
         try:
-            tkey = msg.topic.rpartition('/')[2]
-            key = tkey.encode('ascii', 'ignore') # ToDo - research
+            if self.full_topic_fieldname:
+                key = msg.topic.encode('ascii', 'ignore') # ToDo - research
+            else:
+                tkey = msg.topic.rpartition('/')[2]
+                key = tkey.encode('ascii', 'ignore') # ToDo - research
 
             data = {}
             data['dateTime'] = time.time()
@@ -267,6 +275,7 @@ class MQTTSubscribeService(StdService):
             raise ValueError("MQTTSubscribeService: Unknown unit system: %s" % unit_system_name)
         unit_system = weewx.units.unit_constants[unit_system_name]
         payload_type = service_dict.get('payload_type', None)
+        full_topic_fieldname = to_bool(service_dict.get('full_topic_fieldname', False))
         clientid = service_dict.get('clientid', 'MQTTSubscribeService-' + str(random.randint(1000, 9999)))
 
         loginf(self.console, "Client id is %s" % clientid)
@@ -281,7 +290,7 @@ class MQTTSubscribeService(StdService):
         self.end_ts = 0 # prime for processing loop packet
 
         self.client = mqtt.Client(client_id=clientid)
-        self.thread = MQTTSubscribeServiceThread(self, self.console, self.client, self.queue, self.archive_queue, label_map, unit_system, payload_type, host, keepalive, port, username, password, topic, archive_topic)
+        self.thread = MQTTSubscribeServiceThread(self, self.console, self.client, self.queue, self.archive_queue, label_map, unit_system, payload_type, full_topic_fieldname, host, keepalive, port, username, password, topic, archive_topic)
         self.thread.start()
 
         if (binding == 'archive'):
@@ -376,6 +385,7 @@ class MQTTSubscribeDriver(MQTTSubscribe, weewx.drivers.AbstractDevice):
           raise ValueError("MQTTSubscribeService: Unknown unit system: %s" % unit_system_name)
       unit_system = weewx.units.unit_constants[unit_system_name]
       payload_type = stn_dict.get('payload_type', None)
+      full_topic_fieldname = to_bool(stn_dict.get('full_topic_fieldname', False))
       clientid = stn_dict.get('clientid', 'MQTTSubscribeDriver-' + str(random.randint(1000, 9999)))
 
       # todo - additional logging ?
@@ -384,7 +394,7 @@ class MQTTSubscribeDriver(MQTTSubscribe, weewx.drivers.AbstractDevice):
       archive_queue = deque()
 
       client = mqtt.Client(client_id=clientid)
-      MQTTSubscribe.__init__(self, self.console, client, queue, archive_queue, label_map, unit_system, payload_type, host, keepalive, port, username, password, topic, archive_topic)
+      MQTTSubscribe.__init__(self, self.console, client, queue, archive_queue, label_map, unit_system, payload_type, full_topic_fieldname, host, keepalive, port, username, password, topic, archive_topic)
 
       logdbg(self.console, "Starting loop")
       self.client.loop_start()
