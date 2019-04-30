@@ -105,24 +105,27 @@ def logerr(console, msg):
     logmsg(console, syslog.LOG_ERR, msg)
 
 class MQTTSubscribe():
-    def __init__(self, console, client, queue, archive_queue, label_map, unit_system, payload_type, full_topic_fieldname, keyword_delimiter, keyword_separator,
-                host, keepalive, port, username, password, topic, archive_topic):
-        self.console = console
+    def __init__(self, client, queue, archive_queue, unit_system, service_dict):
+
         self.client = client
         self.queue = queue
         self.archive_queue = archive_queue
-        self.label_map = label_map
-        self.unit_system = unit_system
-        self.payload_type = payload_type
-        self.full_topic_fieldname = full_topic_fieldname
-        self.keyword_delimiter = keyword_delimiter
-        self.keyword_separator = keyword_separator
+        self.unit_system = unit_system # todo - where to convert
 
-        self.host = host
-        self.keepalive = keepalive
-        self.port = port
-        self.topic = topic
-        self.archive_topic = archive_topic
+        self.console = to_bool(service_dict.get('console', False))
+        self.label_map = service_dict.get('label_map', {})
+        self.payload_type = service_dict.get('payload_type', None)
+        self.full_topic_fieldname = to_bool(service_dict.get('full_topic_fieldname', False))
+        self.keyword_delimiter = service_dict.get('keyword_delimiter', ',')
+        self.keyword_separator = service_dict.get('keyword_separator', '=')
+
+        host = service_dict.get('host', 'localhost')
+        keepalive = to_int(service_dict.get('keepalive', 60))
+        port = to_int(service_dict.get('port', 1883))
+        username = service_dict.get('username', None)
+        password = service_dict.get('password', None)
+        self.topic = service_dict.get('topic', 'weather/loop')
+        self.archive_topic = service_dict.get('archive_topic', None) # to do - handle not supported in service
 
         loginf(self.console, "MQTTSubscribe version is %s" % VERSION)
         loginf(self.console, "Host is %s" % host)
@@ -133,14 +136,14 @@ class MQTTSubscribe():
             loginf(self.console, "Password is set")
         else:
             loginf(self.console, "Password is not set")
-        loginf(self.console, "Topic is %s" % topic)
-        loginf(self.console, "Archive topic is %s" % archive_topic)
-        loginf(self.console, "Payload type is %s" % payload_type)
-        loginf(self.console, "Full topic fieldname is %s" % full_topic_fieldname)
-        loginf(self.console, "Keyword separator is %s" % keyword_separator)
-        loginf(self.console, "Keyword delimiter is %s" % keyword_delimiter)
-        loginf(self.console, "Default units is %i" % unit_system)
-        loginf(self.console, "Label map is %s" % label_map)
+        loginf(self.console, "Topic is %s" % self.topic)
+        loginf(self.console, "Archive topic is %s" % self.archive_topic)
+        loginf(self.console, "Payload type is %s" % self.payload_type)
+        loginf(self.console, "Full topic fieldname is %s" % self.full_topic_fieldname)
+        loginf(self.console, "Keyword separator is %s" % self.keyword_separator)
+        loginf(self.console, "Keyword delimiter is %s" % self.keyword_delimiter)
+        loginf(self.console, "Default units is %i" % self.unit_system)
+        loginf(self.console, "Label map is %s" % self.label_map)
 
         if self.payload_type == 'json':
             self.client.on_message = self.on_message_json
@@ -282,25 +285,13 @@ class MQTTSubscribeService(StdService):
         super(MQTTSubscribeService, self).__init__(engine, config_dict)
 
         service_dict = config_dict.get('MQTTSubscribeService', {})
-        label_map = service_dict.get('label_map', {})
-        binding = service_dict.get('binding', 'loop')
-        host = service_dict.get('host', 'localhost')
-        keepalive = to_int(service_dict.get('keepalive', 60))
-        port = to_int(service_dict.get('port', 1883))
-        topic = service_dict.get('topic', 'weather/loop')
-        username = service_dict.get('username', None)
-        password = service_dict.get('password', None)
         self.console = to_bool(service_dict.get('console', False))
         self.overlap = to_float(service_dict.get('overlap', 0))
+        binding = service_dict.get('binding', 'loop')
         unit_system_name = service_dict.get('unit_system', 'US').strip().upper()
         if unit_system_name not in weewx.units.unit_constants:
             raise ValueError("MQTTSubscribeService: Unknown unit system: %s" % unit_system_name)
         unit_system = weewx.units.unit_constants[unit_system_name]
-        payload_type = service_dict.get('payload_type', None)
-        full_topic_fieldname = to_bool(service_dict.get('full_topic_fieldname', False))
-        keyword_delimiter = service_dict.get('keyword_delimiter', ',')
-        keyword_separator = service_dict.get('keyword_delimiter', '=')
-
         clientid = service_dict.get('clientid', 'MQTTSubscribeService-' + str(random.randint(1000, 9999)))
 
         loginf(self.console, "Client id is %s" % clientid)
@@ -309,15 +300,14 @@ class MQTTSubscribeService(StdService):
         loginf(self.console, "Overlap is %s" % self.overlap)
 
         self.queue = deque()
-        archive_topic = None # not supported by the service
+        archive_topic = None # not supported by the service #todo - check, and throw exception if set
         self.archive_queue = None
 
         self.end_ts = 0 # prime for processing loop packet
 
         self.client = mqtt.Client(client_id=clientid)
-        self.thread = MQTTSubscribeServiceThread(self, self.console, self.client, self.queue, self.archive_queue, label_map, unit_system,
-                                                payload_type, full_topic_fieldname, keyword_delimiter, keyword_separator,
-                                                host, keepalive, port, username, password, topic, archive_topic)
+        self.thread = MQTTSubscribeServiceThread(self, self.client, self.queue, self.archive_queue, unit_system, service_dict)
+
         self.thread.start()
 
         if (binding == 'archive'):
@@ -378,12 +368,9 @@ class MQTTSubscribeService(StdService):
         logdbg(self.console, "Record after update is: %s" % to_sorted_string(event.record))
 
 class MQTTSubscribeServiceThread(MQTTSubscribe, threading.Thread):
-    def __init__(self, console, service, client, queue, archive_queue, label_map, unit_system,
-                payload_type, full_topic_fieldname, keyword_delimiter, keyword_separator,
-                host, keepalive, port, username, password, topic, archive_topic):
+    def __init__(self, service, client, queue, archive_queue, unit_system, service_dict):
         threading.Thread.__init__(self)
-        MQTTSubscribe.__init__(self, console, client, queue, archive_queue, label_map, unit_system,
-                                payload_type, full_topic_fieldname, keyword_delimiter, keyword_separator, host, keepalive, port, username, password, topic, archive_topic)
+        MQTTSubscribe.__init__(self, client, queue, archive_queue, unit_system, service_dict)
 
     def run(self):
         logdbg(self.console, "Starting loop")
@@ -397,28 +384,12 @@ class MQTTSubscribeDriver(MQTTSubscribe, weewx.drivers.AbstractDevice):
     """weewx driver that reads data from MQTT"""
 
     def __init__(self, engine, **stn_dict):
-      self.engine = engine
-      label_map = stn_dict.get('label_map', {})
-      #binding = stn_dict.get('binding', 'loop')
-      host = stn_dict.get('host', 'localhost')
-      keepalive = to_int(stn_dict.get('keepalive', 60))
-      port = to_int(stn_dict.get('port', 1883))
-      topic = stn_dict.get('topic', 'weather/loop')
-      archive_topic = stn_dict.get('archive_topic', "weather/archive")
-      username = stn_dict.get('username', None)
-      password = stn_dict.get('password', None)
-      self.console = to_bool(stn_dict.get('console', False))
-      # self.overlap = float(stn_dict.get('overlap', 0))
+
       self.wait_before_retry = float(stn_dict.get('wait_before_retry', 2))
       unit_system_name = stn_dict.get('unit_system', 'US').strip().upper()
       if unit_system_name not in weewx.units.unit_constants:
           raise ValueError("MQTTSubscribeService: Unknown unit system: %s" % unit_system_name)
       unit_system = weewx.units.unit_constants[unit_system_name]
-      payload_type = stn_dict.get('payload_type', None)
-      keyword_delimiter = stn_dict.get('keyword_delimiter', ',')
-      keyword_separator = stn_dict.get('keyword_delimiter', '=')
-
-      full_topic_fieldname = to_bool(stn_dict.get('full_topic_fieldname', False))
       clientid = stn_dict.get('clientid', 'MQTTSubscribeDriver-' + str(random.randint(1000, 9999)))
 
       # todo - additional logging ?
@@ -427,8 +398,7 @@ class MQTTSubscribeDriver(MQTTSubscribe, weewx.drivers.AbstractDevice):
       archive_queue = deque()
 
       client = mqtt.Client(client_id=clientid)
-      MQTTSubscribe.__init__(self, self.console, client, queue, archive_queue, label_map, unit_system, payload_type, full_topic_fieldname, keyword_delimiter, keyword_separator,
-                            host, keepalive, port, username, password, topic, archive_topic)
+      MQTTSubscribe.__init__(self, client, queue, archive_queue, unit_system, stn_dict)
 
       logdbg(self.console, "Starting loop")
       self.client.loop_start()

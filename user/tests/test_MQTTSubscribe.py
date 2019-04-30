@@ -16,82 +16,88 @@ class Msg():
 
 class TestInitialization(unittest.TestCase):
     def test_payload_type_json(self):
-        console = False
         mock_client = mock.Mock(spec=mqtt.Client)
         queue = None
         archive_queue = None
-        label_map = {}
         unit_system = random.randint(1, 10)
-        payload_type = 'json'
-        full_topic_fieldname = False
-        keyword_delimiter = None
-        keyword_separator = None
         host = 'host'
+        port = random.randint(1000, 9999)
         keepalive = random.randint(1, 10)
-        port = random.randint(1, 10)
-        username = None
-        password = None
-        topic = None
-        archive_topic = None
+        config_dict = {
+            'console': False,
+            'label_map': {},
+            'payload_type': 'json',
+            'full_topic_fieldname': False,
+            'keyword_delimiter': None,
+            'keyword_separator': None,
+            'host': host,
+            'keepalive': keepalive,
+            'port': port,
+            'username': None,
+            'password': None,
+            'topic': None,
+            'archive_topic': None
+        }
 
-        SUT = MQTTSubscribe(console, mock_client, queue, archive_queue, label_map, unit_system,
-                            payload_type, full_topic_fieldname, keyword_delimiter, keyword_separator,
-                            host, keepalive, port, username, password, topic, archive_topic
-                            )
+        SUT = MQTTSubscribe(mock_client, queue, archive_queue, unit_system, config_dict)
 
         self.assertEqual(mock_client.on_message, SUT.on_message_json)
 
         mock_client.connect.assert_called_once_with(host, port, keepalive)
 
     def test_payload_type_individual(self):
-        console = False
         mock_client = mock.Mock(spec=mqtt.Client)
         queue = None
         archive_queue = None
-        label_map = {}
         unit_system = random.randint(1, 10)
-        payload_type = 'individual'
-        full_topic_fieldname = False
-        keyword_delimiter = None
-        keyword_separator = None
         host = 'host'
+        port = random.randint(1000, 9999)
         keepalive = random.randint(1, 10)
-        port = random.randint(1, 10)
-        username = None
-        password = None
-        topic = None
-        archive_topic = None
+        config_dict = {
+            'console': False,
+            'label_map': {},
+            'payload_type': 'individual',
+            'full_topic_fieldname': False,
+            'keyword_delimiter': None,
+            'keyword_separator': None,
+            'host': host,
+            'keepalive': keepalive,
+            'port': port,
+            'username': None,
+            'password': None,
+            'topic': None,
+            'archive_topic': None
+        }
 
-        SUT = MQTTSubscribe(console, mock_client, queue, archive_queue, label_map, unit_system,
-                            payload_type, full_topic_fieldname, keyword_delimiter, keyword_separator,
-                            host, keepalive, port, username, password, topic, archive_topic
-                            )
+        SUT = MQTTSubscribe(mock_client, queue, archive_queue, unit_system, config_dict)
 
         self.assertEqual(mock_client.on_message, SUT.on_message_individual)
 
     def test_payload_type_keyword(self):
-        console = False
         mock_client = mock.Mock(spec=mqtt.Client)
         queue = None
         archive_queue = None
-        label_map = {}
         unit_system = random.randint(1, 10)
-        payload_type = 'keyword'
-        full_topic_fieldname = False
-        keyword_delimiter = None
-        keyword_separator = None
         host = 'host'
+        port = random.randint(1000, 9999)
         keepalive = random.randint(1, 10)
-        port = random.randint(1, 10)
-        username = None
-        password = None
-        topic = None
-        archive_topic = None
+        config_dict = {
+            'console': False,
+            'label_map': {},
+            'payload_type': 'keyword',
+            'full_topic_fieldname': False,
+            'keyword_delimiter': None,
+            'keyword_separator': None,
+            'host': host,
+            'keepalive': keepalive,
+            'port': port,
+            'username': None,
+            'password': None,
+            'topic': None,
+            'archive_topic': None
+        }
 
-        SUT = MQTTSubscribe(console, mock_client, queue, archive_queue, label_map, unit_system,
-                            payload_type, full_topic_fieldname, keyword_delimiter, keyword_separator,
-                            host, keepalive, port, username, password, topic, archive_topic
-                            )
+        SUT = MQTTSubscribe(mock_client, queue, archive_queue, unit_system, config_dict)
 
         self.assertEqual(mock_client.on_message, SUT.on_message_keyword)
 
@@ -100,169 +106,183 @@ class TestInitialization(unittest.TestCase):
         mock_client.connect.assert_called_once_with(host, port, keepalive)
 
     def test_payload_type_other(self):
-        console = False
         mock_client = mock.Mock(spec=mqtt.Client)
         queue = None
         archive_queue = None
-        label_map = {}
         unit_system = random.randint(1, 10)
-        payload_type = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
-        full_topic_fieldname = False
-        keyword_delimiter = None
-        keyword_separator = None
         host = 'host'
+        port = random.randint(1000, 9999)
         keepalive = random.randint(1, 10)
-        port = random.randint(1, 10)
-        username = None
-        password = None
-        topic = None
-        archive_topic = None
+        config_dict = {
+            'console': False,
+            'label_map': {},
+            'payload_type': ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),
+            'full_topic_fieldname': False,
+            'keyword_delimiter': None,
+            'keyword_separator': None,
+            'host': host,
+            'keepalive': keepalive,
+            'port': port,
+            'username': None,
+            'password': None,
+            'topic': None,
+            'archive_topic': None
+        }
 
-        SUT = MQTTSubscribe(console, mock_client, queue, archive_queue, label_map, unit_system,
-                            payload_type, full_topic_fieldname, keyword_delimiter, keyword_separator,
-                            host, keepalive, port, username, password, topic, archive_topic
-                            )
+        SUT = MQTTSubscribe(mock_client, queue, archive_queue, unit_system, config_dict)
 
         self.assertEquals(mock_client.on_message, SUT.on_message)
 
         mock_client.connect.assert_called_once_with(host, port, keepalive)
 
     def test_username_None(self):
-        console = False
         mock_client = mock.Mock(spec=mqtt.Client)
         queue = None
         archive_queue = None
-        label_map = {}
         unit_system = random.randint(1, 10)
-        payload_type = None
-        full_topic_fieldname = False
-        keyword_delimiter = None
-        keyword_separator = None
         host = 'host'
+        port = random.randint(1000, 9999)
         keepalive = random.randint(1, 10)
-        port = random.randint(1, 10)
-        username = None
-        password = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
-        topic = None
-        archive_topic = None
+        config_dict = {
+            'console': False,
+            'label_map': {},
+            'payload_type': None,
+            'full_topic_fieldname': False,
+            'keyword_delimiter': None,
+            'keyword_separator': None,
+            'host': host,
+            'keepalive': keepalive,
+            'port': port,
+            'username': None,
+            'password': ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),
+            'topic': None,
+            'archive_topic': None
+        }
 
-        SUT = MQTTSubscribe(console, mock_client, queue, archive_queue, label_map, unit_system,
-                            payload_type, full_topic_fieldname, keyword_delimiter, keyword_separator,
-                            host, keepalive, port, username, password, topic, archive_topic
-                            )
+        SUT = MQTTSubscribe(mock_client, queue, archive_queue, unit_system, config_dict)
 
         mock_client.username_pw_set.assert_not_called()
 
         mock_client.connect.assert_called_once_with(host, port, keepalive)
 
     def test_password_None(self):
-        console = False
         mock_client = mock.Mock(spec=mqtt.Client)
         queue = None
         archive_queue = None
-        label_map = {}
         unit_system = random.randint(1, 10)
-        payload_type = None
-        full_topic_fieldname = False
-        keyword_delimiter = None
-        keyword_separator = None
         host = 'host'
+        port = random.randint(1000, 9999)
         keepalive = random.randint(1, 10)
-        port = random.randint(1, 10)
-        username = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
-        password = None
-        topic = None
-        archive_topic = None
+        config_dict = {
+            'console': False,
+            'label_map': {},
+            'payload_type': None,
+            'full_topic_fieldname': False,
+            'keyword_delimiter': None,
+            'keyword_separator': None,
+            'host': host,
+            'keepalive': keepalive,
+            'port': port,
+            'username': ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),
+            'password': None,
+            'topic': None,
+            'archive_topic': None
+        }
 
-        SUT = MQTTSubscribe(console, mock_client, queue, archive_queue, label_map, unit_system,
-                            payload_type, full_topic_fieldname, keyword_delimiter, keyword_separator,
-                            host, keepalive, port, username, password, topic, archive_topic
-                            )
+        SUT = MQTTSubscribe(mock_client, queue, archive_queue, unit_system, config_dict)
 
         mock_client.username_pw_set.assert_not_called()
 
         mock_client.connect.assert_called_once_with(host, port, keepalive)
 
     def test_username_and_password_None(self):
-        console = False
         mock_client = mock.Mock(spec=mqtt.Client)
         queue = None
         archive_queue = None
-        label_map = {}
         unit_system = random.randint(1, 10)
-        payload_type = None
-        full_topic_fieldname = False
-        keyword_delimiter = None
-        keyword_separator = None
         host = 'host'
+        port = random.randint(1000, 9999)
         keepalive = random.randint(1, 10)
-        port = random.randint(1, 10)
-        username = None
-        password = None
-        topic = None
-        archive_topic = None
+        config_dict = {
+            'console': False,
+            'label_map': {},
+            'payload_type': None,
+            'full_topic_fieldname': False,
+            'keyword_delimiter': None,
+            'keyword_separator': None,
+            'host': host,
+            'keepalive': keepalive,
+            'port': port,
+            'username': None,
+            'password': None,
+            'topic': None,
+            'archive_topic': None
+        }
 
-        SUT = MQTTSubscribe(console, mock_client, queue, archive_queue, label_map, unit_system,
-                            payload_type, full_topic_fieldname, keyword_delimiter, keyword_separator,
-                            host, keepalive, port, username, password, topic, archive_topic
-                            )
+        SUT = MQTTSubscribe(mock_client, queue, archive_queue, unit_system, config_dict)
 
         mock_client.username_pw_set.assert_not_called()
 
         mock_client.connect.assert_called_once_with(host, port, keepalive)
 
     def test_username_and_password_set(self):
-        console = False
         mock_client = mock.Mock(spec=mqtt.Client)
         queue = None
         archive_queue = None
-        label_map = {}
         unit_system = random.randint(1, 10)
-        payload_type = None
-        full_topic_fieldname = False
-        keyword_delimiter = None
-        keyword_separator = None
         host = 'host'
+        port = random.randint(1000, 9999)
         keepalive = random.randint(1, 10)
-        port = random.randint(1, 10)
         username = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
         password = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
-        topic = None
-        archive_topic = None
+        config_dict = {
+            'console': False,
+            'label_map': {},
+            'payload_type': None,
+            'full_topic_fieldname': False,
+            'keyword_delimiter': None,
+            'keyword_separator': None,
+            'host': host,
+            'keepalive': keepalive,
+            'port': port,
+            'username': username,
+            'password': password,
+            'topic': None,
+            'archive_topic': None
+        }
 
-        SUT = MQTTSubscribe(console, mock_client, queue, archive_queue, label_map, unit_system,
-                            payload_type, full_topic_fieldname, keyword_delimiter, keyword_separator,
-                            host, keepalive, port, username, password, topic, archive_topic
-                            )
+        SUT = MQTTSubscribe(mock_client, queue, archive_queue, unit_system, config_dict)
 
         mock_client.username_pw_set.assert_called_once_with(username, password)
 
         mock_client.connect.assert_called_once_with(host, port, keepalive)
 
 class Teston_connect(unittest.TestCase):
-    console = False
     queue = None
     archive_queue = None
-    label_map = {}
     unit_system = random.randint(1, 10)
-    payload_type = None
-    full_topic_fieldname = False
-    keyword_delimiter = None
-    keyword_separator = None
-    host = 'host'
-    keepalive = random.randint(1, 10)
-    port = random.randint(1, 10)
-    username = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
-    password = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
-    topic = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+    config_dict = {
+        'console': False,
+        'label_map': {},
+        'payload_type': None,
+        'full_topic_fieldname': False,
+        'keyword_delimiter': None,
+        'keyword_separator': None,
+        'host': 'host',
+        'keepalive': random.randint(1, 10),
+        'port': random.randint(1, 10),
+        'username': ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),
+        'password': ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),
+        'topic': ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),
+        'archive_topic': None
+    }
 
     def test_archive_topic_set(self):
         mock_client = mock.Mock(spec=mqtt.Client)
         archive_topic = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
-        SUT = MQTTSubscribe(self.console, mock_client, self.queue, self.archive_queue, self.label_map, self.unit_system,
-                            self.payload_type, self.full_topic_fieldname, self.keyword_delimiter, self.keyword_separator,
-                            self.host, self.keepalive, self.port, self.username, self.password, self.topic, archive_topic
-                            )
+        config_dict = dict(self.config_dict)
+        config_dict['archive_topic'] = archive_topic
+        SUT = MQTTSubscribe(mock_client, self.queue, self.archive_queue, self.unit_system, config_dict)
 
         rc = random.randint(1, 10)
         SUT.on_connect(mock_client, None, None, rc,)
@@ -273,10 +293,9 @@ class Teston_connect(unittest.TestCase):
     def test_archive_topic_not_set(self):
         mock_client = mock.Mock(spec=mqtt.Client)
         archive_topic = None
-        SUT = MQTTSubscribe(self.console, mock_client, self.queue, self.archive_queue, self.label_map, self.unit_system,
-                            self.payload_type, self.full_topic_fieldname, self.keyword_delimiter, self.keyword_separator,
-                            self.host, self.keepalive, self.port, self.username, self.password, self.topic, archive_topic
-                            )
+        config_dict = dict(self.config_dict)
+        config_dict['archive_topic'] = archive_topic
+        SUT = MQTTSubscribe(mock_client, self.queue, self.archive_queue, self.unit_system, config_dict)
 
         rc = random.randint(1, 10)
         SUT.on_connect(mock_client, None, None, rc,)
@@ -284,18 +303,22 @@ class Teston_connect(unittest.TestCase):
         self.assertEqual(mock_client.subscribe.call_count, 1)
 
 class TestKeywordload(unittest.TestCase):
-    console = False
-    label_map = {}
     unit_system = random.randint(1, 10)
-    payload_type = None
-    full_topic_fieldname = False
-    keyword_delimiter = ","
-    keyword_separator = "="
-    host = 'host'
-    keepalive = random.randint(1, 10)
-    port = random.randint(1, 10)
-    username = None
-    password = None
+    config_dict = {
+        'console': False,
+        'label_map': {},
+        'payload_type': None,
+        'full_topic_fieldname': False,
+        'keyword_delimiter': ',',
+        'keyword_separator': '=',
+        'host': 'host',
+        'keepalive': random.randint(1, 10),
+        'port': random.randint(1, 10),
+        'username': None,
+        'password': None,
+        'topic': None,
+        'archive_topic': None
+    }
 
     payload_dict = {
         'inTemp': round(random.uniform(1, 100), 2),
@@ -308,11 +331,11 @@ class TestKeywordload(unittest.TestCase):
         queue = deque()
         archive_topic = 'foo/archive'
         archive_queue = deque()
+        config_dict = dict(self.config_dict)
+        config_dict['topic'] = topic
+        config_dict['archive_topic'] = archive_topic
 
-        SUT = MQTTSubscribe(self.console, mock_client, queue, archive_queue, self.label_map, self.unit_system,
-                            self.payload_type, self.full_topic_fieldname, self.keyword_delimiter, self.keyword_separator,
-                            self.host, self.keepalive, self.port, self.username, self.password, topic, archive_topic
-                            )
+        SUT = MQTTSubscribe(mock_client, queue, archive_queue, self.unit_system, config_dict)
 
         msg = Msg()
         msg.topic = topic
@@ -329,11 +352,11 @@ class TestKeywordload(unittest.TestCase):
         queue = deque()
         archive_topic = 'foo/archive'
         archive_queue = deque()
+        config_dict = dict(self.config_dict)
+        config_dict['topic'] = topic
+        config_dict['archive_topic'] = archive_topic
 
-        SUT = MQTTSubscribe(self.console, mock_client, queue, archive_queue, self.label_map, self.unit_system,
-                            self.payload_type, self.full_topic_fieldname, self.keyword_delimiter, self.keyword_separator,
-                            self.host, self.keepalive, self.port, self.username, self.password, topic, archive_topic
-                            )
+        SUT = MQTTSubscribe(mock_client, queue, archive_queue, self.unit_system, config_dict)
 
         msg = Msg()
         msg.topic = topic
@@ -349,11 +372,11 @@ class TestKeywordload(unittest.TestCase):
         queue = deque()
         archive_topic = 'foo/archive'
         archive_queue = deque()
+        config_dict = dict(self.config_dict)
+        config_dict['topic'] = topic
+        config_dict['archive_topic'] = archive_topic
 
-        SUT = MQTTSubscribe(self.console, mock_client, queue, archive_queue, self.label_map, self.unit_system,
-                            self.payload_type, self.full_topic_fieldname, self.keyword_delimiter, self.keyword_separator,
-                            self.host, self.keepalive, self.port, self.username, self.password, topic, archive_topic
-                            )
+        SUT = MQTTSubscribe(mock_client, queue, archive_queue, self.unit_system, config_dict)
 
         msg = Msg()
         msg.topic = topic
@@ -369,11 +392,11 @@ class TestKeywordload(unittest.TestCase):
         queue = deque()
         archive_topic = 'foo/archive'
         archive_queue = deque()
+        config_dict = dict(self.config_dict)
+        config_dict['topic'] = topic
+        config_dict['archive_topic'] = archive_topic
 
-        SUT = MQTTSubscribe(self.console, mock_client, queue, archive_queue, self.label_map, self.unit_system,
-                            self.payload_type, self.full_topic_fieldname, self.keyword_delimiter, self.keyword_separator,
-                            self.host, self.keepalive, self.port, self.username, self.password, topic, archive_topic
-                            )
+        SUT = MQTTSubscribe(mock_client, queue, archive_queue, self.unit_system, config_dict)
 
         msg = Msg()
         msg.topic = topic
@@ -389,11 +412,11 @@ class TestKeywordload(unittest.TestCase):
         queue = deque()
         archive_topic = 'foo/archive'
         archive_queue = deque()
+        config_dict = dict(self.config_dict)
+        config_dict['topic'] = topic
+        config_dict['archive_topic'] = archive_topic
 
-        SUT = MQTTSubscribe(self.console, mock_client, queue, archive_queue, self.label_map, self.unit_system,
-                            self.payload_type, self.full_topic_fieldname, self.keyword_delimiter, self.keyword_separator,
-                            self.host, self.keepalive, self.port, self.username, self.password, topic, archive_topic
-                            )
+        SUT = MQTTSubscribe(mock_client, queue, archive_queue, self.unit_system, config_dict)
 
         msg = Msg()
         msg.topic = topic
@@ -409,11 +432,11 @@ class TestKeywordload(unittest.TestCase):
         queue = deque()
         archive_topic = 'foo/archive'
         archive_queue = deque()
+        config_dict = dict(self.config_dict)
+        config_dict['topic'] = topic
+        config_dict['archive_topic'] = archive_topic
 
-        SUT = MQTTSubscribe(self.console, mock_client, queue, archive_queue, self.label_map, self.unit_system,
-                            self.payload_type, self.full_topic_fieldname, self.keyword_delimiter, self.keyword_separator,
-                            self.host, self.keepalive, self.port, self.username, self.password, topic, archive_topic
-                            )
+        SUT = MQTTSubscribe(mock_client, queue, archive_queue, self.unit_system, config_dict)
 
         payload_dict = dict(self.payload_dict)
         payload_dict['usUnits'] = random.randint(1, 10)
@@ -441,11 +464,11 @@ class TestKeywordload(unittest.TestCase):
         queue = deque()
         archive_topic = 'foo/archive'
         archive_queue = deque()
+        config_dict = dict(self.config_dict)
+        config_dict['topic'] = topic
+        config_dict['archive_topic'] = archive_topic
 
-        SUT = MQTTSubscribe(self.console, mock_client, queue, archive_queue, self.label_map, self.unit_system,
-                            self.payload_type, self.full_topic_fieldname, self.keyword_delimiter, self.keyword_separator,
-                            self.host, self.keepalive, self.port, self.username, self.password, topic, archive_topic
-                            )
+        SUT = MQTTSubscribe(mock_client, queue, archive_queue, self.unit_system, config_dict)
 
         payload_dict = dict(self.payload_dict)
         payload_dict['dateTime'] = time.time()
@@ -473,11 +496,11 @@ class TestKeywordload(unittest.TestCase):
         queue = deque()
         archive_topic = 'foo/archive'
         archive_queue = deque()
+        config_dict = dict(self.config_dict)
+        config_dict['topic'] = topic
+        config_dict['archive_topic'] = archive_topic
 
-        SUT = MQTTSubscribe(self.console, mock_client, queue, archive_queue, self.label_map, self.unit_system,
-                            self.payload_type, self.full_topic_fieldname, self.keyword_delimiter, self.keyword_separator,
-                            self.host, self.keepalive, self.port, self.username, self.password, topic, archive_topic
-                            )
+        SUT = MQTTSubscribe(mock_client, queue, archive_queue, self.unit_system, config_dict)
 
         payload_dict = dict(self.payload_dict)
         payload_dict['dateTime'] = time.time()
@@ -505,11 +528,11 @@ class TestKeywordload(unittest.TestCase):
         queue = deque()
         archive_topic = 'foo/archive'
         archive_queue = deque()
+        config_dict = dict(self.config_dict)
+        config_dict['topic'] = topic
+        config_dict['archive_topic'] = archive_topic
 
-        SUT = MQTTSubscribe(self.console, mock_client, queue, archive_queue, self.label_map, self.unit_system,
-                            self.payload_type, self.full_topic_fieldname, self.keyword_delimiter, self.keyword_separator,
-                            self.host, self.keepalive, self.port, self.username, self.password, topic, archive_topic
-                            )
+        SUT = MQTTSubscribe(mock_client, queue, archive_queue, self.unit_system, config_dict)
 
         payload_dict = dict(self.payload_dict)
         payload_dict['dateTime'] = time.time()
@@ -532,18 +555,22 @@ class TestKeywordload(unittest.TestCase):
         self.assertDictEqual(data, payload_dict)
 
 class TestJsonPayload(unittest.TestCase):
-    console = False
-    label_map = {}
     unit_system = random.randint(1, 10)
-    payload_type = None
-    full_topic_fieldname = False
-    keyword_delimiter = None
-    keyword_separator = None
-    host = 'host'
-    keepalive = random.randint(1, 10)
-    port = random.randint(1, 10)
-    username = None
-    password = None
+    config_dict = {
+        'console': False,
+        'label_map': {},
+        'payload_type': None,
+        'full_topic_fieldname': False,
+        'keyword_delimiter': None,
+        'keyword_separator': None,
+        'host': 'host',
+        'keepalive': random.randint(1, 10),
+        'port': random.randint(1, 10),
+        'username': None,
+        'password': None,
+        'topic': None,
+        'archive_topic': None
+    }
 
     payload_dict = {
         'inTemp': random.uniform(1, 100),
@@ -556,11 +583,11 @@ class TestJsonPayload(unittest.TestCase):
         queue = deque()
         archive_topic = 'foo/archive'
         archive_queue = deque()
+        config_dict = dict(self.config_dict)
+        config_dict['topic'] = topic
+        config_dict['archive_topic'] = archive_topic
 
-        SUT = MQTTSubscribe(self.console, mock_client, queue, archive_queue, self.label_map, self.unit_system,
-                            self.payload_type, self.full_topic_fieldname, self.keyword_delimiter, self.keyword_separator,
-                            self.host, self.keepalive, self.port, self.username, self.password, topic, archive_topic
-                            )
+        SUT = MQTTSubscribe(mock_client, queue, archive_queue, self.unit_system, config_dict)
 
         msg = Msg()
         msg.topic = topic
@@ -576,11 +603,11 @@ class TestJsonPayload(unittest.TestCase):
         queue = deque()
         archive_topic = 'foo/archive'
         archive_queue = deque()
+        config_dict = dict(self.config_dict)
+        config_dict['topic'] = topic
+        config_dict['archive_topic'] = archive_topic
 
-        SUT = MQTTSubscribe(self.console, mock_client, queue, archive_queue, self.label_map, self.unit_system,
-                            self.payload_type, self.full_topic_fieldname, self.keyword_delimiter, self.keyword_separator,
-                            self.host, self.keepalive, self.port, self.username, self.password, topic, archive_topic
-                            )
+        SUT = MQTTSubscribe(mock_client, queue, archive_queue, self.unit_system, config_dict)
 
         msg = Msg()
         msg.topic = topic
@@ -596,11 +623,11 @@ class TestJsonPayload(unittest.TestCase):
         queue = deque()
         archive_topic = 'foo/archive'
         archive_queue = deque()
+        config_dict = dict(self.config_dict)
+        config_dict['topic'] = topic
+        config_dict['archive_topic'] = archive_topic
 
-        SUT = MQTTSubscribe(self.console, mock_client, queue, archive_queue, self.label_map, self.unit_system,
-                            self.payload_type, self.full_topic_fieldname, self.keyword_delimiter, self.keyword_separator,
-                            self.host, self.keepalive, self.port, self.username, self.password, topic, archive_topic
-                            )
+        SUT = MQTTSubscribe(mock_client, queue, archive_queue, self.unit_system, config_dict)
 
         payload_dict = dict(self.payload_dict)
         payload_dict['usUnits'] = random.randint(1, 10)
@@ -622,11 +649,11 @@ class TestJsonPayload(unittest.TestCase):
         queue = deque()
         archive_topic = 'foo/archive'
         archive_queue = deque()
+        config_dict = dict(self.config_dict)
+        config_dict['topic'] = topic
+        config_dict['archive_topic'] = archive_topic
 
-        SUT = MQTTSubscribe(self.console, mock_client, queue, archive_queue, self.label_map, self.unit_system,
-                            self.payload_type, self.full_topic_fieldname, self.keyword_delimiter, self.keyword_separator,
-                            self.host, self.keepalive, self.port, self.username, self.password, topic, archive_topic
-                            )
+        SUT = MQTTSubscribe(mock_client, queue, archive_queue, self.unit_system, config_dict)
 
         payload_dict = dict(self.payload_dict)
         payload_dict['dateTime'] = time.time()
@@ -649,11 +676,11 @@ class TestJsonPayload(unittest.TestCase):
         queue = deque()
         archive_topic = 'foo/archive'
         archive_queue = deque()
+        config_dict = dict(self.config_dict)
+        config_dict['topic'] = topic
+        config_dict['archive_topic'] = archive_topic
 
-        SUT = MQTTSubscribe(self.console, mock_client, queue, archive_queue, self.label_map, self.unit_system,
-                            self.payload_type, self.full_topic_fieldname, self.keyword_delimiter, self.keyword_separator,
-                            self.host, self.keepalive, self.port, self.username, self.password, topic, archive_topic
-                            )
+        SUT = MQTTSubscribe(mock_client, queue, archive_queue, self.unit_system, config_dict)
 
         payload_dict = dict(self.payload_dict)
         payload_dict['dateTime'] = time.time()
@@ -675,11 +702,11 @@ class TestJsonPayload(unittest.TestCase):
         queue = deque()
         archive_topic = 'foo/archive'
         archive_queue = deque()
+        config_dict = dict(self.config_dict)
+        config_dict['topic'] = topic
+        config_dict['archive_topic'] = archive_topic
 
-        SUT = MQTTSubscribe(self.console, mock_client, queue, archive_queue, self.label_map, self.unit_system,
-                            self.payload_type, self.full_topic_fieldname, self.keyword_delimiter, self.keyword_separator,
-                            self.host, self.keepalive, self.port, self.username, self.password, topic, archive_topic
-                            )
+        SUT = MQTTSubscribe(mock_client, queue, archive_queue, self.unit_system, config_dict)
 
         payload_dict = dict(self.payload_dict)
         payload_dict['dateTime'] = time.time()
@@ -696,30 +723,32 @@ class TestJsonPayload(unittest.TestCase):
         self.assertDictEqual(data, payload_dict)
 
 class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
-    console = False
-    archive_queue = None
-    label_map = {}
     unit_system = random.randint(1, 10)
-    payload_type = None
-    full_topic_fieldname = False
-    keyword_delimiter = None
-    keyword_separator = None
-    host = 'host'
-    keepalive = random.randint(1, 10)
-    port = random.randint(1, 10)
-    username = None
-    password = None
-    archive_topic = None
+    archive_queue = None
+    config_dict = {
+        'console': False,
+        'label_map': {},
+        'payload_type': 'keyword',
+        'full_topic_fieldname': False,
+        'keyword_delimiter': None,
+        'keyword_separator': None,
+        'host': 'host',
+        'keepalive': random.randint(1, 10),
+        'port': random.randint(1, 10),
+        'username': None,
+        'password': None,
+        'topic': None,
+        'archive_topic': None
+    }
 
     def test_bad_payload(self):
         mock_client = mock.Mock(spec=mqtt.Client)
         topic = 'foo/bar'
         queue = deque()
+        config_dict = dict(self.config_dict)
+        config_dict['topic'] = topic
 
-        SUT = MQTTSubscribe(self.console, mock_client, queue, self.archive_queue, self.label_map, self.unit_system,
-                            self.payload_type, self.full_topic_fieldname, self.keyword_delimiter, self.keyword_separator,
-                            self.host, self.keepalive, self.port, self.username, self.password, topic, self.archive_topic
-                            )
+        SUT = MQTTSubscribe(mock_client, queue, self.archive_queue, self.unit_system, config_dict)
 
         msg = Msg()
         msg.topic = topic
@@ -733,11 +762,10 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         mock_client = mock.Mock(spec=mqtt.Client)
         topic = 'foo/bar'
         queue = deque()
+        config_dict = dict(self.config_dict)
+        config_dict['topic'] = topic
 
-        SUT = MQTTSubscribe(self.console, mock_client, queue, self.archive_queue, self.label_map, self.unit_system,
-                            self.payload_type, self.full_topic_fieldname, self.keyword_delimiter, self.keyword_separator,
-                            self.host, self.keepalive, self.port, self.username, self.password, topic, self.archive_topic
-                            )
+        SUT = MQTTSubscribe(mock_client, queue, self.archive_queue, self.unit_system, config_dict)
 
         msg = Msg()
         msg.topic = topic
@@ -752,11 +780,10 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         fieldname = 'bar'
         topic = 'foo/' + fieldname
         queue = deque()
+        config_dict = dict(self.config_dict)
+        config_dict['topic'] = topic
 
-        SUT = MQTTSubscribe(self.console, mock_client, queue, self.archive_queue, self.label_map, self.unit_system,
-                            self.payload_type, self.full_topic_fieldname, self.keyword_delimiter, self.keyword_separator,
-                            self.host, self.keepalive, self.port, self.username, self.password, topic, self.archive_topic
-                            )
+        SUT = MQTTSubscribe(mock_client, queue, self.archive_queue, self.unit_system, config_dict)
 
         msg = Msg()
         msg.topic = topic
@@ -777,11 +804,10 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         fieldname = 'bar'
         topic = fieldname
         queue = deque()
+        config_dict = dict(self.config_dict)
+        config_dict['topic'] = topic
 
-        SUT = MQTTSubscribe(self.console, mock_client, queue, self.archive_queue, self.label_map, self.unit_system,
-                            self.payload_type, self.full_topic_fieldname, self.keyword_delimiter, self.keyword_separator,
-                            self.host, self.keepalive, self.port, self.username, self.password, topic, self.archive_topic
-                            )
+        SUT = MQTTSubscribe(mock_client, queue, self.archive_queue, self.unit_system, config_dict)
 
         msg = Msg()
         msg.topic = topic
@@ -804,11 +830,10 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         fieldname = 'bar'
         topic = 'foo1/foo2/' + fieldname
         queue = deque()
+        config_dict = dict(self.config_dict)
+        config_dict['topic'] = topic
 
-        SUT = MQTTSubscribe(self.console, mock_client, queue, self.archive_queue, self.label_map, self.unit_system,
-                            self.payload_type, self.full_topic_fieldname, self.keyword_delimiter, self.keyword_separator,
-                            self.host, self.keepalive, self.port, self.username, self.password, topic, self.archive_topic
-                            )
+        SUT = MQTTSubscribe(mock_client, queue, self.archive_queue, self.unit_system, config_dict)
 
         msg = Msg()
         msg.topic = topic
@@ -831,11 +856,10 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         fieldname = 'bar'
         topic = 'foo/' + fieldname
         queue = deque()
+        config_dict = dict(self.config_dict)
+        config_dict['topic'] = topic
 
-        SUT = MQTTSubscribe(self.console, mock_client, queue, self.archive_queue, self.label_map, self.unit_system,
-                            self.payload_type, self.full_topic_fieldname, self.keyword_delimiter, self.keyword_separator,
-                            self.host, self.keepalive, self.port, self.username, self.password, topic, self.archive_topic
-                            )
+        SUT = MQTTSubscribe(mock_client, queue, self.archive_queue, self.unit_system, config_dict)
 
         msg = Msg()
         msg.topic = topic
@@ -855,30 +879,32 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
 
 
 class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
-    console = False
-    archive_queue = None
-    label_map = {}
     unit_system = random.randint(1, 10)
-    payload_type = None
-    full_topic_fieldname = True
-    keyword_delimiter = None
-    keyword_separator = None
-    host = 'host'
-    keepalive = random.randint(1, 10)
-    port = random.randint(1, 10)
-    username = None
-    password = None
-    archive_topic = None
+    archive_queue = None
+    config_dict = {
+        'console': False,
+        'label_map': {},
+        'payload_type': None,
+        'full_topic_fieldname': True,
+        'keyword_delimiter': None,
+        'keyword_separator': None,
+        'host': 'host',
+        'keepalive': random.randint(1, 10),
+        'port': random.randint(1, 10),
+        'username': None,
+        'password': None,
+        'topic': None,
+        'archive_topic': None
+    }
 
     def test_bad_payload(self):
         mock_client = mock.Mock(spec=mqtt.Client)
         topic = 'foo/bar'
         queue = deque()
+        config_dict = dict(self.config_dict)
+        config_dict['topic'] = topic
 
-        SUT = MQTTSubscribe(self.console, mock_client, queue, self.archive_queue, self.label_map, self.unit_system,
-                            self.payload_type, self.full_topic_fieldname, self.keyword_delimiter, self.keyword_separator,
-                            self.host, self.keepalive, self.port, self.username, self.password, topic, self.archive_topic
-                            )
+        SUT = MQTTSubscribe(mock_client, queue, self.archive_queue, self.unit_system, config_dict)
 
         msg = Msg()
         msg.topic = topic
@@ -892,11 +918,10 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
         mock_client = mock.Mock(spec=mqtt.Client)
         topic = 'foo/bar'
         queue = deque()
+        config_dict = dict(self.config_dict)
+        config_dict['topic'] = topic
 
-        SUT = MQTTSubscribe(self.console, mock_client, queue, self.archive_queue, self.label_map, self.unit_system,
-                            self.payload_type, self.full_topic_fieldname, self.keyword_delimiter, self.keyword_separator,
-                            self.host, self.keepalive, self.port, self.username, self.password, topic, self.archive_topic
-                            )
+        SUT = MQTTSubscribe(mock_client, queue, self.archive_queue, self.unit_system, config_dict)
 
         msg = Msg()
         msg.topic = topic
@@ -910,11 +935,10 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
         mock_client = mock.Mock(spec=mqtt.Client)
         topic = 'foo/bar'
         queue = deque()
+        config_dict = dict(self.config_dict)
+        config_dict['topic'] = topic
 
-        SUT = MQTTSubscribe(self.console, mock_client, queue, self.archive_queue, self.label_map, self.unit_system,
-                            self.payload_type, self.full_topic_fieldname, self.keyword_delimiter, self.keyword_separator,
-                            self.host, self.keepalive, self.port, self.username, self.password, topic, self.archive_topic
-                            )
+        SUT = MQTTSubscribe(mock_client, queue, self.archive_queue, self.unit_system, config_dict)
 
         msg = Msg()
         msg.topic = topic
@@ -934,11 +958,10 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
         mock_client = mock.Mock(spec=mqtt.Client)
         topic = 'bar'
         queue = deque()
+        config_dict = dict(self.config_dict)
+        config_dict['topic'] = topic
 
-        SUT = MQTTSubscribe(self.console, mock_client, queue, self.archive_queue, self.label_map, self.unit_system,
-                            self.payload_type, self.full_topic_fieldname, self.keyword_delimiter, self.keyword_separator,
-                            self.host, self.keepalive, self.port, self.username, self.password, topic, self.archive_topic
-                            )
+        SUT = MQTTSubscribe(mock_client, queue, self.archive_queue, self.unit_system, config_dict)
 
         msg = Msg()
         msg.topic = topic
@@ -960,11 +983,10 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
         mock_client = mock.Mock(spec=mqtt.Client)
         topic = 'foo1/foo2/bar'
         queue = deque()
+        config_dict = dict(self.config_dict)
+        config_dict['topic'] = topic
 
-        SUT = MQTTSubscribe(self.console, mock_client, queue, self.archive_queue, self.label_map, self.unit_system,
-                            self.payload_type, self.full_topic_fieldname, self.keyword_delimiter, self.keyword_separator,
-                            self.host, self.keepalive, self.port, self.username, self.password, topic, self.archive_topic
-                            )
+        SUT = MQTTSubscribe(mock_client, queue, self.archive_queue, self.unit_system, config_dict)
 
         msg = Msg()
         msg.topic = topic
@@ -986,11 +1008,10 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
         mock_client = mock.Mock(spec=mqtt.Client)
         topic = 'foo/bar'
         queue = deque()
+        config_dict = dict(self.config_dict)
+        config_dict['topic'] = topic
 
-        SUT = MQTTSubscribe(self.console, mock_client, queue, self.archive_queue, self.label_map, self.unit_system,
-                            self.payload_type, self.full_topic_fieldname, self.keyword_delimiter, self.keyword_separator,
-                            self.host, self.keepalive, self.port, self.username, self.password, topic, self.archive_topic
-                            )
+        SUT = MQTTSubscribe(mock_client, queue, self.archive_queue, self.unit_system, config_dict)
 
         msg = Msg()
         msg.topic = topic
