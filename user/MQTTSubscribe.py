@@ -45,6 +45,12 @@ Configuration:
     # furthest to the right is used. Only used when payload is 'individual'.
     full_topic_fieldname = False
 
+    # The delimiter between fieldname and value pairs. (field1=value1, field2=value2)
+    keyword_delimiter = ,
+
+    # The separator between fieldname and value pairs. (field1=value1, field2=value2)
+    keyword_separator = =
+
     # Mapping to WeeWX names
     [[label_map]]
         temp1 = extraTemp1
@@ -82,7 +88,7 @@ import weewx.drivers
 from weewx.engine import StdService
 from collections import deque
 
-VERSION='1.1.0rc02'
+VERSION='1.1.0rc03'
 
 def logmsg(console, dst, msg):
     syslog.syslog(dst, 'MQTTSS: %s' % msg)
@@ -99,7 +105,8 @@ def logerr(console, msg):
     logmsg(console, syslog.LOG_ERR, msg)
 
 class MQTTSubscribe():
-    def __init__(self, console, client, queue, archive_queue, label_map, unit_system, payload_type, full_topic_fieldname, host, keepalive, port, username, password, topic, archive_topic):
+    def __init__(self, console, client, queue, archive_queue, label_map, unit_system, payload_type, full_topic_fieldname, keyword_delimiter, keyword_separator,
+                host, keepalive, port, username, password, topic, archive_topic):
         self.console = console
         self.client = client
         self.queue = queue
@@ -108,6 +115,9 @@ class MQTTSubscribe():
         self.unit_system = unit_system
         self.payload_type = payload_type
         self.full_topic_fieldname = full_topic_fieldname
+        self.keyword_delimiter = keyword_delimiter
+        self.keyword_separator = keyword_separator
+
         self.host = host
         self.keepalive = keepalive
         self.port = port
@@ -126,6 +136,9 @@ class MQTTSubscribe():
         loginf(self.console, "Topic is %s" % topic)
         loginf(self.console, "Archive topic is %s" % archive_topic)
         loginf(self.console, "Payload type is %s" % payload_type)
+        loginf(self.console, "Full topic fieldname is %s" % full_topic_fieldname)
+        loginf(self.console, "Keyword separator is %s" % keyword_separator)
+        loginf(self.console, "Keyword delimiter is %s" % keyword_delimiter)
         loginf(self.console, "Default units is %i" % unit_system)
         loginf(self.console, "Label map is %s" % label_map)
 
@@ -133,6 +146,8 @@ class MQTTSubscribe():
             self.client.on_message = self.on_message_json
         elif self.payload_type =='individual':
             self.client.on_message = self.on_message_individual
+        elif self.payload_type =='keyword':
+            self.client.on_message = self.on_message_keyword
         else:
             self.client.on_message = self.on_message
 
@@ -148,35 +163,42 @@ class MQTTSubscribe():
     def on_message(self, client, userdata, msg):
         loginf(self.console, "Method 'on_message' not implemented")
 
-    # placeholder for keyword (name = value) payload
-    # untested
     def on_message_keyword(self, client, userdata, msg):
         logdbg(self.console, "For %s received: %s" %(msg.topic, msg.payload))
-        self.delimiter = "," # ToDo - make configurable - option to be keyword_delimiter
-        self.separator = "=" # ToDo - make configurable - option to be keyword_sepatator
 
-        fields = msg.payload.split(self.delimiter)
-        for field in fields:
-            eq_index = field.find(self.separator)
-            # Ignore all fields that do not have the separator
-            if eq_index == -1:
-                continue
-            name = field[:eq_index].strip()
-            value = field[eq_index + 1:].strip()
-            data[self.label_map.get(name, name)] = to_float(value)
+        # Wrap all the processing in a try, so it doesn't crash and burn on any error
+        try:
+            fields = msg.payload.split(self.keyword_delimiter)
+            data = {}
+            for field in fields:
+                eq_index = field.find(self.keyword_separator)
+                # Ignore all fields that do not have the separator
+                if eq_index == -1:
+                    logerr(self.console, "on_message_keyword failed to find separator: %s" % self.keyword_separator)
+                    logerr(self.console, "**** Ignoring field=%s " % field)
+                    continue
 
-        if 'dateTime' not in data:
-            data['dateTime'] = time.time()
+                name = field[:eq_index].strip()
+                value = field[eq_index + 1:].strip()
+                data[self.label_map.get(name, name)] = to_float(value)
 
-        if 'usUnits' not in data:
-            data['usUnits'] = self.unit_system
+            if data:
+                if 'dateTime' not in data:
+                    data['dateTime'] = time.time()
+                if 'usUnits' not in data:
+                    data['usUnits'] = self.unit_system
 
-        logdbg(self.console, "Added to queue: %s" % to_sorted_string(data))
+                logdbg(self.console, "Added to queue: %s" % to_sorted_string(data))
 
-        if msg.topic == self.archive_topic:
-            self.archive_queue.append(data,)
-        else:
-            self.queue.append(data,)
+                if msg.topic == self.archive_topic:
+                    self.archive_queue.append(data,)
+                else:
+                    self.queue.append(data,)
+            else:
+                logerr(self.console, "on_message_keyword failed to find data in: topic=%s and payload=%s" % (msg.topic, msg.payload))
+        except Exception as exception:
+            logerr(self.console, "on_message_json failed with: %s" % exception)
+            logerr(self.console, "**** Ignoring topic=%s and payload=%s" % (msg.topic, msg.payload))
 
     def on_message_json(self, client, userdata, msg):
         logdbg(self.console, "For %s received: %s" %(msg.topic, msg.payload))
@@ -276,6 +298,9 @@ class MQTTSubscribeService(StdService):
         unit_system = weewx.units.unit_constants[unit_system_name]
         payload_type = service_dict.get('payload_type', None)
         full_topic_fieldname = to_bool(service_dict.get('full_topic_fieldname', False))
+        keyword_delimiter = service_dict.get('keyword_delimiter', ',')
+        keyword_separator = service_dict.get('keyword_delimiter', '=')
+
         clientid = service_dict.get('clientid', 'MQTTSubscribeService-' + str(random.randint(1000, 9999)))
 
         loginf(self.console, "Client id is %s" % clientid)
@@ -290,7 +315,9 @@ class MQTTSubscribeService(StdService):
         self.end_ts = 0 # prime for processing loop packet
 
         self.client = mqtt.Client(client_id=clientid)
-        self.thread = MQTTSubscribeServiceThread(self, self.console, self.client, self.queue, self.archive_queue, label_map, unit_system, payload_type, full_topic_fieldname, host, keepalive, port, username, password, topic, archive_topic)
+        self.thread = MQTTSubscribeServiceThread(self, self.console, self.client, self.queue, self.archive_queue, label_map, unit_system,
+                                                payload_type, full_topic_fieldname, keyword_delimiter, keyword_separator,
+                                                host, keepalive, port, username, password, topic, archive_topic)
         self.thread.start()
 
         if (binding == 'archive'):
@@ -351,9 +378,12 @@ class MQTTSubscribeService(StdService):
         logdbg(self.console, "Record after update is: %s" % to_sorted_string(event.record))
 
 class MQTTSubscribeServiceThread(MQTTSubscribe, threading.Thread):
-    def __init__(self, console, service, client, queue, archive_queue, label_map, unit_system, payload_type, host, keepalive, port, username, password, topic, archive_topic):
+    def __init__(self, console, service, client, queue, archive_queue, label_map, unit_system,
+                payload_type, full_topic_fieldname, keyword_delimiter, keyword_separator,
+                host, keepalive, port, username, password, topic, archive_topic):
         threading.Thread.__init__(self)
-        MQTTSubscribe.__init__(self, console, client, queue, archive_queue, label_map, unit_system, payload_type, host, keepalive, port, username, password, topic, archive_topic)
+        MQTTSubscribe.__init__(self, console, client, queue, archive_queue, label_map, unit_system,
+                                payload_type, full_topic_fieldname, keyword_delimiter, keyword_separator, host, keepalive, port, username, password, topic, archive_topic)
 
     def run(self):
         logdbg(self.console, "Starting loop")
@@ -385,6 +415,9 @@ class MQTTSubscribeDriver(MQTTSubscribe, weewx.drivers.AbstractDevice):
           raise ValueError("MQTTSubscribeService: Unknown unit system: %s" % unit_system_name)
       unit_system = weewx.units.unit_constants[unit_system_name]
       payload_type = stn_dict.get('payload_type', None)
+      keyword_delimiter = stn_dict.get('keyword_delimiter', ',')
+      keyword_separator = stn_dict.get('keyword_delimiter', '=')
+
       full_topic_fieldname = to_bool(stn_dict.get('full_topic_fieldname', False))
       clientid = stn_dict.get('clientid', 'MQTTSubscribeDriver-' + str(random.randint(1000, 9999)))
 
@@ -394,7 +427,8 @@ class MQTTSubscribeDriver(MQTTSubscribe, weewx.drivers.AbstractDevice):
       archive_queue = deque()
 
       client = mqtt.Client(client_id=clientid)
-      MQTTSubscribe.__init__(self, self.console, client, queue, archive_queue, label_map, unit_system, payload_type, full_topic_fieldname, host, keepalive, port, username, password, topic, archive_topic)
+      MQTTSubscribe.__init__(self, self.console, client, queue, archive_queue, label_map, unit_system, payload_type, full_topic_fieldname, keyword_delimiter, keyword_separator,
+                            host, keepalive, port, username, password, topic, archive_topic)
 
       logdbg(self.console, "Starting loop")
       self.client.loop_start()
