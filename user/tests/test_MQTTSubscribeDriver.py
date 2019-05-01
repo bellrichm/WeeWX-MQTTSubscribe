@@ -37,9 +37,12 @@ class TestgenLoopPackets(unittest.TestCase):
             'dateTime': current_time
         }
 
+        config_dict = {}
+        config_dict['topic'] = 'foo/bar'
+
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
             with mock.patch('user.MQTTSubscribe.time') as mock_time:
-                SUT = MQTTSubscribeDriver(self.mock_StdEngine)
+                SUT = MQTTSubscribeDriver(**config_dict)
                 thread = GetLoopPacketThread(SUT)
                 thread.start()
 
@@ -68,9 +71,12 @@ class TestgenLoopPackets(unittest.TestCase):
             'dateTime': current_time
         }
 
+        config_dict = {}
+        config_dict['topic'] = 'foo/bar'
+
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
             with mock.patch('user.MQTTSubscribe.time') as mock_time:
-                SUT = MQTTSubscribeDriver(self.mock_StdEngine)
+                SUT = MQTTSubscribeDriver(**config_dict)
 
                 SUT.queue.append(queue_data, )
                 gen=SUT.genLoopPackets()
@@ -95,8 +101,12 @@ class TestgenArchiveRecords(unittest.TestCase):
             'dateTime': current_time
         }
 
+        config_dict = {}
+        config_dict['topic'] = 'foo/bar'
+        config_dict['archive_topic'] = 'archive'
+
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
-            SUT = MQTTSubscribeDriver(self.mock_StdEngine)
+            SUT = MQTTSubscribeDriver(**config_dict)
             record = None
 
             gen=SUT.genArchiveRecords(0)
@@ -119,10 +129,13 @@ class TestgenArchiveRecords(unittest.TestCase):
             'dateTime': current_time
         }
 
-        with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
-            SUT = MQTTSubscribeDriver(self.mock_StdEngine)
-            record = None
+        config_dict = {}
+        config_dict['topic'] = 'foo/bar'
+        config_dict['archive_topic'] = 'archive'
 
+        with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
+            SUT = MQTTSubscribeDriver(**config_dict)
+            record = None
 
             SUT.archive_queue.append(queue_data, )
             gen=SUT.genArchiveRecords(0)
@@ -147,8 +160,12 @@ class TestgenArchiveRecords(unittest.TestCase):
             'dateTime': int(time.time() + 1.5)
             }]
 
+        config_dict = {}
+        config_dict['topic'] = 'foo/bar'
+        config_dict['archive_topic'] = 'archive'
+
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
-            SUT = MQTTSubscribeDriver(self.mock_StdEngine)
+            SUT = MQTTSubscribeDriver(**config_dict)
             records = list()
 
             for q in queue_data:

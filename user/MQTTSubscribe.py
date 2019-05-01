@@ -88,7 +88,7 @@ import weewx.drivers
 from weewx.engine import StdService
 from collections import deque
 
-VERSION='1.1.0rc04'
+VERSION='1.1.0rc05'
 
 def logmsg(console, dst, msg):
     syslog.syslog(dst, 'MQTTSS: %s' % msg)
@@ -105,12 +105,22 @@ def logerr(console, msg):
     logmsg(console, syslog.LOG_ERR, msg)
 
 class MQTTSubscribe():
-    def __init__(self, client, queue, archive_queue, unit_system, service_dict):
+    def __init__(self, client, topics, service_dict):
 
         self.client = client
-        self.queue = queue
-        self.archive_queue = archive_queue
-        self.unit_system = unit_system
+        if topics : # Todo - temp?
+            if 'topic' in service_dict and service_dict['topic'] in topics: #todo - temp?
+                self.unit_system = topics[service_dict['topic']]['unit_system']
+                self.queue = topics[service_dict['topic']]['queue'] # todo - temp?
+            if 'archive_topic' in service_dict and service_dict['archive_topic'] in topics: #todo - temp?
+                if 'unit_system' in topics[service_dict['archive_topic']]:
+                    self.unit_system = topics[service_dict['archive_topic']]['unit_system']
+                self.archive_queue = topics[service_dict['archive_topic']]['queue']
+            else:
+                self.archive_queue = None
+
+        else: # todo temp?
+            self.unit_system = 0
 
         self.console = to_bool(service_dict.get('console', False))
         host = service_dict.get('host', 'localhost')
@@ -121,6 +131,7 @@ class MQTTSubscribe():
 
         self.topic = service_dict.get('topic', 'weather/loop')
         self.archive_topic = service_dict.get('archive_topic', None)
+
 
         self.payload_type = service_dict.get('payload_type', None)
         self.full_topic_fieldname = to_bool(service_dict.get('full_topic_fieldname', False))
@@ -300,16 +311,44 @@ class MQTTSubscribeService(StdService):
         loginf(self.console, "Binding is %s" % binding)
         loginf(self.console, "Overlap is %s" % self.overlap)
 
+        if 'topics' in service_dict: # todo temp check
+            raise ValueError("'topics' is not supported yet.")
+
+        if 'topic' in service_dict and 'topics' in service_dict:
+            raise ValueError("Cannot have both 'topic' and 'topics'. Please remove 'topic'.")
+
+        if 'archive_topic' in service_dict and 'topics' in service_dict and \
+            service_dict['archive_topic '] in service_dict['topics']: # todo - only needed in driver
+                raise ValueError("%s cannot be in 'topics' and the value of 'archive_topic")
+
         if 'archive_topic' in service_dict:
           raise ValueError("archive_topic, %s, is invalid when running as a service" % service_dict['archive_topic'])
 
-        self.queue = deque()
-        self.archive_queue = None
+        if 'topic' in service_dict:
+            self.topics = {}
+            self.topics[service_dict['topic']] = {}
+        else:
+            self.topics = dict(service_dict['topics'])
+
+        for topic in self.topics:
+            self.topics[topic]['queue'] = deque()
+            self.topics[topic]['unit_system'] = unit_system
+
+        if 'archive_topic' in service_dict: # to do - only needed in driver
+            self.topics[service_dict['archive_topic']] = deque
+            self.topics[service_dict['archive_topic']] = unit_system
+
+        self.queue = self.topics[service_dict['topic']]['queue']
+
+        service_dict['archive_topic'] = 'foobar' # Todo - temp
+        self.topics[service_dict['archive_topic']] = {}  # Todo - temp
+        self.topics[service_dict['archive_topic']]['queue'] = None # Todo - temp
+        self.archive_queue = self.topics[service_dict['archive_topic']]['queue'] # Todo - temp
 
         self.end_ts = 0 # prime for processing loop packet
 
         self.client = mqtt.Client(client_id=clientid)
-        self.thread = MQTTSubscribeServiceThread(self, self.client, self.queue, self.archive_queue, unit_system, service_dict)
+        self.thread = MQTTSubscribeServiceThread(self, self.client, self.topics, service_dict)
 
         self.thread.start()
 
@@ -356,6 +395,7 @@ class MQTTSubscribeService(StdService):
     def new_loop_packet(self, event):
         start_ts = self.end_ts - self.overlap
         self.end_ts = event.packet['dateTime']
+        # ToDo - add loop by topic here
         target_data = self._process_data(start_ts, self.end_ts, event.packet)
         event.packet.update(target_data)
         logdbg(self.console, "Packet after update is: %s" % to_sorted_string(event.packet))
@@ -366,14 +406,15 @@ class MQTTSubscribeService(StdService):
     def new_archive_record(self, event):
         end_ts = event.record['dateTime']
         start_ts = end_ts - event.record['interval'] * 60 - self.overlap
+        # ToDo - add loop by topic here
         target_data = self._process_data(start_ts, end_ts, event.record)
         event.record.update(target_data)
         logdbg(self.console, "Record after update is: %s" % to_sorted_string(event.record))
 
 class MQTTSubscribeServiceThread(MQTTSubscribe, threading.Thread):
-    def __init__(self, service, client, queue, archive_queue, unit_system, service_dict):
+    def __init__(self, service, client, topics, service_dict):
         threading.Thread.__init__(self)
-        MQTTSubscribe.__init__(self, client, queue, archive_queue, unit_system, service_dict)
+        MQTTSubscribe.__init__(self, client, topics, service_dict)
 
     def run(self):
         logdbg(self.console, "Starting loop")
@@ -381,12 +422,12 @@ class MQTTSubscribeServiceThread(MQTTSubscribe, threading.Thread):
 
 def loader(config_dict, engine):
     config = configobj.ConfigObj(config_dict)
-    return MQTTSubscribeDriver(engine, **config['MQTTSubscribeDriver'])
+    return MQTTSubscribeDriver(**config['MQTTSubscribeDriver'])
 
 class MQTTSubscribeDriver(MQTTSubscribe, weewx.drivers.AbstractDevice):
     """weewx driver that reads data from MQTT"""
 
-    def __init__(self, engine, **stn_dict):
+    def __init__(self, **stn_dict):
       self.console = to_bool(stn_dict.get('console', False))
       self.wait_before_retry = float(stn_dict.get('wait_before_retry', 2))
       unit_system_name = stn_dict.get('unit_system', 'US').strip().upper()
@@ -399,11 +440,36 @@ class MQTTSubscribeDriver(MQTTSubscribe, weewx.drivers.AbstractDevice):
       loginf(self.console, "Default units is %s %i" %(unit_system_name, unit_system))
       loginf(self.console, "Wait before retry is %i" % self.wait_before_retry)
 
-      queue = deque()
-      archive_queue = deque()
+      if 'topics' in stn_dict: # todo temp check
+        raise ValueError("'topics' is not supported yet.")
+
+      if 'topic' in stn_dict and 'topics' in stn_dict:
+        raise ValueError("Cannot have both 'topic' and 'topics'. Please remove 'topic'.")
+
+      if 'archive_topic' in stn_dict and 'topics' in stn_dict and \
+        stn_dict['archive_topic '] in stn_dict['topics']: # todo - only needed in driver
+            raise ValueError("%s cannot be in 'topics' and the value of 'archive_topic")
+
+      if 'topic' in stn_dict:
+        self.topics = {}
+        self.topics[stn_dict['topic']] = {}
+      else:
+        self.topics = dict(stn_dict['topics'])
+
+      for topic in self.topics:
+        self.topics[topic]['queue'] = deque()
+        self.topics[topic]['unit_system'] = unit_system
+
+      if 'archive_topic' in stn_dict: # to do - only needed in driver
+          self.topics[stn_dict['archive_topic']] = {}
+          self.topics[stn_dict['archive_topic']]['queue'] = deque()
+          self.topics[stn_dict['archive_topic']]['unit_system'] = unit_system
+          self.archive_queue = self.topics[stn_dict['archive_topic']]['queue']
+
+      self.queue = self.topics[stn_dict['topic']]['queue']
 
       client = mqtt.Client(client_id=clientid)
-      MQTTSubscribe.__init__(self, client, queue, archive_queue, unit_system, stn_dict)
+      MQTTSubscribe.__init__(self, client, self.topics, stn_dict)
 
       logdbg(self.console, "Starting loop")
       self.client.loop_start()

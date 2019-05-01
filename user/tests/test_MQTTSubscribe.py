@@ -39,7 +39,7 @@ class TestInitialization(unittest.TestCase):
             'archive_topic': None
         }
 
-        SUT = MQTTSubscribe(mock_client, queue, archive_queue, unit_system, config_dict)
+        SUT = MQTTSubscribe(mock_client, None, config_dict)
 
         self.assertEqual(mock_client.on_message, SUT.on_message_json)
 
@@ -69,7 +69,7 @@ class TestInitialization(unittest.TestCase):
             'archive_topic': None
         }
 
-        SUT = MQTTSubscribe(mock_client, queue, archive_queue, unit_system, config_dict)
+        SUT = MQTTSubscribe(mock_client, None, config_dict)
 
         self.assertEqual(mock_client.on_message, SUT.on_message_individual)
 
@@ -97,7 +97,7 @@ class TestInitialization(unittest.TestCase):
             'archive_topic': None
         }
 
-        SUT = MQTTSubscribe(mock_client, queue, archive_queue, unit_system, config_dict)
+        SUT = MQTTSubscribe(mock_client, None, config_dict)
 
         self.assertEqual(mock_client.on_message, SUT.on_message_keyword)
 
@@ -129,7 +129,7 @@ class TestInitialization(unittest.TestCase):
             'archive_topic': None
         }
 
-        SUT = MQTTSubscribe(mock_client, queue, archive_queue, unit_system, config_dict)
+        SUT = MQTTSubscribe(mock_client, None, config_dict)
 
         self.assertEquals(mock_client.on_message, SUT.on_message)
 
@@ -159,7 +159,7 @@ class TestInitialization(unittest.TestCase):
             'archive_topic': None
         }
 
-        SUT = MQTTSubscribe(mock_client, queue, archive_queue, unit_system, config_dict)
+        SUT = MQTTSubscribe(mock_client, None, config_dict)
 
         mock_client.username_pw_set.assert_not_called()
 
@@ -189,7 +189,7 @@ class TestInitialization(unittest.TestCase):
             'archive_topic': None
         }
 
-        SUT = MQTTSubscribe(mock_client, queue, archive_queue, unit_system, config_dict)
+        SUT = MQTTSubscribe(mock_client, None, config_dict)
 
         mock_client.username_pw_set.assert_not_called()
 
@@ -219,7 +219,7 @@ class TestInitialization(unittest.TestCase):
             'archive_topic': None
         }
 
-        SUT = MQTTSubscribe(mock_client, queue, archive_queue, unit_system, config_dict)
+        SUT = MQTTSubscribe(mock_client, None, config_dict)
 
         mock_client.username_pw_set.assert_not_called()
 
@@ -251,7 +251,7 @@ class TestInitialization(unittest.TestCase):
             'archive_topic': None
         }
 
-        SUT = MQTTSubscribe(mock_client, queue, archive_queue, unit_system, config_dict)
+        SUT = MQTTSubscribe(mock_client, None, config_dict)
 
         mock_client.username_pw_set.assert_called_once_with(username, password)
 
@@ -282,7 +282,7 @@ class Teston_connect(unittest.TestCase):
         archive_topic = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
         config_dict = dict(self.config_dict)
         config_dict['archive_topic'] = archive_topic
-        SUT = MQTTSubscribe(mock_client, self.queue, self.archive_queue, self.unit_system, config_dict)
+        SUT = MQTTSubscribe(mock_client, None, config_dict)
 
         rc = random.randint(1, 10)
         SUT.on_connect(mock_client, None, None, rc,)
@@ -295,7 +295,7 @@ class Teston_connect(unittest.TestCase):
         archive_topic = None
         config_dict = dict(self.config_dict)
         config_dict['archive_topic'] = archive_topic
-        SUT = MQTTSubscribe(mock_client, self.queue, self.archive_queue, self.unit_system, config_dict)
+        SUT = MQTTSubscribe(mock_client, None, config_dict)
 
         rc = random.randint(1, 10)
         SUT.on_connect(mock_client, None, None, rc,)
@@ -335,7 +335,7 @@ class TestKeywordload(unittest.TestCase):
         config_dict['topic'] = topic
         config_dict['archive_topic'] = archive_topic
 
-        SUT = MQTTSubscribe(mock_client, queue, archive_queue, self.unit_system, config_dict)
+        SUT = MQTTSubscribe(mock_client, None, config_dict)
 
         msg = Msg()
         msg.topic = topic
@@ -356,7 +356,7 @@ class TestKeywordload(unittest.TestCase):
         config_dict['topic'] = topic
         config_dict['archive_topic'] = archive_topic
 
-        SUT = MQTTSubscribe(mock_client, queue, archive_queue, self.unit_system, config_dict)
+        SUT = MQTTSubscribe(mock_client, None, config_dict)
 
         msg = Msg()
         msg.topic = topic
@@ -396,7 +396,7 @@ class TestKeywordload(unittest.TestCase):
         config_dict['topic'] = topic
         config_dict['archive_topic'] = archive_topic
 
-        SUT = MQTTSubscribe(mock_client, queue, archive_queue, self.unit_system, config_dict)
+        SUT = MQTTSubscribe(mock_client, None, config_dict)
 
         msg = Msg()
         msg.topic = topic
@@ -416,7 +416,7 @@ class TestKeywordload(unittest.TestCase):
         config_dict['topic'] = topic
         config_dict['archive_topic'] = archive_topic
 
-        SUT = MQTTSubscribe(mock_client, queue, archive_queue, self.unit_system, config_dict)
+        SUT = MQTTSubscribe(mock_client, None, config_dict)
 
         msg = Msg()
         msg.topic = topic
@@ -436,7 +436,12 @@ class TestKeywordload(unittest.TestCase):
         config_dict['topic'] = topic
         config_dict['archive_topic'] = archive_topic
 
-        SUT = MQTTSubscribe(mock_client, queue, archive_queue, self.unit_system, config_dict)
+        topics = {}
+        topics[topic] = {}
+        topics[topic]['unit_system'] = self.unit_system
+        topics[topic]['queue'] = queue
+
+        SUT = MQTTSubscribe(mock_client, topics, config_dict)
 
         payload_dict = dict(self.payload_dict)
         payload_dict['usUnits'] = random.randint(1, 10)
@@ -468,7 +473,12 @@ class TestKeywordload(unittest.TestCase):
         config_dict['topic'] = topic
         config_dict['archive_topic'] = archive_topic
 
-        SUT = MQTTSubscribe(mock_client, queue, archive_queue, self.unit_system, config_dict)
+        topics = {}
+        topics[topic] = {}
+        topics[topic]['unit_system'] = self.unit_system
+        topics[topic]['queue'] = queue
+
+        SUT = MQTTSubscribe(mock_client, topics, config_dict)
 
         payload_dict = dict(self.payload_dict)
         payload_dict['dateTime'] = time.time()
@@ -500,7 +510,12 @@ class TestKeywordload(unittest.TestCase):
         config_dict['topic'] = topic
         config_dict['archive_topic'] = archive_topic
 
-        SUT = MQTTSubscribe(mock_client, queue, archive_queue, self.unit_system, config_dict)
+        topics = {}
+        topics[archive_topic] = {}
+        topics[archive_topic]['unit_system'] = self.unit_system
+        topics[archive_topic]['queue'] = archive_queue
+
+        SUT = MQTTSubscribe(mock_client, topics, config_dict)
 
         payload_dict = dict(self.payload_dict)
         payload_dict['dateTime'] = time.time()
@@ -532,7 +547,12 @@ class TestKeywordload(unittest.TestCase):
         config_dict['topic'] = topic
         config_dict['archive_topic'] = archive_topic
 
-        SUT = MQTTSubscribe(mock_client, queue, archive_queue, self.unit_system, config_dict)
+        topics = {}
+        topics[topic] = {}
+        topics[topic]['unit_system'] = self.unit_system
+        topics[topic]['queue'] = queue
+
+        SUT = MQTTSubscribe(mock_client, topics, config_dict)
 
         payload_dict = dict(self.payload_dict)
         payload_dict['dateTime'] = time.time()
@@ -587,7 +607,7 @@ class TestJsonPayload(unittest.TestCase):
         config_dict['topic'] = topic
         config_dict['archive_topic'] = archive_topic
 
-        SUT = MQTTSubscribe(mock_client, queue, archive_queue, self.unit_system, config_dict)
+        SUT = MQTTSubscribe(mock_client, None, config_dict)
 
         msg = Msg()
         msg.topic = topic
@@ -607,7 +627,7 @@ class TestJsonPayload(unittest.TestCase):
         config_dict['topic'] = topic
         config_dict['archive_topic'] = archive_topic
 
-        SUT = MQTTSubscribe(mock_client, queue, archive_queue, self.unit_system, config_dict)
+        SUT = MQTTSubscribe(mock_client, None, config_dict)
 
         msg = Msg()
         msg.topic = topic
@@ -627,7 +647,12 @@ class TestJsonPayload(unittest.TestCase):
         config_dict['topic'] = topic
         config_dict['archive_topic'] = archive_topic
 
-        SUT = MQTTSubscribe(mock_client, queue, archive_queue, self.unit_system, config_dict)
+        topics = {}
+        topics[topic] = {}
+        topics[topic]['unit_system'] = self.unit_system
+        topics[topic]['queue'] = queue
+
+        SUT = MQTTSubscribe(mock_client, topics, config_dict)
 
         payload_dict = dict(self.payload_dict)
         payload_dict['usUnits'] = random.randint(1, 10)
@@ -653,7 +678,12 @@ class TestJsonPayload(unittest.TestCase):
         config_dict['topic'] = topic
         config_dict['archive_topic'] = archive_topic
 
-        SUT = MQTTSubscribe(mock_client, queue, archive_queue, self.unit_system, config_dict)
+        topics = {}
+        topics[topic] = {}
+        topics[topic]['unit_system'] = self.unit_system
+        topics[topic]['queue'] = queue
+
+        SUT = MQTTSubscribe(mock_client, topics, config_dict)
 
         payload_dict = dict(self.payload_dict)
         payload_dict['dateTime'] = time.time()
@@ -680,7 +710,12 @@ class TestJsonPayload(unittest.TestCase):
         config_dict['topic'] = topic
         config_dict['archive_topic'] = archive_topic
 
-        SUT = MQTTSubscribe(mock_client, queue, archive_queue, self.unit_system, config_dict)
+        topics = {}
+        topics[archive_topic] = {}
+        topics[archive_topic]['unit_system'] = self.unit_system
+        topics[archive_topic]['queue'] = archive_queue
+
+        SUT = MQTTSubscribe(mock_client, topics, config_dict)
 
         payload_dict = dict(self.payload_dict)
         payload_dict['dateTime'] = time.time()
@@ -706,7 +741,12 @@ class TestJsonPayload(unittest.TestCase):
         config_dict['topic'] = topic
         config_dict['archive_topic'] = archive_topic
 
-        SUT = MQTTSubscribe(mock_client, queue, archive_queue, self.unit_system, config_dict)
+        topics = {}
+        topics[topic] = {}
+        topics[topic]['unit_system'] = self.unit_system
+        topics[topic]['queue'] = queue
+
+        SUT = MQTTSubscribe(mock_client, topics, config_dict)
 
         payload_dict = dict(self.payload_dict)
         payload_dict['dateTime'] = time.time()
@@ -748,7 +788,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         config_dict = dict(self.config_dict)
         config_dict['topic'] = topic
 
-        SUT = MQTTSubscribe(mock_client, queue, self.archive_queue, self.unit_system, config_dict)
+        SUT = MQTTSubscribe(mock_client, None, config_dict)
 
         msg = Msg()
         msg.topic = topic
@@ -765,7 +805,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         config_dict = dict(self.config_dict)
         config_dict['topic'] = topic
 
-        SUT = MQTTSubscribe(mock_client, queue, self.archive_queue, self.unit_system, config_dict)
+        SUT = MQTTSubscribe(mock_client, None, config_dict)
 
         msg = Msg()
         msg.topic = topic
@@ -783,7 +823,12 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         config_dict = dict(self.config_dict)
         config_dict['topic'] = topic
 
-        SUT = MQTTSubscribe(mock_client, queue, self.archive_queue, self.unit_system, config_dict)
+        topics = {}
+        topics[topic] = {}
+        topics[topic]['unit_system'] = self.unit_system
+        topics[topic]['queue'] = queue
+
+        SUT = MQTTSubscribe(mock_client, topics, config_dict)
 
         msg = Msg()
         msg.topic = topic
@@ -807,7 +852,12 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         config_dict = dict(self.config_dict)
         config_dict['topic'] = topic
 
-        SUT = MQTTSubscribe(mock_client, queue, self.archive_queue, self.unit_system, config_dict)
+        topics = {}
+        topics[topic] = {}
+        topics[topic]['unit_system'] = self.unit_system
+        topics[topic]['queue'] = queue
+
+        SUT = MQTTSubscribe(mock_client, topics, config_dict)
 
         msg = Msg()
         msg.topic = topic
@@ -833,7 +883,12 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         config_dict = dict(self.config_dict)
         config_dict['topic'] = topic
 
-        SUT = MQTTSubscribe(mock_client, queue, self.archive_queue, self.unit_system, config_dict)
+        topics = {}
+        topics[topic] = {}
+        topics[topic]['unit_system'] = self.unit_system
+        topics[topic]['queue'] = queue
+
+        SUT = MQTTSubscribe(mock_client, topics, config_dict)
 
         msg = Msg()
         msg.topic = topic
@@ -859,7 +914,12 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         config_dict = dict(self.config_dict)
         config_dict['topic'] = topic
 
-        SUT = MQTTSubscribe(mock_client, queue, self.archive_queue, self.unit_system, config_dict)
+        topics = {}
+        topics[topic] = {}
+        topics[topic]['unit_system'] = self.unit_system
+        topics[topic]['queue'] = queue
+
+        SUT = MQTTSubscribe(mock_client, topics, config_dict)
 
         msg = Msg()
         msg.topic = topic
@@ -904,7 +964,7 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
         config_dict = dict(self.config_dict)
         config_dict['topic'] = topic
 
-        SUT = MQTTSubscribe(mock_client, queue, self.archive_queue, self.unit_system, config_dict)
+        SUT = MQTTSubscribe(mock_client, None, config_dict)
 
         msg = Msg()
         msg.topic = topic
@@ -921,7 +981,7 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
         config_dict = dict(self.config_dict)
         config_dict['topic'] = topic
 
-        SUT = MQTTSubscribe(mock_client, queue, self.archive_queue, self.unit_system, config_dict)
+        SUT = MQTTSubscribe(mock_client, None, config_dict)
 
         msg = Msg()
         msg.topic = topic
@@ -938,7 +998,12 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
         config_dict = dict(self.config_dict)
         config_dict['topic'] = topic
 
-        SUT = MQTTSubscribe(mock_client, queue, self.archive_queue, self.unit_system, config_dict)
+        topics = {}
+        topics[topic] = {}
+        topics[topic]['unit_system'] = self.unit_system
+        topics[topic]['queue'] = queue
+
+        SUT = MQTTSubscribe(mock_client, topics, config_dict)
 
         msg = Msg()
         msg.topic = topic
@@ -961,7 +1026,12 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
         config_dict = dict(self.config_dict)
         config_dict['topic'] = topic
 
-        SUT = MQTTSubscribe(mock_client, queue, self.archive_queue, self.unit_system, config_dict)
+        topics = {}
+        topics[topic] = {}
+        topics[topic]['unit_system'] = self.unit_system
+        topics[topic]['queue'] = queue
+
+        SUT = MQTTSubscribe(mock_client, topics, config_dict)
 
         msg = Msg()
         msg.topic = topic
@@ -986,7 +1056,12 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
         config_dict = dict(self.config_dict)
         config_dict['topic'] = topic
 
-        SUT = MQTTSubscribe(mock_client, queue, self.archive_queue, self.unit_system, config_dict)
+        topics = {}
+        topics[topic] = {}
+        topics[topic]['unit_system'] = self.unit_system
+        topics[topic]['queue'] = queue
+
+        SUT = MQTTSubscribe(mock_client, topics, config_dict)
 
         msg = Msg()
         msg.topic = topic
@@ -1011,7 +1086,12 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
         config_dict = dict(self.config_dict)
         config_dict['topic'] = topic
 
-        SUT = MQTTSubscribe(mock_client, queue, self.archive_queue, self.unit_system, config_dict)
+        topics = {}
+        topics[topic] = {}
+        topics[topic]['unit_system'] = self.unit_system
+        topics[topic]['queue'] = queue
+
+        SUT = MQTTSubscribe(mock_client, topics, config_dict)
 
         msg = Msg()
         msg.topic = topic
