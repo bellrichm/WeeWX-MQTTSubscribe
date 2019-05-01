@@ -88,7 +88,7 @@ import weewx.drivers
 from weewx.engine import StdService
 from collections import deque
 
-VERSION='1.1.0rc07'
+VERSION='1.1.0rc08'
 
 def logmsg(console, dst, msg):
     syslog.syslog(dst, 'MQTTSS: %s' % msg)
@@ -335,14 +335,14 @@ class MQTTSubscribeService(StdService):
             self.topics[topic]['unit_system'] = unit_system
 
         if 'archive_topic' in service_dict: # to do - only needed in driver
-            self.topics[service_dict['archive_topic']] = deque
+            self.topics[service_dict['archive_topic']] = deque()
             self.topics[service_dict['archive_topic']] = unit_system
 
-        self.queue = self.topics[service_dict['topic']]['queue']
+        #self.queue = self.topics[service_dict['topic']]['queue'] # todo temp
 
-        service_dict['archive_topic'] = 'foobar' # Todo - temp
+        service_dict['archive_topic'] = 'weather/loop' # Todo - temp
         self.topics[service_dict['archive_topic']] = {}  # Todo - temp
-        self.topics[service_dict['archive_topic']]['queue'] = None # Todo - temp
+        self.topics[service_dict['archive_topic']]['queue'] = deque() # Todo - temp
         self.archive_queue = self.topics[service_dict['archive_topic']]['queue'] # Todo - temp
 
         self.end_ts = 0 # prime for processing loop packet
@@ -395,10 +395,11 @@ class MQTTSubscribeService(StdService):
     def new_loop_packet(self, event):
         start_ts = self.end_ts - self.overlap
         self.end_ts = event.packet['dateTime']
-        # ToDo - add loop by topic here
-        target_data = self._process_data(self.queue, start_ts, self.end_ts, event.packet)
-        event.packet.update(target_data)
-        logdbg(self.console, "Packet after update is: %s" % to_sorted_string(event.packet))
+        for topic in self.topics:
+            queue = self.topics[topic]['queue']
+            target_data = self._process_data(queue, start_ts, self.end_ts, event.packet)
+            event.packet.update(target_data)
+            logdbg(self.console, "Packet after update is: %s" % to_sorted_string(event.packet))
 
     # this works for hardware generation, but software generation does not 'quality control'
     # the archive record, so this data is not 'QC' in this case.
@@ -406,10 +407,11 @@ class MQTTSubscribeService(StdService):
     def new_archive_record(self, event):
         end_ts = event.record['dateTime']
         start_ts = end_ts - event.record['interval'] * 60 - self.overlap
-        # ToDo - add loop by topic here
-        target_data = self._process_data(self.queue, start_ts, end_ts, event.record)
-        event.record.update(target_data)
-        logdbg(self.console, "Record after update is: %s" % to_sorted_string(event.record))
+        for topic in self.topics:
+            queue = self.topics[topic]['queue']
+            target_data = self._process_data(queue, start_ts, end_ts, event.record)
+            event.record.update(target_data)
+            logdbg(self.console, "Record after update is: %s" % to_sorted_string(event.record))
 
 class MQTTSubscribeServiceThread(MQTTSubscribe, threading.Thread):
     def __init__(self, service, client, topics, service_dict):
@@ -474,10 +476,10 @@ class MQTTSubscribeDriver(MQTTSubscribe, weewx.drivers.AbstractDevice):
 
     def genLoopPackets(self):
       while True:
-        for key in self.topics:
-            if key == self.archive_topic:
+        for topic in self.topics:
+            if topic == self.archive_topic:
                 continue
-            queue = self.topics[key]['queue']
+            queue = self.topics[topic]['queue']
             logdbg(self.console, "Packet queue is size %i" % len(queue))
             while len(queue) > 0:
                 packet = queue.popleft()

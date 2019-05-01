@@ -82,9 +82,10 @@ class Testnew_loop_packet(unittest.TestCase):
         new_loop_packet_event = weewx.Event(weewx.NEW_LOOP_PACKET,
                                                     packet=packet_data)
 
+        topic = 'foo/bar'
         config_dict = {}
         config_dict['MQTTSubscribeService'] = {}
-        config_dict['MQTTSubscribeService']['topic'] = 'foo/bar'
+        config_dict['MQTTSubscribeService']['topic'] = topic
 
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
             with mock.patch('user.MQTTSubscribe.MQTTSubscribeServiceThread',
@@ -94,7 +95,7 @@ class Testnew_loop_packet(unittest.TestCase):
                         type(mock_Accum.return_value).isEmpty = mock.PropertyMock(return_value = True)
                         type(mock_Accum.return_value).addRecord = mock.Mock(side_effect=weewx.accum.OutOfSpan("Attempt to add out-of-interval record"))
                         SUT = MQTTSubscribeService(self.mock_StdEngine, config_dict)
-                        SUT.queue.append(queue_data, )
+                        SUT.topics[topic]['queue'].append(queue_data, )
                         SUT.end_ts = start_ts
 
                         with mock.patch('user.MQTTSubscribe.loginf') as mock_loginf:
@@ -133,9 +134,10 @@ class Testnew_loop_packet(unittest.TestCase):
         new_loop_packet_event = weewx.Event(weewx.NEW_LOOP_PACKET,
                                                     packet=packet_data)
 
+        topic = 'foo/bar'
         config_dict = {}
         config_dict['MQTTSubscribeService'] = {}
-        config_dict['MQTTSubscribeService']['topic'] = 'foo/bar'
+        config_dict['MQTTSubscribeService']['topic'] = topic
 
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
             with mock.patch('user.MQTTSubscribe.MQTTSubscribeServiceThread',
@@ -145,7 +147,7 @@ class Testnew_loop_packet(unittest.TestCase):
 
                         type(mock_Accum.return_value).isEmpty = mock.PropertyMock(return_value = True)
                         SUT = MQTTSubscribeService(self.mock_StdEngine, config_dict)
-                        SUT.queue.append(queue_data, )
+                        SUT.topics[topic]['queue'].append(queue_data, )
                         SUT.end_ts = start_ts
 
                         SUT.new_loop_packet(new_loop_packet_event)
@@ -193,6 +195,7 @@ class Testnew_loop_packet(unittest.TestCase):
         new_loop_packet_event = weewx.Event(weewx.NEW_LOOP_PACKET,
                                                     packet=packet_data)
 
+        topic = 'foo/bar'
         config_dict = {}
         config_dict['MQTTSubscribeService'] = {}
         config_dict['MQTTSubscribeService']['topic'] = 'foo/bar'
@@ -206,7 +209,7 @@ class Testnew_loop_packet(unittest.TestCase):
                         type(mock_Accum.return_value).isEmpty = mock.PropertyMock(return_value = False)
                         type(mock_Accum.return_value).getRecord = mock.Mock(return_value=aggregate_data)
                         SUT = MQTTSubscribeService(self.mock_StdEngine, config_dict)
-                        SUT.queue.append(queue_data, )
+                        SUT.topics[topic]['queue'].append(queue_data, )
                         SUT.end_ts = start_ts
 
                         SUT.new_loop_packet(new_loop_packet_event)
@@ -288,9 +291,10 @@ class Testnew_archive_record(unittest.TestCase):
                                                     record=record_data,
                                                     origin='hardware')
 
+        topic = 'foo/bar'
         config_dict = {}
         config_dict['MQTTSubscribeService'] = {}
-        config_dict['MQTTSubscribeService']['topic'] = 'foo/bar'
+        config_dict['MQTTSubscribeService']['topic'] = topic
 
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
             with mock.patch('user.MQTTSubscribe.MQTTSubscribeServiceThread',
@@ -300,7 +304,7 @@ class Testnew_archive_record(unittest.TestCase):
                         type(mock_Accum.return_value).isEmpty = mock.PropertyMock(return_value = True)
                         type(mock_Accum.return_value).addRecord = mock.Mock(side_effect=weewx.accum.OutOfSpan("Attempt to add out-of-interval record"))
                         SUT = MQTTSubscribeService(self.mock_StdEngine, config_dict)
-                        SUT.queue.append(queue_data, )
+                        SUT.topics[topic]['queue'].append(queue_data, )
                         SUT.end_ts = start_ts
 
                         with mock.patch('user.MQTTSubscribe.loginf') as mock_loginf:
@@ -340,10 +344,10 @@ class Testnew_archive_record(unittest.TestCase):
                                                     record=record_data,
                                                     origin='hardware')
 
+        topic = 'foo/bar'
         config_dict = {}
         config_dict['MQTTSubscribeService'] = {}
-        config_dict['MQTTSubscribeService']['topic'] = 'foo/bar'
-
+        config_dict['MQTTSubscribeService']['topic'] = topic
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
             with mock.patch('user.MQTTSubscribe.MQTTSubscribeServiceThread',
                     spec=user.MQTTSubscribe.MQTTSubscribeServiceThread) as mock_ServiceThread:
@@ -352,7 +356,7 @@ class Testnew_archive_record(unittest.TestCase):
 
                         type(mock_Accum.return_value).isEmpty = mock.PropertyMock(return_value = True)
                         SUT = MQTTSubscribeService(self.mock_StdEngine, config_dict)
-                        SUT.queue.append(queue_data, )
+                        SUT.topics[topic]['queue'].append(queue_data, )
                         SUT.end_ts = start_ts
 
                         SUT.new_archive_record(new_loop_record_event)
@@ -401,9 +405,10 @@ class Testnew_archive_record(unittest.TestCase):
                                                     record=record_data,
                                                     origin='hardware')
 
+        topic = 'foo/bar'
         config_dict = {}
         config_dict['MQTTSubscribeService'] = {}
-        config_dict['MQTTSubscribeService']['topic'] = 'foo/bar'
+        config_dict['MQTTSubscribeService']['topic'] = topic
 
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
             with mock.patch('user.MQTTSubscribe.MQTTSubscribeServiceThread',
@@ -414,7 +419,8 @@ class Testnew_archive_record(unittest.TestCase):
                         type(mock_Accum.return_value).isEmpty = mock.PropertyMock(return_value = False)
                         type(mock_Accum.return_value).getRecord = mock.Mock(return_value=aggregate_data)
                         SUT = MQTTSubscribeService(self.mock_StdEngine, config_dict)
-                        SUT.queue.append(queue_data, )
+                        SUT.topics[topic]['queue'].append(queue_data, )
+
                         SUT.end_ts = start_ts
 
                         SUT.new_archive_record(new_loop_record_event)
