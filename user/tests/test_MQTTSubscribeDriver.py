@@ -37,8 +37,9 @@ class TestgenLoopPackets(unittest.TestCase):
             'dateTime': current_time
         }
 
+        topic = 'foo/bar'
         config_dict = {}
-        config_dict['topic'] = 'foo/bar'
+        config_dict['topic'] = topic
 
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
             with mock.patch('user.MQTTSubscribe.time') as mock_time:
@@ -50,7 +51,7 @@ class TestgenLoopPackets(unittest.TestCase):
                 while mock_time.sleep.call_count <= 0:
                     time.sleep(1)
 
-                SUT.queue.append(queue_data, )
+                SUT.topics[topic]['queue'].append(queue_data, )
 
                 # wait for queue to be processed
                 while not thread.packet:
@@ -71,14 +72,15 @@ class TestgenLoopPackets(unittest.TestCase):
             'dateTime': current_time
         }
 
+        topic = 'foo/bar'
         config_dict = {}
-        config_dict['topic'] = 'foo/bar'
+        config_dict['topic'] = topic
 
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
             with mock.patch('user.MQTTSubscribe.time') as mock_time:
                 SUT = MQTTSubscribeDriver(**config_dict)
 
-                SUT.queue.append(queue_data, )
+                SUT.topics[topic]['queue'].append(queue_data, )
                 gen=SUT.genLoopPackets()
                 packet=next(gen)
 
@@ -129,15 +131,16 @@ class TestgenArchiveRecords(unittest.TestCase):
             'dateTime': current_time
         }
 
+        archive_topic = 'archive'
         config_dict = {}
         config_dict['topic'] = 'foo/bar'
-        config_dict['archive_topic'] = 'archive'
+        config_dict['archive_topic'] = archive_topic
 
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
             SUT = MQTTSubscribeDriver(**config_dict)
             record = None
 
-            SUT.archive_queue.append(queue_data, )
+            SUT.topics[archive_topic]['queue'].append(queue_data, )
             gen=SUT.genArchiveRecords(0)
             try:
                 record=next(gen)
@@ -160,16 +163,17 @@ class TestgenArchiveRecords(unittest.TestCase):
             'dateTime': int(time.time() + 1.5)
             }]
 
+        archive_topic = 'archive'
         config_dict = {}
         config_dict['topic'] = 'foo/bar'
-        config_dict['archive_topic'] = 'archive'
+        config_dict['archive_topic'] = archive_topic
 
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
             SUT = MQTTSubscribeDriver(**config_dict)
             records = list()
 
             for q in queue_data:
-                SUT.archive_queue.append(q, )
+                SUT.topics[archive_topic]['queue'].append(q, )
 
             gen=SUT.genArchiveRecords(int(time.time() + 10.5))
             try:

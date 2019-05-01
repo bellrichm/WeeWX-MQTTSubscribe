@@ -88,7 +88,7 @@ import weewx.drivers
 from weewx.engine import StdService
 from collections import deque
 
-VERSION='1.1.0rc09'
+VERSION='1.1.0rc10'
 
 def logmsg(console, dst, msg):
     syslog.syslog(dst, 'MQTTSS: %s' % msg)
@@ -109,20 +109,6 @@ class MQTTSubscribe():
 
         self.client = client
         self.topics = topics
-        if topics : # Todo - temp?
-            if 'topic' in service_dict and service_dict['topic'] in topics: #todo - temp?
-                self.unit_system = topics[service_dict['topic']]['unit_system']
-                self.queue = topics[service_dict['topic']]['queue'] # todo - temp?
-            if 'archive_topic' in service_dict and service_dict['archive_topic'] in topics: #todo - temp?
-                if 'unit_system' in topics[service_dict['archive_topic']]:
-                    self.unit_system = topics[service_dict['archive_topic']]['unit_system']
-                self.archive_queue = topics[service_dict['archive_topic']]['queue']
-            else:
-                self.archive_queue = None
-
-        else: # todo temp?
-            self.unit_system = 0
-
         self.console = to_bool(service_dict.get('console', False))
         host = service_dict.get('host', 'localhost')
         keepalive = to_int(service_dict.get('keepalive', 60))
@@ -155,8 +141,8 @@ class MQTTSubscribe():
         loginf(self.console, "Full topic fieldname is %s" % self.full_topic_fieldname)
         loginf(self.console, "Keyword separator is %s" % self.keyword_separator)
         loginf(self.console, "Keyword delimiter is %s" % self.keyword_delimiter)
-        loginf(self.console, "Default units is %i" % self.unit_system)
         loginf(self.console, "Label map is %s" % self.label_map)
+        # todo - log topics
 
         if self.payload_type == 'json':
             self.client.on_message = self.on_message_json
@@ -262,9 +248,8 @@ class MQTTSubscribe():
 
     def on_connect(self, client, userdata, flags, rc):
         logdbg(self.console, "Connected with result code %i" % rc)
-        client.subscribe(self.topic)
-        if self.archive_topic:
-          client.subscribe(self.archive_topic)
+        for topic in self.topics:
+            client.subscribe(topic)
 
     def on_disconnect(self, client, userdata, rc):
         logdbg(self.console, "Disconnected with result code %i" %rc)
@@ -312,10 +297,6 @@ class MQTTSubscribeService(StdService):
         if 'topic' in service_dict and 'topics' in service_dict:
             raise ValueError("Cannot have both 'topic' and 'topics'. Please remove 'topic'.")
 
-        if 'archive_topic' in service_dict and 'topics' in service_dict and \
-            service_dict['archive_topic '] in service_dict['topics']: # todo - only needed in driver
-                raise ValueError("%s cannot be in 'topics' and the value of 'archive_topic")
-
         if 'archive_topic' in service_dict:
           raise ValueError("archive_topic, %s, is invalid when running as a service" % service_dict['archive_topic'])
 
@@ -328,17 +309,6 @@ class MQTTSubscribeService(StdService):
         for topic in self.topics:
             self.topics[topic]['queue'] = deque()
             self.topics[topic]['unit_system'] = unit_system
-
-        if 'archive_topic' in service_dict: # to do - only needed in driver
-            self.topics[service_dict['archive_topic']] = deque()
-            self.topics[service_dict['archive_topic']] = unit_system
-
-        #self.queue = self.topics[service_dict['topic']]['queue'] # todo temp
-
-        service_dict['archive_topic'] = 'weather/loop' # Todo - temp
-        self.topics[service_dict['archive_topic']] = {}  # Todo - temp
-        self.topics[service_dict['archive_topic']]['queue'] = deque() # Todo - temp
-        self.archive_queue = self.topics[service_dict['archive_topic']]['queue'] # Todo - temp
 
         self.end_ts = 0 # prime for processing loop packet
 
@@ -444,7 +414,7 @@ class MQTTSubscribeDriver(MQTTSubscribe, weewx.drivers.AbstractDevice):
         raise ValueError("Cannot have both 'topic' and 'topics'. Please remove 'topic'.")
 
       if 'archive_topic' in stn_dict and 'topics' in stn_dict and \
-        stn_dict['archive_topic '] in stn_dict['topics']: # todo - only needed in driver
+        stn_dict['archive_topic '] in stn_dict['topics']:
             raise ValueError("%s cannot be in 'topics' and the value of 'archive_topic")
 
       if 'topic' in stn_dict:
