@@ -88,7 +88,7 @@ import weewx.drivers
 from weewx.engine import StdService
 from collections import deque
 
-VERSION='1.1.0rc08'
+VERSION='1.1.0rc09'
 
 def logmsg(console, dst, msg):
     syslog.syslog(dst, 'MQTTSS: %s' % msg)
@@ -108,6 +108,7 @@ class MQTTSubscribe():
     def __init__(self, client, topics, service_dict):
 
         self.client = client
+        self.topics = topics
         if topics : # Todo - temp?
             if 'topic' in service_dict and service_dict['topic'] in topics: #todo - temp?
                 self.unit_system = topics[service_dict['topic']]['unit_system']
@@ -201,14 +202,11 @@ class MQTTSubscribe():
                 if 'dateTime' not in data:
                     data['dateTime'] = time.time()
                 if 'usUnits' not in data:
-                    data['usUnits'] = self.unit_system
+                    data['usUnits'] = self.topics[msg.topic]['unit_system']
+
+                self.topics[msg.topic]['queue'].append(data,)
 
                 logdbg(self.console, "Added to queue: %s" % to_sorted_string(data))
-
-                if msg.topic == self.archive_topic:
-                    self.archive_queue.append(data,)
-                else:
-                    self.queue.append(data,)
             else:
                 logerr(self.console, "on_message_keyword failed to find data in: topic=%s and payload=%s" % (msg.topic, msg.payload))
         except Exception as exception:
@@ -231,14 +229,11 @@ class MQTTSubscribe():
             if 'dateTime' not in data:
                 data['dateTime'] = time.time()
             if 'usUnits' not in data:
-                data['usUnits'] = self.unit_system
+                data['usUnits'] = self.topics[msg.topic]['unit_system']
+
+            self.topics[msg.topic]['queue'].append(data,)
 
             logdbg(self.console, "Added to queue: %s" % to_sorted_string(data))
-
-            if msg.topic == self.archive_topic:
-                self.archive_queue.append(data,)
-            else:
-                self.queue.append(data,)
         except Exception as exception:
             logerr(self.console, "on_message_json failed with: %s" % exception)
             logerr(self.console, "**** Ignoring topic=%s and payload=%s" % (msg.topic, msg.payload))
@@ -257,10 +252,10 @@ class MQTTSubscribe():
 
             data = {}
             data['dateTime'] = time.time()
-            data['usUnits'] = self.unit_system
+            data['usUnits'] = self.topics[msg.topic]['unit_system']
             data[self.label_map.get(key,key)] = to_float(msg.payload)
 
-            self.queue.append(data,)
+            self.topics[msg.topic]['queue'].append(data,)
         except Exception as exception:
             logerr(self.console, "on_message_individual failed with: %s" % exception)
             logerr(self.console, "**** Ignoring topic=%s and payload=%s" % (msg.topic, msg.payload))
