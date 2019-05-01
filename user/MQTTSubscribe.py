@@ -88,7 +88,7 @@ import weewx.drivers
 from weewx.engine import StdService
 from collections import deque
 
-VERSION='1.1.0rc03'
+VERSION='1.1.0rc04'
 
 def logmsg(console, dst, msg):
     syslog.syslog(dst, 'MQTTSS: %s' % msg)
@@ -110,22 +110,23 @@ class MQTTSubscribe():
         self.client = client
         self.queue = queue
         self.archive_queue = archive_queue
-        self.unit_system = unit_system # todo - where to convert
+        self.unit_system = unit_system
 
         self.console = to_bool(service_dict.get('console', False))
-        self.label_map = service_dict.get('label_map', {})
-        self.payload_type = service_dict.get('payload_type', None)
-        self.full_topic_fieldname = to_bool(service_dict.get('full_topic_fieldname', False))
-        self.keyword_delimiter = service_dict.get('keyword_delimiter', ',')
-        self.keyword_separator = service_dict.get('keyword_separator', '=')
-
         host = service_dict.get('host', 'localhost')
         keepalive = to_int(service_dict.get('keepalive', 60))
         port = to_int(service_dict.get('port', 1883))
         username = service_dict.get('username', None)
         password = service_dict.get('password', None)
+
         self.topic = service_dict.get('topic', 'weather/loop')
-        self.archive_topic = service_dict.get('archive_topic', None) # to do - handle not supported in service
+        self.archive_topic = service_dict.get('archive_topic', None)
+
+        self.payload_type = service_dict.get('payload_type', None)
+        self.full_topic_fieldname = to_bool(service_dict.get('full_topic_fieldname', False))
+        self.keyword_delimiter = service_dict.get('keyword_delimiter', ',')
+        self.keyword_separator = service_dict.get('keyword_separator', '=')
+        self.label_map = service_dict.get('label_map', {})
 
         loginf(self.console, "MQTTSubscribe version is %s" % VERSION)
         loginf(self.console, "Host is %s" % host)
@@ -295,12 +296,14 @@ class MQTTSubscribeService(StdService):
         clientid = service_dict.get('clientid', 'MQTTSubscribeService-' + str(random.randint(1000, 9999)))
 
         loginf(self.console, "Client id is %s" % clientid)
-        loginf(self.console, "Binding is %s" % binding)
         loginf(self.console, "Default units is %s %i" %(unit_system_name, unit_system))
+        loginf(self.console, "Binding is %s" % binding)
         loginf(self.console, "Overlap is %s" % self.overlap)
 
+        if 'archive_topic' in service_dict:
+          raise ValueError("archive_topic, %s, is invalid when running as a service" % service_dict['archive_topic'])
+
         self.queue = deque()
-        archive_topic = None # not supported by the service #todo - check, and throw exception if set
         self.archive_queue = None
 
         self.end_ts = 0 # prime for processing loop packet
@@ -384,7 +387,7 @@ class MQTTSubscribeDriver(MQTTSubscribe, weewx.drivers.AbstractDevice):
     """weewx driver that reads data from MQTT"""
 
     def __init__(self, engine, **stn_dict):
-
+      self.console = to_bool(stn_dict.get('console', False))
       self.wait_before_retry = float(stn_dict.get('wait_before_retry', 2))
       unit_system_name = stn_dict.get('unit_system', 'US').strip().upper()
       if unit_system_name not in weewx.units.unit_constants:
@@ -392,7 +395,9 @@ class MQTTSubscribeDriver(MQTTSubscribe, weewx.drivers.AbstractDevice):
       unit_system = weewx.units.unit_constants[unit_system_name]
       clientid = stn_dict.get('clientid', 'MQTTSubscribeDriver-' + str(random.randint(1000, 9999)))
 
-      # todo - additional logging ?
+      loginf(self.console, "Client id is %s" % clientid)
+      loginf(self.console, "Default units is %s %i" %(unit_system_name, unit_system))
+      loginf(self.console, "Wait before retry is %i" % self.wait_before_retry)
 
       queue = deque()
       archive_queue = deque()
