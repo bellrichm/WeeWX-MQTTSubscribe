@@ -88,7 +88,7 @@ import weewx.drivers
 from weewx.engine import StdService
 from collections import deque
 
-VERSION='1.1.0rc05'
+VERSION='1.1.0rc06'
 
 def logmsg(console, dst, msg):
     syslog.syslog(dst, 'MQTTSS: %s' % msg)
@@ -461,12 +461,10 @@ class MQTTSubscribeDriver(MQTTSubscribe, weewx.drivers.AbstractDevice):
         self.topics[topic]['unit_system'] = unit_system
 
       if 'archive_topic' in stn_dict: # to do - only needed in driver
-          self.topics[stn_dict['archive_topic']] = {}
-          self.topics[stn_dict['archive_topic']]['queue'] = deque()
-          self.topics[stn_dict['archive_topic']]['unit_system'] = unit_system
-          self.archive_queue = self.topics[stn_dict['archive_topic']]['queue']
-
-      self.queue = self.topics[stn_dict['topic']]['queue']
+          self.archive_topic = stn_dict['archive_topic']
+          self.topics[self.archive_topic] = {}
+          self.topics[self.archive_topic]['queue'] = deque()
+          self.topics[self.archive_topic]['unit_system'] = unit_system
 
       client = mqtt.Client(client_id=clientid)
       MQTTSubscribe.__init__(self, client, self.topics, stn_dict)
@@ -476,18 +474,23 @@ class MQTTSubscribeDriver(MQTTSubscribe, weewx.drivers.AbstractDevice):
 
     def genLoopPackets(self):
       while True:
-        logdbg(self.console, "Packet queue is size %i" % len(self.queue))
-        while len(self.queue) > 0:
-          packet = self.queue.popleft()
-          logdbg(self.console, "Packet: %s" % to_sorted_string(packet))
-          yield packet
-        logdbg(self.console, "Packet queue is empty.")
-        time.sleep(self.wait_before_retry)
+        for key in self.topics:
+            if key == self.archive_topic:
+                continue
+            queue = self.topics[key]['queue']
+            logdbg(self.console, "Packet queue is size %i" % len(queue))
+            while len(queue) > 0:
+                packet = queue.popleft()
+                logdbg(self.console, "Packet: %s" % to_sorted_string(packet))
+                yield packet
+            logdbg(self.console, "Packet queue is empty.")
+            time.sleep(self.wait_before_retry)
 
     def genArchiveRecords(self, lastgood_ts):
-        logdbg(self.console, "Archive queue is size %i and date is %f." %(len(self.archive_queue), lastgood_ts))
-        while (len(self.archive_queue) > 0 and self.archive_queue[0]['dateTime'] <= lastgood_ts):
-            archive_record = self.archive_queue.popleft()
+        queue = self.topics[self.archive_topic]['queue']
+        logdbg(self.console, "Archive queue is size %i and date is %f." %(len(queue), lastgood_ts))
+        while (len(queue) > 0 and queue[0]['dateTime'] <= lastgood_ts):
+            archive_record = queue.popleft()
             logdbg(self.console, "Archive record: %s" % to_sorted_string(archive_record))
             yield archive_record
 
