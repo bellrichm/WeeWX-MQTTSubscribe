@@ -88,7 +88,7 @@ import weewx.drivers
 from weewx.engine import StdService
 from collections import deque
 
-VERSION='1.1.0rc06'
+VERSION='1.1.0rc07'
 
 def logmsg(console, dst, msg):
     syslog.syslog(dst, 'MQTTSS: %s' % msg)
@@ -365,14 +365,14 @@ class MQTTSubscribeService(StdService):
             self.thread.join()
             self.thread = None
 
-    def _process_data(self, start_ts, end_ts, record):
+    def _process_data(self, queue, start_ts, end_ts, record):
         logdbg(self.console, "Processing interval: %f %f" %(start_ts, end_ts))
         accumulator = weewx.accum.Accum(weeutil.weeutil.TimeSpan(start_ts, end_ts))
 
-        logdbg(self.console, "Queue size is: %i" % len(self.queue))
+        logdbg(self.console, "Queue size is: %i" % len(queue))
 
-        while (len(self.queue) > 0 and self.queue[0]['dateTime'] <= end_ts):
-            archive_data = self.queue.popleft()
+        while (len(queue) > 0 and queue[0]['dateTime'] <= end_ts):
+            archive_data = queue.popleft()
             logdbg(self.console, "Processing: %s" % to_sorted_string(archive_data))
             try:
                 accumulator.addRecord(archive_data)
@@ -396,7 +396,7 @@ class MQTTSubscribeService(StdService):
         start_ts = self.end_ts - self.overlap
         self.end_ts = event.packet['dateTime']
         # ToDo - add loop by topic here
-        target_data = self._process_data(start_ts, self.end_ts, event.packet)
+        target_data = self._process_data(self.queue, start_ts, self.end_ts, event.packet)
         event.packet.update(target_data)
         logdbg(self.console, "Packet after update is: %s" % to_sorted_string(event.packet))
 
@@ -407,7 +407,7 @@ class MQTTSubscribeService(StdService):
         end_ts = event.record['dateTime']
         start_ts = end_ts - event.record['interval'] * 60 - self.overlap
         # ToDo - add loop by topic here
-        target_data = self._process_data(start_ts, end_ts, event.record)
+        target_data = self._process_data(self.queue, start_ts, end_ts, event.record)
         event.record.update(target_data)
         logdbg(self.console, "Record after update is: %s" % to_sorted_string(event.record))
 
