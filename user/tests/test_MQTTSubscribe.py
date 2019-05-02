@@ -277,21 +277,19 @@ class Teston_connect(unittest.TestCase):
         'archive_topic': None
     }
 
-    # todo - possibly eliminate
-    def test_archive_topic_set(self):
+    def test_multiple_topics(self):
         mock_client = mock.Mock(spec=mqtt.Client)
-        topic = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
-        archive_topic = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+        topic1 = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+        topic2 = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
         config_dict = dict(self.config_dict)
-        config_dict['archive_topic'] = archive_topic
 
         topics = {}
-        topics[topic] = {}
-        topics[topic]['unit_system'] = self.unit_system
-        topics[topic]['queue'] = None
-        topics[archive_topic] = {}
-        topics[archive_topic]['unit_system'] = self.unit_system
-        topics[archive_topic]['queue'] = None
+        topics[topic1] = {}
+        topics[topic1]['unit_system'] = self.unit_system
+        topics[topic1]['queue'] = None
+        topics[topic2] = {}
+        topics[topic2]['unit_system'] = self.unit_system
+        topics[topic2]['queue'] = None
 
         SUT = MQTTSubscribe(mock_client, topics, config_dict)
 
@@ -299,26 +297,8 @@ class Teston_connect(unittest.TestCase):
         SUT.on_connect(mock_client, None, None, rc,)
 
         self.assertEqual(mock_client.subscribe.call_count, 2)
-
-    # Todo - possibly remove
-    def test_archive_topic_not_set(self):
-        mock_client = mock.Mock(spec=mqtt.Client)
-        topic = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
-        archive_topic = None
-        config_dict = dict(self.config_dict)
-        config_dict['archive_topic'] = archive_topic
-
-        topics = {}
-        topics[topic] = {}
-        topics[topic]['unit_system'] = self.unit_system
-        topics[topic]['queue'] = None
-
-        SUT = MQTTSubscribe(mock_client, topics, config_dict)
-
-        rc = random.randint(1, 10)
-        SUT.on_connect(mock_client, None, None, rc,)
-
-        self.assertEqual(mock_client.subscribe.call_count, 1)
+        mock_client.subscribe.assert_any_call(topic1)
+        mock_client.subscribe.assert_any_call(topic2)
 
 class TestKeywordload(unittest.TestCase):
     unit_system = random.randint(1, 10)
@@ -363,7 +343,6 @@ class TestKeywordload(unittest.TestCase):
             SUT.on_message_keyword(None, None, msg)
             self.assertEqual(mock_logerr.call_count, 3)
 
-
     def test_payload_bad_data(self):
         mock_client = mock.Mock(spec=mqtt.Client)
         topic = 'foo/bar'
@@ -394,7 +373,7 @@ class TestKeywordload(unittest.TestCase):
         config_dict['topic'] = topic
         config_dict['archive_topic'] = archive_topic
 
-        SUT = MQTTSubscribe(mock_client, queue, archive_queue, self.unit_system, config_dict)
+        SUT = MQTTSubscribe(mock_client, None, config_dict)
 
         msg = Msg()
         msg.topic = topic
@@ -408,31 +387,8 @@ class TestKeywordload(unittest.TestCase):
         mock_client = mock.Mock(spec=mqtt.Client)
         topic = 'foo/bar'
         queue = deque()
-        archive_topic = 'foo/archive'
-        archive_queue = deque()
         config_dict = dict(self.config_dict)
         config_dict['topic'] = topic
-        config_dict['archive_topic'] = archive_topic
-
-        SUT = MQTTSubscribe(mock_client, None, config_dict)
-
-        msg = Msg()
-        msg.topic = topic
-        msg.payload = 'field=value'
-
-        with mock.patch('user.MQTTSubscribe.logerr') as mock_logerr:
-            SUT.on_message_keyword(None, None, msg)
-            self.assertEqual(mock_logerr.call_count, 2)
-
-    def test_payload_missing_delimiter(self):
-        mock_client = mock.Mock(spec=mqtt.Client)
-        topic = 'foo/bar'
-        queue = deque()
-        archive_topic = 'foo/archive'
-        archive_queue = deque()
-        config_dict = dict(self.config_dict)
-        config_dict['topic'] = topic
-        config_dict['archive_topic'] = archive_topic
 
         SUT = MQTTSubscribe(mock_client, None, config_dict)
 
@@ -448,11 +404,8 @@ class TestKeywordload(unittest.TestCase):
         mock_client = mock.Mock(spec=mqtt.Client)
         topic = 'foo/bar'
         queue = deque()
-        archive_topic = 'foo/archive'
-        archive_queue = deque()
         config_dict = dict(self.config_dict)
         config_dict['topic'] = topic
-        config_dict['archive_topic'] = archive_topic
 
         topics = {}
         topics[topic] = {}
@@ -475,7 +428,6 @@ class TestKeywordload(unittest.TestCase):
         msg.payload = payload_str
 
         SUT.on_message_keyword(None, None, msg)
-        self.assertEqual(len(archive_queue), 0)
         self.assertEqual(len(queue), 1)
         data = queue[0]
         self.assertDictContainsSubset(payload_dict, data)
@@ -485,11 +437,8 @@ class TestKeywordload(unittest.TestCase):
         mock_client = mock.Mock(spec=mqtt.Client)
         topic = 'foo/bar'
         queue = deque()
-        archive_topic = 'foo/archive'
-        archive_queue = deque()
         config_dict = dict(self.config_dict)
         config_dict['topic'] = topic
-        config_dict['archive_topic'] = archive_topic
 
         topics = {}
         topics[topic] = {}
@@ -512,58 +461,17 @@ class TestKeywordload(unittest.TestCase):
         msg.payload = payload_str
 
         SUT.on_message_keyword(None, None, msg)
-        self.assertEqual(len(archive_queue), 0)
         self.assertEqual(len(queue), 1)
         data = queue[0]
         self.assertIn('usUnits', data)
         self.assertEqual(data['usUnits'], self.unit_system)
 
-    def test_archive_queue(self):
+    def test_payload_good(self):
         mock_client = mock.Mock(spec=mqtt.Client)
         topic = 'foo/bar'
         queue = deque()
-        archive_topic = 'foo/archive'
-        archive_queue = deque()
         config_dict = dict(self.config_dict)
         config_dict['topic'] = topic
-        config_dict['archive_topic'] = archive_topic
-
-        topics = {}
-        topics[archive_topic] = {}
-        topics[archive_topic]['unit_system'] = self.unit_system
-        topics[archive_topic]['queue'] = archive_queue
-
-        SUT = MQTTSubscribe(mock_client, topics, config_dict)
-
-        payload_dict = dict(self.payload_dict)
-        payload_dict['dateTime'] = time.time()
-        payload_dict['usUnits'] = random.randint(1, 10)
-
-        payload_str=""
-        delim=""
-        for key in payload_dict:
-            payload_str = "%s%s%s=%f" %(payload_str, delim, key, payload_dict[key])
-            delim=","
-
-        msg = Msg()
-        msg.topic = archive_topic
-        msg.payload = payload_str
-
-        SUT.on_message_keyword(None, None, msg)
-        self.assertEqual(len(archive_queue), 1)
-        self.assertEqual(len(queue), 0)
-        data = archive_queue[0]
-        self.assertDictEqual(data, payload_dict)
-
-    def test_normal_queue(self):
-        mock_client = mock.Mock(spec=mqtt.Client)
-        topic = 'foo/bar'
-        queue = deque()
-        archive_topic = 'foo/archive'
-        archive_queue = deque()
-        config_dict = dict(self.config_dict)
-        config_dict['topic'] = topic
-        config_dict['archive_topic'] = archive_topic
 
         topics = {}
         topics[topic] = {}
@@ -587,7 +495,6 @@ class TestKeywordload(unittest.TestCase):
         msg.payload = payload_str
 
         SUT.on_message_keyword(None, None, msg)
-        self.assertEqual(len(archive_queue), 0)
         self.assertEqual(len(queue), 1)
         data = queue[0]
         self.assertDictEqual(data, payload_dict)
@@ -619,11 +526,8 @@ class TestJsonPayload(unittest.TestCase):
         mock_client = mock.Mock(spec=mqtt.Client)
         topic = 'foo/bar'
         queue = deque()
-        archive_topic = 'foo/archive'
-        archive_queue = deque()
         config_dict = dict(self.config_dict)
         config_dict['topic'] = topic
-        config_dict['archive_topic'] = archive_topic
 
         SUT = MQTTSubscribe(mock_client, None, config_dict)
 
@@ -639,11 +543,8 @@ class TestJsonPayload(unittest.TestCase):
         mock_client = mock.Mock(spec=mqtt.Client)
         topic = 'foo/bar'
         queue = deque()
-        archive_topic = 'foo/archive'
-        archive_queue = deque()
         config_dict = dict(self.config_dict)
         config_dict['topic'] = topic
-        config_dict['archive_topic'] = archive_topic
 
         SUT = MQTTSubscribe(mock_client, None, config_dict)
 
@@ -659,11 +560,8 @@ class TestJsonPayload(unittest.TestCase):
         mock_client = mock.Mock(spec=mqtt.Client)
         topic = 'foo/bar'
         queue = deque()
-        archive_topic = 'foo/archive'
-        archive_queue = deque()
         config_dict = dict(self.config_dict)
         config_dict['topic'] = topic
-        config_dict['archive_topic'] = archive_topic
 
         topics = {}
         topics[topic] = {}
@@ -680,7 +578,6 @@ class TestJsonPayload(unittest.TestCase):
         msg.payload = json.dumps(payload_dict)
 
         SUT.on_message_json(None, None, msg)
-        self.assertEqual(len(archive_queue), 0)
         self.assertEqual(len(queue), 1)
         data = queue[0]
         self.assertDictContainsSubset(payload_dict, data)
@@ -690,11 +587,8 @@ class TestJsonPayload(unittest.TestCase):
         mock_client = mock.Mock(spec=mqtt.Client)
         topic = 'foo/bar'
         queue = deque()
-        archive_topic = 'foo/archive'
-        archive_queue = deque()
         config_dict = dict(self.config_dict)
         config_dict['topic'] = topic
-        config_dict['archive_topic'] = archive_topic
 
         topics = {}
         topics[topic] = {}
@@ -711,53 +605,18 @@ class TestJsonPayload(unittest.TestCase):
         msg.payload = json.dumps(payload_dict)
 
         SUT.on_message_json(None, None, msg)
-        self.assertEqual(len(archive_queue), 0)
         self.assertEqual(len(queue), 1)
         data = queue[0]
         self.assertDictContainsSubset(payload_dict, data)
         self.assertIn('usUnits', data)
         self.assertEqual(data['usUnits'], self.unit_system)
 
-    def test_archive_queue(self):
+    def test_payload_good(self):
         mock_client = mock.Mock(spec=mqtt.Client)
         topic = 'foo/bar'
         queue = deque()
-        archive_topic = 'foo/archive'
-        archive_queue = deque()
         config_dict = dict(self.config_dict)
         config_dict['topic'] = topic
-        config_dict['archive_topic'] = archive_topic
-
-        topics = {}
-        topics[archive_topic] = {}
-        topics[archive_topic]['unit_system'] = self.unit_system
-        topics[archive_topic]['queue'] = archive_queue
-
-        SUT = MQTTSubscribe(mock_client, topics, config_dict)
-
-        payload_dict = dict(self.payload_dict)
-        payload_dict['dateTime'] = time.time()
-        payload_dict['usUnits'] = random.randint(1, 10)
-
-        msg = Msg()
-        msg.topic = archive_topic
-        msg.payload = json.dumps(payload_dict)
-
-        SUT.on_message_json(None, None, msg)
-        self.assertEqual(len(archive_queue), 1)
-        self.assertEqual(len(queue), 0)
-        data = archive_queue[0]
-        self.assertDictEqual(data, payload_dict)
-
-    def test_normal_queue(self):
-        mock_client = mock.Mock(spec=mqtt.Client)
-        topic = 'foo/bar'
-        queue = deque()
-        archive_topic = 'foo/archive'
-        archive_queue = deque()
-        config_dict = dict(self.config_dict)
-        config_dict['topic'] = topic
-        config_dict['archive_topic'] = archive_topic
 
         topics = {}
         topics[topic] = {}
@@ -775,7 +634,6 @@ class TestJsonPayload(unittest.TestCase):
         msg.payload = json.dumps(payload_dict)
 
         SUT.on_message_json(None, None, msg)
-        self.assertEqual(len(archive_queue), 0)
         self.assertEqual(len(queue), 1)
         data = queue[0]
         self.assertDictEqual(data, payload_dict)

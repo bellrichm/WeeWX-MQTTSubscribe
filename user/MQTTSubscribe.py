@@ -36,7 +36,13 @@ Configuration:
     clientid =
 
     # The topic to subscribe to
+    # DEPRECATED - use [[topics]]
     topic =
+
+    # The topics to subscribe to
+    [[topics]
+        [[[first/topic]]]
+        [[[second/one]]]
 
     # The format of the MQTT payload. Currently support 'individual' or 'json'
     payload_type = json
@@ -88,7 +94,7 @@ import weewx.drivers
 from weewx.engine import StdService
 from collections import deque
 
-VERSION='1.1.0rc10'
+VERSION='1.1.0rc11'
 
 def logmsg(console, dst, msg):
     syslog.syslog(dst, 'MQTTSS: %s' % msg)
@@ -103,6 +109,23 @@ def loginf(console, msg):
 
 def logerr(console, msg):
     logmsg(console, syslog.LOG_ERR, msg)
+
+def create_topics(console, config_dict, unit_system):
+    if 'topic' in config_dict and 'topics' in config_dict:
+        raise ValueError("Cannot have both 'topic' and 'topics'. Please remove 'topic'.")
+
+    if 'topic' in config_dict:
+        topics = {}
+        topics[config_dict['topic']] = {}
+    else:
+        topics = dict(config_dict['topics'])
+
+    for topic in topics:
+        topics[topic]['queue'] = deque()
+        topics[topic]['unit_system'] = unit_system
+
+    return topics
+
 
 class MQTTSubscribe():
     def __init__(self, client, topics, service_dict):
@@ -119,12 +142,15 @@ class MQTTSubscribe():
         self.topic = service_dict.get('topic', 'weather/loop')
         self.archive_topic = service_dict.get('archive_topic', None)
 
-
         self.payload_type = service_dict.get('payload_type', None)
         self.full_topic_fieldname = to_bool(service_dict.get('full_topic_fieldname', False))
         self.keyword_delimiter = service_dict.get('keyword_delimiter', ',')
         self.keyword_separator = service_dict.get('keyword_separator', '=')
         self.label_map = service_dict.get('label_map', {})
+
+        if 'archive_topic' in service_dict and 'topics' in service_dict and \
+            service_dict['archive_topic '] in service_dict['topics']:
+                raise ValueError("%s cannot be in 'topics' and the value of 'archive_topic")
 
         loginf(self.console, "MQTTSubscribe version is %s" % VERSION)
         loginf(self.console, "Host is %s" % host)
@@ -142,7 +168,7 @@ class MQTTSubscribe():
         loginf(self.console, "Keyword separator is %s" % self.keyword_separator)
         loginf(self.console, "Keyword delimiter is %s" % self.keyword_delimiter)
         loginf(self.console, "Label map is %s" % self.label_map)
-        # todo - log topics
+        loginf(self.console, "Topics are %s" % self.topics)
 
         if self.payload_type == 'json':
             self.client.on_message = self.on_message_json
@@ -291,24 +317,10 @@ class MQTTSubscribeService(StdService):
         loginf(self.console, "Binding is %s" % binding)
         loginf(self.console, "Overlap is %s" % self.overlap)
 
-        if 'topics' in service_dict: # todo temp check
-            raise ValueError("'topics' is not supported yet.")
-
-        if 'topic' in service_dict and 'topics' in service_dict:
-            raise ValueError("Cannot have both 'topic' and 'topics'. Please remove 'topic'.")
-
         if 'archive_topic' in service_dict:
           raise ValueError("archive_topic, %s, is invalid when running as a service" % service_dict['archive_topic'])
 
-        if 'topic' in service_dict:
-            self.topics = {}
-            self.topics[service_dict['topic']] = {}
-        else:
-            self.topics = dict(service_dict['topics'])
-
-        for topic in self.topics:
-            self.topics[topic]['queue'] = deque()
-            self.topics[topic]['unit_system'] = unit_system
+        self.topics = create_topics(self.console, service_dict, unit_system)
 
         self.end_ts = 0 # prime for processing loop packet
 
@@ -407,27 +419,9 @@ class MQTTSubscribeDriver(MQTTSubscribe, weewx.drivers.AbstractDevice):
       loginf(self.console, "Default units is %s %i" %(unit_system_name, unit_system))
       loginf(self.console, "Wait before retry is %i" % self.wait_before_retry)
 
-      if 'topics' in stn_dict: # todo temp check
-        raise ValueError("'topics' is not supported yet.")
+      self.topics = create_topics(self.console, stn_dict, unit_system)
 
-      if 'topic' in stn_dict and 'topics' in stn_dict:
-        raise ValueError("Cannot have both 'topic' and 'topics'. Please remove 'topic'.")
-
-      if 'archive_topic' in stn_dict and 'topics' in stn_dict and \
-        stn_dict['archive_topic '] in stn_dict['topics']:
-            raise ValueError("%s cannot be in 'topics' and the value of 'archive_topic")
-
-      if 'topic' in stn_dict:
-        self.topics = {}
-        self.topics[stn_dict['topic']] = {}
-      else:
-        self.topics = dict(stn_dict['topics'])
-
-      for topic in self.topics:
-        self.topics[topic]['queue'] = deque()
-        self.topics[topic]['unit_system'] = unit_system
-
-      if 'archive_topic' in stn_dict: # to do - only needed in driver
+      if 'archive_topic' in stn_dict:
           self.archive_topic = stn_dict['archive_topic']
           self.topics[self.archive_topic] = {}
           self.topics[self.archive_topic]['queue'] = deque()
