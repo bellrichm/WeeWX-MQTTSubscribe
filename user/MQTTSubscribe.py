@@ -94,7 +94,7 @@ import weewx.drivers
 from weewx.engine import StdService
 from collections import deque
 
-VERSION='1.1.0rc11'
+VERSION='1.1.0rc12'
 
 def logmsg(console, dst, msg):
     syslog.syslog(dst, 'MQTTSS: %s' % msg)
@@ -126,6 +126,27 @@ def create_topics(console, config_dict, unit_system):
 
     return topics
 
+# Special case the individual topic processing and aggregate the wind data before accumulating
+# ToDo - Would be better in the queueing logic, but i dont see how, yet....
+# ToDo - cleanup
+def _process_individual(self, data):
+    wind_fields = ['windGust', 'windGustDir', 'windDir', 'windSpeed']
+    old_wind_data = {}
+    found = False
+    for field in wind_fields:
+        if field in data:
+            found = True
+            if field in self.wind_data:
+                old_wind_data = dict(self.wind_data)
+                self.wind_data = {}
+
+            self.wind_data[field] = data[field]
+            self.wind_data['usUnits'] = data['usUnits']
+            self.wind_data['dateTime'] = data['dateTime']
+            return old_wind_data
+
+    if not found:
+        return data
 
 class MQTTSubscribe():
     def __init__(self, client, topics, service_dict):
@@ -139,7 +160,6 @@ class MQTTSubscribe():
         username = service_dict.get('username', None)
         password = service_dict.get('password', None)
 
-        self.topic = service_dict.get('topic', 'weather/loop')
         self.archive_topic = service_dict.get('archive_topic', None)
 
         self.payload_type = service_dict.get('payload_type', None)
@@ -161,7 +181,6 @@ class MQTTSubscribe():
             loginf(self.console, "Password is set")
         else:
             loginf(self.console, "Password is not set")
-        loginf(self.console, "Topic is %s" % self.topic)
         loginf(self.console, "Archive topic is %s" % self.archive_topic)
         loginf(self.console, "Payload type is %s" % self.payload_type)
         loginf(self.console, "Full topic fieldname is %s" % self.full_topic_fieldname)
@@ -192,6 +211,7 @@ class MQTTSubscribe():
         loginf(self.console, "Method 'on_message' not implemented")
 
     def on_message_keyword(self, client, userdata, msg):
+        # Todo - look up topic (see on_message_individual)
         logdbg(self.console, "For %s received: %s" %(msg.topic, msg.payload))
 
         # Wrap all the processing in a try, so it doesn't crash and burn on any error
@@ -226,6 +246,7 @@ class MQTTSubscribe():
             logerr(self.console, "**** Ignoring topic=%s and payload=%s" % (msg.topic, msg.payload))
 
     def on_message_json(self, client, userdata, msg):
+        # Todo - look up topic (see on_message_individual)
         logdbg(self.console, "For %s received: %s" %(msg.topic, msg.payload))
 
         # Wrap all the processing in a try, so it doesn't crash and burn on any error
@@ -252,7 +273,12 @@ class MQTTSubscribe():
 
 
     def on_message_individual(self, client, userdata, msg):
-        logdbg(self.console, "For %s received: %s" %(msg.topic, msg.payload))
+        # Todo - move to helper
+        for topic in self.topics:
+            if mqtt.topic_matches_sub(topic, msg.topic):
+                break
+
+        logdbg(self.console, "For %s received: %s assigned to: %s" %(msg.topic, msg.payload, topic))
 
         # Wrap all the processing in a try, so it doesn't crash and burn on any error
         try:
@@ -264,10 +290,10 @@ class MQTTSubscribe():
 
             data = {}
             data['dateTime'] = time.time()
-            data['usUnits'] = self.topics[msg.topic]['unit_system']
+            data['usUnits'] = self.topics[topic]['unit_system']
             data[self.label_map.get(key,key)] = to_float(msg.payload)
 
-            self.topics[msg.topic]['queue'].append(data,)
+            self.topics[topic]['queue'].append(data,)
         except Exception as exception:
             logerr(self.console, "on_message_individual failed with: %s" % exception)
             logerr(self.console, "**** Ignoring topic=%s and payload=%s" % (msg.topic, msg.payload))
@@ -303,6 +329,7 @@ class MQTTSubscribeService(StdService):
         super(MQTTSubscribeService, self).__init__(engine, config_dict)
 
         service_dict = config_dict.get('MQTTSubscribeService', {})
+        self.payload_type = service_dict.get('payload_type', None) # ToDo - not thrilled with this here
         self.console = to_bool(service_dict.get('console', False))
         self.overlap = to_float(service_dict.get('overlap', 0))
         binding = service_dict.get('binding', 'loop')
@@ -348,14 +375,23 @@ class MQTTSubscribeService(StdService):
 
         logdbg(self.console, "Queue size is: %i" % len(queue))
 
+        self.wind_data = {}
         while (len(queue) > 0 and queue[0]['dateTime'] <= end_ts):
             archive_data = queue.popleft()
             logdbg(self.console, "Processing: %s" % to_sorted_string(archive_data))
             try:
-                accumulator.addRecord(archive_data)
+                if self.payload_type == 'individual':
+                    data = _process_individual(self, archive_data)
+                    if data:
+                        accumulator.addRecord(data)
+                else:
+                    accumulator.addRecord(archive_data)
             except weewx.accum.OutOfSpan:
                 loginf(self.console, "Ignoring record outside of interval %f %f %f %s"
                     %(start_ts, end_ts, archive_data['dateTime'], to_sorted_string(archive_data)))
+
+        if self.wind_data:
+            accumulator.addRecord(self.wind_data)
 
         target_data = {}
         if not accumulator.isEmpty:
@@ -440,12 +476,20 @@ class MQTTSubscribeDriver(MQTTSubscribe, weewx.drivers.AbstractDevice):
                 continue
             queue = self.topics[topic]['queue']
             logdbg(self.console, "Packet queue is size %i" % len(queue))
+            self.wind_data = {}
             while len(queue) > 0:
                 packet = queue.popleft()
-                logdbg(self.console, "Packet: %s" % to_sorted_string(packet))
-                yield packet
+                if self.payload_type == 'individual':
+                   data = _process_individual(self, packet)
+                   if data:
+                       yield data
+                else:
+                    logdbg(self.console, "Packet: %s" % to_sorted_string(packet))
+                    yield packet
+            if self.wind_data:
+                yield self.wind_data
             logdbg(self.console, "Packet queue is empty.")
-            time.sleep(self.wait_before_retry)
+        time.sleep(self.wait_before_retry)
 
     def genArchiveRecords(self, lastgood_ts):
         queue = self.topics[self.archive_topic]['queue']
