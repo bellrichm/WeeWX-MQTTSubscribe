@@ -39,11 +39,6 @@ Configuration:
     # DEPRECATED - use [[topics]]
     topic =
 
-    # The topics to subscribe to
-    [[topics]
-        [[[first/topic]]]
-        [[[second/one]]]
-
     # The format of the MQTT payload. Currently support 'individual' or 'json'
     payload_type = json
 
@@ -56,10 +51,6 @@ Configuration:
 
     # The separator between fieldname and value pairs. (field1=value1, field2=value2)
     keyword_separator = =
-
-    # Mapping to WeeWX names
-    [[label_map]]
-        temp1 = extraTemp1
 
     # The amount to overlap the start time when processing the MQTT queue
     # Only used by the service
@@ -76,6 +67,15 @@ Configuration:
     # Payload in this topic is processed like an archive record
     # Only used by the driver
     archive_topic =
+   
+    # The topics to subscribe to
+    [[topics]
+        [[[first/topic]]]
+        [[[second/one]]]
+      
+    # Mapping to WeeWX names
+    [[label_map]]
+        temp1 = extraTemp1
 """
 
 from __future__ import with_statement
@@ -94,7 +94,7 @@ import weewx.drivers
 from weewx.engine import StdService
 from collections import deque
 
-VERSION='1.1.0rc13'
+VERSION='1.1.0rc14'
 
 def logmsg(console, dst, prefix, msg):
     syslog.syslog(dst, '%s: %s' % (prefix, msg))
@@ -128,6 +128,7 @@ def create_topics(console, config_dict, unit_system):
 
 # Special case the individual topic processing and aggregate the wind data before accumulating
 # ToDo - Would be better in the queueing logic, but i dont see how, yet....
+# Perhaps, a separate wind data queue?
 # ToDo - cleanup
 def _process_individual(self, data):
     wind_fields = ['windGust', 'windGustDir', 'windDir', 'windSpeed']
@@ -383,14 +384,17 @@ class MQTTSubscribeService(StdService):
                 if self.payload_type == 'individual':
                     data = _process_individual(self, archive_data)
                     if data:
+                        logdbg(self.console, "MQTTSubscribeService", "Data to accumulate: %s" % to_sorted_string(data))
                         accumulator.addRecord(data)
                 else:
+                    logdbg(self.console, "MQTTSubscribeService", "Data to accumulate: %s" % to_sorted_string(archive_data))
                     accumulator.addRecord(archive_data)
             except weewx.accum.OutOfSpan:
                 loginf(self.console, "MQTTSubscribeService", "Ignoring record outside of interval %f %f %f %s"
                     %(start_ts, end_ts, archive_data['dateTime'], to_sorted_string(archive_data)))
 
         if self.wind_data:
+            logdbg(self.console, "MQTTSubscribeService", "Data to accumulate post loop: %s" % to_sorted_string(wind_data))
             accumulator.addRecord(self.wind_data)
 
         target_data = {}
@@ -482,11 +486,13 @@ class MQTTSubscribeDriver(MQTTSubscribe, weewx.drivers.AbstractDevice):
                 if self.payload_type == 'individual':
                    data = _process_individual(self, packet)
                    if data:
+                       logdbg(self.console, "MQTTSubscribeDriver", "Packet: %s" % to_sorted_string(data))
                        yield data
                 else:
                     logdbg(self.console, "MQTTSubscribeDriver", "Packet: %s" % to_sorted_string(packet))
                     yield packet
             if self.wind_data:
+                logdbg(self.console, "MQTTSubscribeDriver", "Packet post loop: %s" % to_sorted_string(wind_data))
                 yield self.wind_data
             logdbg(self.console, "MQTTSubscribeDriver", "Packet queue is empty.")
         time.sleep(self.wait_before_retry)
