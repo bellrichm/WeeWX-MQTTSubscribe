@@ -14,66 +14,87 @@ Overview:
 
 Configuration:
 [MQTTSubscribeService] or [MQTTSubscribeDriver]
-    # The MQTT server
+    # The MQTT server.
+    # Default is: localhost
     host = localhost
 
-    # The port to connect to
+    # The port to connect to.
+    # Default is: 1883
     port = 1883
 
-    # Maximum period in seconds allowed between communications with the broker
+    # Maximum period in seconds allowed between communications with the broker.
+    # Default is: 60
     keepalive = 60
 
-    # username for broker authentication
+    # username for broker authentication.
+    # Default is: None
     username =
 
-    # password for broker authentication
+    # password for broker authentication.
+    # Default is: None
     password =
 
-    # Units for MQTT payloads without unit value
-    unit_system = US  # or 'METRIC' or 'METRICWX'
+    # Units for MQTT payloads without unit value. 
+    # Valid values: US, METRIC, METRICWX
+    # Default is: US
+    unit_system = US
 
-    # The clientid to connect with
+    # The clientid to connect with.
+    # Todo - explain default values
     clientid =
 
-    # The topic to subscribe to
+    # The topic to subscribe to.
     # DEPRECATED - use [[topics]]
     topic =
 
-    # The format of the MQTT payload. Currently support 'individual' or 'json'
+    # The format of the MQTT payload. 
+    # Currently support: individual, json, keyword
+    # Must be specified.
     payload_type = json
 
-    # When True, the full topic (weather/outTemp) is used as the fieldname. When false, the topic
-    # furthest to the right is used. Only used when payload is 'individual'.
+    # When True, the full topic (weather/outTemp) is used as the fieldname. 
+    # When false, the topic furthest to the right is used. 
+    # Valid values: True, False
+    # Default is: False
+    # Only used when payload is 'individual'.
     full_topic_fieldname = False
 
-    # The delimiter between fieldname and value pairs. (field1=value1, field2=value2)
+    # The delimiter between fieldname and value pairs. (field1=value1, field2=value2).
+    # Default is: ,
     keyword_delimiter = ,
 
-    # The separator between fieldname and value pairs. (field1=value1, field2=value2)
+    # The separator between fieldname and value pairs. (field1=value1, field2=value2).
+    # Default is: =
     keyword_separator = =
 
-    # The amount to overlap the start time when processing the MQTT queue
-    # Only used by the service
+    # The amount to overlap the start time when processing the MQTT queue.
+    # ToDo - add explaination
+    # Default is: 0
+    # Only used by the service.
     overlap = 0
 
-    # The binding, loop or archive
-    # Only used by the service
+    # The binding, loop or archive.
+    # Default is: loop
+    # Only used by the service.
     binding = loop
 
     # The amount of time to wait when the queue of MQTT payload is empty
+    # ToDo - add explaination
+    # Default is: 2
     # Only used by the driver
     wait_before_retry = 2
 
-    # Payload in this topic is processed like an archive record
-    # Only used by the driver
+    # Payload in this topic is processed like an archive record.
+    # Default is: None
+    # Only used by the driver.
     archive_topic =
    
-    # The topics to subscribe to
+    # The topics to subscribe to.
     [[topics]
         [[[first/topic]]]
         [[[second/one]]]
       
-    # Mapping to WeeWX names
+    # Mapping to WeeWX names.
     [[label_map]]
         temp1 = extraTemp1
 """
@@ -94,7 +115,7 @@ import weewx.drivers
 from weewx.engine import StdService
 from collections import deque
 
-VERSION='1.1.0rc15'
+VERSION='1.1.0rc16'
 
 def logmsg(console, dst, prefix, msg):
     syslog.syslog(dst, '%s: %s' % (prefix, msg))
