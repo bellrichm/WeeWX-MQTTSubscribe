@@ -203,16 +203,20 @@ class MQTTSubscribe():
 
         self.client.connect(host, port, keepalive)
 
+    def _lookup_topic(self, msg_topic):
+        for topic in self.topics:
+            if mqtt.topic_matches_sub(topic, msg_topic):
+                return topic
+
     # sub class overrides this for specific MQTT payload formats
     def on_message(self, client, userdata, msg):
         loginf(self.console, "MQTTSubscribe", "Method 'on_message' not implemented")
 
     def on_message_keyword(self, client, userdata, msg):
-        # Todo - look up topic (see on_message_individual)
-        logdbg(self.console, "MQTTSubscribe", "For %s received: %s" %(msg.topic, msg.payload))
-
         # Wrap all the processing in a try, so it doesn't crash and burn on any error
         try:
+            topic =self. _lookup_topic(msg.topic)
+            logdbg(self.console, "MQTTSubscribe", "For %s received: %s assigned to: %s" %(msg.topic, msg.payload, topic))            
             fields = msg.payload.split(self.keyword_delimiter)
             data = {}
             for field in fields:
@@ -231,9 +235,9 @@ class MQTTSubscribe():
                 if 'dateTime' not in data:
                     data['dateTime'] = time.time()
                 if 'usUnits' not in data:
-                    data['usUnits'] = self.topics[msg.topic]['unit_system']
+                    data['usUnits'] = self.topics[topic]['unit_system']
 
-                self.topics[msg.topic]['queue'].append(data,)
+                self.topics[topic]['queue'].append(data,)
 
                 logdbg(self.console, "MQTTSubscribe", "Added to queue: %s" % to_sorted_string(data))
             else:
@@ -243,11 +247,11 @@ class MQTTSubscribe():
             logerr(self.console, "MQTTSubscribe", "**** Ignoring topic=%s and payload=%s" % (msg.topic, msg.payload))
 
     def on_message_json(self, client, userdata, msg):
-        # Todo - look up topic (see on_message_individual)
-        logdbg(self.console, "MQTTSubscribe", "For %s received: %s" %(msg.topic, msg.payload))
-
         # Wrap all the processing in a try, so it doesn't crash and burn on any error
         try:
+            topic =self. _lookup_topic(msg.topic)
+            logdbg(self.console, "MQTTSubscribe", "For %s received: %s assigned to: %s" %(msg.topic, msg.payload, topic))            
+            
             # ToDo - better way?
             if six.PY2:
                 data = self._byteify(
@@ -259,9 +263,9 @@ class MQTTSubscribe():
             if 'dateTime' not in data:
                 data['dateTime'] = time.time()
             if 'usUnits' not in data:
-                data['usUnits'] = self.topics[msg.topic]['unit_system']
+                data['usUnits'] = self.topics[topic]['unit_system']
 
-            self.topics[msg.topic]['queue'].append(data,)
+            self.topics[topic]['queue'].append(data,)
 
             logdbg(self.console, "MQTTSubscribe", "Added to queue: %s" % to_sorted_string(data))
         except Exception as exception:
@@ -271,15 +275,12 @@ class MQTTSubscribe():
 
     def on_message_individual(self, client, userdata, msg):
         wind_fields = ['windGust', 'windGustDir', 'windDir', 'windSpeed']
-        # Todo - move to helper
-        for topic in self.topics:
-            if mqtt.topic_matches_sub(topic, msg.topic):
-                break
-
-        logdbg(self.console, "MQTTSubscribe", "For %s received: %s assigned to: %s" %(msg.topic, msg.payload, topic))
-
+        
         # Wrap all the processing in a try, so it doesn't crash and burn on any error
         try:
+            topic =self. _lookup_topic(msg.topic)
+            logdbg(self.console, "MQTTSubscribe", "For %s received: %s assigned to: %s" %(msg.topic, msg.payload, topic))
+
             if self.full_topic_fieldname:
                 key = msg.topic.encode('ascii', 'ignore') # ToDo - research
             else:
@@ -332,7 +333,6 @@ class MQTTSubscribeService(StdService):
         super(MQTTSubscribeService, self).__init__(engine, config_dict)
 
         service_dict = config_dict.get('MQTTSubscribeService', {})
-        self.payload_type = service_dict.get('payload_type', None) # ToDo - not thrilled with this here
         self.console = to_bool(service_dict.get('console', False))
         self.overlap = to_float(service_dict.get('overlap', 0))
         binding = service_dict.get('binding', 'loop')

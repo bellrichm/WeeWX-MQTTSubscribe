@@ -334,7 +334,11 @@ class TestKeywordload(unittest.TestCase):
         config_dict['topic'] = topic
         config_dict['archive_topic'] = archive_topic
 
-        SUT = MQTTSubscribe(mock_client, None, config_dict)
+        topics = {}
+        topics[topic] = {}
+        topics[topic]['unit_system'] = self.unit_system
+
+        SUT = MQTTSubscribe(mock_client, topics, config_dict)
 
         msg = Msg()
         msg.topic = topic
@@ -391,7 +395,11 @@ class TestKeywordload(unittest.TestCase):
         config_dict = dict(self.config_dict)
         config_dict['topic'] = topic
 
-        SUT = MQTTSubscribe(mock_client, None, config_dict)
+        topics = {}
+        topics[topic] = {}
+        topics[topic]['unit_system'] = self.unit_system
+
+        SUT = MQTTSubscribe(mock_client, topics, config_dict)
 
         msg = Msg()
         msg.topic = topic
