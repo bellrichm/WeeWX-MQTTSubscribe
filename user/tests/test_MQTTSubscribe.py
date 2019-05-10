@@ -660,11 +660,14 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
     def test_bad_payload(self):
         mock_client = mock.Mock(spec=mqtt.Client)
         topic = 'foo/bar'
-        queue = deque()
         config_dict = dict(self.config_dict)
         config_dict['topic'] = topic
 
-        SUT = MQTTSubscribe(mock_client, None, config_dict)
+        topics = {}
+        topics[topic] = {}
+        topics[topic]['unit_system'] = self.unit_system
+
+        SUT = MQTTSubscribe(mock_client, topics, config_dict)
 
         msg = Msg()
         msg.topic = topic
@@ -677,11 +680,14 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
     def test_empty_payload(self):
         mock_client = mock.Mock(spec=mqtt.Client)
         topic = 'foo/bar'
-        queue = deque()
         config_dict = dict(self.config_dict)
         config_dict['topic'] = topic
 
-        SUT = MQTTSubscribe(mock_client, None, config_dict)
+        topics = {}
+        topics[topic] = {}
+        topics[topic]['unit_system'] = self.unit_system  
+
+        SUT = MQTTSubscribe(mock_client, topics, config_dict)
 
         msg = Msg()
         msg.topic = topic
@@ -836,11 +842,14 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
     def test_bad_payload(self):
         mock_client = mock.Mock(spec=mqtt.Client)
         topic = 'foo/bar'
-        queue = deque()
         config_dict = dict(self.config_dict)
         config_dict['topic'] = topic
 
-        SUT = MQTTSubscribe(mock_client, None, config_dict)
+        topics = {}
+        topics[topic] = {}
+        topics[topic]['unit_system'] = self.unit_system        
+
+        SUT = MQTTSubscribe(mock_client, topics, config_dict)
 
         msg = Msg()
         msg.topic = topic
@@ -853,11 +862,14 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
     def test_empty_payload(self):
         mock_client = mock.Mock(spec=mqtt.Client)
         topic = 'foo/bar'
-        queue = deque()
         config_dict = dict(self.config_dict)
         config_dict['topic'] = topic
 
-        SUT = MQTTSubscribe(mock_client, None, config_dict)
+        topics = {}
+        topics[topic] = {}
+        topics[topic]['unit_system'] = self.unit_system
+
+        SUT = MQTTSubscribe(mock_client, topics, config_dict)
 
         msg = Msg()
         msg.topic = topic
