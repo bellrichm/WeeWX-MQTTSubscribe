@@ -7,6 +7,7 @@ from collections import deque
 import json
 import paho.mqtt.client as mqtt
 import random
+import six
 import string
 import time
 from user.MQTTSubscribe import MQTTSubscribe, MQTTSubscribeService
@@ -131,7 +132,7 @@ class TestInitialization(unittest.TestCase):
 
         SUT = MQTTSubscribe(mock_client, None, config_dict)
 
-        self.assertEquals(mock_client.on_message, SUT.on_message)
+        self.assertEqual(mock_client.on_message, SUT.on_message)
 
         mock_client.connect.assert_called_once_with(host, port, keepalive)
 
@@ -481,7 +482,7 @@ class TestKeywordload(unittest.TestCase):
         SUT = MQTTSubscribe(mock_client, topics, config_dict)
 
         payload_dict = dict(self.payload_dict)
-        payload_dict['dateTime'] = time.time()
+        payload_dict['dateTime'] = round(time.time(), 2)
         payload_dict['usUnits'] = random.randint(1, 10)
 
         payload_str=""
@@ -573,9 +574,14 @@ class TestJsonPayload(unittest.TestCase):
         payload_dict = dict(self.payload_dict)
         payload_dict['usUnits'] = random.randint(1, 10)
 
+        if six.PY2:
+            payload = json.dumps(payload_dict)
+        else:
+            payload = json.dumps(payload_dict).encode("utf-8")
+
         msg = Msg()
         msg.topic = topic
-        msg.payload = json.dumps(payload_dict)
+        msg.payload = payload
 
         SUT.on_message_json(None, None, msg)
         self.assertEqual(len(queue), 1)
@@ -600,9 +606,14 @@ class TestJsonPayload(unittest.TestCase):
         payload_dict = dict(self.payload_dict)
         payload_dict['dateTime'] = time.time()
 
+        if six.PY2:
+            payload = json.dumps(payload_dict)
+        else:
+            payload = json.dumps(payload_dict).encode("utf-8")
+
         msg = Msg()
         msg.topic = topic
-        msg.payload = json.dumps(payload_dict)
+        msg.payload = payload
 
         SUT.on_message_json(None, None, msg)
         self.assertEqual(len(queue), 1)
@@ -629,9 +640,14 @@ class TestJsonPayload(unittest.TestCase):
         payload_dict['dateTime'] = time.time()
         payload_dict['usUnits'] = random.randint(1, 10)
 
+        if six.PY2:
+            payload = json.dumps(payload_dict)
+        else:
+            payload = json.dumps(payload_dict).encode("utf-8")
+
         msg = Msg()
         msg.topic = topic
-        msg.payload = json.dumps(payload_dict)
+        msg.payload = payload
 
         SUT.on_message_json(None, None, msg)
         self.assertEqual(len(queue), 1)
@@ -699,8 +715,8 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
 
     def test_None_payload(self):
         mock_client = mock.Mock(spec=mqtt.Client)
-        fieldname = 'bar'
-        topic = 'foo/' + fieldname
+        fieldname = b'bar'
+        topic = 'foo/' + fieldname.decode('utf-8')
         queue = deque()
         config_dict = dict(self.config_dict)
         config_dict['topic'] = topic
@@ -728,8 +744,8 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
 
     def test_single_topic(self):
         mock_client = mock.Mock(spec=mqtt.Client)
-        fieldname = 'bar'
-        topic = fieldname
+        fieldname = b'bar'
+        topic = fieldname.decode('utf-8')
         queue = deque()
         config_dict = dict(self.config_dict)
         config_dict['topic'] = topic
@@ -759,8 +775,8 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
 
     def test_multiple_topics(self):
         mock_client = mock.Mock(spec=mqtt.Client)
-        fieldname = 'bar'
-        topic = 'foo1/foo2/' + fieldname
+        fieldname = b'bar'
+        topic = 'foo1/foo2/' + fieldname.decode('utf-8')
         queue = deque()
         config_dict = dict(self.config_dict)
         config_dict['topic'] = topic
@@ -790,8 +806,8 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
 
     def test_two_topics(self):
         mock_client = mock.Mock(spec=mqtt.Client)
-        fieldname = 'bar'
-        topic = 'foo/' + fieldname
+        fieldname = b'bar'
+        topic = 'foo/' + fieldname.decode('utf-8')
         queue = deque()
         config_dict = dict(self.config_dict)
         config_dict['topic'] = topic
@@ -881,7 +897,8 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
 
     def test_None_payload(self):
         mock_client = mock.Mock(spec=mqtt.Client)
-        topic = 'foo/bar'
+        topic_byte = b'foo/bar'
+        topic = topic_byte.decode('utf-8')
         queue = deque()
         config_dict = dict(self.config_dict)
         config_dict['topic'] = topic
@@ -904,12 +921,13 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
         self.assertIsInstance(data['dateTime'], float)
         self.assertIn('usUnits', data)
         self.assertEqual(data['usUnits'], self.unit_system)
-        self.assertIn(topic, data)
-        self.assertIsNone(data[topic])
+        self.assertIn(topic_byte, data)
+        self.assertIsNone(data[topic_byte])
 
     def test_single_topic(self):
         mock_client = mock.Mock(spec=mqtt.Client)
-        topic = 'bar'
+        topic_byte = b'bar'
+        topic = topic_byte.decode('utf-8')
         queue = deque()
         config_dict = dict(self.config_dict)
         config_dict['topic'] = topic
@@ -933,13 +951,14 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
         self.assertIsInstance(data['dateTime'], float)
         self.assertIn('usUnits', data)
         self.assertEqual(data['usUnits'], self.unit_system)
-        self.assertIn(topic, data)
-        self.assertIsInstance(data[topic], float)
-        self.assertAlmostEqual(data[topic], payload)
+        self.assertIn(topic_byte, data)
+        self.assertIsInstance(data[topic_byte], float)
+        self.assertAlmostEqual(data[topic_byte], payload)
 
     def test_multiple_topics(self):
         mock_client = mock.Mock(spec=mqtt.Client)
-        topic = 'foo1/foo2/bar'
+        topic_byte = b'foo1/foo2/bar'
+        topic = topic_byte.decode('utf-8')
         queue = deque()
         config_dict = dict(self.config_dict)
         config_dict['topic'] = topic
@@ -963,13 +982,14 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
         self.assertIsInstance(data['dateTime'], float)
         self.assertIn('usUnits', data)
         self.assertEqual(data['usUnits'], self.unit_system)
-        self.assertIn(topic, data)
-        self.assertIsInstance(data[topic], float)
-        self.assertAlmostEqual(data[topic], payload)
+        self.assertIn(topic_byte, data)
+        self.assertIsInstance(data[topic_byte], float)
+        self.assertAlmostEqual(data[topic_byte], payload)
 
     def test_two_topics(self):
         mock_client = mock.Mock(spec=mqtt.Client)
-        topic = 'foo/bar'
+        topic_byte = b'foo/bar'
+        topic = topic_byte.decode('utf-8')
         queue = deque()
         config_dict = dict(self.config_dict)
         config_dict['topic'] = topic
@@ -993,9 +1013,9 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
         self.assertIsInstance(data['dateTime'], float)
         self.assertIn('usUnits', data)
         self.assertEqual(data['usUnits'], self.unit_system)
-        self.assertIn(topic, data)
-        self.assertIsInstance(data[topic], float)
-        self.assertAlmostEqual(data[topic], payload)
+        self.assertIn(topic_byte, data)
+        self.assertIsInstance(data[topic_byte], float)
+        self.assertAlmostEqual(data[topic_byte], payload)
 
 if __name__ == '__main__':
     unittest.main()
