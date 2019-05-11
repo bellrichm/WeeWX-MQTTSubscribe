@@ -104,8 +104,10 @@ class TestgenArchiveRecords(unittest.TestCase):
         }
 
         config_dict = {}
-        config_dict['topic'] = 'foo/bar'
         config_dict['archive_topic'] = 'archive'
+        config_dict['topics'] = {}
+        config_dict['topics']['foo/bar'] = {}
+        config_dict['topics']['archive'] = {}
 
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
             SUT = MQTTSubscribeDriver(**config_dict)
@@ -133,8 +135,10 @@ class TestgenArchiveRecords(unittest.TestCase):
 
         archive_topic = 'archive'
         config_dict = {}
-        config_dict['topic'] = 'foo/bar'
         config_dict['archive_topic'] = archive_topic
+        config_dict['topics'] = {}
+        config_dict['topics']['foo/bar'] = {}
+        config_dict['topics'][archive_topic] = {}
 
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
             SUT = MQTTSubscribeDriver(**config_dict)
@@ -165,8 +169,10 @@ class TestgenArchiveRecords(unittest.TestCase):
 
         archive_topic = 'archive'
         config_dict = {}
-        config_dict['topic'] = 'foo/bar'
         config_dict['archive_topic'] = archive_topic
+        config_dict['topics'] = {}
+        config_dict['topics']['foo/bar'] = {}
+        config_dict['topics'][archive_topic] = {}
 
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
             SUT = MQTTSubscribeDriver(**config_dict)

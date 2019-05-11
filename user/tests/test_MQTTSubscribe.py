@@ -328,11 +328,8 @@ class TestKeywordload(unittest.TestCase):
         mock_client = mock.Mock(spec=mqtt.Client)
         topic = 'foo/bar'
         queue = deque()
-        archive_topic = 'foo/archive'
-        archive_queue = deque()
         config_dict = dict(self.config_dict)
         config_dict['topic'] = topic
-        config_dict['archive_topic'] = archive_topic
 
         topics = {}
         topics[topic] = {}
@@ -352,11 +349,8 @@ class TestKeywordload(unittest.TestCase):
         mock_client = mock.Mock(spec=mqtt.Client)
         topic = 'foo/bar'
         queue = deque()
-        archive_topic = 'foo/archive'
-        archive_queue = deque()
         config_dict = dict(self.config_dict)
         config_dict['topic'] = topic
-        config_dict['archive_topic'] = archive_topic
 
         SUT = MQTTSubscribe(mock_client, None, config_dict)
 
@@ -372,11 +366,8 @@ class TestKeywordload(unittest.TestCase):
         mock_client = mock.Mock(spec=mqtt.Client)
         topic = 'foo/bar'
         queue = deque()
-        archive_topic = 'foo/archive'
-        archive_queue = deque()
         config_dict = dict(self.config_dict)
         config_dict['topic'] = topic
-        config_dict['archive_topic'] = archive_topic
 
         SUT = MQTTSubscribe(mock_client, None, config_dict)
 

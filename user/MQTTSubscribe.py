@@ -115,7 +115,7 @@ import weewx.drivers
 from weewx.engine import StdService
 from collections import deque
 
-VERSION='1.1.0rc16'
+VERSION='1.1.0rc17'
 
 def logmsg(console, dst, prefix, msg):
     syslog.syslog(dst, '%s: %s' % (prefix, msg))
@@ -131,15 +131,23 @@ def loginf(console, prefix, msg):
 def logerr(console, prefix, msg):
     logmsg(console, syslog.LOG_ERR, prefix, msg)
 
-def create_topics(console, config_dict, unit_system):
+def create_topics(console, config_dict):
     if 'topic' in config_dict and 'topics' in config_dict:
         raise ValueError("Cannot have both 'topic' and 'topics'. Please remove 'topic'.")
+
+    unit_system_name = config_dict.get('unit_system', 'US').strip().upper()
+    if unit_system_name not in weewx.units.unit_constants:
+        raise ValueError("MQTTSubscribe: Unknown unit system: %s" % unit_system_name)
+    unit_system = weewx.units.unit_constants[unit_system_name]
 
     if 'topic' in config_dict:
         topics = {}
         topics[config_dict['topic']] = {}
     else:
         topics = dict(config_dict['topics'])
+
+    if not topics:
+        raise ValueError("At least one [[topics]] must be specified.")
 
     for topic in topics:
         topics[topic]['queue'] = deque()
@@ -186,9 +194,8 @@ class MQTTSubscribe():
         self.keyword_separator = service_dict.get('keyword_separator', '=')
         self.label_map = service_dict.get('label_map', {})
 
-        if 'archive_topic' in service_dict and 'topics' in service_dict and \
-            service_dict['archive_topic '] in service_dict['topics']:
-                raise ValueError("%s cannot be in 'topics' and the value of 'archive_topic")
+        if self.archive_topic and self.archive_topic not in service_dict['topics']:
+            raise ValueError("Archive topic %s must be in [[topics]]" % self.archive_topic)
 
         loginf(self.console, "MQTTSubscribe", "MQTTSubscribe version is %s" % VERSION)
         loginf(self.console, "MQTTSubscribe", "Host is %s" % host)
@@ -357,21 +364,16 @@ class MQTTSubscribeService(StdService):
         self.console = to_bool(service_dict.get('console', False))
         self.overlap = to_float(service_dict.get('overlap', 0))
         binding = service_dict.get('binding', 'loop')
-        unit_system_name = service_dict.get('unit_system', 'US').strip().upper()
-        if unit_system_name not in weewx.units.unit_constants:
-            raise ValueError("MQTTSubscribeService: Unknown unit system: %s" % unit_system_name)
-        unit_system = weewx.units.unit_constants[unit_system_name]
         clientid = service_dict.get('clientid', 'MQTTSubscribeService-' + str(random.randint(1000, 9999)))
 
         loginf(self.console, "MQTTSubscribeService", "Client id is %s" % clientid)
-        loginf(self.console, "MQTTSubscribeService", "Default units is %s %i" %(unit_system_name, unit_system))
         loginf(self.console, "MQTTSubscribeService", "Binding is %s" % binding)
         loginf(self.console, "MQTTSubscribeService", "Overlap is %s" % self.overlap)
 
         if 'archive_topic' in service_dict:
           raise ValueError("archive_topic, %s, is invalid when running as a service" % service_dict['archive_topic'])
 
-        self.topics = create_topics(self.console, service_dict, unit_system)
+        self.topics = create_topics(self.console, service_dict)
 
         self.end_ts = 0 # prime for processing loop packet
 
@@ -480,23 +482,13 @@ class MQTTSubscribeDriver(MQTTSubscribe, weewx.drivers.AbstractDevice):
     def __init__(self, **stn_dict):
       self.console = to_bool(stn_dict.get('console', False))
       self.wait_before_retry = float(stn_dict.get('wait_before_retry', 2))
-      unit_system_name = stn_dict.get('unit_system', 'US').strip().upper()
-      if unit_system_name not in weewx.units.unit_constants:
-          raise ValueError("MQTTSubscribeDriver: Unknown unit system: %s" % unit_system_name)
-      unit_system = weewx.units.unit_constants[unit_system_name]
+      self.archive_topic = stn_dict.get('archive_topic', None)
       clientid = stn_dict.get('clientid', 'MQTTSubscribeDriver-' + str(random.randint(1000, 9999)))
 
       loginf(self.console, "MQTTSubscribeDriver", "Client id is %s" % clientid)
-      loginf(self.console, "MQTTSubscribeDriver", "Default units is %s %i" %(unit_system_name, unit_system))
       loginf(self.console, "MQTTSubscribeDriver", "Wait before retry is %i" % self.wait_before_retry)
 
-      self.topics = create_topics(self.console, stn_dict, unit_system)
-
-      if 'archive_topic' in stn_dict:
-          self.archive_topic = stn_dict['archive_topic']
-          self.topics[self.archive_topic] = {}
-          self.topics[self.archive_topic]['queue'] = deque()
-          self.topics[self.archive_topic]['unit_system'] = unit_system
+      self.topics = create_topics(self.console, stn_dict)
 
       client = mqtt.Client(client_id=clientid)
       MQTTSubscribe.__init__(self, client, self.topics, stn_dict)
