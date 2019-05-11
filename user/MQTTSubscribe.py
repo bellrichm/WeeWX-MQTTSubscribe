@@ -40,7 +40,9 @@ Configuration:
     unit_system = US
 
     # The clientid to connect with.
-    # Todo - explain default values
+    # Service default is: MQTTSubscribeService-xxxx
+    # Driver default is: MQTTSubscribeDriver-xxxx
+    #    where xxxx is a random number between 1000 and 9999
     clientid =
 
     # The topic to subscribe to.
@@ -67,8 +69,12 @@ Configuration:
     # Default is: =
     keyword_separator = =
 
-    # The amount to overlap the start time when processing the MQTT queue.
-    # ToDo - add explaination
+    # The amount of time in seconds to overlap the start time when processing the MQTT queue.
+    # When the time of the MQTT payload is less than the end time of the previous packet/record, 
+    # the MQTT payload is ignored. When overlap is set, MQTT payloads within this number of seconds 
+    # of the previous end time will be processed.
+    # It is best to keep this 0 and only set it if 'Ignoring record outside of interval' messages are seen.
+    # This option maybe removed in the future.
     # Default is: 0
     # Only used by the service.
     overlap = 0
@@ -78,8 +84,8 @@ Configuration:
     # Only used by the service.
     binding = loop
 
-    # The amount of time to wait when the queue of MQTT payload is empty
-    # ToDo - add explaination
+    # When the MQTT queue has no data, the amount of time in seconds to wait
+    # before checking again.
     # Default is: 2
     # Only used by the driver
     wait_before_retry = 2
