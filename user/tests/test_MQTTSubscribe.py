@@ -301,6 +301,57 @@ class Teston_connect(unittest.TestCase):
         mock_client.subscribe.assert_any_call(topic1)
         mock_client.subscribe.assert_any_call(topic2)
 
+class TestQueueSizeCheck(unittest.TestCase):
+    mock_client = mock.Mock(spec=mqtt.Client)
+    
+    def test_queue_max_reached(self):
+        SUT = MQTTSubscribe(self.mock_client, None, {})
+
+        queue = deque()
+        queue.append( ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), )
+        queue.append( ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), )
+        queue.append( ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), )
+        queue.append( ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), )
+        orig_queue_size = len(queue)
+        max_queue = 2
+
+        with mock.patch('user.MQTTSubscribe.logerr') as mock_logerr:
+            SUT.queue_size_check(queue, max_queue)
+            self.assertEqual(mock_logerr.call_count, orig_queue_size-max_queue+1)
+            self.assertEqual(len(queue), max_queue-1)
+
+    def test_queue_max_not_reached(self):
+        SUT = MQTTSubscribe(self.mock_client, None, {})
+
+        queue = deque()
+        queue.append( ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), )
+        queue.append( ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), )
+        queue.append( ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), )
+        queue.append( ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), )
+        orig_queue_size = len(queue)
+        max_queue = 7
+
+        with mock.patch('user.MQTTSubscribe.logerr') as mock_logerr:
+            SUT.queue_size_check(queue, max_queue)
+            self.assertEqual(mock_logerr.call_count, 0)
+            self.assertEqual(len(queue), orig_queue_size)
+
+    def test_queue_max_equal(self):
+        SUT = MQTTSubscribe(self.mock_client, None, {})
+
+        queue = deque()
+        queue.append( ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), )
+        queue.append( ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), )
+        queue.append( ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), )
+        queue.append( ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), )
+        orig_queue_size = len(queue)
+        max_queue = 4
+
+        with mock.patch('user.MQTTSubscribe.logerr') as mock_logerr:
+            SUT.queue_size_check(queue, max_queue)
+            self.assertEqual(mock_logerr.call_count, orig_queue_size-max_queue+1)
+            self.assertEqual(len(queue), max_queue-1)
+
 class TestKeywordload(unittest.TestCase):
     unit_system = random.randint(1, 10)
     config_dict = {
@@ -327,13 +378,14 @@ class TestKeywordload(unittest.TestCase):
     def test_payload_empty(self):
         mock_client = mock.Mock(spec=mqtt.Client)
         topic = 'foo/bar'
-        queue = deque()
         config_dict = dict(self.config_dict)
         config_dict['topic'] = topic
 
         topics = {}
         topics[topic] = {}
         topics[topic]['unit_system'] = self.unit_system
+        topics[topic]['queue']= deque()
+        topics[topic]['max_queue']= six.MAXSIZE
 
         SUT = MQTTSubscribe(mock_client, topics, config_dict)
 
@@ -382,13 +434,14 @@ class TestKeywordload(unittest.TestCase):
     def test_payload_missing_separator(self):
         mock_client = mock.Mock(spec=mqtt.Client)
         topic = 'foo/bar'
-        queue = deque()
         config_dict = dict(self.config_dict)
         config_dict['topic'] = topic
 
         topics = {}
         topics[topic] = {}
         topics[topic]['unit_system'] = self.unit_system
+        topics[topic]['queue']= deque()
+        topics[topic]['max_queue']= six.MAXSIZE
 
         SUT = MQTTSubscribe(mock_client, topics, config_dict)
 
@@ -411,6 +464,7 @@ class TestKeywordload(unittest.TestCase):
         topics[topic] = {}
         topics[topic]['unit_system'] = self.unit_system
         topics[topic]['queue'] = queue
+        topics[topic]['max_queue']= six.MAXSIZE
 
         SUT = MQTTSubscribe(mock_client, topics, config_dict)
 
@@ -444,6 +498,7 @@ class TestKeywordload(unittest.TestCase):
         topics[topic] = {}
         topics[topic]['unit_system'] = self.unit_system
         topics[topic]['queue'] = queue
+        topics[topic]['max_queue']= six.MAXSIZE
 
         SUT = MQTTSubscribe(mock_client, topics, config_dict)
 
@@ -477,6 +532,7 @@ class TestKeywordload(unittest.TestCase):
         topics[topic] = {}
         topics[topic]['unit_system'] = self.unit_system
         topics[topic]['queue'] = queue
+        topics[topic]['max_queue']= six.MAXSIZE
 
         SUT = MQTTSubscribe(mock_client, topics, config_dict)
 
@@ -567,6 +623,7 @@ class TestJsonPayload(unittest.TestCase):
         topics[topic] = {}
         topics[topic]['unit_system'] = self.unit_system
         topics[topic]['queue'] = queue
+        topics[topic]['max_queue']= six.MAXSIZE
 
         SUT = MQTTSubscribe(mock_client, topics, config_dict)
 
@@ -599,6 +656,7 @@ class TestJsonPayload(unittest.TestCase):
         topics[topic] = {}
         topics[topic]['unit_system'] = self.unit_system
         topics[topic]['queue'] = queue
+        topics[topic]['max_queue']= six.MAXSIZE
 
         SUT = MQTTSubscribe(mock_client, topics, config_dict)
 
@@ -632,6 +690,7 @@ class TestJsonPayload(unittest.TestCase):
         topics[topic] = {}
         topics[topic]['unit_system'] = self.unit_system
         topics[topic]['queue'] = queue
+        topics[topic]['max_queue']= six.MAXSIZE
 
         SUT = MQTTSubscribe(mock_client, topics, config_dict)
 
@@ -724,6 +783,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         topics[topic] = {}
         topics[topic]['unit_system'] = self.unit_system
         topics[topic]['queue'] = queue
+        topics[topic]['max_queue']= six.MAXSIZE
 
         SUT = MQTTSubscribe(mock_client, topics, config_dict)
 
@@ -753,6 +813,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         topics[topic] = {}
         topics[topic]['unit_system'] = self.unit_system
         topics[topic]['queue'] = queue
+        topics[topic]['max_queue']= six.MAXSIZE
 
         SUT = MQTTSubscribe(mock_client, topics, config_dict)
 
@@ -784,6 +845,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         topics[topic] = {}
         topics[topic]['unit_system'] = self.unit_system
         topics[topic]['queue'] = queue
+        topics[topic]['max_queue']= six.MAXSIZE
 
         SUT = MQTTSubscribe(mock_client, topics, config_dict)
 
@@ -815,6 +877,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         topics[topic] = {}
         topics[topic]['unit_system'] = self.unit_system
         topics[topic]['queue'] = queue
+        topics[topic]['max_queue']= six.MAXSIZE
 
         SUT = MQTTSubscribe(mock_client, topics, config_dict)
 
@@ -906,6 +969,7 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
         topics[topic] = {}
         topics[topic]['unit_system'] = self.unit_system
         topics[topic]['queue'] = queue
+        topics[topic]['max_queue']= six.MAXSIZE
 
         SUT = MQTTSubscribe(mock_client, topics, config_dict)
 
@@ -935,6 +999,7 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
         topics[topic] = {}
         topics[topic]['unit_system'] = self.unit_system
         topics[topic]['queue'] = queue
+        topics[topic]['max_queue']= six.MAXSIZE
 
         SUT = MQTTSubscribe(mock_client, topics, config_dict)
 
@@ -966,6 +1031,7 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
         topics[topic] = {}
         topics[topic]['unit_system'] = self.unit_system
         topics[topic]['queue'] = queue
+        topics[topic]['max_queue']= six.MAXSIZE
 
         SUT = MQTTSubscribe(mock_client, topics, config_dict)
 
@@ -997,6 +1063,7 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
         topics[topic] = {}
         topics[topic]['unit_system'] = self.unit_system
         topics[topic]['queue'] = queue
+        topics[topic]['max_queue']= six.MAXSIZE
 
         SUT = MQTTSubscribe(mock_client, topics, config_dict)
 

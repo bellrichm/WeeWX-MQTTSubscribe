@@ -49,6 +49,16 @@ Configuration:
     # DEPRECATED - use [[topics]]
     topic =
 
+    # Todo - think about default size
+    # The maximum queue size.
+    # When the queue is larger than this value, the oldest element is removed.
+    # In general the queue should not grow large, but it might if the time 
+    # between the driver creating packets is large and the MQTT broker publishes frequently.
+    # Or if subscribing to 'individual' payloads with wildcards. This results in many topic
+    # in a single queue.
+    # Default is: six.MAXSIZE
+    # max_queue = six.MAXSIZE
+
     # The format of the MQTT payload. 
     # Currently support: individual, json, keyword
     # Must be specified.
@@ -121,7 +131,7 @@ import weewx.drivers
 from weewx.engine import StdService
 from collections import deque
 
-VERSION='1.1.0rc17'
+VERSION='1.1.0rc18'
 
 def logmsg(console, dst, prefix, msg):
     syslog.syslog(dst, '%s: %s' % (prefix, msg))
@@ -156,7 +166,13 @@ def create_topics(console, config_dict):
         raise ValueError("At least one [[topics]] must be specified.")
 
     for topic in topics:
+        if 'topics' in config_dict and topic in config_dict['topics']:
+            topic_dict = config_dict['topics'][topic]
+        else:
+            topic_dict = {}
         topics[topic]['queue'] = deque()
+        topics[topic]['max_queue'] = topic_dict.get('max_queue',
+                                                    config_dict.get('max_queue', six.MAXSIZE))
         topics[topic]['queue_wind'] = deque()
         topics[topic]['unit_system'] = unit_system
 
@@ -242,6 +258,11 @@ class MQTTSubscribe():
             if mqtt.topic_matches_sub(topic, msg_topic):
                 return topic
 
+    def queue_size_check(self, queue, max_queue):
+        while len(queue) >= max_queue:
+            element = queue.popleft()
+            logerr(self.console, "MQTTSubscribe", "Queue limit %i reached. Removing: %s" %(max_queue, element))        
+
     # sub class overrides this for specific MQTT payload formats
     def on_message(self, client, userdata, msg):
         loginf(self.console, "MQTTSubscribe", "Method 'on_message' not implemented")
@@ -251,6 +272,9 @@ class MQTTSubscribe():
         try:
             topic =self. _lookup_topic(msg.topic)
             logdbg(self.console, "MQTTSubscribe", "For %s received: %s assigned to: %s" %(msg.topic, msg.payload, topic))            
+
+            self.queue_size_check(self.topics[topic]['queue'], self.topics[topic]['max_queue'])
+
             fields = msg.payload.split(self.keyword_delimiter)
             data = {}
             for field in fields:
@@ -286,6 +310,8 @@ class MQTTSubscribe():
             topic =self. _lookup_topic(msg.topic)
             logdbg(self.console, "MQTTSubscribe", "For %s received: %s assigned to: %s" %(msg.topic, msg.payload, topic))            
             
+            self.queue_size_check(self.topics[topic]['queue'], self.topics[topic]['max_queue'])
+
             # ToDo - better way?
             if six.PY2:
                 data = self._byteify(
@@ -314,6 +340,8 @@ class MQTTSubscribe():
         try:
             topic =self. _lookup_topic(msg.topic)
             logdbg(self.console, "MQTTSubscribe", "For %s received: %s assigned to: %s" %(msg.topic, msg.payload, topic))
+
+            self.queue_size_check(self.topics[topic]['queue'], self.topics[topic]['max_queue'])
 
             if self.full_topic_fieldname:
                 key = msg.topic.encode('ascii', 'ignore') # ToDo - research
