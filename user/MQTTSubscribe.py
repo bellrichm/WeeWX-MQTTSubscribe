@@ -131,7 +131,7 @@ import weewx.drivers
 from weewx.engine import StdService
 from collections import deque
 
-VERSION='1.1.0rc18'
+VERSION='1.1.0rc19'
 
 def logmsg(console, dst, prefix, msg):
     syslog.syslog(dst, '%s: %s' % (prefix, msg))
@@ -178,23 +178,27 @@ def create_topics(console, config_dict):
 
     return topics
 
-# Special case the individual topic processing and aggregate the wind data before accumulating
-# ToDo - cleanup
-# ugly side affect of updating self.wind_data
-def _process_individual(self, data):
-    wind_fields = ['windGust', 'windGustDir', 'windDir', 'windSpeed']
-    old_wind_data = {}
-    for field in wind_fields:
-        # ToDo - might be a better way to determine the fieldname
-        if field in data:
-            if field in self.wind_data:
-                old_wind_data = dict(self.wind_data)
-                self.wind_data = {}
+class CollectData:
+    def __init__(self, fields):
+        self.fields = fields
+        self.data = {}
 
-            self.wind_data[field] = data[field]
-            self.wind_data['usUnits'] = data['usUnits']
-            self.wind_data['dateTime'] = data['dateTime']
-            return old_wind_data
+    def add_data(self, in_data):
+        old_data = {}
+        for field in self.fields:
+            # ToDo - might be a better way to determine the fieldname
+            if field in in_data:
+                if field in self.data:
+                    old_data = dict(self.data)
+                    self.data = {}
+
+                self.data[field] = in_data[field]
+                self.data['usUnits'] = in_data['usUnits']
+                self.data['dateTime'] = in_data['dateTime']
+                return old_data
+
+    def get_data(self):
+        return self.data
 
 class MQTTSubscribe():
     def __init__(self, client, topics, service_dict):
@@ -410,6 +414,7 @@ class MQTTSubscribeService(StdService):
         self.topics = create_topics(self.console, service_dict)
 
         self.end_ts = 0 # prime for processing loop packet
+        self.wind_fields = ['windGust', 'windGustDir', 'windDir', 'windSpeed']
 
         self.client = mqtt.Client(client_id=clientid)
         self.thread = MQTTSubscribeServiceThread(self, self.client, self.topics, service_dict)
@@ -446,13 +451,13 @@ class MQTTSubscribeService(StdService):
                 loginf(self.console, "MQTTSubscribeService", "Ignoring record outside of interval %f %f %f %s"
                     %(start_ts, end_ts, archive_data['dateTime'], to_sorted_string(archive_data)))
 
-        self.wind_data = {}
+        collector = CollectData(self.wind_fields)
         logdbg(self.console, "MQTTSubscribeService", "Wind queue size is: %i" % len(queue_wind))
         while (len(queue_wind) > 0 and queue_wind[0]['dateTime'] <= end_ts):
             archive_data = queue_wind.popleft()
             logdbg(self.console, "MQTTSubscribeService", "Processing: %s" % to_sorted_string(archive_data))            
             try:
-                data = _process_individual(self, archive_data) # ugly side affect of updating self.wind_data
+                data = collector.add_data(archive_data)
                 if data:
                     logdbg(self.console, "MQTTSubscribeService", "Data to accumulate: %s" % to_sorted_string(data))
                     accumulator.addRecord(data)
@@ -460,9 +465,10 @@ class MQTTSubscribeService(StdService):
                 loginf(self.console, "MQTTSubscribeService", "Ignoring record outside of interval %f %f %f %s"
                     %(start_ts, end_ts, archive_data['dateTime'], to_sorted_string(archive_data)))            
 
-        if self.wind_data:
-            logdbg(self.console, "MQTTSubscribeService", "Data to accumulate post loop: %s" % to_sorted_string(self.wind_data))
-            accumulator.addRecord(self.wind_data)
+        wind_data = collector.get_data()
+        if wind_data:
+            logdbg(self.console, "MQTTSubscribeService", "Data to accumulate post loop: %s" % to_sorted_string(wind_data))
+            accumulator.addRecord(wind_data)
 
         target_data = {}
         if not accumulator.isEmpty:
@@ -522,6 +528,8 @@ class MQTTSubscribeDriver(MQTTSubscribe, weewx.drivers.AbstractDevice):
       loginf(self.console, "MQTTSubscribeDriver", "Client id is %s" % clientid)
       loginf(self.console, "MQTTSubscribeDriver", "Wait before retry is %i" % self.wait_before_retry)
 
+      self.wind_fields = ['windGust', 'windGustDir', 'windDir', 'windSpeed']
+
       self.topics = create_topics(self.console, stn_dict)
 
       client = mqtt.Client(client_id=clientid)
@@ -545,17 +553,20 @@ class MQTTSubscribeDriver(MQTTSubscribe, weewx.drivers.AbstractDevice):
  
             queue_wind = self.topics[topic]['queue_wind']
             logdbg(self.console, "MQTTSubscribeDriver", "Wind queue is size %i" % len(queue_wind))
-            self.wind_data = {}
+            #self.wind_data = {}
+            collector = CollectData(self.wind_fields)
             while len(queue_wind) > 0:
                 packet = queue_wind.popleft()
-                data = _process_individual(self, packet)  # ugly side affect of updatinf self.wind_data  
+                #data = _process_individual(self, packet)  # ugly side affect of updatinf self.wind_data  
+                data = collector.add_data(packet)
                 if data:
                     logdbg(self.console, "MQTTSubscribeDriver", "Packet: %s" % to_sorted_string(data))
                     yield data
                     
-            if self.wind_data:
-                logdbg(self.console, "MQTTSubscribeDriver", "Packet post loop: %s" % to_sorted_string(self.wind_data))
-                yield self.wind_data
+            wind_data = collector.get_data()
+            if wind_data:
+                logdbg(self.console, "MQTTSubscribeDriver", "Packet post loop: %s" % to_sorted_string(wind_data))
+                yield wind_data
             logdbg(self.console, "MQTTSubscribeDriver", "Queues are empty.")
         time.sleep(self.wait_before_retry)
 
