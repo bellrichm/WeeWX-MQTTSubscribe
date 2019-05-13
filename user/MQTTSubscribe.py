@@ -468,7 +468,11 @@ class MQTTSubscribeService(StdService):
         wind_data = collector.get_data()
         if wind_data:
             logdbg(self.console, "MQTTSubscribeService", "Data to accumulate post loop: %s" % to_sorted_string(wind_data))
-            accumulator.addRecord(wind_data)
+            try:
+                accumulator.addRecord(wind_data)
+            except weewx.accum.OutOfSpan:
+                loginf(self.console, "MQTTSubscribeService", "Ignoring record outside of interval %f %f %f %s"
+                    %(start_ts, end_ts, archive_data['dateTime'], to_sorted_string(archive_data)))
 
         target_data = {}
         if not accumulator.isEmpty:
