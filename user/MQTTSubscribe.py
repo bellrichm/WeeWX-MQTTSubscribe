@@ -561,7 +561,6 @@ class MQTTSubscribeDriver(MQTTSubscribe, weewx.drivers.AbstractDevice):
             collector = CollectData(self.wind_fields)
             while len(queue_wind) > 0:
                 packet = queue_wind.popleft()
-                #data = _process_individual(self, packet)  # ugly side affect of updatinf self.wind_data  
                 data = collector.add_data(packet)
                 if data:
                     logdbg(self.console, "MQTTSubscribeDriver", "Packet: %s" % to_sorted_string(data))

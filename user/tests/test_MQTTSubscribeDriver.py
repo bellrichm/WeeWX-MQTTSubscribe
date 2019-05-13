@@ -87,6 +87,62 @@ class TestgenLoopPackets(unittest.TestCase):
                 mock_time.sleep.assert_not_called()
                 self.assertDictEqual(packet, queue_data)
 
+    def setup_wind_queue_tests(self, topic):
+
+        self.queue_data = {
+            'windSpeed': random.uniform(1, 100),
+            'usUnits': 1,
+            'dateTime': int(time.time() + 0.5)
+        }
+
+        self.aggregate_data = dict(self.queue_data)
+
+        self.config_dict = {}
+        self.config_dict['topic'] = topic
+
+    def test_wind_queue_empty(self):
+        topic = 'foo/bar'
+        self.setup_wind_queue_tests(topic)
+
+        with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
+            with mock.patch('user.MQTTSubscribe.time') as mock_time:
+                with mock.patch('user.MQTTSubscribe.CollectData') as mock_CollectData:
+                    type(mock_CollectData.return_value).get_data = mock.Mock(return_value={})
+                    type(mock_CollectData.return_value).add_data = mock.Mock(return_value=self.aggregate_data)
+                    SUT = MQTTSubscribeDriver(**self.config_dict)
+                    thread = GetLoopPacketThread(SUT)
+                    thread.start()
+
+                    # wait for at least one sleep cycle
+                    while mock_time.sleep.call_count <= 0:
+                        time.sleep(1)
+
+                    SUT.topics[topic]['queue_wind'].append(self.queue_data, )
+
+                    # wait for queue to be processed
+                    while not thread.packet:
+                        time.sleep(1)
+
+                    mock_time.sleep.assert_called()
+                    self.assertDictEqual(thread.packet, self.queue_data)
+
+    def test_wind_queue(self):
+        topic = 'foo/bar'
+        self.setup_wind_queue_tests(topic)
+
+        with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
+            with mock.patch('user.MQTTSubscribe.time') as mock_time:
+                with mock.patch('user.MQTTSubscribe.CollectData') as mock_CollectData:
+                    type(mock_CollectData.return_value).add_data = mock.Mock(return_value=self.aggregate_data)
+                    SUT = MQTTSubscribeDriver(**self.config_dict)
+
+                    SUT.topics[topic]['queue_wind'].append(self.queue_data, )
+                    gen=SUT.genLoopPackets()
+                    packet=next(gen)
+
+                    mock_time.sleep.assert_not_called()
+                    self.assertDictEqual(packet, self.queue_data)
+
 class TestgenArchiveRecords(unittest.TestCase):
 
     mock_StdEngine = mock.Mock(spec=weewx.engine.StdEngine)
