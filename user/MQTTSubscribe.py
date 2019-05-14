@@ -574,12 +574,16 @@ class MQTTSubscribeDriver(MQTTSubscribe, weewx.drivers.AbstractDevice):
         time.sleep(self.wait_before_retry)
 
     def genArchiveRecords(self, lastgood_ts):
-        queue = self.topics[self.archive_topic]['queue']
-        logdbg(self.console, "MQTTSubscribeDriver", "Archive queue is size %i and date is %f." %(len(queue), lastgood_ts))
-        while (len(queue) > 0 and queue[0]['dateTime'] <= lastgood_ts):
-            archive_record = queue.popleft()
-            logdbg(self.console, "MQTTSubscribeDriver", "Archive record: %s" % to_sorted_string(archive_record))
-            yield archive_record
+        if not self.archive_topic:
+            logdbg(self.console, "MQTTSubscribeDriver", "No archive topic configured.")
+            raise NotImplementedError
+        else:
+            queue = self.topics[self.archive_topic]['queue']
+            logdbg(self.console, "MQTTSubscribeDriver", "Archive queue is size %i and date is %f." %(len(queue), lastgood_ts))
+            while (len(queue) > 0 and queue[0]['dateTime'] <= lastgood_ts):
+                archive_record = queue.popleft()
+                logdbg(self.console, "MQTTSubscribeDriver", "Archive record: %s" % to_sorted_string(archive_record))
+                yield archive_record
 
     @property
     def hardware_name(self):
