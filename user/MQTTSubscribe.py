@@ -34,6 +34,11 @@ Configuration:
     # Default is: None
     password =
 
+    # Controls the MQTT logging.
+    # Default is: false
+    log = false
+
+
     # Units for MQTT payloads without unit value. 
     # Valid values: US, METRIC, METRICWX
     # Default is: US
@@ -131,7 +136,7 @@ import weewx.drivers
 from weewx.engine import StdService
 from collections import deque
 
-VERSION='1.1.0rc19'
+VERSION='1.1.0rc20'
 
 def logmsg(console, dst, prefix, msg):
     syslog.syslog(dst, '%s: %s' % (prefix, msg))
@@ -211,6 +216,7 @@ class MQTTSubscribe():
         port = to_int(service_dict.get('port', 1883))
         username = service_dict.get('username', None)
         password = service_dict.get('password', None)
+        log = to_bool(service_dict.get('log', False))
 
         self.archive_topic = service_dict.get('archive_topic', None)
 
@@ -239,6 +245,17 @@ class MQTTSubscribe():
         loginf(self.console, "MQTTSubscribe", "Keyword delimiter is %s" % self.keyword_delimiter)
         loginf(self.console, "MQTTSubscribe", "Label map is %s" % self.label_map)
         loginf(self.console, "MQTTSubscribe", "Topics are %s" % self.topics)
+
+        self.logger = {
+            mqtt.MQTT_LOG_INFO: loginf,
+            mqtt.MQTT_LOG_NOTICE: loginf,
+            mqtt.MQTT_LOG_WARNING: loginf,
+            mqtt.MQTT_LOG_ERR: logerr,
+            mqtt.MQTT_LOG_DEBUG: logdbg
+        }
+
+        if log:
+            self.client.on_log = self.on_log
 
         if self.payload_type == 'json':
             self.client.on_message = self.on_message_json
@@ -375,6 +392,9 @@ class MQTTSubscribe():
 
     def on_disconnect(self, client, userdata, rc):
         logdbg(self.console, "MQTTSubscribe", "Disconnected with result code %i" %rc)
+
+    def on_log(self, client, userdata, level, msg):
+        self.logger[level](self.console, "MQTTSubscribe/MQTT", msg)
 
     def _byteify(self, data, ignore_dicts = False):
         # if this is a unicode string, return its string representation
