@@ -3,7 +3,7 @@ from __future__ import with_statement
 import unittest
 import mock
 
-import paho.mqtt.client
+from collections import deque
 import random
 import time
 import threading
@@ -25,25 +25,34 @@ class GetLoopPacketThread(threading.Thread):
 class TestgenLoopPackets(unittest.TestCase):
     mock_StdEngine = mock.Mock(spec=weewx.engine.StdEngine)
 
-    def test_queue_empty(self):
+    def setup_queue_tests(self, topic):
         current_time = int(time.time() + 0.5)
         inTemp = random.uniform(1, 100)
         outTemp = random.uniform(1, 100)
 
-        queue_data = {
+        self.queue_data = {
             'inTemp': inTemp,
             'outTemp':outTemp,
             'usUnits': 1,
             'dateTime': current_time
         }
 
-        topic = 'foo/bar'
-        config_dict = {}
-        config_dict['topic'] = topic
+        self.config_dict = {}
+        self.config_dict['topic'] = topic
 
-        with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
+        self.topics = {}
+        self.topics[topic] = {}
+        self.topics[topic]['queue'] = deque()
+        self.topics[topic]['queue'].append(self.queue_data, )
+        self.topics[topic]['queue_wind'] = deque()
+
+    def test_queue_empty(self):
+        topic = 'foo/bar'
+        self.setup_queue_tests(topic)
+
+        with mock.patch('user.MQTTSubscribe.MQTTSubscribe') as mock_manager:
             with mock.patch('user.MQTTSubscribe.time') as mock_time:
-                SUT = MQTTSubscribeDriver(**config_dict)
+                SUT = MQTTSubscribeDriver(**self.config_dict)
                 thread = GetLoopPacketThread(SUT)
                 thread.start()
 
@@ -51,43 +60,30 @@ class TestgenLoopPackets(unittest.TestCase):
                 while mock_time.sleep.call_count <= 0:
                     time.sleep(1)
 
-                #TODO - mock manger, not mqtt
-                SUT.manager.topics[topic]['queue'].append(queue_data, )
+                type(mock_manager.return_value).topics = mock.PropertyMock(return_value = self.topics)
 
                 # wait for queue to be processed
                 while not thread.packet:
                     time.sleep(1)
 
                 mock_time.sleep.assert_called()
-                self.assertDictEqual(thread.packet, queue_data)
+                self.assertDictEqual(thread.packet, self.queue_data)
 
     def test_queue(self):
-        current_time = int(time.time() + 0.5)
-        inTemp = random.uniform(1, 100)
-        outTemp = random.uniform(1, 100)
-
-        queue_data = {
-            'inTemp': inTemp,
-            'outTemp':outTemp,
-            'usUnits': 1,
-            'dateTime': current_time
-        }
-
         topic = 'foo/bar'
-        config_dict = {}
-        config_dict['topic'] = topic
+        self.setup_queue_tests(topic)
 
-        with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
+        with mock.patch('user.MQTTSubscribe.MQTTSubscribe') as mock_manager:
             with mock.patch('user.MQTTSubscribe.time') as mock_time:
-                SUT = MQTTSubscribeDriver(**config_dict)
+                type(mock_manager.return_value).topics = mock.PropertyMock(return_value = self.topics)
 
-                #TODO - mock manger, not mqtt
-                SUT.manager.topics[topic]['queue'].append(queue_data, )
+                SUT = MQTTSubscribeDriver(**self.config_dict)
+
                 gen=SUT.genLoopPackets()
                 packet=next(gen)
 
                 mock_time.sleep.assert_not_called()
-                self.assertDictEqual(packet, queue_data)
+                self.assertDictEqual(packet, self.queue_data)
 
     def setup_wind_queue_tests(self, topic):
 
@@ -102,11 +98,17 @@ class TestgenLoopPackets(unittest.TestCase):
         self.config_dict = {}
         self.config_dict['topic'] = topic
 
+        self.topics = {}
+        self.topics[topic] = {}
+        self.topics[topic]['queue'] = deque()
+        self.topics[topic]['queue_wind'] = deque()
+        self.topics[topic]['queue_wind'].append(self.queue_data, )
+
     def test_wind_queue_empty(self):
         topic = 'foo/bar'
         self.setup_wind_queue_tests(topic)
 
-        with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
+        with mock.patch('user.MQTTSubscribe.MQTTSubscribe') as mock_manager:
             with mock.patch('user.MQTTSubscribe.time') as mock_time:
                 with mock.patch('user.MQTTSubscribe.CollectData') as mock_CollectData:
                     type(mock_CollectData.return_value).get_data = mock.Mock(return_value={})
@@ -119,8 +121,7 @@ class TestgenLoopPackets(unittest.TestCase):
                     while mock_time.sleep.call_count <= 0:
                         time.sleep(1)
 
-                    #TODO - mock manger, not mqtt
-                    SUT.manager.topics[topic]['queue_wind'].append(self.queue_data, )
+                    type(mock_manager.return_value).topics = mock.PropertyMock(return_value = self.topics)
 
                     # wait for queue to be processed
                     while not thread.packet:
@@ -133,14 +134,13 @@ class TestgenLoopPackets(unittest.TestCase):
         topic = 'foo/bar'
         self.setup_wind_queue_tests(topic)
 
-        with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
+        with mock.patch('user.MQTTSubscribe.MQTTSubscribe') as mock_manager:
             with mock.patch('user.MQTTSubscribe.time') as mock_time:
                 with mock.patch('user.MQTTSubscribe.CollectData') as mock_CollectData:
+                    type(mock_manager.return_value).topics = mock.PropertyMock(return_value = self.topics)
                     type(mock_CollectData.return_value).add_data = mock.Mock(return_value=self.aggregate_data)
                     SUT = MQTTSubscribeDriver(**self.config_dict)
 
-                    #TODO - mock manger, not mqtt
-                    SUT.manager.topics[topic]['queue_wind'].append(self.queue_data, )
                     gen=SUT.genLoopPackets()
                     packet=next(gen)
 
@@ -151,26 +151,36 @@ class TestgenArchiveRecords(unittest.TestCase):
 
     mock_StdEngine = mock.Mock(spec=weewx.engine.StdEngine)
 
-    def test_empty_queue(self):
+    def setup_archive_queue_tests(self, archive_topic):
         current_time = int(time.time() + 0.5)
         inTemp = random.uniform(1, 100)
         outTemp = random.uniform(1, 100)
 
-        queue_data = {
+        self.queue_data = {
             'inTemp': inTemp,
             'outTemp':outTemp,
             'usUnits': 1,
             'dateTime': current_time
         }
 
-        config_dict = {}
-        config_dict['archive_topic'] = 'archive'
-        config_dict['topics'] = {}
-        config_dict['topics']['foo/bar'] = {}
-        config_dict['topics']['archive'] = {}
+        self.config_dict = {}
+        self.config_dict['archive_topic'] = archive_topic
+        self.config_dict['topics'] = {}
+        self.config_dict['topics']['foo/bar'] = {}
+        self.config_dict['topics'][archive_topic] = {}
 
-        with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
-            SUT = MQTTSubscribeDriver(**config_dict)
+        self.topics = {}
+        self.topics[archive_topic] = {}
+        self.topics[archive_topic]['queue'] = deque()
+        self.topics[archive_topic]['queue'].append(self.queue_data, )
+        self.topics[archive_topic]['queue_wind'] = deque()
+
+    def test_empty_queue(self):
+        archive_topic = 'archive'
+        self.setup_archive_queue_tests(archive_topic)
+
+        with mock.patch('user.MQTTSubscribe.MQTTSubscribe') as mock_manager:
+            SUT = MQTTSubscribeDriver(**self.config_dict)
             record = None
 
             gen=SUT.genArchiveRecords(0)
@@ -182,30 +192,15 @@ class TestgenArchiveRecords(unittest.TestCase):
             self.assertIsNone(record)
 
     def test_queue_element_in_future(self):
-        current_time = int(time.time() + 0.5)
-        inTemp = random.uniform(1, 100)
-        outTemp = random.uniform(1, 100)
-
-        queue_data = {
-            'inTemp': inTemp,
-            'outTemp':outTemp,
-            'usUnits': 1,
-            'dateTime': current_time
-        }
-
         archive_topic = 'archive'
-        config_dict = {}
-        config_dict['archive_topic'] = archive_topic
-        config_dict['topics'] = {}
-        config_dict['topics']['foo/bar'] = {}
-        config_dict['topics'][archive_topic] = {}
+        self.setup_archive_queue_tests(archive_topic)
 
-        with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
-            SUT = MQTTSubscribeDriver(**config_dict)
+        with mock.patch('user.MQTTSubscribe.MQTTSubscribe') as mock_manager:
+            type(mock_manager.return_value).topics = mock.PropertyMock(return_value = self.topics)
+
+            SUT = MQTTSubscribeDriver(**self.config_dict)
             record = None
 
-            #TODO - mock manger, not mqtt
-            SUT.manager.topics[archive_topic]['queue'].append(queue_data, )
             gen=SUT.genArchiveRecords(0)
             try:
                 record=next(gen)
@@ -215,33 +210,19 @@ class TestgenArchiveRecords(unittest.TestCase):
             self.assertIsNone(record)
 
     def test_queue(self):
-        queue_data = [{
-            'inTemp': random.uniform(1, 100),
-            'outTemp': random.uniform(1, 100),
-            'usUnits': 1,
-            'dateTime': int(time.time() + 0.5)
-            },
-            {
-            'inTemp': random.uniform(1, 100),
-            'outTemp': random.uniform(1, 100),
-            'usUnits': 1,
-            'dateTime': int(time.time() + 1.5)
-            }]
-
         archive_topic = 'archive'
-        config_dict = {}
-        config_dict['archive_topic'] = archive_topic
-        config_dict['topics'] = {}
-        config_dict['topics']['foo/bar'] = {}
-        config_dict['topics'][archive_topic] = {}
+        self.setup_archive_queue_tests(archive_topic)
+        # ToDo - cleanup
+        self.topics[archive_topic]['queue'] = deque()
+        queue_list = [self.queue_data, self.queue_data]
+        for q in queue_list:
+            self.topics[archive_topic]['queue'].append(q)
 
-        with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
-            SUT = MQTTSubscribeDriver(**config_dict)
+        with mock.patch('user.MQTTSubscribe.MQTTSubscribe') as mock_manager:
+            type(mock_manager.return_value).topics = mock.PropertyMock(return_value = self.topics)
             records = list()
 
-            for q in queue_data:
-                #TODO - mock manger, not mqtt
-                SUT.manager.topics[archive_topic]['queue'].append(q, )
+            SUT = MQTTSubscribeDriver(**self.config_dict)
 
             gen=SUT.genArchiveRecords(int(time.time() + 10.5))
             try:
@@ -250,7 +231,7 @@ class TestgenArchiveRecords(unittest.TestCase):
             except StopIteration:
                 pass
 
-            self.assertListEqual(records, queue_data)
+            self.assertListEqual(records, queue_list)
 
 
 if __name__ == '__main__':
