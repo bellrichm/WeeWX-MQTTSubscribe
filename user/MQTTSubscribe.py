@@ -210,11 +210,13 @@ class CollectData:
         return self.data
 
 class MQTTSubscribe():
-    def __init__(self, client, topics, service_dict):
+    def __init__(self, topics, service_dict):
 
-        self.client = client
         self.topics = topics
         self.console = to_bool(service_dict.get('console', False))
+        clientid = service_dict.get('clientid',
+                                'MQTTSubscribe-' + str(random.randint(1000, 9999)))
+
         host = service_dict.get('host', 'localhost')
         keepalive = to_int(service_dict.get('keepalive', 60))
         port = to_int(service_dict.get('port', 1883))
@@ -233,6 +235,7 @@ class MQTTSubscribe():
         if self.archive_topic and self.archive_topic not in service_dict['topics']:
             raise ValueError("Archive topic %s must be in [[topics]]" % self.archive_topic)
 
+        loginf(self.console, "MQTTSubscribe", "Client id is %s" % clientid)
         loginf(self.console, "MQTTSubscribe", "MQTTSubscribe version is %s" % VERSION)
         loginf(self.console, "MQTTSubscribe", "Host is %s" % host)
         loginf(self.console, "MQTTSubscribe", "Port is %s" % port)
@@ -258,6 +261,8 @@ class MQTTSubscribe():
             mqtt.MQTT_LOG_DEBUG: logdbg
         }
 
+        self.client = mqtt.Client(client_id=clientid)
+
         if log:
             self.client.on_log = self.on_log
 
@@ -274,9 +279,16 @@ class MQTTSubscribe():
         self.client.on_disconnect = self.on_disconnect
 
         if username is not None and password is not None:
-         self.client.username_pw_set(username, password)
+            self.client.username_pw_set(username, password)
 
         self.client.connect(host, port, keepalive)
+
+    def start(self):
+        logdbg(self.console, "MQTTSubscribe", "Starting loop")
+        self.client.loop_start()
+
+    def close(self):
+        self.client.disconnect()
 
     def _lookup_topic(self, msg_topic):
         for topic in self.topics:
@@ -425,9 +437,7 @@ class MQTTSubscribeService(StdService):
         self.console = to_bool(service_dict.get('console', False))
         self.overlap = to_float(service_dict.get('overlap', 0))
         binding = service_dict.get('binding', 'loop')
-        clientid = service_dict.get('clientid', 'MQTTSubscribeService-' + str(random.randint(1000, 9999)))
 
-        loginf(self.console, "MQTTSubscribeService", "Client id is %s" % clientid)
         loginf(self.console, "MQTTSubscribeService", "Binding is %s" % binding)
         loginf(self.console, "MQTTSubscribeService", "Overlap is %s" % self.overlap)
 
@@ -439,11 +449,8 @@ class MQTTSubscribeService(StdService):
         self.end_ts = 0 # prime for processing loop packet
         self.wind_fields = ['windGust', 'windGustDir', 'windDir', 'windSpeed']
 
-        self.client = mqtt.Client(client_id=clientid)
-
-        manager = MQTTSubscribe(self.client, self.topics, service_dict)
-        logdbg(self.console, "MQTTSubscribeDriver", "Starting loop")
-        self.client.loop_start()
+        self.manager = MQTTSubscribe(self.topics, service_dict)
+        self.manager.start()
 
         if (binding == 'archive'):
             self.bind(weewx.NEW_ARCHIVE_RECORD, self.new_archive_record)
@@ -453,7 +460,7 @@ class MQTTSubscribeService(StdService):
             raise ValueError("MQTTSubscribeService: Unknown binding: %s" % binding)
 
     def shutDown(self):
-        self.client.disconnect()
+        self.manager.close()
 
     def _process_data(self, topic, start_ts, end_ts, record):
         queue = topic['queue']
@@ -539,20 +546,15 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice):
       self.console = to_bool(stn_dict.get('console', False))
       self.wait_before_retry = float(stn_dict.get('wait_before_retry', 2))
       self.archive_topic = stn_dict.get('archive_topic', None)
-      clientid = stn_dict.get('clientid', 'MQTTSubscribeDriver-' + str(random.randint(1000, 9999)))
 
-      loginf(self.console, "MQTTSubscribeDriver", "Client id is %s" % clientid)
       loginf(self.console, "MQTTSubscribeDriver", "Wait before retry is %i" % self.wait_before_retry)
 
       self.wind_fields = ['windGust', 'windGustDir', 'windDir', 'windSpeed']
 
       self.topics = create_topics(self.console, stn_dict)
 
-      client = mqtt.Client(client_id=clientid)
-      manager = MQTTSubscribe(client, self.topics, stn_dict)
-
-      logdbg(self.console, "MQTTSubscribeDriver", "Starting loop")
-      client.loop_start()
+      manager = MQTTSubscribe(self.topics, stn_dict)
+      manager.start()
 
     def genLoopPackets(self):
       while True:
