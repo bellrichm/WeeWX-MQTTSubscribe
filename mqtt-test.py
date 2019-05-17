@@ -18,8 +18,7 @@ usage = """mqtt-test --help
            [--topics=TOPIC1,TOPIC2]
            [--quiet]
 
-
-A simple utility that prints the topis and payloads.
+A simple utility that prints the topics and payloads.
 Configuration can be read from a 'weewx.conf' file or passed in.
 Command line options override any options in the file.
 """
@@ -36,12 +35,15 @@ def on_log(client, userdata, level, msg):
     print("%s: %s" % (log_level[level], msg))
 
 def on_connect(client, userdata, flags, rc):
-    print("Connected with result code "+str(rc))
+    print("Connected with result code %i" % rc)
     for topic in userdata['topics']:
         client.subscribe(topic)
 
+def on_disconnect(client, userdata, flags, rc):
+    print("Disconnected with result code %i" % rc)
+
 def on_message(client, userdata, msg):
-    print('%s: %s\n' %(msg.topic, msg.payload))
+    print('%s: %s' %(msg.topic, msg.payload))
 
 def init_parser():
     parser = optparse.OptionParser(usage=usage)
@@ -126,6 +128,7 @@ def main():
       client.on_log = on_log
 
     client.on_connect = on_connect
+    client.on_disconnect = on_disconnect
     client.on_message = on_message
 
     if username is not None and password is not None:

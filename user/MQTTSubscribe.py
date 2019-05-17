@@ -1,16 +1,22 @@
-"""weewx service that subscribes to an MQTT Topic and augments the archive record
+"""
+WeeWX service and driver that subscribes to MQTT topics and augments/creates 
+loop packets/archive records.
+
 
 Installation:
     Put this file in the bin/user directory.
     Update weewx.conf [MQTTSubscribeService] as needed to configure the service.
+    Update weewx.conf [MQTTSubscribeDriver] as needed to configure the driver.
     Update weewx.conf [Accumulator] for any custom fields.
 
 Overview:
-    This service consists of two threads. One thread waits on the MQTT topic
+    The service consists of two threads. One thread waits on the MQTT topic
     and when data is received it is added to the queue.
+    The other thread binds to either the NEW_LOOP_PACKET or NEW_ARCHIVE_RECORD event. 
+    On this event, it processes the queue of MQTT payloads and updates the packet or record
 
-    The other thread binds to the NEW_ARCHIVE_RECORD event. On this event,
-    it processes the queue of MQTT payloads and updates the archive record.
+    The driver processes the queue and generates a packet for each element.
+    A topic can be desinated as an 'archive topic'. Data in this topic is returned as an archive record.
 
 Configuration:
 [MQTTSubscribeService] or [MQTTSubscribeDriver]
@@ -37,7 +43,6 @@ Configuration:
     # Controls the MQTT logging.
     # Default is: false
     log = false
-
 
     # Units for MQTT payloads without unit value. 
     # Valid values: US, METRIC, METRICWX
@@ -353,7 +358,6 @@ class MQTTSubscribe():
             logerr(self.console, "MQTTSubscribe", "on_message_json failed with: %s" % exception)
             logerr(self.console, "MQTTSubscribe", "**** Ignoring topic=%s and payload=%s" % (msg.topic, msg.payload))
 
-
     def on_message_individual(self, client, userdata, msg):
         wind_fields = ['windGust', 'windGustDir', 'windDir', 'windSpeed']
         
@@ -622,8 +626,11 @@ if __name__ == '__main__': # pragma: no cover
                [--records=RECORD_COUNT]
                [--interval=INTERVAL]
                [--delay=DELAY]
-               [--units=UNITS]
+               [--units=US|METRIC|METRICWX]
+               [--binding=archive|loop]
+               [--type=driver|service]
                [--verbose]
+               [--console]
     """
 
     def main():
@@ -745,7 +752,6 @@ if __name__ == '__main__': # pragma: no cover
             i += 1
             if i >= record_count:
                 break
-
 
     def simulate_service(engine, config_dict, binding, record_count, interval, delay, units):
         service = MQTTSubscribeService(engine, config_dict)
