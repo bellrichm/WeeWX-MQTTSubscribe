@@ -599,9 +599,12 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice):
     def hardware_name(self):
         return "MQTTSubscribeDriver"
 
-# TODO - improve, apt-get example
-# Run from WeeWX home directory
-# PYTHONPATH=bin python bin/user/MQTTSubscribe.py
+# To Run
+# setup.py install:
+# PYTHONPATH=/home/weewx/bin python /home/weewx/bin/user/MQTTSubscribe.py
+#
+# rpm or deb package install:
+# PYTHONPATH=/usr/share/weewx python /usr/share/weewx/user/MQTTSubscribe.py
 if __name__ == '__main__': # pragma: no cover
     import optparse
     import os
