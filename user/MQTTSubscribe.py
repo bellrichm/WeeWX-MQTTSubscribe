@@ -140,7 +140,7 @@ import weewx.drivers
 from weewx.engine import StdService
 from collections import deque
 
-VERSION='1.1.0rc20'
+VERSION='1.1.0rc21'
 
 def logmsg(console, dst, prefix, msg):
     syslog.syslog(dst, '%s: %s' % (prefix, msg))
@@ -155,37 +155,6 @@ def loginf(console, prefix, msg):
 
 def logerr(console, prefix, msg):
     logmsg(console, syslog.LOG_ERR, prefix, msg)
-
-def create_topics(console, config_dict):
-    if 'topic' in config_dict and 'topics' in config_dict:
-        raise ValueError("Cannot have both 'topic' and 'topics'. Please remove 'topic'.")
-
-    unit_system_name = config_dict.get('unit_system', 'US').strip().upper()
-    if unit_system_name not in weewx.units.unit_constants:
-        raise ValueError("MQTTSubscribe: Unknown unit system: %s" % unit_system_name)
-    unit_system = weewx.units.unit_constants[unit_system_name]
-
-    if 'topic' in config_dict:
-        topics = {}
-        topics[config_dict['topic']] = {}
-    else:
-        topics = dict(config_dict['topics'])
-
-    if not topics:
-        raise ValueError("At least one [[topics]] must be specified.")
-
-    for topic in topics:
-        if 'topics' in config_dict and topic in config_dict['topics']:
-            topic_dict = config_dict['topics'][topic]
-        else:
-            topic_dict = {}
-        topics[topic]['queue'] = deque()
-        topics[topic]['max_queue'] = topic_dict.get('max_queue',
-                                                    config_dict.get('max_queue', six.MAXSIZE))
-        topics[topic]['queue_wind'] = deque()
-        topics[topic]['unit_system'] = unit_system
-
-    return topics
 
 class CollectData:
     def __init__(self, fields):
@@ -210,10 +179,9 @@ class CollectData:
         return self.data
 
 class MQTTSubscribe():
-    def __init__(self, topics, service_dict):
-
-        self.topics = topics
+    def __init__(self, service_dict):
         self.console = to_bool(service_dict.get('console', False))
+        self.topics = self.create_topics(service_dict)
         clientid = service_dict.get('clientid',
                                 'MQTTSubscribe-' + str(random.randint(1000, 9999)))
 
@@ -289,6 +257,38 @@ class MQTTSubscribe():
 
     def close(self):
         self.client.disconnect()
+
+    def create_topics(self, config_dict):
+        if 'topic' in config_dict and 'topics' in config_dict:
+            raise ValueError("Cannot have both 'topic' and 'topics'. Please remove 'topic'.")
+
+        unit_system_name = config_dict.get('unit_system', 'US').strip().upper()
+        if unit_system_name not in weewx.units.unit_constants:
+            raise ValueError("MQTTSubscribe: Unknown unit system: %s" % unit_system_name)
+        unit_system = weewx.units.unit_constants[unit_system_name]
+
+        if 'topic' in config_dict:
+            topics = {}
+            topics[config_dict['topic']] = {}
+        else:
+            topics = dict(config_dict['topics'])
+
+        if not topics:
+            raise ValueError("At least one [[topics]] must be specified.")
+
+        for topic in topics:
+            if 'topics' in config_dict and topic in config_dict['topics']:
+                topic_dict = config_dict['topics'][topic]
+            else:
+                topic_dict = {}
+            topics[topic]['queue'] = deque()
+            topics[topic]['max_queue'] = topic_dict.get('max_queue',
+                                                        config_dict.get('max_queue', six.MAXSIZE))
+            topics[topic]['queue_wind'] = deque()
+            topics[topic]['unit_system'] = unit_system
+
+        return topics
+
 
     def _lookup_topic(self, msg_topic):
         for topic in self.topics:
@@ -444,12 +444,10 @@ class MQTTSubscribeService(StdService):
         if 'archive_topic' in service_dict:
           raise ValueError("archive_topic, %s, is invalid when running as a service" % service_dict['archive_topic'])
 
-        self.topics = create_topics(self.console, service_dict)
-
         self.end_ts = 0 # prime for processing loop packet
         self.wind_fields = ['windGust', 'windGustDir', 'windDir', 'windSpeed']
 
-        self.manager = MQTTSubscribe(self.topics, service_dict)
+        self.manager = MQTTSubscribe(service_dict)
         self.manager.start()
 
         if (binding == 'archive'):
@@ -517,8 +515,8 @@ class MQTTSubscribeService(StdService):
     def new_loop_packet(self, event):
         start_ts = self.end_ts - self.overlap
         self.end_ts = event.packet['dateTime']
-        for tp in self.topics:
-            topic = self.topics[tp]
+        for tp in self.manager.topics:
+            topic = self.manager.topics[tp]
             target_data = self._process_data(topic, start_ts, self.end_ts, event.packet)
             event.packet.update(target_data)
             logdbg(self.console, "MQTTSubscribeService", "Packet after update is: %s" % to_sorted_string(event.packet))
@@ -529,8 +527,8 @@ class MQTTSubscribeService(StdService):
     def new_archive_record(self, event):
         end_ts = event.record['dateTime']
         start_ts = end_ts - event.record['interval'] * 60 - self.overlap
-        for tp in self.topics:
-            topic = self.topics[tp]
+        for tp in self.manager.topics:
+            topic = self.manager.topics[tp]
             target_data = self._process_data(topic, start_ts, end_ts, event.record)
             event.record.update(target_data)
             logdbg(self.console, "MQTTSubscribeService", "Record after update is: %s" % to_sorted_string(event.record))
@@ -551,27 +549,25 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice):
 
       self.wind_fields = ['windGust', 'windGustDir', 'windDir', 'windSpeed']
 
-      self.topics = create_topics(self.console, stn_dict)
-
-      manager = MQTTSubscribe(self.topics, stn_dict)
-      manager.start()
+      self.manager = MQTTSubscribe(stn_dict)
+      self.manager.start()
 
     def genLoopPackets(self):
       while True:
-        for topic in self.topics:
+        for topic in self.manager.topics:
             if topic == self.archive_topic:
                 continue
                 
-            queue = self.topics[topic]['queue']
+            queue = self.manager.topics[topic]['queue']
             logdbg(self.console, "MQTTSubscribeDriver", "Queue is size %i" % len(queue))
             while len(queue) > 0:
                 packet = queue.popleft()
                 logdbg(self.console, "MQTTSubscribeDriver", "Packet: %s" % to_sorted_string(packet))
                 yield packet
  
-            queue_wind = self.topics[topic]['queue_wind']
+            queue_wind = self.manager.topics[topic]['queue_wind']
             logdbg(self.console, "MQTTSubscribeDriver", "Wind queue is size %i" % len(queue_wind))
-            #self.wind_data = {}
+
             collector = CollectData(self.wind_fields)
             while len(queue_wind) > 0:
                 packet = queue_wind.popleft()
@@ -592,7 +588,7 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice):
             logdbg(self.console, "MQTTSubscribeDriver", "No archive topic configured.")
             raise NotImplementedError
         else:
-            queue = self.topics[self.archive_topic]['queue']
+            queue = self.manager.topics[self.archive_topic]['queue']
             logdbg(self.console, "MQTTSubscribeDriver", "Archive queue is size %i and date is %f." %(len(queue), lastgood_ts))
             while (len(queue) > 0 and queue[0]['dateTime'] <= lastgood_ts):
                 archive_record = queue.popleft()
@@ -603,6 +599,7 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice):
     def hardware_name(self):
         return "MQTTSubscribeDriver"
 
+# TODO - improve, apt-get example
 # Run from WeeWX home directory
 # PYTHONPATH=bin python bin/user/MQTTSubscribe.py
 if __name__ == '__main__': # pragma: no cover

@@ -51,7 +51,8 @@ class TestgenLoopPackets(unittest.TestCase):
                 while mock_time.sleep.call_count <= 0:
                     time.sleep(1)
 
-                SUT.topics[topic]['queue'].append(queue_data, )
+                #TODO - mock manger, not mqtt
+                SUT.manager.topics[topic]['queue'].append(queue_data, )
 
                 # wait for queue to be processed
                 while not thread.packet:
@@ -80,7 +81,8 @@ class TestgenLoopPackets(unittest.TestCase):
             with mock.patch('user.MQTTSubscribe.time') as mock_time:
                 SUT = MQTTSubscribeDriver(**config_dict)
 
-                SUT.topics[topic]['queue'].append(queue_data, )
+                #TODO - mock manger, not mqtt
+                SUT.manager.topics[topic]['queue'].append(queue_data, )
                 gen=SUT.genLoopPackets()
                 packet=next(gen)
 
@@ -117,7 +119,8 @@ class TestgenLoopPackets(unittest.TestCase):
                     while mock_time.sleep.call_count <= 0:
                         time.sleep(1)
 
-                    SUT.topics[topic]['queue_wind'].append(self.queue_data, )
+                    #TODO - mock manger, not mqtt
+                    SUT.manager.topics[topic]['queue_wind'].append(self.queue_data, )
 
                     # wait for queue to be processed
                     while not thread.packet:
@@ -136,7 +139,8 @@ class TestgenLoopPackets(unittest.TestCase):
                     type(mock_CollectData.return_value).add_data = mock.Mock(return_value=self.aggregate_data)
                     SUT = MQTTSubscribeDriver(**self.config_dict)
 
-                    SUT.topics[topic]['queue_wind'].append(self.queue_data, )
+                    #TODO - mock manger, not mqtt
+                    SUT.manager.topics[topic]['queue_wind'].append(self.queue_data, )
                     gen=SUT.genLoopPackets()
                     packet=next(gen)
 
@@ -200,7 +204,8 @@ class TestgenArchiveRecords(unittest.TestCase):
             SUT = MQTTSubscribeDriver(**config_dict)
             record = None
 
-            SUT.topics[archive_topic]['queue'].append(queue_data, )
+            #TODO - mock manger, not mqtt
+            SUT.manager.topics[archive_topic]['queue'].append(queue_data, )
             gen=SUT.genArchiveRecords(0)
             try:
                 record=next(gen)
@@ -235,7 +240,8 @@ class TestgenArchiveRecords(unittest.TestCase):
             records = list()
 
             for q in queue_data:
-                SUT.topics[archive_topic]['queue'].append(q, )
+                #TODO - mock manger, not mqtt
+                SUT.manager.topics[archive_topic]['queue'].append(q, )
 
             gen=SUT.genArchiveRecords(int(time.time() + 10.5))
             try:

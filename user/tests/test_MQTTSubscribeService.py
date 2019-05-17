@@ -64,7 +64,6 @@ class Testnew_loop_packet(unittest.TestCase):
             'inTemp': inTemp,
             'outTemp':outTemp,
             'usUnits': 1,
-            #'dateTime': current_time
             'dateTime': start_ts
         }
 
@@ -90,7 +89,8 @@ class Testnew_loop_packet(unittest.TestCase):
                     type(mock_Accum.return_value).isEmpty = mock.PropertyMock(return_value = True)
                     type(mock_Accum.return_value).addRecord = mock.Mock(side_effect=weewx.accum.OutOfSpan("Attempt to add out-of-interval record"))
                     SUT = MQTTSubscribeService(self.mock_StdEngine, config_dict)
-                    SUT.topics[topic]['queue'].append(queue_data, )
+                    #TODO - mock manger, not mqtt
+                    SUT.manager.topics[topic]['queue'].append(queue_data, )
                     SUT.end_ts = start_ts
 
                     with mock.patch('user.MQTTSubscribe.loginf') as mock_loginf:
@@ -114,7 +114,6 @@ class Testnew_loop_packet(unittest.TestCase):
             'inTemp': inTemp,
             'outTemp':outTemp,
             'usUnits': 1,
-            #'dateTime': current_time
             'dateTime': end_period_ts + 300
         }
 
@@ -140,7 +139,8 @@ class Testnew_loop_packet(unittest.TestCase):
 
                     type(mock_Accum.return_value).isEmpty = mock.PropertyMock(return_value = True)
                     SUT = MQTTSubscribeService(self.mock_StdEngine, config_dict)
-                    SUT.topics[topic]['queue'].append(queue_data, )
+                    #TODO - mock manger, not mqtt
+                    SUT.manager.topics[topic]['queue'].append(queue_data, )
                     SUT.end_ts = start_ts
 
                     SUT.new_loop_packet(new_loop_packet_event)
@@ -200,7 +200,8 @@ class Testnew_loop_packet(unittest.TestCase):
                     type(mock_Accum.return_value).isEmpty = mock.PropertyMock(return_value = False)
                     type(mock_Accum.return_value).getRecord = mock.Mock(return_value=aggregate_data)
                     SUT = MQTTSubscribeService(self.mock_StdEngine, config_dict)
-                    SUT.topics[topic]['queue'].append(queue_data, )
+                    #TODO - mock manger, not mqtt                    
+                    SUT.manager.topics[topic]['queue'].append(queue_data, )
                     SUT.end_ts = start_ts
 
                     SUT.new_loop_packet(new_loop_packet_event)
@@ -280,7 +281,8 @@ class Testnew_loop_packet(unittest.TestCase):
                         type(mock_CollectData.return_value).add_data = mock.Mock(return_value={})
                         type(mock_CollectData.return_value).get_data = mock.Mock(return_value=self.aggregate_data)
                         SUT = MQTTSubscribeService(self.mock_StdEngine, self.config_dict)
-                        SUT.topics[topic]['queue_wind'].append(self.queue_data, )
+                        #TODO - mock manger, not mqtt
+                        SUT.manager.topics[topic]['queue_wind'].append(self.queue_data, )
                         SUT.end_ts = start_ts
 
                         with mock.patch('user.MQTTSubscribe.loginf') as mock_loginf:
@@ -313,7 +315,8 @@ class Testnew_loop_packet(unittest.TestCase):
                         type(mock_CollectData.return_value).add_data = mock.Mock(return_value=self.aggregate_data)
                         type(mock_CollectData.return_value).get_data = mock.Mock(return_value={})                            
                         SUT = MQTTSubscribeService(self.mock_StdEngine, self.config_dict)
-                        SUT.topics[topic]['queue_wind'].append(self.queue_data, )
+                        #TODO - mock manger, not mqtt
+                        SUT.manager.topics[topic]['queue_wind'].append(self.queue_data, )
                         SUT.end_ts = start_ts
 
                         with mock.patch('user.MQTTSubscribe.loginf') as mock_loginf:
@@ -344,7 +347,8 @@ class Testnew_loop_packet(unittest.TestCase):
                         type(mock_Accum.return_value).isEmpty = mock.PropertyMock(return_value = True)
                         type(mock_CollectData.return_value).get_data = mock.Mock(return_value={})
                         SUT = MQTTSubscribeService(self.mock_StdEngine, self.config_dict)
-                        SUT.topics[topic]['queue_wind'].append(self.queue_data, )
+                        #TODO - mock manger, not mqtt
+                        SUT.manager.topics[topic]['queue_wind'].append(self.queue_data, )
                         SUT.end_ts = start_ts
 
                         SUT.new_loop_packet(new_loop_packet_event)
@@ -387,7 +391,8 @@ class Testnew_loop_packet(unittest.TestCase):
                         type(mock_CollectData.return_value).add_data = mock.Mock(return_value={})
                         type(mock_CollectData.return_value).get_data = mock.Mock(return_value=self.aggregate_data)
                         SUT = MQTTSubscribeService(self.mock_StdEngine, self.config_dict)
-                        SUT.topics[topic]['queue_wind'].append(self.queue_data, )
+                        #TODO - mock manger, not mqtt
+                        SUT.manager.topics[topic]['queue_wind'].append(self.queue_data, )
                         SUT.end_ts = start_ts
 
                         SUT.new_loop_packet(new_loop_packet_event)
@@ -427,7 +432,8 @@ class Testnew_loop_packet(unittest.TestCase):
                         type(mock_CollectData.return_value).add_data = mock.Mock(return_value=self.aggregate_data)
                         type(mock_CollectData.return_value).get_data = mock.Mock(return_value={})
                         SUT = MQTTSubscribeService(self.mock_StdEngine, self.config_dict)
-                        SUT.topics[topic]['queue_wind'].append(self.queue_data, )
+                        #TODO - mock manger, not mqtt
+                        SUT.manager.topics[topic]['queue_wind'].append(self.queue_data, )
                         SUT.end_ts = start_ts
 
                         SUT.new_loop_packet(new_loop_packet_event)
@@ -492,7 +498,6 @@ class Testnew_archive_record(unittest.TestCase):
             'inTemp': inTemp,
             'outTemp':outTemp,
             'usUnits': 1,
-            #'dateTime': current_time
             'dateTime': start_ts
         }
 
@@ -519,7 +524,8 @@ class Testnew_archive_record(unittest.TestCase):
                     type(mock_Accum.return_value).isEmpty = mock.PropertyMock(return_value = True)
                     type(mock_Accum.return_value).addRecord = mock.Mock(side_effect=weewx.accum.OutOfSpan("Attempt to add out-of-interval record"))
                     SUT = MQTTSubscribeService(self.mock_StdEngine, config_dict)
-                    SUT.topics[topic]['queue'].append(queue_data, )
+                    #TODO - mock manger, not mqtt
+                    SUT.manager.topics[topic]['queue'].append(queue_data, )
                     SUT.end_ts = start_ts
 
                     with mock.patch('user.MQTTSubscribe.loginf') as mock_loginf:
@@ -543,7 +549,6 @@ class Testnew_archive_record(unittest.TestCase):
             'inTemp': inTemp,
             'outTemp':outTemp,
             'usUnits': 1,
-            #'dateTime': current_time
             'dateTime': end_period_ts + 300
         }
 
@@ -568,7 +573,8 @@ class Testnew_archive_record(unittest.TestCase):
                 with mock.patch('user.MQTTSubscribe.weewx.accum.Accum') as mock_Accum:
                     type(mock_Accum.return_value).isEmpty = mock.PropertyMock(return_value = True)
                     SUT = MQTTSubscribeService(self.mock_StdEngine, config_dict)
-                    SUT.topics[topic]['queue'].append(queue_data, )
+                    #TODO - mock manger, not mqtt
+                    SUT.manager.topics[topic]['queue'].append(queue_data, )
                     SUT.end_ts = start_ts
 
                     SUT.new_archive_record(new_loop_record_event)
@@ -629,7 +635,8 @@ class Testnew_archive_record(unittest.TestCase):
                     type(mock_Accum.return_value).isEmpty = mock.PropertyMock(return_value = False)
                     type(mock_Accum.return_value).getRecord = mock.Mock(return_value=aggregate_data)
                     SUT = MQTTSubscribeService(self.mock_StdEngine, config_dict)
-                    SUT.topics[topic]['queue'].append(queue_data, )
+                    #TODO - mock manger, not mqtt
+                    SUT.manager.topics[topic]['queue'].append(queue_data, )
 
                     SUT.end_ts = start_ts
 

@@ -10,15 +10,14 @@ import random
 import six
 import string
 import time
-from user.MQTTSubscribe import MQTTSubscribe, MQTTSubscribeService
+import weewx
+from user.MQTTSubscribe import MQTTSubscribe
 
 class Msg():
     pass
 
 class TestInitialization(unittest.TestCase):
     def test_payload_type_json(self):
-        queue = None
-        archive_queue = None
         unit_system = random.randint(1, 10)
         host = 'host'
         port = random.randint(1000, 9999)
@@ -40,14 +39,12 @@ class TestInitialization(unittest.TestCase):
         }
 
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
-            SUT = MQTTSubscribe(None, config_dict)
+            SUT = MQTTSubscribe(config_dict)
 
             self.assertEqual(SUT.client.on_message, SUT.on_message_json)
             SUT.client.connect.assert_called_once_with(host, port, keepalive)
 
     def test_payload_type_individual(self):
-        queue = None
-        archive_queue = None
         unit_system = random.randint(1, 10)
         host = 'host'
         port = random.randint(1000, 9999)
@@ -69,13 +66,11 @@ class TestInitialization(unittest.TestCase):
         }
 
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
-            SUT = MQTTSubscribe(None, config_dict)
+            SUT = MQTTSubscribe(config_dict)
 
             self.assertEqual(SUT.client.on_message, SUT.on_message_individual)
 
     def test_payload_type_keyword(self):
-        queue = None
-        archive_queue = None
         unit_system = random.randint(1, 10)
         host = 'host'
         port = random.randint(1000, 9999)
@@ -97,15 +92,13 @@ class TestInitialization(unittest.TestCase):
         }
 
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
-            SUT = MQTTSubscribe(None, config_dict)
+            SUT = MQTTSubscribe(config_dict)
 
             self.assertEqual(SUT.client.on_message, SUT.on_message_keyword)
             SUT.client.connect.assert_called_once_with(host, port, keepalive)
             SUT.client.connect.assert_called_once_with(host, port, keepalive)
 
     def test_payload_type_other(self):
-        queue = None
-        archive_queue = None
         unit_system = random.randint(1, 10)
         host = 'host'
         port = random.randint(1000, 9999)
@@ -127,14 +120,12 @@ class TestInitialization(unittest.TestCase):
         }
 
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
-            SUT = MQTTSubscribe(None, config_dict)
+            SUT = MQTTSubscribe(config_dict)
 
             self.assertEqual(SUT.on_message, SUT.on_message)
             SUT.client.connect.assert_called_once_with(host, port, keepalive)
 
     def test_username_None(self):
-        queue = None
-        archive_queue = None
         unit_system = random.randint(1, 10)
         host = 'host'
         port = random.randint(1000, 9999)
@@ -156,14 +147,12 @@ class TestInitialization(unittest.TestCase):
         }
 
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
-            SUT = MQTTSubscribe(None, config_dict)
+            SUT = MQTTSubscribe(config_dict)
 
             SUT.client.username_pw_set.assert_not_called()
             SUT.client.connect.assert_called_once_with(host, port, keepalive)
 
     def test_password_None(self):
-        queue = None
-        archive_queue = None
         unit_system = random.randint(1, 10)
         host = 'host'
         port = random.randint(1000, 9999)
@@ -185,14 +174,12 @@ class TestInitialization(unittest.TestCase):
         }
 
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
-            SUT = MQTTSubscribe(None, config_dict)
+            SUT = MQTTSubscribe(config_dict)
 
             SUT.client.username_pw_set.assert_not_called()
             SUT.client.connect.assert_called_once_with(host, port, keepalive)
 
     def test_username_and_password_None(self):
-        queue = None
-        archive_queue = None
         unit_system = random.randint(1, 10)
         host = 'host'
         port = random.randint(1000, 9999)
@@ -214,14 +201,12 @@ class TestInitialization(unittest.TestCase):
         }
 
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
-            SUT = MQTTSubscribe(None, config_dict)
+            SUT = MQTTSubscribe(config_dict)
 
             SUT.client.username_pw_set.assert_not_called()
             SUT.client.connect.assert_called_once_with(host, port, keepalive)
 
     def test_username_and_password_set(self):
-        queue = None
-        archive_queue = None
         unit_system = random.randint(1, 10)
         host = 'host'
         port = random.randint(1000, 9999)
@@ -245,15 +230,14 @@ class TestInitialization(unittest.TestCase):
         }
 
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
-            SUT = MQTTSubscribe(None, config_dict)
+            SUT = MQTTSubscribe(config_dict)
 
             SUT.client.username_pw_set.assert_called_once_with(username, password)
             SUT.client.connect.assert_called_once_with(host, port, keepalive)
 
 class Teston_connect(unittest.TestCase):
-    queue = None
-    archive_queue = None
-    unit_system = random.randint(1, 10)
+    unit_system_name = 'US'
+    unit_system = weewx.units.unit_constants[unit_system_name]
     config_dict = {
         'console': False,
         'label_map': {},
@@ -266,7 +250,6 @@ class Teston_connect(unittest.TestCase):
         'port': random.randint(1, 10),
         'username': ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),
         'password': ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),
-        'topic': ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),
         'archive_topic': None
     }
 
@@ -274,17 +257,13 @@ class Teston_connect(unittest.TestCase):
         topic1 = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
         topic2 = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
         config_dict = dict(self.config_dict)
-
-        topics = {}
-        topics[topic1] = {}
-        topics[topic1]['unit_system'] = self.unit_system
-        topics[topic1]['queue'] = None
-        topics[topic2] = {}
-        topics[topic2]['unit_system'] = self.unit_system
-        topics[topic2]['queue'] = None
+        config_dict['unit_system'] = self.unit_system_name
+        config_dict['topics'] = {}
+        config_dict['topics'][topic1] = {}
+        config_dict['topics'][topic2] = {}
 
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
-            SUT = MQTTSubscribe(topics, config_dict)
+            SUT = MQTTSubscribe(config_dict)
 
             rc = random.randint(1, 10)
             SUT.on_connect(mock_client, None, None, rc,)
@@ -295,7 +274,11 @@ class Teston_connect(unittest.TestCase):
 
 class TestQueueSizeCheck(unittest.TestCase):
     def test_queue_max_reached(self):
-        SUT = MQTTSubscribe(None, {})
+        config_dict = {}
+        config_dict['unit_system'] = 'US'
+        config_dict['topic'] = 'foo/bar'
+
+        SUT = MQTTSubscribe(config_dict)
 
         queue = deque()
         queue.append( ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), )
@@ -311,8 +294,12 @@ class TestQueueSizeCheck(unittest.TestCase):
             self.assertEqual(len(queue), max_queue-1)
 
     def test_queue_max_not_reached(self):
+        config_dict = {}
+        config_dict['unit_system'] = 'US'
+        config_dict['topic'] = 'foo/bar'
+
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
-            SUT = MQTTSubscribe(None, {})
+            SUT = MQTTSubscribe(config_dict)
 
             queue = deque()
             queue.append( ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), )
@@ -328,8 +315,12 @@ class TestQueueSizeCheck(unittest.TestCase):
                 self.assertEqual(len(queue), orig_queue_size)
 
     def test_queue_max_equal(self):
+        config_dict = {}
+        config_dict['unit_system'] = 'US'
+        config_dict['topic'] = 'foo/bar'
+
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
-            SUT = MQTTSubscribe(None, {})
+            SUT = MQTTSubscribe(config_dict)
 
             queue = deque()
             queue.append( ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), )
@@ -345,7 +336,8 @@ class TestQueueSizeCheck(unittest.TestCase):
                 self.assertEqual(len(queue), max_queue-1)
 
 class TestKeywordload(unittest.TestCase):
-    unit_system = random.randint(1, 10)
+    unit_system_name = 'US'
+    unit_system = weewx.units.unit_constants[unit_system_name]
     config_dict = {
         'console': False,
         'label_map': {},
@@ -372,14 +364,8 @@ class TestKeywordload(unittest.TestCase):
         config_dict = dict(self.config_dict)
         config_dict['topic'] = topic
 
-        topics = {}
-        topics[topic] = {}
-        topics[topic]['unit_system'] = self.unit_system
-        topics[topic]['queue']= deque()
-        topics[topic]['max_queue']= six.MAXSIZE
-
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
-            SUT = MQTTSubscribe(topics, config_dict)
+            SUT = MQTTSubscribe(config_dict)
 
             msg = Msg()
             msg.topic = topic
@@ -391,12 +377,11 @@ class TestKeywordload(unittest.TestCase):
 
     def test_payload_bad_data(self):
         topic = 'foo/bar'
-        queue = deque()
         config_dict = dict(self.config_dict)
         config_dict['topic'] = topic
 
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
-            SUT = MQTTSubscribe(None, config_dict)
+            SUT = MQTTSubscribe(config_dict)
 
             msg = Msg()
             msg.topic = topic
@@ -408,12 +393,11 @@ class TestKeywordload(unittest.TestCase):
 
     def test_payload_missing_delimiter(self):
         topic = 'foo/bar'
-        queue = deque()
         config_dict = dict(self.config_dict)
         config_dict['topic'] = topic
 
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
-            SUT = MQTTSubscribe(None, config_dict)
+            SUT = MQTTSubscribe(config_dict)
 
             msg = Msg()
             msg.topic = topic
@@ -428,14 +412,8 @@ class TestKeywordload(unittest.TestCase):
         config_dict = dict(self.config_dict)
         config_dict['topic'] = topic
 
-        topics = {}
-        topics[topic] = {}
-        topics[topic]['unit_system'] = self.unit_system
-        topics[topic]['queue']= deque()
-        topics[topic]['max_queue']= six.MAXSIZE
-
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
-            SUT = MQTTSubscribe(topics, config_dict)
+            SUT = MQTTSubscribe(config_dict)
 
             msg = Msg()
             msg.topic = topic
@@ -447,18 +425,13 @@ class TestKeywordload(unittest.TestCase):
 
     def test_payload_missing_datetime(self):
         topic = 'foo/bar'
-        queue = deque()
+
         config_dict = dict(self.config_dict)
+        config_dict['unit_system'] = self.unit_system_name
         config_dict['topic'] = topic
 
-        topics = {}
-        topics[topic] = {}
-        topics[topic]['unit_system'] = self.unit_system
-        topics[topic]['queue'] = queue
-        topics[topic]['max_queue']= six.MAXSIZE
-
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
-            SUT = MQTTSubscribe(topics, config_dict)
+            SUT = MQTTSubscribe(config_dict)
 
             payload_dict = dict(self.payload_dict)
             payload_dict['usUnits'] = random.randint(1, 10)
@@ -475,6 +448,7 @@ class TestKeywordload(unittest.TestCase):
 
             SUT.on_message_keyword(None, None, msg)
 
+            queue = SUT.topics[topic]['queue']
             self.assertEqual(len(queue), 1)
             data = queue[0]
             self.assertDictContainsSubset(payload_dict, data)
@@ -482,18 +456,12 @@ class TestKeywordload(unittest.TestCase):
 
     def test_payload_missing_units(self):
         topic = 'foo/bar'
-        queue = deque()
         config_dict = dict(self.config_dict)
+        config_dict['unit_system'] = self.unit_system_name
         config_dict['topic'] = topic
 
-        topics = {}
-        topics[topic] = {}
-        topics[topic]['unit_system'] = self.unit_system
-        topics[topic]['queue'] = queue
-        topics[topic]['max_queue']= six.MAXSIZE
-
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
-            SUT = MQTTSubscribe(topics, config_dict)
+            SUT = MQTTSubscribe(config_dict)
 
             payload_dict = dict(self.payload_dict)
             payload_dict['dateTime'] = time.time()
@@ -509,6 +477,7 @@ class TestKeywordload(unittest.TestCase):
             msg.payload = payload_str
 
             SUT.on_message_keyword(None, None, msg)
+            queue = SUT.topics[topic]['queue']
             self.assertEqual(len(queue), 1)
             data = queue[0]
             self.assertIn('usUnits', data)
@@ -516,18 +485,12 @@ class TestKeywordload(unittest.TestCase):
 
     def test_payload_good(self):
         topic = 'foo/bar'
-        queue = deque()
         config_dict = dict(self.config_dict)
+        config_dict['unit_system'] = self.unit_system_name
         config_dict['topic'] = topic
 
-        topics = {}
-        topics[topic] = {}
-        topics[topic]['unit_system'] = self.unit_system
-        topics[topic]['queue'] = queue
-        topics[topic]['max_queue']= six.MAXSIZE
-
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
-            SUT = MQTTSubscribe(topics, config_dict)
+            SUT = MQTTSubscribe(config_dict)
 
             payload_dict = dict(self.payload_dict)
             payload_dict['dateTime'] = round(time.time(), 2)
@@ -544,12 +507,14 @@ class TestKeywordload(unittest.TestCase):
             msg.payload = payload_str
 
             SUT.on_message_keyword(None, None, msg)
+            queue = SUT.topics[topic]['queue']
             self.assertEqual(len(queue), 1)
             data = queue[0]
             self.assertDictEqual(data, payload_dict)
 
 class TestJsonPayload(unittest.TestCase):
-    unit_system = random.randint(1, 10)
+    unit_system_name = 'US'
+    unit_system = weewx.units.unit_constants[unit_system_name]
     config_dict = {
         'console': False,
         'label_map': {},
@@ -573,12 +538,11 @@ class TestJsonPayload(unittest.TestCase):
 
     def test_invalid_json(self):
         topic = 'foo/bar'
-        queue = deque()
         config_dict = dict(self.config_dict)
         config_dict['topic'] = topic
 
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
-            SUT = MQTTSubscribe(None, config_dict)
+            SUT = MQTTSubscribe(config_dict)
 
             msg = Msg()
             msg.topic = topic
@@ -590,12 +554,11 @@ class TestJsonPayload(unittest.TestCase):
 
     def test_empty_payload(self):
         topic = 'foo/bar'
-        queue = deque()
         config_dict = dict(self.config_dict)
         config_dict['topic'] = topic
 
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
-            SUT = MQTTSubscribe(None, config_dict)
+            SUT = MQTTSubscribe(config_dict)
 
             msg = Msg()
             msg.topic = topic
@@ -607,18 +570,12 @@ class TestJsonPayload(unittest.TestCase):
 
     def test_missing_dateTime(self):
         topic = 'foo/bar'
-        queue = deque()
         config_dict = dict(self.config_dict)
+        config_dict['unit_system'] = self.unit_system_name
         config_dict['topic'] = topic
 
-        topics = {}
-        topics[topic] = {}
-        topics[topic]['unit_system'] = self.unit_system
-        topics[topic]['queue'] = queue
-        topics[topic]['max_queue']= six.MAXSIZE
-
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
-            SUT = MQTTSubscribe(topics, config_dict)
+            SUT = MQTTSubscribe(config_dict)
 
             payload_dict = dict(self.payload_dict)
             payload_dict['usUnits'] = random.randint(1, 10)
@@ -633,6 +590,7 @@ class TestJsonPayload(unittest.TestCase):
             msg.payload = payload
 
             SUT.on_message_json(None, None, msg)
+            queue = SUT.topics[topic]['queue']
             self.assertEqual(len(queue), 1)
             data = queue[0]
             self.assertDictContainsSubset(payload_dict, data)
@@ -640,18 +598,12 @@ class TestJsonPayload(unittest.TestCase):
 
     def test_missing_units(self):
         topic = 'foo/bar'
-        queue = deque()
         config_dict = dict(self.config_dict)
+        config_dict['unit_system'] = self.unit_system_name
         config_dict['topic'] = topic
 
-        topics = {}
-        topics[topic] = {}
-        topics[topic]['unit_system'] = self.unit_system
-        topics[topic]['queue'] = queue
-        topics[topic]['max_queue']= six.MAXSIZE
-
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
-            SUT = MQTTSubscribe(topics, config_dict)
+            SUT = MQTTSubscribe(config_dict)
 
             payload_dict = dict(self.payload_dict)
             payload_dict['dateTime'] = time.time()
@@ -666,6 +618,7 @@ class TestJsonPayload(unittest.TestCase):
             msg.payload = payload
 
             SUT.on_message_json(None, None, msg)
+            queue = SUT.topics[topic]['queue']
             self.assertEqual(len(queue), 1)
             data = queue[0]
             self.assertDictContainsSubset(payload_dict, data)
@@ -674,18 +627,12 @@ class TestJsonPayload(unittest.TestCase):
 
     def test_payload_good(self):
         topic = 'foo/bar'
-        queue = deque()
         config_dict = dict(self.config_dict)
+        config_dict['unit_system'] = self.unit_system_name
         config_dict['topic'] = topic
 
-        topics = {}
-        topics[topic] = {}
-        topics[topic]['unit_system'] = self.unit_system
-        topics[topic]['queue'] = queue
-        topics[topic]['max_queue']= six.MAXSIZE
-
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
-            SUT = MQTTSubscribe(topics, config_dict)
+            SUT = MQTTSubscribe(config_dict)
 
             payload_dict = dict(self.payload_dict)
             payload_dict['dateTime'] = time.time()
@@ -702,13 +649,14 @@ class TestJsonPayload(unittest.TestCase):
 
             SUT.on_message_json(None, None, msg)
 
+            queue = SUT.topics[topic]['queue']
             self.assertEqual(len(queue), 1)
             data = queue[0]
             self.assertDictEqual(data, payload_dict)
 
 class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
-    unit_system = random.randint(1, 10)
-    archive_queue = None
+    unit_system_name = 'US'
+    unit_system = weewx.units.unit_constants[unit_system_name]
     config_dict = {
         'console': False,
         'label_map': {},
@@ -730,12 +678,8 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         config_dict = dict(self.config_dict)
         config_dict['topic'] = topic
 
-        topics = {}
-        topics[topic] = {}
-        topics[topic]['unit_system'] = self.unit_system
-
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
-            SUT = MQTTSubscribe(topics, config_dict)
+            SUT = MQTTSubscribe(config_dict)
 
             msg = Msg()
             msg.topic = topic
@@ -750,12 +694,8 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         config_dict = dict(self.config_dict)
         config_dict['topic'] = topic
 
-        topics = {}
-        topics[topic] = {}
-        topics[topic]['unit_system'] = self.unit_system  
-
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
-            SUT = MQTTSubscribe(topics, config_dict)
+            SUT = MQTTSubscribe(config_dict)
 
             msg = Msg()
             msg.topic = topic
@@ -768,24 +708,19 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
     def test_None_payload(self):
         fieldname = b'bar'
         topic = 'foo/' + fieldname.decode('utf-8')
-        queue = deque()
         config_dict = dict(self.config_dict)
+        config_dict['unit_system'] = self.unit_system_name
         config_dict['topic'] = topic
 
-        topics = {}
-        topics[topic] = {}
-        topics[topic]['unit_system'] = self.unit_system
-        topics[topic]['queue'] = queue
-        topics[topic]['max_queue']= six.MAXSIZE
-
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
-            SUT = MQTTSubscribe(topics, config_dict)
+            SUT = MQTTSubscribe(config_dict)
 
             msg = Msg()
             msg.topic = topic
             msg.payload = None
 
             SUT.on_message_individual(None, None, msg)
+            queue = SUT.topics[topic]['queue']
             self.assertEqual(len(queue), 1)
             data = queue[0]
             self.assertIn('dateTime', data)
@@ -798,18 +733,12 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
     def test_single_topic(self):
         fieldname = b'bar'
         topic = fieldname.decode('utf-8')
-        queue = deque()
         config_dict = dict(self.config_dict)
+        config_dict['unit_system'] = self.unit_system_name
         config_dict['topic'] = topic
 
-        topics = {}
-        topics[topic] = {}
-        topics[topic]['unit_system'] = self.unit_system
-        topics[topic]['queue'] = queue
-        topics[topic]['max_queue']= six.MAXSIZE
-
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
-            SUT = MQTTSubscribe(topics, config_dict)
+            SUT = MQTTSubscribe(config_dict)
 
             msg = Msg()
             msg.topic = topic
@@ -817,6 +746,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
             msg.payload = str(payload)
 
             SUT.on_message_individual(None, None, msg)
+            queue = SUT.topics[topic]['queue']
             self.assertEqual(len(queue), 1)
             data = queue[0]
             self.assertIn('dateTime', data)
@@ -830,18 +760,12 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
     def test_multiple_topics(self):
         fieldname = b'bar'
         topic = 'foo1/foo2/' + fieldname.decode('utf-8')
-        queue = deque()
         config_dict = dict(self.config_dict)
+        config_dict['unit_system'] = self.unit_system_name
         config_dict['topic'] = topic
 
-        topics = {}
-        topics[topic] = {}
-        topics[topic]['unit_system'] = self.unit_system
-        topics[topic]['queue'] = queue
-        topics[topic]['max_queue']= six.MAXSIZE
-
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
-            SUT = MQTTSubscribe(topics, config_dict)
+            SUT = MQTTSubscribe(config_dict)
 
             msg = Msg()
             msg.topic = topic
@@ -849,6 +773,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
             msg.payload = str(payload)
 
             SUT.on_message_individual(None, None, msg)
+            queue = SUT.topics[topic]['queue']
             self.assertEqual(len(queue), 1)
             data = queue[0]
             self.assertIn('dateTime', data)
@@ -862,18 +787,12 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
     def test_two_topics(self):
         fieldname = b'bar'
         topic = 'foo/' + fieldname.decode('utf-8')
-        queue = deque()
         config_dict = dict(self.config_dict)
+        config_dict['unit_system'] = self.unit_system_name
         config_dict['topic'] = topic
 
-        topics = {}
-        topics[topic] = {}
-        topics[topic]['unit_system'] = self.unit_system
-        topics[topic]['queue'] = queue
-        topics[topic]['max_queue']= six.MAXSIZE
-
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
-            SUT = MQTTSubscribe(topics, config_dict)
+            SUT = MQTTSubscribe(config_dict)
 
             msg = Msg()
             msg.topic = topic
@@ -881,6 +800,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
             msg.payload = str(payload)
 
             SUT.on_message_individual(None, None, msg)
+            queue = SUT.topics[topic]['queue']
             self.assertEqual(len(queue), 1)
             data = queue[0]
             self.assertIn('dateTime', data)
@@ -892,8 +812,8 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
             self.assertAlmostEqual(data[fieldname], payload)
 
 class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
-    unit_system = random.randint(1, 10)
-    archive_queue = None
+    unit_system_name = 'US'
+    unit_system = weewx.units.unit_constants[unit_system_name]
     config_dict = {
         'console': False,
         'label_map': {},
@@ -915,12 +835,8 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
         config_dict = dict(self.config_dict)
         config_dict['topic'] = topic
 
-        topics = {}
-        topics[topic] = {}
-        topics[topic]['unit_system'] = self.unit_system        
-
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
-            SUT = MQTTSubscribe(topics, config_dict)
+            SUT = MQTTSubscribe(config_dict)
 
             msg = Msg()
             msg.topic = topic
@@ -935,12 +851,8 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
         config_dict = dict(self.config_dict)
         config_dict['topic'] = topic
 
-        topics = {}
-        topics[topic] = {}
-        topics[topic]['unit_system'] = self.unit_system
-
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
-            SUT = MQTTSubscribe(topics, config_dict)
+            SUT = MQTTSubscribe(config_dict)
 
             msg = Msg()
             msg.topic = topic
@@ -953,18 +865,12 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
     def test_None_payload(self):
         topic_byte = b'foo/bar'
         topic = topic_byte.decode('utf-8')
-        queue = deque()
         config_dict = dict(self.config_dict)
+        config_dict['unit_system'] = self.unit_system_name
         config_dict['topic'] = topic
 
-        topics = {}
-        topics[topic] = {}
-        topics[topic]['unit_system'] = self.unit_system
-        topics[topic]['queue'] = queue
-        topics[topic]['max_queue']= six.MAXSIZE
-
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
-            SUT = MQTTSubscribe(topics, config_dict)
+            SUT = MQTTSubscribe(config_dict)
 
             msg = Msg()
             msg.topic = topic
@@ -973,30 +879,24 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
             SUT.on_message_individual(None, None, msg)
 
+            queue = SUT.topics[topic]['queue']
             self.assertEqual(len(queue), 1)
             data = queue[0]
             self.assertIn('dateTime', data)
             self.assertIsInstance(data['dateTime'], float)
             self.assertIn('usUnits', data)
-            self.assertEqual(data['usUnits'], self.unit_system)
             self.assertIn(topic_byte, data)
             self.assertIsNone(data[topic_byte])
 
     def test_single_topic(self):
         topic_byte = b'bar'
         topic = topic_byte.decode('utf-8')
-        queue = deque()
         config_dict = dict(self.config_dict)
+        config_dict['unit_system'] = self.unit_system_name
         config_dict['topic'] = topic
 
-        topics = {}
-        topics[topic] = {}
-        topics[topic]['unit_system'] = self.unit_system
-        topics[topic]['queue'] = queue
-        topics[topic]['max_queue']= six.MAXSIZE
-
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
-            SUT = MQTTSubscribe(topics, config_dict)
+            SUT = MQTTSubscribe(config_dict)
 
             msg = Msg()
             msg.topic = topic
@@ -1005,6 +905,7 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
 
             SUT.on_message_individual(None, None, msg)
 
+            queue = SUT.topics[topic]['queue']
             self.assertEqual(len(queue), 1)
             data = queue[0]
             self.assertIn('dateTime', data)
@@ -1018,18 +919,12 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
     def test_multiple_topics(self):
         topic_byte = b'foo1/foo2/bar'
         topic = topic_byte.decode('utf-8')
-        queue = deque()
         config_dict = dict(self.config_dict)
+        config_dict['unit_system'] = self.unit_system_name
         config_dict['topic'] = topic
 
-        topics = {}
-        topics[topic] = {}
-        topics[topic]['unit_system'] = self.unit_system
-        topics[topic]['queue'] = queue
-        topics[topic]['max_queue']= six.MAXSIZE
-
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
-            SUT = MQTTSubscribe(topics, config_dict)
+            SUT = MQTTSubscribe(config_dict)
 
             msg = Msg()
             msg.topic = topic
@@ -1037,6 +932,7 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
             msg.payload = str(payload)
 
             SUT.on_message_individual(None, None, msg)
+            queue = SUT.topics[topic]['queue']
             self.assertEqual(len(queue), 1)
             data = queue[0]
             self.assertIn('dateTime', data)
@@ -1050,18 +946,12 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
     def test_two_topics(self):
         topic_byte = b'foo/bar'
         topic = topic_byte.decode('utf-8')
-        queue = deque()
         config_dict = dict(self.config_dict)
+        config_dict['unit_system'] = self.unit_system_name
         config_dict['topic'] = topic
 
-        topics = {}
-        topics[topic] = {}
-        topics[topic]['unit_system'] = self.unit_system
-        topics[topic]['queue'] = queue
-        topics[topic]['max_queue']= six.MAXSIZE
-
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
-            SUT = MQTTSubscribe(topics, config_dict)
+            SUT = MQTTSubscribe(config_dict)
 
             msg = Msg()
             msg.topic = topic
@@ -1069,6 +959,7 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
             msg.payload = str(payload)
 
             SUT.on_message_individual(None, None, msg)
+            queue = SUT.topics[topic]['queue']
             self.assertEqual(len(queue), 1)
             data = queue[0]
             self.assertIn('dateTime', data)
