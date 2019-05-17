@@ -60,7 +60,7 @@ class TestgenLoopPackets(unittest.TestCase):
                 while mock_time.sleep.call_count <= 0:
                     time.sleep(1)
 
-                type(mock_manager.return_value).topics = mock.PropertyMock(return_value = self.topics)
+                type(mock_manager.return_value).Topics = mock.PropertyMock(return_value = self.topics)
 
                 # wait for queue to be processed
                 while not thread.packet:
@@ -75,7 +75,7 @@ class TestgenLoopPackets(unittest.TestCase):
 
         with mock.patch('user.MQTTSubscribe.MQTTSubscribe') as mock_manager:
             with mock.patch('user.MQTTSubscribe.time') as mock_time:
-                type(mock_manager.return_value).topics = mock.PropertyMock(return_value = self.topics)
+                type(mock_manager.return_value).Topics = mock.PropertyMock(return_value = self.topics)
 
                 SUT = MQTTSubscribeDriver(**self.config_dict)
 
@@ -121,7 +121,7 @@ class TestgenLoopPackets(unittest.TestCase):
                     while mock_time.sleep.call_count <= 0:
                         time.sleep(1)
 
-                    type(mock_manager.return_value).topics = mock.PropertyMock(return_value = self.topics)
+                    type(mock_manager.return_value).Topics = mock.PropertyMock(return_value = self.topics)
 
                     # wait for queue to be processed
                     while not thread.packet:
@@ -137,7 +137,7 @@ class TestgenLoopPackets(unittest.TestCase):
         with mock.patch('user.MQTTSubscribe.MQTTSubscribe') as mock_manager:
             with mock.patch('user.MQTTSubscribe.time') as mock_time:
                 with mock.patch('user.MQTTSubscribe.CollectData') as mock_CollectData:
-                    type(mock_manager.return_value).topics = mock.PropertyMock(return_value = self.topics)
+                    type(mock_manager.return_value).Topics = mock.PropertyMock(return_value = self.topics)
                     type(mock_CollectData.return_value).add_data = mock.Mock(return_value=self.aggregate_data)
                     SUT = MQTTSubscribeDriver(**self.config_dict)
 
@@ -196,7 +196,7 @@ class TestgenArchiveRecords(unittest.TestCase):
         self.setup_archive_queue_tests(archive_topic)
 
         with mock.patch('user.MQTTSubscribe.MQTTSubscribe') as mock_manager:
-            type(mock_manager.return_value).topics = mock.PropertyMock(return_value = self.topics)
+            type(mock_manager.return_value).Topics = mock.PropertyMock(return_value = self.topics)
 
             SUT = MQTTSubscribeDriver(**self.config_dict)
             record = None
@@ -219,7 +219,7 @@ class TestgenArchiveRecords(unittest.TestCase):
             self.topics[archive_topic]['queue'].append(q)
 
         with mock.patch('user.MQTTSubscribe.MQTTSubscribe') as mock_manager:
-            type(mock_manager.return_value).topics = mock.PropertyMock(return_value = self.topics)
+            type(mock_manager.return_value).Topics = mock.PropertyMock(return_value = self.topics)
             records = list()
 
             SUT = MQTTSubscribeDriver(**self.config_dict)

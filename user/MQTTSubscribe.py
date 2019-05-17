@@ -140,7 +140,7 @@ import weewx.drivers
 from weewx.engine import StdService
 from collections import deque
 
-VERSION='1.1.0rc22'
+VERSION='1.1.0rc23'
 
 def logmsg(console, dst, prefix, msg):
     syslog.syslog(dst, '%s: %s' % (prefix, msg))
@@ -252,6 +252,10 @@ class MQTTSubscribe():
             self.client.username_pw_set(username, password)
 
         self.client.connect(host, port, keepalive)
+
+    @property
+    def Topics(self):
+      return self.topics
 
     # start subscribing to the topics
     def start(self):
@@ -518,8 +522,8 @@ class MQTTSubscribeService(StdService):
     def new_loop_packet(self, event):
         start_ts = self.end_ts - self.overlap
         self.end_ts = event.packet['dateTime']
-        for tp in self.manager.topics:
-            topic = self.manager.topics[tp]
+        for tp in self.manager.Topics:
+            topic = self.manager.Topics[tp]
             target_data = self._process_data(topic, start_ts, self.end_ts, event.packet)
             event.packet.update(target_data)
             logdbg(self.console, "MQTTSubscribeService", "Packet after update is: %s" % to_sorted_string(event.packet))
@@ -530,8 +534,8 @@ class MQTTSubscribeService(StdService):
     def new_archive_record(self, event):
         end_ts = event.record['dateTime']
         start_ts = end_ts - event.record['interval'] * 60 - self.overlap
-        for tp in self.manager.topics:
-            topic = self.manager.topics[tp]
+        for tp in self.manager.Topics:
+            topic = self.manager.Topics[tp]
             target_data = self._process_data(topic, start_ts, end_ts, event.record)
             event.record.update(target_data)
             logdbg(self.console, "MQTTSubscribeService", "Record after update is: %s" % to_sorted_string(event.record))
@@ -557,18 +561,18 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice):
 
     def genLoopPackets(self):
       while True:
-        for topic in self.manager.topics:
+        for topic in self.manager.Topics:
             if topic == self.archive_topic:
                 continue
                 
-            queue = self.manager.topics[topic]['queue']
+            queue = self.manager.Topics[topic]['queue']
             logdbg(self.console, "MQTTSubscribeDriver", "Queue is size %i" % len(queue))
             while len(queue) > 0:
                 packet = queue.popleft()
                 logdbg(self.console, "MQTTSubscribeDriver", "Packet: %s" % to_sorted_string(packet))
                 yield packet
  
-            queue_wind = self.manager.topics[topic]['queue_wind']
+            queue_wind = self.manager.Topics[topic]['queue_wind']
             logdbg(self.console, "MQTTSubscribeDriver", "Wind queue is size %i" % len(queue_wind))
 
             collector = CollectData(self.wind_fields)
@@ -591,7 +595,7 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice):
             logdbg(self.console, "MQTTSubscribeDriver", "No archive topic configured.")
             raise NotImplementedError
         else:
-            queue = self.manager.topics[self.archive_topic]['queue']
+            queue = self.manager.Topics[self.archive_topic]['queue']
             logdbg(self.console, "MQTTSubscribeDriver", "Archive queue is size %i and date is %f." %(len(queue), lastgood_ts))
             while (len(queue) > 0 and queue[0]['dateTime'] <= lastgood_ts):
                 archive_record = queue.popleft()
