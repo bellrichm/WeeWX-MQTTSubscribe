@@ -41,7 +41,7 @@ class TestInitialization(unittest.TestCase):
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
             SUT = MQTTSubscribe(config_dict)
 
-            self.assertEqual(SUT.client.on_message, SUT.on_message_json)
+            self.assertEqual(SUT.client.on_message, SUT._on_message_json)
             SUT.client.connect.assert_called_once_with(host, port, keepalive)
 
     def test_payload_type_individual(self):
@@ -68,7 +68,7 @@ class TestInitialization(unittest.TestCase):
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
             SUT = MQTTSubscribe(config_dict)
 
-            self.assertEqual(SUT.client.on_message, SUT.on_message_individual)
+            self.assertEqual(SUT.client.on_message, SUT._on_message_individual)
 
     def test_payload_type_keyword(self):
         unit_system = random.randint(1, 10)
@@ -94,7 +94,7 @@ class TestInitialization(unittest.TestCase):
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
             SUT = MQTTSubscribe(config_dict)
 
-            self.assertEqual(SUT.client.on_message, SUT.on_message_keyword)
+            self.assertEqual(SUT.client.on_message, SUT._on_message_keyword)
             SUT.client.connect.assert_called_once_with(host, port, keepalive)
             SUT.client.connect.assert_called_once_with(host, port, keepalive)
 
@@ -266,7 +266,7 @@ class Teston_connect(unittest.TestCase):
             SUT = MQTTSubscribe(config_dict)
 
             rc = random.randint(1, 10)
-            SUT.on_connect(mock_client, None, None, rc,)
+            SUT._on_connect(mock_client, None, None, rc,)
 
             self.assertEqual(mock_client.subscribe.call_count, 2)
             mock_client.subscribe.assert_any_call(topic1)
@@ -289,7 +289,7 @@ class TestQueueSizeCheck(unittest.TestCase):
         max_queue = 2
 
         with mock.patch('user.MQTTSubscribe.logerr') as mock_logerr:
-            SUT.queue_size_check(queue, max_queue)
+            SUT._queue_size_check(queue, max_queue)
             self.assertEqual(mock_logerr.call_count, orig_queue_size-max_queue+1)
             self.assertEqual(len(queue), max_queue-1)
 
@@ -310,7 +310,7 @@ class TestQueueSizeCheck(unittest.TestCase):
             max_queue = 7
 
             with mock.patch('user.MQTTSubscribe.logerr') as mock_logerr:
-                SUT.queue_size_check(queue, max_queue)
+                SUT._queue_size_check(queue, max_queue)
                 self.assertEqual(mock_logerr.call_count, 0)
                 self.assertEqual(len(queue), orig_queue_size)
 
@@ -331,7 +331,7 @@ class TestQueueSizeCheck(unittest.TestCase):
             max_queue = 4
 
             with mock.patch('user.MQTTSubscribe.logerr') as mock_logerr:
-                SUT.queue_size_check(queue, max_queue)
+                SUT._queue_size_check(queue, max_queue)
                 self.assertEqual(mock_logerr.call_count, orig_queue_size-max_queue+1)
                 self.assertEqual(len(queue), max_queue-1)
 
@@ -372,7 +372,7 @@ class TestKeywordload(unittest.TestCase):
             msg.payload = ''
 
             with mock.patch('user.MQTTSubscribe.logerr') as mock_logerr:
-                SUT.on_message_keyword(None, None, msg)
+                SUT._on_message_keyword(None, None, msg)
                 self.assertEqual(mock_logerr.call_count, 3)
 
     def test_payload_bad_data(self):
@@ -388,7 +388,7 @@ class TestKeywordload(unittest.TestCase):
             msg.payload = 'field=value'
 
             with mock.patch('user.MQTTSubscribe.logerr') as mock_logerr:
-                SUT.on_message_keyword(None, None, msg)
+                SUT._on_message_keyword(None, None, msg)
                 self.assertEqual(mock_logerr.call_count, 2)
 
     def test_payload_missing_delimiter(self):
@@ -404,7 +404,7 @@ class TestKeywordload(unittest.TestCase):
             msg.payload = 'field1=1 field2=2'
 
             with mock.patch('user.MQTTSubscribe.logerr') as mock_logerr:
-                SUT.on_message_keyword(None, None, msg)
+                SUT._on_message_keyword(None, None, msg)
                 self.assertEqual(mock_logerr.call_count, 2)
 
     def test_payload_missing_separator(self):
@@ -420,7 +420,7 @@ class TestKeywordload(unittest.TestCase):
             msg.payload = 'field1:1'
 
             with mock.patch('user.MQTTSubscribe.logerr') as mock_logerr:
-                SUT.on_message_keyword(None, None, msg)
+                SUT._on_message_keyword(None, None, msg)
                 self.assertEqual(mock_logerr.call_count, 3)
 
     def test_payload_missing_datetime(self):
@@ -446,7 +446,7 @@ class TestKeywordload(unittest.TestCase):
             msg.topic = topic
             msg.payload = payload_str
 
-            SUT.on_message_keyword(None, None, msg)
+            SUT._on_message_keyword(None, None, msg)
 
             queue = SUT.topics[topic]['queue']
             self.assertEqual(len(queue), 1)
@@ -476,7 +476,7 @@ class TestKeywordload(unittest.TestCase):
             msg.topic = topic
             msg.payload = payload_str
 
-            SUT.on_message_keyword(None, None, msg)
+            SUT._on_message_keyword(None, None, msg)
             queue = SUT.topics[topic]['queue']
             self.assertEqual(len(queue), 1)
             data = queue[0]
@@ -506,7 +506,7 @@ class TestKeywordload(unittest.TestCase):
             msg.topic = topic
             msg.payload = payload_str
 
-            SUT.on_message_keyword(None, None, msg)
+            SUT._on_message_keyword(None, None, msg)
             queue = SUT.topics[topic]['queue']
             self.assertEqual(len(queue), 1)
             data = queue[0]
@@ -549,7 +549,7 @@ class TestJsonPayload(unittest.TestCase):
             msg.payload = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
 
             with mock.patch('user.MQTTSubscribe.logerr') as mock_logerr:
-                SUT.on_message_json(None, None, msg)
+                SUT._on_message_json(None, None, msg)
                 self.assertEqual(mock_logerr.call_count, 2)
 
     def test_empty_payload(self):
@@ -565,7 +565,7 @@ class TestJsonPayload(unittest.TestCase):
             msg.payload = ''
 
             with mock.patch('user.MQTTSubscribe.logerr') as mock_logerr:
-                SUT.on_message_json(None, None, msg)
+                SUT._on_message_json(None, None, msg)
                 self.assertEqual(mock_logerr.call_count, 2)
 
     def test_missing_dateTime(self):
@@ -589,7 +589,7 @@ class TestJsonPayload(unittest.TestCase):
             msg.topic = topic
             msg.payload = payload
 
-            SUT.on_message_json(None, None, msg)
+            SUT._on_message_json(None, None, msg)
             queue = SUT.topics[topic]['queue']
             self.assertEqual(len(queue), 1)
             data = queue[0]
@@ -617,7 +617,7 @@ class TestJsonPayload(unittest.TestCase):
             msg.topic = topic
             msg.payload = payload
 
-            SUT.on_message_json(None, None, msg)
+            SUT._on_message_json(None, None, msg)
             queue = SUT.topics[topic]['queue']
             self.assertEqual(len(queue), 1)
             data = queue[0]
@@ -647,7 +647,7 @@ class TestJsonPayload(unittest.TestCase):
             msg.topic = topic
             msg.payload = payload
 
-            SUT.on_message_json(None, None, msg)
+            SUT._on_message_json(None, None, msg)
 
             queue = SUT.topics[topic]['queue']
             self.assertEqual(len(queue), 1)
@@ -686,7 +686,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
             msg.payload = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
 
             with mock.patch('user.MQTTSubscribe.logerr') as mock_logerr:
-                SUT.on_message_individual(None, None, msg)
+                SUT._on_message_individual(None, None, msg)
                 self.assertEqual(mock_logerr.call_count, 2)
 
     def test_empty_payload(self):
@@ -702,7 +702,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
             msg.payload = ''
 
             with mock.patch('user.MQTTSubscribe.logerr') as mock_logerr:
-                SUT.on_message_individual(None, None, msg)
+                SUT._on_message_individual(None, None, msg)
                 self.assertEqual(mock_logerr.call_count, 2)
 
     def test_None_payload(self):
@@ -719,7 +719,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
             msg.topic = topic
             msg.payload = None
 
-            SUT.on_message_individual(None, None, msg)
+            SUT._on_message_individual(None, None, msg)
             queue = SUT.topics[topic]['queue']
             self.assertEqual(len(queue), 1)
             data = queue[0]
@@ -745,7 +745,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
             payload = random.uniform(1, 100)
             msg.payload = str(payload)
 
-            SUT.on_message_individual(None, None, msg)
+            SUT._on_message_individual(None, None, msg)
             queue = SUT.topics[topic]['queue']
             self.assertEqual(len(queue), 1)
             data = queue[0]
@@ -772,7 +772,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
             payload = random.uniform(1, 100)
             msg.payload = str(payload)
 
-            SUT.on_message_individual(None, None, msg)
+            SUT._on_message_individual(None, None, msg)
             queue = SUT.topics[topic]['queue']
             self.assertEqual(len(queue), 1)
             data = queue[0]
@@ -799,7 +799,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
             payload = random.uniform(1, 100)
             msg.payload = str(payload)
 
-            SUT.on_message_individual(None, None, msg)
+            SUT._on_message_individual(None, None, msg)
             queue = SUT.topics[topic]['queue']
             self.assertEqual(len(queue), 1)
             data = queue[0]
@@ -843,7 +843,7 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
             msg.payload = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
 
             with mock.patch('user.MQTTSubscribe.logerr') as mock_logerr:
-                SUT.on_message_individual(None, None, msg)
+                SUT._on_message_individual(None, None, msg)
                 self.assertEqual(mock_logerr.call_count, 2)
 
     def test_empty_payload(self):
@@ -859,7 +859,7 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
             msg.payload = ''
 
             with mock.patch('user.MQTTSubscribe.logerr') as mock_logerr:
-                SUT.on_message_individual(None, None, msg)
+                SUT._on_message_individual(None, None, msg)
                 self.assertEqual(mock_logerr.call_count, 2)
 
     def test_None_payload(self):
@@ -877,7 +877,7 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
             msg.payload = None
 
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
-            SUT.on_message_individual(None, None, msg)
+            SUT._on_message_individual(None, None, msg)
 
             queue = SUT.topics[topic]['queue']
             self.assertEqual(len(queue), 1)
@@ -903,7 +903,7 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
             payload = random.uniform(1, 100)
             msg.payload = str(payload)
 
-            SUT.on_message_individual(None, None, msg)
+            SUT._on_message_individual(None, None, msg)
 
             queue = SUT.topics[topic]['queue']
             self.assertEqual(len(queue), 1)
@@ -931,7 +931,7 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
             payload = random.uniform(1, 100)
             msg.payload = str(payload)
 
-            SUT.on_message_individual(None, None, msg)
+            SUT._on_message_individual(None, None, msg)
             queue = SUT.topics[topic]['queue']
             self.assertEqual(len(queue), 1)
             data = queue[0]
@@ -958,7 +958,7 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
             payload = random.uniform(1, 100)
             msg.payload = str(payload)
 
-            SUT.on_message_individual(None, None, msg)
+            SUT._on_message_individual(None, None, msg)
             queue = SUT.topics[topic]['queue']
             self.assertEqual(len(queue), 1)
             data = queue[0]

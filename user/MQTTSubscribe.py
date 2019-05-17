@@ -1,7 +1,6 @@
 """
-WeeWX service and driver that subscribes to MQTT topics and augments/creates 
-loop packets/archive records.
-
+WeeWX driver and service that subscribes to MQTT topics and
+creates/updates loop packets/archive records.
 
 Installation:
     Put this file in the bin/user directory.
@@ -10,12 +9,13 @@ Installation:
     Update weewx.conf [Accumulator] for any custom fields.
 
 Overview:
-    The service consists of two threads. One thread waits on the MQTT topic
-    and when data is received it is added to the queue.
-    The other thread binds to either the NEW_LOOP_PACKET or NEW_ARCHIVE_RECORD event. 
+    The MQTT loop_start is used to run a separate thread to manage the MQTT subscriptions.
+    The payloads are put on a queue to be processed by the driver or service.
+
+    The service binds to either the NEW_LOOP_PACKET or NEW_ARCHIVE_RECORD event. 
     On this event, it processes the queue of MQTT payloads and updates the packet or record
 
-    The driver processes the queue and generates a packet for each element.
+    The driver processes the queue and generates a packet for each element currently in the queue.
     A topic can be desinated as an 'archive topic'. Data in this topic is returned as an archive record.
 
 Configuration:
@@ -140,7 +140,7 @@ import weewx.drivers
 from weewx.engine import StdService
 from collections import deque
 
-VERSION='1.1.0rc21'
+VERSION='1.1.0rc22'
 
 def logmsg(console, dst, prefix, msg):
     syslog.syslog(dst, '%s: %s' % (prefix, msg))
@@ -178,10 +178,12 @@ class CollectData:
     def get_data(self):
         return self.data
 
+# Class to manage MQTT subscriptions
+# If payload format that is not supported, subclass and implement on_message methos
 class MQTTSubscribe():
     def __init__(self, service_dict):
         self.console = to_bool(service_dict.get('console', False))
-        self.topics = self.create_topics(service_dict)
+        self.topics = self._create_topics(service_dict)
         clientid = service_dict.get('clientid',
                                 'MQTTSubscribe-' + str(random.randint(1000, 9999)))
 
@@ -232,85 +234,45 @@ class MQTTSubscribe():
         self.client = mqtt.Client(client_id=clientid)
 
         if log:
-            self.client.on_log = self.on_log
+            self.client.on_log = self._on_log
 
         if self.payload_type == 'json':
-            self.client.on_message = self.on_message_json
+            self.client.on_message = self._on_message_json
         elif self.payload_type =='individual':
-            self.client.on_message = self.on_message_individual
+            self.client.on_message = self._on_message_individual
         elif self.payload_type =='keyword':
-            self.client.on_message = self.on_message_keyword
+            self.client.on_message = self._on_message_keyword
         else:
             self.client.on_message = self.on_message
 
-        self.client.on_connect = self.on_connect
-        self.client.on_disconnect = self.on_disconnect
+        self.client.on_connect = self._on_connect
+        self.client.on_disconnect = self._on_disconnect
 
         if username is not None and password is not None:
             self.client.username_pw_set(username, password)
 
         self.client.connect(host, port, keepalive)
 
+    # start subscribing to the topics
     def start(self):
         logdbg(self.console, "MQTTSubscribe", "Starting loop")
         self.client.loop_start()
 
-    def close(self):
+    # shut it down
+    def shutDown(self):
         self.client.disconnect()
 
-    def create_topics(self, config_dict):
-        if 'topic' in config_dict and 'topics' in config_dict:
-            raise ValueError("Cannot have both 'topic' and 'topics'. Please remove 'topic'.")
-
-        unit_system_name = config_dict.get('unit_system', 'US').strip().upper()
-        if unit_system_name not in weewx.units.unit_constants:
-            raise ValueError("MQTTSubscribe: Unknown unit system: %s" % unit_system_name)
-        unit_system = weewx.units.unit_constants[unit_system_name]
-
-        if 'topic' in config_dict:
-            topics = {}
-            topics[config_dict['topic']] = {}
-        else:
-            topics = dict(config_dict['topics'])
-
-        if not topics:
-            raise ValueError("At least one [[topics]] must be specified.")
-
-        for topic in topics:
-            if 'topics' in config_dict and topic in config_dict['topics']:
-                topic_dict = config_dict['topics'][topic]
-            else:
-                topic_dict = {}
-            topics[topic]['queue'] = deque()
-            topics[topic]['max_queue'] = topic_dict.get('max_queue',
-                                                        config_dict.get('max_queue', six.MAXSIZE))
-            topics[topic]['queue_wind'] = deque()
-            topics[topic]['unit_system'] = unit_system
-
-        return topics
-
-
-    def _lookup_topic(self, msg_topic):
-        for topic in self.topics:
-            if mqtt.topic_matches_sub(topic, msg_topic):
-                return topic
-
-    def queue_size_check(self, queue, max_queue):
-        while len(queue) >= max_queue:
-            element = queue.popleft()
-            logerr(self.console, "MQTTSubscribe", "Queue limit %i reached. Removing: %s" %(max_queue, element))        
-
-    # sub class overrides this for specific MQTT payload formats
+     # sub class overrides this for specific MQTT payload formats
     def on_message(self, client, userdata, msg):
         loginf(self.console, "MQTTSubscribe", "Method 'on_message' not implemented")
 
-    def on_message_keyword(self, client, userdata, msg):
+    def _on_message_keyword(self, client, userdata, msg):
         # Wrap all the processing in a try, so it doesn't crash and burn on any error
         try:
             topic =self. _lookup_topic(msg.topic)
             logdbg(self.console, "MQTTSubscribe", "For %s received: %s assigned to: %s" %(msg.topic, msg.payload, topic))            
 
-            self.queue_size_check(self.topics[topic]['queue'], self.topics[topic]['max_queue'])
+            self._queue_size_check(self.topics[topic]['queue'], self.topics[topic]['max_queue'])
 
             fields = msg.payload.split(self.keyword_delimiter)
             data = {}
@@ -341,13 +303,13 @@ class MQTTSubscribe():
             logerr(self.console, "MQTTSubscribe", "on_message_json failed with: %s" % exception)
             logerr(self.console, "MQTTSubscribe", "**** Ignoring topic=%s and payload=%s" % (msg.topic, msg.payload))
 
-    def on_message_json(self, client, userdata, msg):
+    def _on_message_json(self, client, userdata, msg):
         # Wrap all the processing in a try, so it doesn't crash and burn on any error
         try:
             topic =self. _lookup_topic(msg.topic)
             logdbg(self.console, "MQTTSubscribe", "For %s received: %s assigned to: %s" %(msg.topic, msg.payload, topic))            
             
-            self.queue_size_check(self.topics[topic]['queue'], self.topics[topic]['max_queue'])
+            self._queue_size_check(self.topics[topic]['queue'], self.topics[topic]['max_queue'])
 
             # ToDo - better way?
             if six.PY2:
@@ -369,7 +331,7 @@ class MQTTSubscribe():
             logerr(self.console, "MQTTSubscribe", "on_message_json failed with: %s" % exception)
             logerr(self.console, "MQTTSubscribe", "**** Ignoring topic=%s and payload=%s" % (msg.topic, msg.payload))
 
-    def on_message_individual(self, client, userdata, msg):
+    def _on_message_individual(self, client, userdata, msg):
         wind_fields = ['windGust', 'windGustDir', 'windDir', 'windSpeed']
         
         # Wrap all the processing in a try, so it doesn't crash and burn on any error
@@ -377,7 +339,7 @@ class MQTTSubscribe():
             topic =self. _lookup_topic(msg.topic)
             logdbg(self.console, "MQTTSubscribe", "For %s received: %s assigned to: %s" %(msg.topic, msg.payload, topic))
 
-            self.queue_size_check(self.topics[topic]['queue'], self.topics[topic]['max_queue'])
+            self._queue_size_check(self.topics[topic]['queue'], self.topics[topic]['max_queue'])
 
             if self.full_topic_fieldname:
                 key = msg.topic.encode('ascii', 'ignore') # ToDo - research
@@ -400,16 +362,57 @@ class MQTTSubscribe():
             logerr(self.console, "MQTTSubscribe", "on_message_individual failed with: %s" % exception)
             logerr(self.console, "MQTTSubscribe", "**** Ignoring topic=%s and payload=%s" % (msg.topic, msg.payload))
 
-    def on_connect(self, client, userdata, flags, rc):
+    def _on_connect(self, client, userdata, flags, rc):
         logdbg(self.console, "MQTTSubscribe", "Connected with result code %i" % rc)
         for topic in self.topics:
             client.subscribe(topic)
 
-    def on_disconnect(self, client, userdata, rc):
+    def _on_disconnect(self, client, userdata, rc):
         logdbg(self.console, "MQTTSubscribe", "Disconnected with result code %i" %rc)
 
-    def on_log(self, client, userdata, level, msg):
+    def _on_log(self, client, userdata, level, msg):
         self.logger[level](self.console, "MQTTSubscribe/MQTT", msg)
+
+    def _create_topics(self, config_dict):
+        if 'topic' in config_dict and 'topics' in config_dict:
+            raise ValueError("Cannot have both 'topic' and 'topics'. Please remove 'topic'.")
+
+        unit_system_name = config_dict.get('unit_system', 'US').strip().upper()
+        if unit_system_name not in weewx.units.unit_constants:
+            raise ValueError("MQTTSubscribe: Unknown unit system: %s" % unit_system_name)
+        unit_system = weewx.units.unit_constants[unit_system_name]
+
+        if 'topic' in config_dict:
+            topics = {}
+            topics[config_dict['topic']] = {}
+        else:
+            topics = dict(config_dict['topics'])
+
+        if not topics:
+            raise ValueError("At least one [[topics]] must be specified.")
+
+        for topic in topics:
+            if 'topics' in config_dict and topic in config_dict['topics']:
+                topic_dict = config_dict['topics'][topic]
+            else:
+                topic_dict = {}
+            topics[topic]['queue'] = deque()
+            topics[topic]['max_queue'] = topic_dict.get('max_queue',
+                                                        config_dict.get('max_queue', six.MAXSIZE))
+            topics[topic]['queue_wind'] = deque()
+            topics[topic]['unit_system'] = unit_system
+
+        return topics
+
+    def _lookup_topic(self, msg_topic):
+        for topic in self.topics:
+            if mqtt.topic_matches_sub(topic, msg_topic):
+                return topic
+
+    def _queue_size_check(self, queue, max_queue):
+        while len(queue) >= max_queue:
+            element = queue.popleft()
+            logerr(self.console, "MQTTSubscribe", "Queue limit %i reached. Removing: %s" %(max_queue, element))        
 
     def _byteify(self, data, ignore_dicts = False):
         # if this is a unicode string, return its string representation
@@ -458,7 +461,7 @@ class MQTTSubscribeService(StdService):
             raise ValueError("MQTTSubscribeService: Unknown binding: %s" % binding)
 
     def shutDown(self):
-        self.manager.close()
+        self.manager.shutDown()
 
     def _process_data(self, topic, start_ts, end_ts, record):
         queue = topic['queue']
