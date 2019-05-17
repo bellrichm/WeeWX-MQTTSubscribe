@@ -56,8 +56,6 @@ class Test_add_data(unittest.TestCase):
         self.assertDictEqual(added_data, first_data)
         self.assertDictEqual(SUT.data, second_data)
 
-        print('done')
-                
 class Test_get_data(unittest.TestCase):
     wind_fields = ['windGust', 'windGustDir', 'windDir', 'windSpeed']
 
