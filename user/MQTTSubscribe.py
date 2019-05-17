@@ -130,7 +130,6 @@ import six
 import configobj
 import syslog
 import paho.mqtt.client as mqtt
-import threading
 import json
 import random
 import time
@@ -441,9 +440,10 @@ class MQTTSubscribeService(StdService):
         self.wind_fields = ['windGust', 'windGustDir', 'windDir', 'windSpeed']
 
         self.client = mqtt.Client(client_id=clientid)
-        self.thread = MQTTSubscribeServiceThread(self, self.client, self.topics, service_dict)
 
-        self.thread.start()
+        manager = MQTTSubscribe(self.client, self.topics, service_dict)
+        logdbg(self.console, "MQTTSubscribeDriver", "Starting loop")
+        self.client.loop_start()
 
         if (binding == 'archive'):
             self.bind(weewx.NEW_ARCHIVE_RECORD, self.new_archive_record)
@@ -454,9 +454,6 @@ class MQTTSubscribeService(StdService):
 
     def shutDown(self):
         self.client.disconnect()
-        if self.thread:
-            self.thread.join()
-            self.thread = None
 
     def _process_data(self, topic, start_ts, end_ts, record):
         queue = topic['queue']
@@ -531,20 +528,11 @@ class MQTTSubscribeService(StdService):
             event.record.update(target_data)
             logdbg(self.console, "MQTTSubscribeService", "Record after update is: %s" % to_sorted_string(event.record))
 
-class MQTTSubscribeServiceThread(MQTTSubscribe, threading.Thread):
-    def __init__(self, service, client, topics, service_dict):
-        threading.Thread.__init__(self)
-        MQTTSubscribe.__init__(self, client, topics, service_dict)
-
-    def run(self):
-        logdbg(self.console, "MQTTSubscribeServiceThread", "Starting loop")
-        self.client.loop_forever()
-
 def loader(config_dict, engine):
     config = configobj.ConfigObj(config_dict)
     return MQTTSubscribeDriver(**config['MQTTSubscribeDriver'])
 
-class MQTTSubscribeDriver(MQTTSubscribe, weewx.drivers.AbstractDevice):
+class MQTTSubscribeDriver(weewx.drivers.AbstractDevice):
     """weewx driver that reads data from MQTT"""
 
     def __init__(self, **stn_dict):
@@ -561,10 +549,10 @@ class MQTTSubscribeDriver(MQTTSubscribe, weewx.drivers.AbstractDevice):
       self.topics = create_topics(self.console, stn_dict)
 
       client = mqtt.Client(client_id=clientid)
-      MQTTSubscribe.__init__(self, client, self.topics, stn_dict)
+      manager = MQTTSubscribe(client, self.topics, stn_dict)
 
       logdbg(self.console, "MQTTSubscribeDriver", "Starting loop")
-      self.client.loop_start()
+      client.loop_start()
 
     def genLoopPackets(self):
       while True:
