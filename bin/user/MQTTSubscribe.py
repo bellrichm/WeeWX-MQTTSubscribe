@@ -89,6 +89,11 @@ Configuration:
     # Default is: =
     keyword_separator = =
 
+    # Turn the service on and off.
+    # Default is: true
+    # Only used by the service.
+    enable = false
+
     # The amount of time in seconds to overlap the start time when processing the MQTT queue.
     # When the time of the MQTT payload is less than the end time of the previous packet/record, 
     # the MQTT payload is ignored. When overlap is set, MQTT payloads within this number of seconds 
@@ -140,7 +145,7 @@ import weewx.drivers
 from weewx.engine import StdService
 from collections import deque
 
-VERSION='1.1.0rc24'
+VERSION='1.1.0rc25'
 DRIVER_NAME = 'MQTTSubscribeDriver'
 DRIVER_VERSION = VERSION
 
@@ -444,6 +449,11 @@ class MQTTSubscribeService(StdService):
 
         service_dict = config_dict.get('MQTTSubscribeService', {})
         self.console = to_bool(service_dict.get('console', False))
+        self.enable =  to_bool(service_dict.get('enable', True))
+        if not self.enable:
+            loginf(self.console, "MQTTSubscribeService", "Service is not enabled, exiting.")
+            return
+
         self.overlap = to_float(service_dict.get('overlap', 0))
         binding = service_dict.get('binding', 'loop')
 
