@@ -140,7 +140,9 @@ import weewx.drivers
 from weewx.engine import StdService
 from collections import deque
 
-VERSION='1.1.0rc23'
+VERSION='1.1.0rc24'
+DRIVER_NAME = 'MQTTSubscribeDriver'
+DRIVER_VERSION = VERSION
 
 def logmsg(console, dst, prefix, msg):
     syslog.syslog(dst, '%s: %s' % (prefix, msg))
@@ -541,8 +543,11 @@ class MQTTSubscribeService(StdService):
             logdbg(self.console, "MQTTSubscribeService", "Record after update is: %s" % to_sorted_string(event.record))
 
 def loader(config_dict, engine):
-    config = configobj.ConfigObj(config_dict)
-    return MQTTSubscribeDriver(**config['MQTTSubscribeDriver'])
+    ## TODO Delete -- config = configobj.ConfigObj(config_dict)
+    return MQTTSubscribeDriver(**config_dict[DRIVER_NAME])
+
+def confeditor_loader():
+    return MQTTSubscribeDriverConfEditor()
 
 class MQTTSubscribeDriver(weewx.drivers.AbstractDevice):
     """weewx driver that reads data from MQTT"""
@@ -558,6 +563,10 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice):
 
       self.manager = MQTTSubscribe(stn_dict)
       self.manager.start()
+
+    @property
+    def hardware_name(self):
+        return "MQTTSubscribeDriver"
 
     def genLoopPackets(self):
       while True:
@@ -602,9 +611,63 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice):
                 logdbg(self.console, "MQTTSubscribeDriver", "Archive record: %s" % to_sorted_string(archive_record))
                 yield archive_record
 
+class MQTTSubscribeDriverConfEditor(weewx.drivers.AbstractConfEditor):
     @property
-    def hardware_name(self):
-        return "MQTTSubscribeDriver"
+    def default_stanza(self):
+        return """
+[MQTTSubscribeDriver]
+    # This section is for the MQTTSubscribe driver.
+
+    # The driver to use:
+    driver = user.MQTTSubscribe
+
+    # The MQTT server.
+    # Default is: localhost
+    host = localhost
+
+    # The port to connect to.
+    # Default is: 1883
+    port = 1883
+
+    # Maximum period in seconds allowed between communications with the broker.
+    # Default is: 60
+    keepalive = 60
+
+    # Units for MQTT payloads without unit value.
+    # Valid values: US, METRIC, METRICWX
+    # Default is: US
+    unit_system = US
+
+    # The format of the MQTT payload.
+    # Currently support: individual, json, keyword
+    # Must be specified.
+    payload_type = REPLACE_ME
+
+    # The topics to subscribe to.
+    [[topics]]
+        [[[FIRST/REPLACE_ME]]]
+        [[[SECOND/REPLACE_ME]]]
+"""
+    def prompt_for_settings(self):
+        settings = {}
+
+        print("Enter the host.")
+        settings['host'] = self._prompt('host', 'localhost')
+
+        print("Enter the port on the host.")
+        settings['port'] = self._prompt('port', '1883')
+
+        print("Enter the maximum period in seconds allowed between communications with the broker.")
+        settings['keepalive'] = self._prompt('keepalive', '60')
+
+
+        print("Enter the units for MQTT payloads without unit value: US|METRIC|METRICWX")
+        settings['unit_system'] = self._prompt('unit_system', 'US', ['US', 'METRIC', 'METRICWX'])
+
+        print("Enter the MQTT paylod type: individual|json|keyword")
+        settings['payload_type'] = self._prompt('payload_type', 'json', ['individual', 'json', 'keyword'])
+
+        return settings
 
 # To Run
 # setup.py install:
@@ -708,7 +771,6 @@ if __name__ == '__main__': # pragma: no cover
                                      {'MQTTSubscribeService': {'console': True}})
             weeutil.weeutil.merge_config(config_dict,
                                      {'MQTTSubscribeDriver': {'console': True}})
-
 
         if simulation_type =="service":
             simulate_service(engine, config_dict, binding, record_count, interval, delay, units)
