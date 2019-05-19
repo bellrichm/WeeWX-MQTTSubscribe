@@ -5,9 +5,9 @@ To install the service enabled, set the environment variable MQTTSubscribe_insta
 For example,
 MQTTSubscribe_install_type=SERVICE wee_extension --install=PATH-TO-FILE
 
-To install only the driver, set the environment variable MQTTSubscribe_install_type to DEVICE
+To install only the driver, set the environment variable MQTTSubscribe_install_type to DRIVER
 For example, 
-MQTTSubscribe_install_type=DEVICE wee_extension --install=PATH-TO-FILE
+MQTTSubscribe_install_type=DRIVER wee_extension --install=PATH-TO-FILE
 and then run 
 wee_config --reconfig
 
