@@ -621,7 +621,7 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice):
                 logdbg(self.console, "MQTTSubscribeDriver", "Archive record: %s" % to_sorted_string(archive_record))
                 yield archive_record
 
-class MQTTSubscribeDriverConfEditor(weewx.drivers.AbstractConfEditor):
+class MQTTSubscribeDriverConfEditor(weewx.drivers.AbstractConfEditor): # pragma: no cover
     @property
     def default_stanza(self):
         return """
