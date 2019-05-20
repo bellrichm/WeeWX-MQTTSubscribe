@@ -175,16 +175,16 @@ Where the options are:
 ```
 
 Examples:
+* Bind the service to new archive records and update two records.
 
-Bind the service to new archive records and update two records.
+    ```
+    PYTHONPATH=$BIN_ROOT python $BIN_ROOT/user/MQTTSubscribe.py $CONFIG_ROOT/weewx.conf --type service --binding archive --interval 300 --delay 15 --records 2 weewx.conf
+    ```
 
-```
-PYTHONPATH=$BIN_ROOT python $BIN_ROOT/user/MQTTSubscribe.py $CONFIG_ROOT/weewx.conf --type service --binding archive --interval 300 --delay 15 --records 2 weewx.conf
-```
+* Run as a driver every 2 seconds generate a loop packet for a total of 30.
 
-Run as a driver every 2 seconds generate a loop packet for a total of 30.
 
-```
-PYTHONPATH=$BIN_ROOT python $BIN_ROOT/user/MQTTSubscribe.py $CONFIG_ROOT/weewx.conf --type driver --binding loop --interval 2 --records 30 weewx.conf
-```
+    ```
+    PYTHONPATH=$BIN_ROOT python $BIN_ROOT/user/MQTTSubscribe.py $CONFIG_ROOT/weewx.conf --type driver --binding loop --interval 2 --records 30 weewx.conf
+    ```
      
