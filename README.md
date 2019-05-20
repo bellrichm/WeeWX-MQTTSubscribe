@@ -175,6 +175,7 @@ Where the options are:
 ```
 
 Examples:
+
 * Bind the service to new archive records and update two records.
 
     ```
