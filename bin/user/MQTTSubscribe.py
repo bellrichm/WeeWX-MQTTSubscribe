@@ -311,12 +311,13 @@ class MessageCallbackFactory:
         try:
             label_map = userdata['label_map']
             topics = userdata['topics']
+            full_topic_fieldname = userdata['full_topic_fieldname']
             topic =self. _lookup_topic(topics, msg.topic)
             logdbg(self.console, "MQTTSubscribe", "For %s received: %s assigned to: %s" %(msg.topic, msg.payload, topic))
 
             self._queue_size_check(topics[topic]['queue'], topics[topic]['max_queue'])
 
-            if self.full_topic_fieldname:
+            if full_topic_fieldname:
                 key = msg.topic.encode('ascii', 'ignore') # ToDo - research
             else:
                 tkey = msg.topic.rpartition('/')[2]
@@ -398,6 +399,7 @@ class MQTTSubscribe():
         userdata['label_map'] = self.label_map
         userdata['keyword_delimiter'] = self.keyword_delimiter
         userdata['keyword_separator'] = self.keyword_separator
+        userdata['full_topic_fieldname'] = self.full_topic_fieldname
         self.client = mqtt.Client(client_id=clientid, userdata=userdata)
 
         if log:
