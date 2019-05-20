@@ -138,7 +138,8 @@ import paho.mqtt.client as mqtt
 import json
 import random
 import time
-import weeutil.weeutil
+#import weeutil.weeutil
+import weeutil
 from weeutil.weeutil import to_bool, to_float, to_int, to_sorted_string
 import weewx
 import weewx.drivers
@@ -185,11 +186,161 @@ class CollectData:
     def get_data(self):
         return self.data
 
+class MessageCallbackFactory:
+    def __init__(self, console=False):
+        self.console = console
+        self.callbacks = {}
+        self.add_callback('individual', self._on_message_individual)
+        self.add_callback('json', self._on_message_json)
+        self.add_callback('keyword', self._on_message_keyword)
+
+    @property
+    def Callbacks(self):
+        return self.callbacks
+
+    def add_callback(self, payload_type, callback):
+        self.callbacks[payload_type] = callback
+
+    def get_callback(self, payload_type):
+        return self.callbacks[payload_type]
+
+    def _byteify(self, data, ignore_dicts = False):
+        # if this is a unicode string, return its string representation
+        if isinstance(data, unicode):
+            return data.encode('utf-8')
+        # if this is a list of values, return list of byteified values
+        if isinstance(data, list):
+            return [ self._byteify(item, ignore_dicts=True) for item in data ]
+        # if this is a dictionary, return dictionary of byteified keys and values
+        # but only if we haven't already byteified it
+        if isinstance(data, dict) and not ignore_dicts:
+            data2 = {}
+            for key, value in data.items():
+                key2 = self._byteify(key, ignore_dicts=True)
+                # ToDo - better way to do mapping
+                data2[self.label_map.get(key2,key2)] = self._byteify(value, ignore_dicts=True)
+            return data2
+        # if it's anything else, return it in its original form
+        return data
+
+    def _lookup_topic(self, topics, msg_topic):
+        for topic in topics:
+            if mqtt.topic_matches_sub(topic, msg_topic):
+                return topic
+
+    def _queue_size_check(self, queue, max_queue):
+        while len(queue) >= max_queue:
+            element = queue.popleft()
+            logerr(self.console, "MQTTSubscribe", "Queue limit %i reached. Removing: %s" %(max_queue, element))        
+
+    def _on_message_keyword(self, client, userdata, msg):
+        # Wrap all the processing in a try, so it doesn't crash and burn on any error
+        try:
+            label_map = userdata['label_map']
+            topics = userdata['topics']
+            topic =self. _lookup_topic(topics, msg.topic)
+            logdbg(self.console, "MQTTSubscribe", "For %s received: %s assigned to: %s" %(msg.topic, msg.payload, topic))            
+
+            self._queue_size_check(topics[topic]['queue'], topics[topic]['max_queue'])
+
+            fields = msg.payload.split(self.keyword_delimiter)
+            data = {}
+            for field in fields:
+                eq_index = field.find(self.keyword_separator)
+                # Ignore all fields that do not have the separator
+                if eq_index == -1:
+                    logerr(self.console, "MQTTSubscribe", "on_message_keyword failed to find separator: %s" % self.keyword_separator)
+                    logerr(self.console, "MQTTSubscribe", "**** Ignoring field=%s " % field)
+                    continue
+
+                name = field[:eq_index].strip()
+                value = field[eq_index + 1:].strip()
+                data[label_map.get(name, name)] = to_float(value)
+
+            if data:
+                if 'dateTime' not in data:
+                    data['dateTime'] = time.time()
+                if 'usUnits' not in data:
+                    data['usUnits'] = topics[topic]['unit_system']
+
+                topics[topic]['queue'].append(data,)
+
+                logdbg(self.console, "MQTTSubscribe", "Added to queue: %s" % to_sorted_string(data))
+            else:
+                logerr(self.console, "MQTTSubscribe", "on_message_keyword failed to find data in: topic=%s and payload=%s" % (msg.topic, msg.payload))
+        except Exception as exception:
+            logerr(self.console, "MQTTSubscribe", "on_message_json failed with: %s" % exception)
+            logerr(self.console, "MQTTSubscribe", "**** Ignoring topic=%s and payload=%s" % (msg.topic, msg.payload))
+
+    def _on_message_json(self, client, userdata, msg):
+        # Wrap all the processing in a try, so it doesn't crash and burn on any error
+        try:
+            self.label_map = userdata['label_map'] # ToDo - look for a better way
+            topics = userdata['topics']
+            topic =self. _lookup_topic(topics, msg.topic)
+            logdbg(self.console, "MQTTSubscribe", "For %s received: %s assigned to: %s" %(msg.topic, msg.payload, topic))            
+
+            self._queue_size_check(topics[topic]['queue'], topics[topic]['max_queue'])
+
+            # ToDo - better way?
+            if six.PY2:
+                data = self._byteify(
+                    json.loads(msg.payload, object_hook=self._byteify),
+                    ignore_dicts=True)
+            else:
+                data = json.loads(msg.payload.decode("utf-8"))
+
+            if 'dateTime' not in data:
+                data['dateTime'] = time.time()
+            if 'usUnits' not in data:
+                data['usUnits'] = topics[topic]['unit_system']
+
+            topics[topic]['queue'].append(data,)
+
+            logdbg(self.console, "MQTTSubscribe", "Added to queue: %s" % to_sorted_string(data))
+        except Exception as exception:
+            logerr(self.console, "MQTTSubscribe", "on_message_json failed with: %s" % exception)
+            logerr(self.console, "MQTTSubscribe", "**** Ignoring topic=%s and payload=%s" % (msg.topic, msg.payload))
+
+    def _on_message_individual(self, client, userdata, msg):
+        wind_fields = ['windGust', 'windGustDir', 'windDir', 'windSpeed']
+
+        # Wrap all the processing in a try, so it doesn't crash and burn on any error
+        try:
+            label_map = userdata['label_map']
+            topics = userdata['topics']
+            topic =self. _lookup_topic(topics, msg.topic)
+            logdbg(self.console, "MQTTSubscribe", "For %s received: %s assigned to: %s" %(msg.topic, msg.payload, topic))
+
+            self._queue_size_check(topics[topic]['queue'], topics[topic]['max_queue'])
+
+            if self.full_topic_fieldname:
+                key = msg.topic.encode('ascii', 'ignore') # ToDo - research
+            else:
+                tkey = msg.topic.rpartition('/')[2]
+                key = tkey.encode('ascii', 'ignore') # ToDo - research
+
+            fieldname = label_map.get(key,key)
+
+            data = {}
+            data['dateTime'] = time.time()
+            data['usUnits'] = topics[topic]['unit_system']
+            data[fieldname] = to_float(msg.payload)
+
+            if fieldname in wind_fields:
+                topics[topic]['queue_wind'].append(data,)
+            else:
+                topics[topic]['queue'].append(data,)
+        except Exception as exception:
+            logerr(self.console, "MQTTSubscribe", "on_message_individual failed with: %s" % exception)
+            logerr(self.console, "MQTTSubscribe", "**** Ignoring topic=%s and payload=%s" % (msg.topic, msg.payload))
+
 # Class to manage MQTT subscriptions
 # If payload format that is not supported, subclass and implement on_message methos
 class MQTTSubscribe():
     def __init__(self, service_dict):
         self.console = to_bool(service_dict.get('console', False))
+        message_callback_factory = service_dict.get('message_callback_factory', 'user.MQTTSubscribe.MessageCallbackFactory')
         self.topics = self._create_topics(service_dict)
         clientid = service_dict.get('clientid',
                                 'MQTTSubscribe-' + str(random.randint(1000, 9999)))
@@ -212,6 +363,8 @@ class MQTTSubscribe():
         if self.archive_topic and self.archive_topic not in service_dict['topics']:
             raise ValueError("Archive topic %s must be in [[topics]]" % self.archive_topic)
 
+        loginf(self.console, "MQTTSubscribe", "Console is %s" % self.console)
+        loginf(self.console, "MQTTSubscribe", "Message callback factory is %s" % message_callback_factory)
         loginf(self.console, "MQTTSubscribe", "Client id is %s" % clientid)
         loginf(self.console, "MQTTSubscribe", "MQTTSubscribe version is %s" % VERSION)
         loginf(self.console, "MQTTSubscribe", "Host is %s" % host)
@@ -238,19 +391,19 @@ class MQTTSubscribe():
             mqtt.MQTT_LOG_DEBUG: logdbg
         }
 
-        self.client = mqtt.Client(client_id=clientid)
+        userdata = {}
+        userdata['topics'] = self.topics
+        userdata['label_map'] = self.label_map
+        self.client = mqtt.Client(client_id=clientid, userdata=userdata)
 
         if log:
             self.client.on_log = self._on_log
 
-        if self.payload_type == 'json':
-            self.client.on_message = self._on_message_json
-        elif self.payload_type =='individual':
-            self.client.on_message = self._on_message_individual
-        elif self.payload_type =='keyword':
-            self.client.on_message = self._on_message_keyword
-        else:
-            self.client.on_message = self.on_message
+        MessageCallbackFactory_class = weeutil.weeutil._get_object(message_callback_factory)
+        messageCallBackFactory = MessageCallbackFactory_class(self.console)
+        logdbg(self.console, "MQTTSubscribe", "Message callbacks: %s" %messageCallBackFactory.Callbacks)
+
+        self.client.on_message = messageCallBackFactory.get_callback(self.payload_type)
 
         self.client.on_connect = self._on_connect
         self.client.on_disconnect = self._on_disconnect
@@ -272,106 +425,6 @@ class MQTTSubscribe():
     # shut it down
     def shutDown(self):
         self.client.disconnect()
-
-     # sub class overrides this for specific MQTT payload formats
-    def on_message(self, client, userdata, msg):
-        loginf(self.console, "MQTTSubscribe", "Method 'on_message' not implemented")
-
-    def _on_message_keyword(self, client, userdata, msg):
-        # Wrap all the processing in a try, so it doesn't crash and burn on any error
-        try:
-            topic =self. _lookup_topic(msg.topic)
-            logdbg(self.console, "MQTTSubscribe", "For %s received: %s assigned to: %s" %(msg.topic, msg.payload, topic))            
-
-            self._queue_size_check(self.topics[topic]['queue'], self.topics[topic]['max_queue'])
-
-            fields = msg.payload.split(self.keyword_delimiter)
-            data = {}
-            for field in fields:
-                eq_index = field.find(self.keyword_separator)
-                # Ignore all fields that do not have the separator
-                if eq_index == -1:
-                    logerr(self.console, "MQTTSubscribe", "on_message_keyword failed to find separator: %s" % self.keyword_separator)
-                    logerr(self.console, "MQTTSubscribe", "**** Ignoring field=%s " % field)
-                    continue
-
-                name = field[:eq_index].strip()
-                value = field[eq_index + 1:].strip()
-                data[self.label_map.get(name, name)] = to_float(value)
-
-            if data:
-                if 'dateTime' not in data:
-                    data['dateTime'] = time.time()
-                if 'usUnits' not in data:
-                    data['usUnits'] = self.topics[topic]['unit_system']
-
-                self.topics[topic]['queue'].append(data,)
-
-                logdbg(self.console, "MQTTSubscribe", "Added to queue: %s" % to_sorted_string(data))
-            else:
-                logerr(self.console, "MQTTSubscribe", "on_message_keyword failed to find data in: topic=%s and payload=%s" % (msg.topic, msg.payload))
-        except Exception as exception:
-            logerr(self.console, "MQTTSubscribe", "on_message_json failed with: %s" % exception)
-            logerr(self.console, "MQTTSubscribe", "**** Ignoring topic=%s and payload=%s" % (msg.topic, msg.payload))
-
-    def _on_message_json(self, client, userdata, msg):
-        # Wrap all the processing in a try, so it doesn't crash and burn on any error
-        try:
-            topic =self. _lookup_topic(msg.topic)
-            logdbg(self.console, "MQTTSubscribe", "For %s received: %s assigned to: %s" %(msg.topic, msg.payload, topic))            
-            
-            self._queue_size_check(self.topics[topic]['queue'], self.topics[topic]['max_queue'])
-
-            # ToDo - better way?
-            if six.PY2:
-                data = self._byteify(
-                    json.loads(msg.payload, object_hook=self._byteify),
-                    ignore_dicts=True)
-            else:
-                data = json.loads(msg.payload.decode("utf-8"))
-
-            if 'dateTime' not in data:
-                data['dateTime'] = time.time()
-            if 'usUnits' not in data:
-                data['usUnits'] = self.topics[topic]['unit_system']
-
-            self.topics[topic]['queue'].append(data,)
-
-            logdbg(self.console, "MQTTSubscribe", "Added to queue: %s" % to_sorted_string(data))
-        except Exception as exception:
-            logerr(self.console, "MQTTSubscribe", "on_message_json failed with: %s" % exception)
-            logerr(self.console, "MQTTSubscribe", "**** Ignoring topic=%s and payload=%s" % (msg.topic, msg.payload))
-
-    def _on_message_individual(self, client, userdata, msg):
-        wind_fields = ['windGust', 'windGustDir', 'windDir', 'windSpeed']
-        
-        # Wrap all the processing in a try, so it doesn't crash and burn on any error
-        try:
-            topic =self. _lookup_topic(msg.topic)
-            logdbg(self.console, "MQTTSubscribe", "For %s received: %s assigned to: %s" %(msg.topic, msg.payload, topic))
-
-            self._queue_size_check(self.topics[topic]['queue'], self.topics[topic]['max_queue'])
-
-            if self.full_topic_fieldname:
-                key = msg.topic.encode('ascii', 'ignore') # ToDo - research
-            else:
-                tkey = msg.topic.rpartition('/')[2]
-                key = tkey.encode('ascii', 'ignore') # ToDo - research
-
-            fieldname = self.label_map.get(key,key)
-
-            data = {}
-            data['dateTime'] = time.time()
-            data['usUnits'] = self.topics[topic]['unit_system']
-            data[fieldname] = to_float(msg.payload)
-
-            if fieldname in wind_fields:
-                self.topics[topic]['queue_wind'].append(data,)
-            else:
-                self.topics[topic]['queue'].append(data,)
-        except Exception as exception:
-            logerr(self.console, "MQTTSubscribe", "on_message_individual failed with: %s" % exception)
-            logerr(self.console, "MQTTSubscribe", "**** Ignoring topic=%s and payload=%s" % (msg.topic, msg.payload))
 
     def _on_connect(self, client, userdata, flags, rc):
         logdbg(self.console, "MQTTSubscribe", "Connected with result code %i" % rc)
@@ -414,34 +467,6 @@ class MQTTSubscribe():
             topics[topic]['unit_system'] = unit_system
 
         return topics
-
-    def _lookup_topic(self, msg_topic):
-        for topic in self.topics:
-            if mqtt.topic_matches_sub(topic, msg_topic):
-                return topic
-
-    def _queue_size_check(self, queue, max_queue):
-        while len(queue) >= max_queue:
-            element = queue.popleft()
-            logerr(self.console, "MQTTSubscribe", "Queue limit %i reached. Removing: %s" %(max_queue, element))        
-
-    def _byteify(self, data, ignore_dicts = False):
-        # if this is a unicode string, return its string representation
-        if isinstance(data, unicode):
-            return data.encode('utf-8')
-        # if this is a list of values, return list of byteified values
-        if isinstance(data, list):
-            return [ self._byteify(item, ignore_dicts=True) for item in data ]
-        # if this is a dictionary, return dictionary of byteified keys and values
-        # but only if we haven't already byteified it
-        if isinstance(data, dict) and not ignore_dicts:
-            data2 = {}
-            for key, value in data.items():
-                key2 = self._byteify(key, ignore_dicts=True)
-                data2[self.label_map.get(key2,key2)] = self._byteify(value, ignore_dicts=True)
-            return data2
-        # if it's anything else, return it in its original form
-        return data
 
 class MQTTSubscribeService(StdService):
     def __init__(self, engine, config_dict):
@@ -553,7 +578,6 @@ class MQTTSubscribeService(StdService):
             logdbg(self.console, "MQTTSubscribeService", "Record after update is: %s" % to_sorted_string(event.record))
 
 def loader(config_dict, engine):
-    ## TODO Delete -- config = configobj.ConfigObj(config_dict)
     return MQTTSubscribeDriver(**config_dict[DRIVER_NAME])
 
 def confeditor_loader():
