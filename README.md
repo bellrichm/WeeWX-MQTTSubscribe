@@ -11,15 +11,16 @@ It is also possible to subscribe to a second topic. The MQTT payload from this t
 
 When generating loop packets and the queue becomes empty, the option, wait_before_retry, controls how long before an attempt is made to get data from the queue.
 ### **Service**
-The service can bind to either new loop packets or new archive records. In both cases a separate thread captures the MQTT payload and puts it on a queue. On new packets/records events, the main thread takes all the elements from the queue with a dateTime that is less than the packet's/record's dateTime. These elements are accumulated to a single set of data fields. If necessary, the data is converted to the units of the packet/record. The packet/record is then updated with the data.
+The service can bind to either new loop packets or new archive records. In both cases a separate thread captures the MQTT payload and puts it on a queue. On new packets/records events, the main thread takes all the elements from the queue with a dateTime that is less than the packet's/record's dateTime. These elements are accumulated to a single dictionary of data fields. If necessary, the data is converted to the units of the packet/record. The packet/record is then updated with the data.
 
 In development, it was noticed that due to the shorter interval, sometimes the MQTT payload was "dropped" because it dateTime was smaller than the expected start (the previous packet's dateTime). The option, overlap, can be set to decrement the start time and capture the payload. This value should be as small as possible.
 
 ## Installation and running stand-alone notes
 Because there are [multiple methods to install WeeWX](http://weewx.com/docs/usersguide.htm#installation_methods), location of files can vary. See [where to find things](http://weewx.com/docs/usersguide.htm#Where_to_find_things) in the WeeWX [User's Guide](http://weewx.com/docs/usersguide.htm") for the definitive information. The following symbolic names are used to define the various locations:
--   *$DOWNLOAD_ROOT* - The directory containing the downloaded *MQTTSubscribe* extension.
--   *$BIN_ROOT* - The directory where WeeWX executables are located. 
--   *$CONFIG_ROOT* - The directory where the configuration (typicall, weewx.conf) is located.
+
+* *$DOWNLOAD_ROOT* - The directory containing the downloaded *MQTTSubscribe* extension.
+* *$BIN_ROOT* - The directory where WeeWX executables are located. 
+* *$CONFIG_ROOT* - The directory where the configuration (typically, weewx.conf) is located.
 
 ## Preqrequisites
 1. Install the paho MQTT client.
@@ -42,7 +43,7 @@ Because there are [multiple methods to install WeeWX](http://weewx.com/docs/user
         $BIN_ROOT/wee_config --reconfig
         ```
         
-        **Note:** By default when installing, the service is configured but not enabled. 
+        **Note:** By default when installing, the service is installed and configured, but not enabled. 
         To not install and configure the service (only install the file(s)), 
         set the environment variable MQTTSubscribe_install_type to DRIVER. For example,
         
@@ -50,12 +51,12 @@ Because there are [multiple methods to install WeeWX](http://weewx.com/docs/user
         MQTTSubscribe_install_type=DRIVER --install=$DOWNLOAD_ROOT/v.X.Y.Z.tar.gz
         ```
         
-        And then configure the driver
+        And then configure the driver.
         
         ```
         $BIN_ROOT/wee_config --reconfig
         ```
-        Edit the [MQTTSubscribeDriver] stanza to configure the topics to subscribe to.
+        In either case, edit the [MQTTSubscribeDriver][\[topics\]] stanza to configure the topics to subscribe to.
     
     * As a service
     
@@ -63,16 +64,17 @@ Because there are [multiple methods to install WeeWX](http://weewx.com/docs/user
         $BIN_ROOT/wee_extension --install=$DOWNLOAD_DIR/v.X.Y.Z.tar.gz
         ```
         
-        Edit the [MQTTSubscribeService] stanza as required.
-        At the very least the topics to subscribe to must be configured. Other settings such
-        as host and port may need to be changed.
-            
-        **Note:** By default when installing, the service is installed configured but not enabled. 
+        **Note:** By default when installing, the service is installed and configured, but not enabled. 
         To enable, set the environment variable MQTTSubscribe_install_type to SERVICE. For example,
         
         ```
         MQTTSubscribe_install_type=SERVICE --install=$DOWNLOAD_DIR/v.X.Y.Z.tar.gz
         ```
+        
+        In either case, edit the [MQTTSubscribeService] stanza as required.
+        At the very least the [\[topics\]] stanza must be configured to the topics to subscribe to. 
+        Other settings such as host and port may need to be changed.
+            
 3. Optionally run in standalone mode
 
     ```
