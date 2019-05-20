@@ -238,15 +238,17 @@ class MessageCallbackFactory:
         try:
             label_map = userdata['label_map']
             topics = userdata['topics']
+            keyword_delimiter = userdata['keyword_delimiter']
+            keyword_separator = userdata['keyword_separator']
             topic =self. _lookup_topic(topics, msg.topic)
             logdbg(self.console, "MQTTSubscribe", "For %s received: %s assigned to: %s" %(msg.topic, msg.payload, topic))            
 
             self._queue_size_check(topics[topic]['queue'], topics[topic]['max_queue'])
 
-            fields = msg.payload.split(self.keyword_delimiter)
+            fields = msg.payload.split(keyword_delimiter)
             data = {}
             for field in fields:
-                eq_index = field.find(self.keyword_separator)
+                eq_index = field.find(keyword_separator)
                 # Ignore all fields that do not have the separator
                 if eq_index == -1:
                     logerr(self.console, "MQTTSubscribe", "on_message_keyword failed to find separator: %s" % self.keyword_separator)
@@ -269,7 +271,7 @@ class MessageCallbackFactory:
             else:
                 logerr(self.console, "MQTTSubscribe", "on_message_keyword failed to find data in: topic=%s and payload=%s" % (msg.topic, msg.payload))
         except Exception as exception:
-            logerr(self.console, "MQTTSubscribe", "on_message_json failed with: %s" % exception)
+            logerr(self.console, "MQTTSubscribe", "on_message_keyword failed with: %s" % exception)
             logerr(self.console, "MQTTSubscribe", "**** Ignoring topic=%s and payload=%s" % (msg.topic, msg.payload))
 
     def _on_message_json(self, client, userdata, msg):
@@ -394,6 +396,8 @@ class MQTTSubscribe():
         userdata = {}
         userdata['topics'] = self.topics
         userdata['label_map'] = self.label_map
+        userdata['keyword_delimiter'] = self.keyword_delimiter
+        userdata['keyword_separator'] = self.keyword_separator
         self.client = mqtt.Client(client_id=clientid, userdata=userdata)
 
         if log:
