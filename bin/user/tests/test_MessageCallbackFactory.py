@@ -3,6 +3,7 @@ from __future__ import with_statement
 import unittest
 import mock
 
+import json
 import random
 import six
 import string
@@ -264,6 +265,121 @@ class TestKeywordload(unittest.TestCase):
         data = queue[0]
         self.assertDictEqual(data, payload_dict)
 
+class TestJsonPayload(unittest.TestCase):
+    unit_system_name = 'US'
+    unit_system = weewx.units.unit_constants[unit_system_name]
+
+    topic = 'foo/bar'
+    userdata = {}
+    userdata['label_map'] = {}
+    userdata['topics'] = {}
+    userdata['topics'][topic] = {}
+    userdata['topics'][topic]['unit_system'] = unit_system
+    userdata['topics'][topic]['max_queue'] = six.MAXSIZE
+
+    payload_dict = {
+        'inTemp': round(random.uniform(1, 100), 2),
+        'outTemp': round(random.uniform(1, 100), 2)
+    }
+
+    def test_invalid_json(self):
+        SUT = MessageCallbackFactory()
+
+        msg = Msg()
+        msg.topic = self.topic
+        msg.payload = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+
+        with mock.patch('user.MQTTSubscribe.logerr') as mock_logerr:
+            SUT._on_message_json(None, None, msg)
+            self.assertEqual(mock_logerr.call_count, 2)
+
+    def test_empty_payload(self):
+        SUT = MessageCallbackFactory()
+
+        msg = Msg()
+        msg.topic = self.topic
+        msg.payload = ''
+
+        with mock.patch('user.MQTTSubscribe.logerr') as mock_logerr:
+            SUT._on_message_json(None, None, msg)
+            self.assertEqual(mock_logerr.call_count, 2)
+
+    def test_missing_dateTime(self):
+        SUT = MessageCallbackFactory()
+
+        payload_dict = dict(self.payload_dict)
+        payload_dict['usUnits'] = random.randint(1, 10)
+
+        self.userdata['topics'][self.topic]['queue'] = deque()
+
+        if six.PY2:
+            payload = json.dumps(payload_dict)
+        else:
+            payload = json.dumps(payload_dict).encode("utf-8")
+
+        msg = Msg()
+        msg.topic = self.topic
+        msg.payload = payload
+
+        SUT._on_message_json(None, self.userdata, msg)
+
+        queue = self.userdata['topics'][self.topic]['queue']
+        self.assertEqual(len(queue), 1)
+        data = queue[0]
+        self.assertDictContainsSubset(payload_dict, data)
+        self.assertIn('dateTime', data)
+
+    def test_missing_units(self):
+        SUT = MessageCallbackFactory()
+
+        payload_dict = dict(self.payload_dict)
+        payload_dict['dateTime'] = time.time()
+
+        self.userdata['topics'][self.topic]['queue'] = deque()
+
+        if six.PY2:
+            payload = json.dumps(payload_dict)
+        else:
+            payload = json.dumps(payload_dict).encode("utf-8")
+
+        msg = Msg()
+        msg.topic = self.topic
+        msg.payload = payload
+
+        SUT._on_message_json(None, self.userdata, msg)
+
+        queue = self.userdata['topics'][self.topic]['queue']
+        self.assertEqual(len(queue), 1)
+        data = queue[0]
+        self.assertDictContainsSubset(payload_dict, data)
+        self.assertIn('usUnits', data)
+        self.assertEqual(data['usUnits'], self.unit_system)
+
+    def test_payload_good(self):
+        SUT = MessageCallbackFactory()
+
+        payload_dict = dict(self.payload_dict)
+        payload_dict['dateTime'] = time.time()
+        payload_dict['usUnits'] = random.randint(1, 10)
+
+        self.userdata['topics'][self.topic]['queue'] = deque()
+
+
+        if six.PY2:
+            payload = json.dumps(payload_dict)
+        else:
+            payload = json.dumps(payload_dict).encode("utf-8")
+
+        msg = Msg()
+        msg.topic = self.topic
+        msg.payload = payload
+
+        SUT._on_message_json(None, self.userdata, msg)
+
+        queue = self.userdata['topics'][self.topic]['queue']
+        self.assertEqual(len(queue), 1)
+        data = queue[0]
+        self.assertDictEqual(data, payload_dict)
 
 if __name__ == '__main__':
     unittest.main()
