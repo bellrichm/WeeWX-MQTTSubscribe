@@ -25,7 +25,6 @@ class TestInitialization(unittest.TestCase):
         config_dict = {
             'console': False,
             'label_map': {},
-            'payload_type': None,
             'full_topic_fieldname': False,
             'keyword_delimiter': None,
             'keyword_separator': None,
@@ -35,7 +34,8 @@ class TestInitialization(unittest.TestCase):
             'username': None,
             'password': ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),
             'topic': None,
-            'archive_topic': None
+            'archive_topic': None,
+            'message_handler': {}
         }
 
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
@@ -53,7 +53,6 @@ class TestInitialization(unittest.TestCase):
         config_dict = {
             'console': False,
             'label_map': {},
-            'payload_type': None,
             'full_topic_fieldname': False,
             'keyword_delimiter': None,
             'keyword_separator': None,
@@ -63,7 +62,8 @@ class TestInitialization(unittest.TestCase):
             'username': ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),
             'password': None,
             'topic': None,
-            'archive_topic': None
+            'archive_topic': None,
+            'message_handler': {}
         }
 
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
@@ -81,7 +81,6 @@ class TestInitialization(unittest.TestCase):
         config_dict = {
             'console': False,
             'label_map': {},
-            'payload_type': None,
             'full_topic_fieldname': False,
             'keyword_delimiter': None,
             'keyword_separator': None,
@@ -91,7 +90,8 @@ class TestInitialization(unittest.TestCase):
             'username': None,
             'password': None,
             'topic': None,
-            'archive_topic': None
+            'archive_topic': None,
+            'message_handler': {}
         }
 
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
@@ -111,7 +111,6 @@ class TestInitialization(unittest.TestCase):
         config_dict = {
             'console': False,
             'label_map': {},
-            'payload_type': None,
             'full_topic_fieldname': False,
             'keyword_delimiter': None,
             'keyword_separator': None,
@@ -121,7 +120,8 @@ class TestInitialization(unittest.TestCase):
             'username': username,
             'password': password,
             'topic': None,
-            'archive_topic': None
+            'archive_topic': None,
+            'message_handler': {}
         }
 
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
@@ -137,7 +137,6 @@ class Teston_connect(unittest.TestCase):
     config_dict = {
         'console': False,
         'label_map': {},
-        'payload_type': None,
         'full_topic_fieldname': False,
         'keyword_delimiter': None,
         'keyword_separator': None,
@@ -157,6 +156,7 @@ class Teston_connect(unittest.TestCase):
         config_dict['topics'] = {}
         config_dict['topics'][topic1] = {}
         config_dict['topics'][topic2] = {}
+        config_dict['message_handler'] = {}
 
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
             with mock.patch('user.MQTTSubscribe.MessageCallbackFactory') as mock_factory:

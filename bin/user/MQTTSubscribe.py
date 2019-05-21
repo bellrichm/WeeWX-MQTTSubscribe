@@ -67,12 +67,7 @@ Configuration:
     # Or if subscribing to 'individual' payloads with wildcards. This results in many topic
     # in a single queue.
     # Default is: six.MAXSIZE
-    # max_queue = six.MAXSIZE
-
-    # The format of the MQTT payload. 
-    # Currently support: individual, json, keyword
-    # Must be specified.
-    payload_type = json
+    max_queue = six.MAXSIZE
 
     # When True, the full topic (weather/outTemp) is used as the fieldname. 
     # When false, the topic furthest to the right is used. 
@@ -119,7 +114,14 @@ Configuration:
     # Default is: None
     # Only used by the driver.
     archive_topic =
-   
+
+    # The message handler to use
+    [[message_handler]]
+        # The format of the MQTT payload.
+        # Currently support: individual, json, keyword
+        # Must be specified.
+        type = REPLACE_ME
+
     # The topics to subscribe to.
     [[topics]
         [[[first/topic]]]
@@ -187,22 +189,22 @@ class CollectData:
         return self.data
 
 class MessageCallbackFactory:
-    def __init__(self, console=False):
+    def __init__(self, config, console=False):
         self.console = console
+        self._setup_callbacks()
+
+        self.type = config.get('type', None) # check that one of three
+        if self.type not in self.callbacks:
+            raise ValueError("Invalid type configured: %s" % self.type)
+
+    def get_callback(self):
+        return self.callbacks[self.type]
+
+    def _setup_callbacks(self):
         self.callbacks = {}
-        self.add_callback('individual', self._on_message_individual)
-        self.add_callback('json', self._on_message_json)
-        self.add_callback('keyword', self._on_message_keyword)
-
-    @property
-    def Callbacks(self):
-        return self.callbacks
-
-    def add_callback(self, payload_type, callback):
-        self.callbacks[payload_type] = callback
-
-    def get_callback(self, payload_type):
-        return self.callbacks[payload_type]
+        self.callbacks['individual'] = self._on_message_individual
+        self.callbacks['json'] = self._on_message_json
+        self.callbacks['keyword'] = self._on_message_keyword
 
     def _byteify(self, data, ignore_dicts = False):
         # if this is a unicode string, return its string representation
@@ -343,6 +345,10 @@ class MessageCallbackFactory:
 class MQTTSubscribe():
     def __init__(self, service_dict):
         self.console = to_bool(service_dict.get('console', False))
+        message_handler_config = service_dict.get('message_handler', None)
+        if message_handler_config is None:
+            raise ValueError("[[message_handler]] is required.")
+
         message_callback_factory = service_dict.get('message_callback_factory', 'user.MQTTSubscribe.MessageCallbackFactory')
         self.topics = self._create_topics(service_dict)
         clientid = service_dict.get('clientid',
@@ -357,7 +363,6 @@ class MQTTSubscribe():
 
         self.archive_topic = service_dict.get('archive_topic', None)
 
-        self.payload_type = service_dict.get('payload_type', None)
         self.full_topic_fieldname = to_bool(service_dict.get('full_topic_fieldname', False))
         self.keyword_delimiter = service_dict.get('keyword_delimiter', ',')
         self.keyword_separator = service_dict.get('keyword_separator', '=')
@@ -367,6 +372,7 @@ class MQTTSubscribe():
             raise ValueError("Archive topic %s must be in [[topics]]" % self.archive_topic)
 
         loginf(self.console, "MQTTSubscribe", "Console is %s" % self.console)
+        loginf(self.console, "MQTTSubscribe", "Message handler config is %s" % message_handler_config)
         loginf(self.console, "MQTTSubscribe", "Message callback factory is %s" % message_callback_factory)
         loginf(self.console, "MQTTSubscribe", "Client id is %s" % clientid)
         loginf(self.console, "MQTTSubscribe", "MQTTSubscribe version is %s" % VERSION)
@@ -379,7 +385,6 @@ class MQTTSubscribe():
         else:
             loginf(self.console, "MQTTSubscribe", "Password is not set")
         loginf(self.console, "MQTTSubscribe", "Archive topic is %s" % self.archive_topic)
-        loginf(self.console, "MQTTSubscribe", "Payload type is %s" % self.payload_type)
         loginf(self.console, "MQTTSubscribe", "Full topic fieldname is %s" % self.full_topic_fieldname)
         loginf(self.console, "MQTTSubscribe", "Keyword separator is %s" % self.keyword_separator)
         loginf(self.console, "MQTTSubscribe", "Keyword delimiter is %s" % self.keyword_delimiter)
@@ -406,10 +411,9 @@ class MQTTSubscribe():
             self.client.on_log = self._on_log
 
         MessageCallbackFactory_class = weeutil.weeutil._get_object(message_callback_factory)
-        messageCallBackFactory = MessageCallbackFactory_class(self.console)
-        logdbg(self.console, "MQTTSubscribe", "Message callbacks: %s" %messageCallBackFactory.Callbacks)
+        messageCallBackFactory = MessageCallbackFactory_class(message_handler_config, self.console)
 
-        self.client.on_message = messageCallBackFactory.get_callback(self.payload_type)
+        self.client.on_message = messageCallBackFactory.get_callback()
 
         self.client.on_connect = self._on_connect
         self.client.on_disconnect = self._on_disconnect
@@ -678,10 +682,12 @@ class MQTTSubscribeDriverConfEditor(weewx.drivers.AbstractConfEditor): # pragma:
     # Default is: US
     unit_system = US
 
-    # The format of the MQTT payload.
-    # Currently support: individual, json, keyword
-    # Must be specified.
-    payload_type = REPLACE_ME
+    # The message handler to use
+    [[message_handler]]
+        # The format of the MQTT payload.
+        # Currently support: individual, json, keyword
+        # Must be specified.
+        type = REPLACE_ME
 
     # The topics to subscribe to.
     [[topics]]
@@ -690,6 +696,7 @@ class MQTTSubscribeDriverConfEditor(weewx.drivers.AbstractConfEditor): # pragma:
 """
     def prompt_for_settings(self):
         settings = {}
+        settings['message_handler'] = {}
 
         print("Enter the host.")
         settings['host'] = self._prompt('host', 'localhost')
@@ -700,12 +707,11 @@ class MQTTSubscribeDriverConfEditor(weewx.drivers.AbstractConfEditor): # pragma:
         print("Enter the maximum period in seconds allowed between communications with the broker.")
         settings['keepalive'] = self._prompt('keepalive', '60')
 
-
         print("Enter the units for MQTT payloads without unit value: US|METRIC|METRICWX")
         settings['unit_system'] = self._prompt('unit_system', 'US', ['US', 'METRIC', 'METRICWX'])
 
         print("Enter the MQTT paylod type: individual|json|keyword")
-        settings['payload_type'] = self._prompt('payload_type', 'json', ['individual', 'json', 'keyword'])
+        settings['message_handler']['type'] = self._prompt('type', 'json', ['individual', 'json', 'keyword'])
 
         return settings
 
