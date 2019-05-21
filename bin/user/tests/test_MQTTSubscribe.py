@@ -4,6 +4,7 @@ import unittest
 import mock
 
 from collections import deque
+import configobj
 import json
 import paho.mqtt.client
 import random
@@ -39,9 +40,11 @@ class TestInitialization(unittest.TestCase):
             }
         }
 
+        config = configobj.ConfigObj(config_dict)
+
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
             with mock.patch('user.MQTTSubscribe.MessageCallbackFactory') as mock_factory:
-                SUT = MQTTSubscribe(config_dict)
+                SUT = MQTTSubscribe(config)
 
                 SUT.client.username_pw_set.assert_not_called()
                 SUT.client.connect.assert_called_once_with(host, port, keepalive)
@@ -68,9 +71,11 @@ class TestInitialization(unittest.TestCase):
             }
         }
 
+        config = configobj.ConfigObj(config_dict)
+
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
             with mock.patch('user.MQTTSubscribe.MessageCallbackFactory') as mock_factory:
-                SUT = MQTTSubscribe(config_dict)
+                SUT = MQTTSubscribe(config)
 
                 SUT.client.username_pw_set.assert_not_called()
                 SUT.client.connect.assert_called_once_with(host, port, keepalive)
@@ -97,9 +102,11 @@ class TestInitialization(unittest.TestCase):
             }
         }
 
+        config = configobj.ConfigObj(config_dict)
+
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
             with mock.patch('user.MQTTSubscribe.MessageCallbackFactory') as mock_factory:
-                SUT = MQTTSubscribe(config_dict)
+                SUT = MQTTSubscribe(config)
 
                 SUT.client.username_pw_set.assert_not_called()
                 SUT.client.connect.assert_called_once_with(host, port, keepalive)
@@ -128,9 +135,11 @@ class TestInitialization(unittest.TestCase):
             }
         }
 
+        config = configobj.ConfigObj(config_dict)
+
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
             with mock.patch('user.MQTTSubscribe.MessageCallbackFactory') as mock_factory:
-                SUT = MQTTSubscribe(config_dict)
+                SUT = MQTTSubscribe(config)
 
                 SUT.client.username_pw_set.assert_called_once_with(username, password)
                 SUT.client.connect.assert_called_once_with(host, port, keepalive)
@@ -161,9 +170,11 @@ class Teston_connect(unittest.TestCase):
         config_dict['topics'][topic2] = {}
         config_dict['message_handler'] = {}
 
+        config = configobj.ConfigObj(config_dict)
+
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
             with mock.patch('user.MQTTSubscribe.MessageCallbackFactory') as mock_factory:
-                SUT = MQTTSubscribe(config_dict)
+                SUT = MQTTSubscribe(config)
 
                 rc = random.randint(1, 10)
                 SUT._on_connect(mock_client, None, None, rc,)

@@ -43,11 +43,6 @@ MQTTSubscribeService_config = """
     # Default is: 60
     keepalive = 60
 
-    # Units for MQTT payloads without unit value.
-    # Valid values: US, METRIC, METRICWX
-    # Default is: US
-    unit_system = US
-
     # The binding, loop or archive.
     # Default is: loop
     # Only used by the service.
@@ -62,6 +57,11 @@ MQTTSubscribeService_config = """
 
     # The topics to subscribe to.
     [[topics]]
+        # Units for MQTT payloads without unit value.
+        # Valid values: US, METRIC, METRICWX
+        # Default is: US
+        unit_system = US
+
         [[[FIRST/REPLACE_ME]]]
         [[[SECOND/REPLACE_ME]]]
 """

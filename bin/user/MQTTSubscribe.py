@@ -44,11 +44,6 @@ Configuration:
     # Default is: false
     log = false
 
-    # Units for MQTT payloads without unit value. 
-    # Valid values: US, METRIC, METRICWX
-    # Default is: US
-    unit_system = US
-
     # The clientid to connect with.
     # Service default is: MQTTSubscribeService-xxxx
     # Driver default is: MQTTSubscribeDriver-xxxx
@@ -117,6 +112,11 @@ Configuration:
 
     # The topics to subscribe to.
     [[topics]
+        # Units for MQTT payloads without unit value.
+        # Valid values: US, METRIC, METRICWX
+        # Default is: US
+        unit_system = US
+
         # Todo - think about default size
         # The maximum queue size.
         # When the queue is larger than this value, the oldest element is removed.
@@ -435,7 +435,7 @@ class MQTTSubscribe():
         if 'topic' in config_dict and 'topics' in config_dict:
             raise ValueError("Cannot have both 'topic' and 'topics'. Please remove 'topic'.")
 
-        unit_system_name = config_dict.get('unit_system', 'US').strip().upper()
+        unit_system_name = config_dict['topics'].get('unit_system', 'US').strip().upper()
         if unit_system_name not in weewx.units.unit_constants:
             raise ValueError("MQTTSubscribe: Unknown unit system: %s" % unit_system_name)
         unit_system = weewx.units.unit_constants[unit_system_name]
@@ -444,19 +444,24 @@ class MQTTSubscribe():
             topics = {}
             topics[config_dict['topic']] = {}
         else:
-            topics = dict(config_dict['topics'])
+            #topics = dict(config_dict['topics'])
+            topicso = config_dict.get('topics')
 
-        if not topics:
+        if not topicso:
             raise ValueError("At least one [[topics]] must be specified.")
 
-        # ToDo - rework
+       # print(topics.sections)
+
+        # ToDo - rework when create topic(s) class
+        topics = {}
         max_queue = config_dict['topics'].get('max_queue', six.MAXSIZE)
-        for topic in topics:
+        for topic in topicso.sections:
             if 'topics' in config_dict and topic in config_dict['topics']:
                 topic_dict = config_dict['topics'][topic]
             else:
                 topic_dict = {}
 
+            topics[topic] = {}
             topics[topic]['queue'] = deque()
             topics[topic]['max_queue'] = topic_dict.get('max_queue',max_queue)
             topics[topic]['queue_wind'] = deque()
@@ -683,6 +688,7 @@ class MQTTSubscribeDriverConfEditor(weewx.drivers.AbstractConfEditor): # pragma:
     def prompt_for_settings(self):
         settings = {}
         settings['message_handler'] = {}
+        settingd['topics'] = {}
 
         print("Enter the host.")
         settings['host'] = self._prompt('host', 'localhost')
@@ -694,7 +700,7 @@ class MQTTSubscribeDriverConfEditor(weewx.drivers.AbstractConfEditor): # pragma:
         settings['keepalive'] = self._prompt('keepalive', '60')
 
         print("Enter the units for MQTT payloads without unit value: US|METRIC|METRICWX")
-        settings['unit_system'] = self._prompt('unit_system', 'US', ['US', 'METRIC', 'METRICWX'])
+        settings['topics']['unit_system'] = self._prompt('unit_system', 'US', ['US', 'METRIC', 'METRICWX'])
 
         print("Enter the MQTT paylod type: individual|json|keyword")
         settings['message_handler']['type'] = self._prompt('type', 'json', ['individual', 'json', 'keyword'])
