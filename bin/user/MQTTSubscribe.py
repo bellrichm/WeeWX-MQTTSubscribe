@@ -187,6 +187,57 @@ class CollectData:
     def get_data(self):
         return self.data
 
+class TopicX:
+    def __init__(self, config):
+        if len(config.sections) < 1:
+            raise ValueError("At least one topic must be configured.")
+
+        default_unit_system_name = config.get('unit_system', 'US').strip().upper()
+        if default_unit_system_name not in weewx.units.unit_constants:
+            raise ValueError("MQTTSubscribe: Unknown unit system: %s" % default_unit_system_name)
+        unit_system = weewx.units.unit_constants[default_unit_system_name]
+
+        max_queue = config.get('max_queue', six.MAXSIZE)
+
+        self.topics = {}
+        self.subscribed_topics = {}
+
+        for topic in config.sections:
+            topic_dict = config.get(topic, {})
+
+            unit_system_name = topic_dict.get('unit_system', default_unit_system_name).strip().upper()
+            if unit_system_name not in weewx.units.unit_constants:
+                raise ValueError("MQTTSubscribe: Unknown unit system: %s" % unit_system_name)
+            unit_system = weewx.units.unit_constants[unit_system_name]
+
+            self.subscribed_topics[topic] = {}
+            self.subscribed_topics[topic]['unit_system'] = unit_system
+            self.subscribed_topics[topic]['max_queue'] = topic_dict.get('max_queue',max_queue)
+            self.subscribed_topics[topic]['queue'] = deque()
+            self.subscribed_topics[topic]['queue_wind'] = deque()
+
+    def get_max_queue(self, topic):
+        return self._get_value('max_queue', topic)
+
+    def get_queue(self, topic):
+        return self._get_value('queue', topic)
+
+    def get_wind_queue(self, topic):
+        return self._get_value('queue_wind', topic)
+
+    def _get_value(self, value, topic):
+        subscribed_topic = self._lookup_topic(topic)
+        return self.subscribed_topics[subscribed_topic][value]
+
+    def _lookup_topic(self, topic):
+        if topic in self.topics:
+            return self.topics[topic]
+
+        for subscribed_topic in self.subscribed_topics:
+            if mqtt.topic_matches_sub(subscribed_topic, topic):
+                self.topics[topic] = subscribed_topic
+                return subscribed_topic
+
 class MessageCallbackFactory:
     def __init__(self, config, console=False):
         self.console = console
@@ -348,6 +399,8 @@ class MQTTSubscribe():
 
         message_callback_factory = service_dict.get('message_callback_factory', 'user.MQTTSubscribe.MessageCallbackFactory')
         self.topics = self._create_topics(service_dict)
+        topics = TopicX(service_dict.get('topics', {}))
+
         clientid = service_dict.get('clientid',
                                 'MQTTSubscribe-' + str(random.randint(1000, 9999)))
 
