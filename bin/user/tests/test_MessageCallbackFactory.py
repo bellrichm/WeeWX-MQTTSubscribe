@@ -115,7 +115,6 @@ class TestKeywordload(unittest.TestCase):
 
     topic = 'foo/bar'
     userdata = {}
-    userdata['label_map'] = {}
     userdata['keyword_delimiter'] = ','
     userdata['keyword_separator'] = '='
     userdata['topics'] = {}
@@ -257,7 +256,6 @@ class TestJsonPayload(unittest.TestCase):
 
     topic = 'foo/bar'
     userdata = {}
-    userdata['label_map'] = {}
     userdata['topics'] = {}
     userdata['topics'][topic] = {}
     userdata['topics'][topic]['unit_system'] = unit_system
@@ -375,7 +373,6 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
 
     topic = 'foo/bar'
     userdata = {}
-    userdata['label_map'] = {}
     userdata['full_topic_fieldname'] = False
     userdata['topics'] = {}
     userdata['topics'][topic] = {}
@@ -529,7 +526,6 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
 
     topic = 'foo/bar'
     userdata = {}
-    userdata['label_map'] = {}
     userdata['full_topic_fieldname'] = True
     userdata['topics'] = {}
     userdata['topics'][topic] = {}

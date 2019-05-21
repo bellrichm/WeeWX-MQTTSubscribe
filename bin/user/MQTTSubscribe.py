@@ -122,14 +122,14 @@ Configuration:
         # Must be specified.
         type = REPLACE_ME
 
+        # Mapping to WeeWX names.
+        [[[label_map]]]
+            temp1 = extraTemp1
+
     # The topics to subscribe to.
     [[topics]
         [[[first/topic]]]
         [[[second/one]]]
-      
-    # Mapping to WeeWX names.
-    [[label_map]]
-        temp1 = extraTemp1
 """
 
 from __future__ import with_statement
@@ -192,8 +192,9 @@ class MessageCallbackFactory:
     def __init__(self, config, console=False):
         self.console = console
         self._setup_callbacks()
+        self.type = config.get('type', None)
+        self.label_map = config.get('label_map', {})
 
-        self.type = config.get('type', None) # check that one of three
         if self.type not in self.callbacks:
             raise ValueError("Invalid type configured: %s" % self.type)
 
@@ -238,7 +239,6 @@ class MessageCallbackFactory:
     def _on_message_keyword(self, client, userdata, msg):
         # Wrap all the processing in a try, so it doesn't crash and burn on any error
         try:
-            label_map = userdata['label_map']
             topics = userdata['topics']
             keyword_delimiter = userdata['keyword_delimiter']
             keyword_separator = userdata['keyword_separator']
@@ -259,7 +259,7 @@ class MessageCallbackFactory:
 
                 name = field[:eq_index].strip()
                 value = field[eq_index + 1:].strip()
-                data[label_map.get(name, name)] = to_float(value)
+                data[self.label_map.get(name, name)] = to_float(value)
 
             if data:
                 if 'dateTime' not in data:
@@ -279,7 +279,6 @@ class MessageCallbackFactory:
     def _on_message_json(self, client, userdata, msg):
         # Wrap all the processing in a try, so it doesn't crash and burn on any error
         try:
-            self.label_map = userdata['label_map'] # ToDo - look for a better way
             topics = userdata['topics']
             topic =self. _lookup_topic(topics, msg.topic)
             logdbg(self.console, "MQTTSubscribe", "For %s received: %s assigned to: %s" %(msg.topic, msg.payload, topic))            
@@ -311,7 +310,6 @@ class MessageCallbackFactory:
 
         # Wrap all the processing in a try, so it doesn't crash and burn on any error
         try:
-            label_map = userdata['label_map']
             topics = userdata['topics']
             full_topic_fieldname = userdata['full_topic_fieldname']
             topic =self. _lookup_topic(topics, msg.topic)
@@ -325,7 +323,7 @@ class MessageCallbackFactory:
                 tkey = msg.topic.rpartition('/')[2]
                 key = tkey.encode('ascii', 'ignore') # ToDo - research
 
-            fieldname = label_map.get(key,key)
+            fieldname = self.label_map.get(key,key)
 
             data = {}
             data['dateTime'] = time.time()
@@ -366,7 +364,6 @@ class MQTTSubscribe():
         self.full_topic_fieldname = to_bool(service_dict.get('full_topic_fieldname', False))
         self.keyword_delimiter = service_dict.get('keyword_delimiter', ',')
         self.keyword_separator = service_dict.get('keyword_separator', '=')
-        self.label_map = service_dict.get('label_map', {})
 
         if self.archive_topic and self.archive_topic not in service_dict['topics']:
             raise ValueError("Archive topic %s must be in [[topics]]" % self.archive_topic)
@@ -388,7 +385,6 @@ class MQTTSubscribe():
         loginf(self.console, "MQTTSubscribe", "Full topic fieldname is %s" % self.full_topic_fieldname)
         loginf(self.console, "MQTTSubscribe", "Keyword separator is %s" % self.keyword_separator)
         loginf(self.console, "MQTTSubscribe", "Keyword delimiter is %s" % self.keyword_delimiter)
-        loginf(self.console, "MQTTSubscribe", "Label map is %s" % self.label_map)
         loginf(self.console, "MQTTSubscribe", "Topics are %s" % self.topics)
 
         self.logger = {
@@ -401,7 +397,6 @@ class MQTTSubscribe():
 
         userdata = {}
         userdata['topics'] = self.topics
-        userdata['label_map'] = self.label_map
         userdata['keyword_delimiter'] = self.keyword_delimiter
         userdata['keyword_separator'] = self.keyword_separator
         userdata['full_topic_fieldname'] = self.full_topic_fieldname
