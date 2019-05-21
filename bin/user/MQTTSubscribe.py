@@ -59,16 +59,6 @@ Configuration:
     # DEPRECATED - use [[topics]]
     topic =
 
-    # Todo - think about default size
-    # The maximum queue size.
-    # When the queue is larger than this value, the oldest element is removed.
-    # In general the queue should not grow large, but it might if the time 
-    # between the driver creating packets is large and the MQTT broker publishes frequently.
-    # Or if subscribing to 'individual' payloads with wildcards. This results in many topic
-    # in a single queue.
-    # Default is: six.MAXSIZE
-    max_queue = six.MAXSIZE
-
     # Turn the service on and off.
     # Default is: true
     # Only used by the service.
@@ -127,6 +117,16 @@ Configuration:
 
     # The topics to subscribe to.
     [[topics]
+        # Todo - think about default size
+        # The maximum queue size.
+        # When the queue is larger than this value, the oldest element is removed.
+        # In general the queue should not grow large, but it might if the time
+        # between the driver creating packets is large and the MQTT broker publishes frequently.
+        # Or if subscribing to 'individual' payloads with wildcards. This results in many topic
+        # in a single queue.
+        # Default is: six.MAXSIZE
+        max_queue = six.MAXSIZE
+
         [[[first/topic]]]
         [[[second/one]]]
 """
@@ -449,14 +449,16 @@ class MQTTSubscribe():
         if not topics:
             raise ValueError("At least one [[topics]] must be specified.")
 
+        # ToDo - rework
+        max_queue = config_dict['topics'].get('max_queue', six.MAXSIZE)
         for topic in topics:
             if 'topics' in config_dict and topic in config_dict['topics']:
                 topic_dict = config_dict['topics'][topic]
             else:
                 topic_dict = {}
+
             topics[topic]['queue'] = deque()
-            topics[topic]['max_queue'] = topic_dict.get('max_queue',
-                                                        config_dict.get('max_queue', six.MAXSIZE))
+            topics[topic]['max_queue'] = topic_dict.get('max_queue',max_queue)
             topics[topic]['queue_wind'] = deque()
             topics[topic]['unit_system'] = unit_system
 

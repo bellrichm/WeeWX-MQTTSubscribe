@@ -32,9 +32,11 @@ class TestInitialization(unittest.TestCase):
             'port': port,
             'username': None,
             'password': ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),
-            'topic': None,
             'archive_topic': None,
-            'message_handler': {}
+            'message_handler': {},
+            'topics': {
+                'foobar': {}
+            }
         }
 
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
@@ -59,9 +61,11 @@ class TestInitialization(unittest.TestCase):
             'port': port,
             'username': ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),
             'password': None,
-            'topic': None,
             'archive_topic': None,
-            'message_handler': {}
+            'message_handler': {},
+            'topics': {
+                'foobar': {}
+            }
         }
 
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
@@ -86,9 +90,11 @@ class TestInitialization(unittest.TestCase):
             'port': port,
             'username': None,
             'password': None,
-            'topic': None,
             'archive_topic': None,
-            'message_handler': {}
+            'message_handler': {},
+            'topics': {
+                'foobar': {}
+            }
         }
 
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
@@ -115,9 +121,11 @@ class TestInitialization(unittest.TestCase):
             'port': port,
             'username': username,
             'password': password,
-            'topic': None,
             'archive_topic': None,
-            'message_handler': {}
+            'message_handler': {},
+            'topics': {
+                'foobar': {}
+            }
         }
 
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
