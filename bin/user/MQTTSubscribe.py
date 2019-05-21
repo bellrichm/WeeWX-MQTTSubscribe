@@ -239,8 +239,9 @@ class TopicX:
                 return subscribed_topic
 
 class MessageCallbackFactory:
-    def __init__(self, config, console=False):
+    def __init__(self, config, topics, console=False):
         self.console = console
+        self.topics = topics
         self._setup_callbacks()
         self.type = config.get('type', None)
         self.keyword_delimiter = config.get('keyword_delimiter', ',')
@@ -448,7 +449,9 @@ class MQTTSubscribe():
             self.client.on_log = self._on_log
 
         MessageCallbackFactory_class = weeutil.weeutil._get_object(message_callback_factory)
-        messageCallBackFactory = MessageCallbackFactory_class(message_handler_config, self.console)
+        messageCallBackFactory = MessageCallbackFactory_class(message_handler_config,
+                                                              topics,
+                                                              self.console)
 
         self.client.on_message = messageCallBackFactory.get_callback()
 
