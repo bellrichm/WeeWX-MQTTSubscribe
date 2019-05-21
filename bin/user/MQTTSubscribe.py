@@ -69,13 +69,6 @@ Configuration:
     # Default is: six.MAXSIZE
     max_queue = six.MAXSIZE
 
-    # When True, the full topic (weather/outTemp) is used as the fieldname. 
-    # When false, the topic furthest to the right is used. 
-    # Valid values: True, False
-    # Default is: False
-    # Only used when payload is 'individual'.
-    full_topic_fieldname = False
-
     # The delimiter between fieldname and value pairs. (field1=value1, field2=value2).
     # Default is: ,
     keyword_delimiter = ,
@@ -121,6 +114,13 @@ Configuration:
         # Currently support: individual, json, keyword
         # Must be specified.
         type = REPLACE_ME
+
+        # When True, the full topic (weather/outTemp) is used as the fieldname.
+        # When false, the topic furthest to the right is used.
+        # Valid values: True, False
+        # Default is: False
+        # Only used when type is 'individual'.
+        full_topic_fieldname = False
 
         # Mapping to WeeWX names.
         [[[label_map]]]
@@ -194,6 +194,7 @@ class MessageCallbackFactory:
         self._setup_callbacks()
         self.type = config.get('type', None)
         self.label_map = config.get('label_map', {})
+        self.full_topic_fieldname = to_bool(config.get('full_topic_fieldname', False))
 
         if self.type not in self.callbacks:
             raise ValueError("Invalid type configured: %s" % self.type)
@@ -311,13 +312,12 @@ class MessageCallbackFactory:
         # Wrap all the processing in a try, so it doesn't crash and burn on any error
         try:
             topics = userdata['topics']
-            full_topic_fieldname = userdata['full_topic_fieldname']
             topic =self. _lookup_topic(topics, msg.topic)
             logdbg(self.console, "MQTTSubscribe", "For %s received: %s assigned to: %s" %(msg.topic, msg.payload, topic))
 
             self._queue_size_check(topics[topic]['queue'], topics[topic]['max_queue'])
 
-            if full_topic_fieldname:
+            if self.full_topic_fieldname:
                 key = msg.topic.encode('ascii', 'ignore') # ToDo - research
             else:
                 tkey = msg.topic.rpartition('/')[2]
@@ -361,7 +361,6 @@ class MQTTSubscribe():
 
         self.archive_topic = service_dict.get('archive_topic', None)
 
-        self.full_topic_fieldname = to_bool(service_dict.get('full_topic_fieldname', False))
         self.keyword_delimiter = service_dict.get('keyword_delimiter', ',')
         self.keyword_separator = service_dict.get('keyword_separator', '=')
 
@@ -382,7 +381,6 @@ class MQTTSubscribe():
         else:
             loginf(self.console, "MQTTSubscribe", "Password is not set")
         loginf(self.console, "MQTTSubscribe", "Archive topic is %s" % self.archive_topic)
-        loginf(self.console, "MQTTSubscribe", "Full topic fieldname is %s" % self.full_topic_fieldname)
         loginf(self.console, "MQTTSubscribe", "Keyword separator is %s" % self.keyword_separator)
         loginf(self.console, "MQTTSubscribe", "Keyword delimiter is %s" % self.keyword_delimiter)
         loginf(self.console, "MQTTSubscribe", "Topics are %s" % self.topics)
@@ -399,7 +397,6 @@ class MQTTSubscribe():
         userdata['topics'] = self.topics
         userdata['keyword_delimiter'] = self.keyword_delimiter
         userdata['keyword_separator'] = self.keyword_separator
-        userdata['full_topic_fieldname'] = self.full_topic_fieldname
         self.client = mqtt.Client(client_id=clientid, userdata=userdata)
 
         if log:

@@ -48,15 +48,17 @@ MQTTSubscribeService_config = """
     # Default is: US
     unit_system = US
 
-    # The format of the MQTT payload.
-    # Currently support: individual, json, keyword
-    # Must be specified.
-    payload_type = REPLACE_ME
-
     # The binding, loop or archive.
     # Default is: loop
     # Only used by the service.
     binding = loop
+
+    # The message handler to use
+    [[Message_Handler]]
+        # The format of the MQTT payload.
+        # Currently support: individual, json, keyword
+        # Must be specified.
+        type = REPLACE_ME
 
     # The topics to subscribe to.
     [[topics]]

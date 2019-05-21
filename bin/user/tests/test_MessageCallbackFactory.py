@@ -565,7 +565,10 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
     def test_None_payload(self):
         topic_byte = b'foo/bar' # ToDo - use self.topic
 
-        SUT = MessageCallbackFactory(self.message_handler_config)
+        message_handler_config = dict(self.message_handler_config)
+        message_handler_config['full_topic_fieldname'] = True
+
+        SUT = MessageCallbackFactory(message_handler_config)
 
         self.userdata['topics'][self.topic]['queue'] = deque()
 
@@ -619,7 +622,10 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
         topic = 'foo1/foo2/' + fieldname.decode('utf-8')
         topic_byte = b'foo1/foo2/bar' # ToDo - fix up
 
-        SUT = MessageCallbackFactory(self.message_handler_config)
+        message_handler_config = dict(self.message_handler_config)
+        message_handler_config['full_topic_fieldname'] = True
+
+        SUT = MessageCallbackFactory(message_handler_config)
 
         self.userdata['topics'][topic] = {}
         self.userdata['topics'][topic]['queue'] = deque()
@@ -649,7 +655,10 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
         topic = 'foo/' + fieldname.decode('utf-8')
         topic_byte = b'foo/bar' # ToDo - fix up
 
-        SUT = MessageCallbackFactory(self.message_handler_config)
+        message_handler_config = dict(self.message_handler_config)
+        message_handler_config['full_topic_fieldname'] = True
+
+        SUT = MessageCallbackFactory(message_handler_config)
 
         self.userdata['topics'][topic] = {}
         self.userdata['topics'][topic]['queue'] = deque()
