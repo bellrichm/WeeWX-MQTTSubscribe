@@ -69,14 +69,6 @@ Configuration:
     # Default is: six.MAXSIZE
     max_queue = six.MAXSIZE
 
-    # The delimiter between fieldname and value pairs. (field1=value1, field2=value2).
-    # Default is: ,
-    keyword_delimiter = ,
-
-    # The separator between fieldname and value pairs. (field1=value1, field2=value2).
-    # Default is: =
-    keyword_separator = =
-
     # Turn the service on and off.
     # Default is: true
     # Only used by the service.
@@ -120,7 +112,14 @@ Configuration:
         # Valid values: True, False
         # Default is: False
         # Only used when type is 'individual'.
-        full_topic_fieldname = False
+
+        # The delimiter between fieldname and value pairs. (field1=value1, field2=value2).
+        # Default is: ,
+        keyword_delimiter = ,
+
+        # The separator between fieldname and value pairs. (field1=value1, field2=value2).
+        # Default is: =
+        keyword_separator = =
 
         # Mapping to WeeWX names.
         [[[label_map]]]
@@ -193,6 +192,8 @@ class MessageCallbackFactory:
         self.console = console
         self._setup_callbacks()
         self.type = config.get('type', None)
+        self.keyword_delimiter = config.get('keyword_delimiter', ',')
+        self.keyword_separator = config.get('keyword_separator', '=')
         self.label_map = config.get('label_map', {})
         self.full_topic_fieldname = to_bool(config.get('full_topic_fieldname', False))
 
@@ -241,17 +242,15 @@ class MessageCallbackFactory:
         # Wrap all the processing in a try, so it doesn't crash and burn on any error
         try:
             topics = userdata['topics']
-            keyword_delimiter = userdata['keyword_delimiter']
-            keyword_separator = userdata['keyword_separator']
             topic =self. _lookup_topic(topics, msg.topic)
             logdbg(self.console, "MQTTSubscribe", "For %s received: %s assigned to: %s" %(msg.topic, msg.payload, topic))            
 
             self._queue_size_check(topics[topic]['queue'], topics[topic]['max_queue'])
 
-            fields = msg.payload.split(keyword_delimiter)
+            fields = msg.payload.split(self.keyword_delimiter)
             data = {}
             for field in fields:
-                eq_index = field.find(keyword_separator)
+                eq_index = field.find(self.keyword_separator)
                 # Ignore all fields that do not have the separator
                 if eq_index == -1:
                     logerr(self.console, "MQTTSubscribe", "on_message_keyword failed to find separator: %s" % self.keyword_separator)
@@ -361,9 +360,6 @@ class MQTTSubscribe():
 
         self.archive_topic = service_dict.get('archive_topic', None)
 
-        self.keyword_delimiter = service_dict.get('keyword_delimiter', ',')
-        self.keyword_separator = service_dict.get('keyword_separator', '=')
-
         if self.archive_topic and self.archive_topic not in service_dict['topics']:
             raise ValueError("Archive topic %s must be in [[topics]]" % self.archive_topic)
 
@@ -381,8 +377,6 @@ class MQTTSubscribe():
         else:
             loginf(self.console, "MQTTSubscribe", "Password is not set")
         loginf(self.console, "MQTTSubscribe", "Archive topic is %s" % self.archive_topic)
-        loginf(self.console, "MQTTSubscribe", "Keyword separator is %s" % self.keyword_separator)
-        loginf(self.console, "MQTTSubscribe", "Keyword delimiter is %s" % self.keyword_delimiter)
         loginf(self.console, "MQTTSubscribe", "Topics are %s" % self.topics)
 
         self.logger = {
@@ -395,8 +389,6 @@ class MQTTSubscribe():
 
         userdata = {}
         userdata['topics'] = self.topics
-        userdata['keyword_delimiter'] = self.keyword_delimiter
-        userdata['keyword_separator'] = self.keyword_separator
         self.client = mqtt.Client(client_id=clientid, userdata=userdata)
 
         if log:

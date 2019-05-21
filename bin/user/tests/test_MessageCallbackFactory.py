@@ -172,7 +172,7 @@ class TestKeywordload(unittest.TestCase):
 
         with mock.patch('user.MQTTSubscribe.logerr') as mock_logerr:
             SUT._on_message_keyword(None, self.userdata, msg)
-            self.assertEqual(mock_logerr.call_count, 2)
+            self.assertEqual(mock_logerr.call_count, 3)
 
     def test_payload_missing_dateTime(self):
         SUT = MessageCallbackFactory(self.message_handler_config)
