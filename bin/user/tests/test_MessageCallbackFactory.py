@@ -3,6 +3,7 @@ from __future__ import with_statement
 import unittest
 import mock
 
+import configobj
 import json
 import random
 import six
@@ -11,7 +12,7 @@ import time
 import weewx
 from collections import deque
 
-from user.MQTTSubscribe import MessageCallbackFactory
+from user.MQTTSubscribe import MessageCallbackFactory, TopicX
 
 class Msg():
     pass
@@ -51,6 +52,7 @@ class TestGetDefaultCallBacks(unittest.TestCase):
         callback = SUT.get_callback()
         self.assertEqual(callback, SUT._on_message_keyword)
 
+@unittest.skip("need to update")
 class TestQueueSizeCheck(unittest.TestCase):
     def test_queue_max_reached(self):
         message_handler_config = {}
@@ -114,13 +116,11 @@ class TestKeywordload(unittest.TestCase):
     unit_system = weewx.units.unit_constants[unit_system_name]
 
     topic = 'foo/bar'
-    userdata = {}
-    userdata['keyword_delimiter'] = ','
-    userdata['keyword_separator'] = '='
-    userdata['topics'] = {}
-    userdata['topics'][topic] = {}
-    userdata['topics'][topic]['unit_system'] = unit_system
-    userdata['topics'][topic]['max_queue'] = six.MAXSIZE
+    topics = {}
+    topics[topic] = {}
+    topics[topic]['unit_system'] = unit_system_name
+    topics[topic]['max_queue'] = six.MAXSIZE
+    topic_config = configobj.ConfigObj(topics)
 
     payload_dict = {
         'inTemp': round(random.uniform(1, 100), 2),
@@ -138,8 +138,8 @@ class TestKeywordload(unittest.TestCase):
         msg.payload = ''
 
         with mock.patch('user.MQTTSubscribe.logerr') as mock_logerr:
-            SUT._on_message_keyword(None, self.userdata, msg)
-            self.assertEqual(mock_logerr.call_count, 2)
+            SUT._on_message_keyword(None, None, msg)
+            self.assertEqual(mock_logerr.call_count, 3)
 
     def test_payload_bad_data(self):
         SUT = MessageCallbackFactory(self.message_handler_config, None)
@@ -149,7 +149,7 @@ class TestKeywordload(unittest.TestCase):
         msg.payload = 'field=value'
 
         with mock.patch('user.MQTTSubscribe.logerr') as mock_logerr:
-            SUT._on_message_keyword(None, self.userdata, msg)
+            SUT._on_message_keyword(None, None, msg)
             self.assertEqual(mock_logerr.call_count, 2)
 
     def test_payload_missing_delimiter(self):
@@ -160,7 +160,7 @@ class TestKeywordload(unittest.TestCase):
         msg.payload = 'field1=1 field2=2'
 
         with mock.patch('user.MQTTSubscribe.logerr') as mock_logerr:
-            SUT._on_message_keyword(None, self.userdata, msg)
+            SUT._on_message_keyword(None, None, msg)
             self.assertEqual(mock_logerr.call_count, 2)
 
     def test_payload_missing_separator(self):
@@ -171,16 +171,16 @@ class TestKeywordload(unittest.TestCase):
         msg.payload = 'field1:1'
 
         with mock.patch('user.MQTTSubscribe.logerr') as mock_logerr:
-            SUT._on_message_keyword(None, self.userdata, msg)
+            SUT._on_message_keyword(None, None, msg)
             self.assertEqual(mock_logerr.call_count, 3)
 
     def test_payload_missing_dateTime(self):
-        SUT = MessageCallbackFactory(self.message_handler_config, None)
+        topics = TopicX(self.topic_config)
+
+        SUT = MessageCallbackFactory(self.message_handler_config, topics)
 
         payload_dict = dict(self.payload_dict)
         payload_dict['usUnits'] = random.randint(1, 10)
-
-        self.userdata['topics'][self.topic]['queue'] = deque()
 
         payload_str=""
         delim=""
@@ -192,21 +192,21 @@ class TestKeywordload(unittest.TestCase):
         msg.topic = self.topic
         msg.payload = payload_str
 
-        SUT._on_message_keyword(None, self.userdata, msg)
+        SUT._on_message_keyword(None, None, msg)
 
-        queue = self.userdata['topics'][self.topic]['queue']
+        queue = SUT.topics.get_queue(self.topic)
         self.assertEqual(len(queue), 1)
         data = queue[0]
         self.assertDictContainsSubset(payload_dict, data)
         self.assertIn('dateTime', data)
 
     def test_payload_missing_units(self):
-        SUT = MessageCallbackFactory(self.message_handler_config, None)
+        topics = TopicX(self.topic_config)
+
+        SUT = MessageCallbackFactory(self.message_handler_config, topics)
 
         payload_dict = dict(self.payload_dict)
         payload_dict['dateTime'] = time.time()
-
-        self.userdata['topics'][self.topic]['queue'] = deque()
 
         payload_str=""
         delim=""
@@ -218,21 +218,21 @@ class TestKeywordload(unittest.TestCase):
         msg.topic = self.topic
         msg.payload = payload_str
 
-        SUT._on_message_keyword(None, self.userdata, msg)
-        queue = self.userdata['topics'][self.topic]['queue']
+        SUT._on_message_keyword(None, None, msg)
+        queue = SUT.topics.get_queue(self.topic)
         self.assertEqual(len(queue), 1)
         data = queue[0]
         self.assertIn('usUnits', data)
         self.assertEqual(data['usUnits'], self.unit_system)
 
     def test_payload_good(self):
-        SUT = MessageCallbackFactory(self.message_handler_config, None)
+        topics = TopicX(self.topic_config)
+
+        SUT = MessageCallbackFactory(self.message_handler_config, topics)
 
         payload_dict = dict(self.payload_dict)
         payload_dict['dateTime'] = round(time.time(), 2)
         payload_dict['usUnits'] = random.randint(1, 10)
-
-        self.userdata['topics'][self.topic]['queue'] = deque()
 
         payload_str=""
         delim=""
@@ -244,8 +244,8 @@ class TestKeywordload(unittest.TestCase):
         msg.topic = self.topic
         msg.payload = payload_str
 
-        SUT._on_message_keyword(None, self.userdata, msg)
-        queue = self.userdata['topics'][self.topic]['queue']
+        SUT._on_message_keyword(None, None, msg)
+        queue = SUT.topics.get_queue(self.topic)
         self.assertEqual(len(queue), 1)
         data = queue[0]
         self.assertDictEqual(data, payload_dict)
@@ -255,11 +255,12 @@ class TestJsonPayload(unittest.TestCase):
     unit_system = weewx.units.unit_constants[unit_system_name]
 
     topic = 'foo/bar'
-    userdata = {}
-    userdata['topics'] = {}
-    userdata['topics'][topic] = {}
-    userdata['topics'][topic]['unit_system'] = unit_system
-    userdata['topics'][topic]['max_queue'] = six.MAXSIZE
+
+    topics = {}
+    topics[topic] = {}
+    topics[topic]['unit_system'] = unit_system_name
+    topics[topic]['max_queue'] = six.MAXSIZE
+    topic_config = configobj.ConfigObj(topics)
 
     payload_dict = {
         'inTemp': round(random.uniform(1, 100), 2),
@@ -292,12 +293,12 @@ class TestJsonPayload(unittest.TestCase):
             self.assertEqual(mock_logerr.call_count, 2)
 
     def test_missing_dateTime(self):
-        SUT = MessageCallbackFactory(self.message_handler_config, None)
+        topics = TopicX(self.topic_config)
+
+        SUT = MessageCallbackFactory(self.message_handler_config, topics)
 
         payload_dict = dict(self.payload_dict)
         payload_dict['usUnits'] = random.randint(1, 10)
-
-        self.userdata['topics'][self.topic]['queue'] = deque()
 
         if six.PY2:
             payload = json.dumps(payload_dict)
@@ -308,21 +309,21 @@ class TestJsonPayload(unittest.TestCase):
         msg.topic = self.topic
         msg.payload = payload
 
-        SUT._on_message_json(None, self.userdata, msg)
+        SUT._on_message_json(None, None, msg)
 
-        queue = self.userdata['topics'][self.topic]['queue']
+        queue = SUT.topics.get_queue(self.topic)
         self.assertEqual(len(queue), 1)
         data = queue[0]
         self.assertDictContainsSubset(payload_dict, data)
         self.assertIn('dateTime', data)
 
     def test_missing_units(self):
-        SUT = MessageCallbackFactory(self.message_handler_config, None)
+        topics = TopicX(self.topic_config)
+
+        SUT = MessageCallbackFactory(self.message_handler_config, topics)
 
         payload_dict = dict(self.payload_dict)
         payload_dict['dateTime'] = time.time()
-
-        self.userdata['topics'][self.topic]['queue'] = deque()
 
         if six.PY2:
             payload = json.dumps(payload_dict)
@@ -333,9 +334,9 @@ class TestJsonPayload(unittest.TestCase):
         msg.topic = self.topic
         msg.payload = payload
 
-        SUT._on_message_json(None, self.userdata, msg)
+        SUT._on_message_json(None, None, msg)
 
-        queue = self.userdata['topics'][self.topic]['queue']
+        queue = SUT.topics.get_queue(self.topic)
         self.assertEqual(len(queue), 1)
         data = queue[0]
         self.assertDictContainsSubset(payload_dict, data)
@@ -343,13 +344,13 @@ class TestJsonPayload(unittest.TestCase):
         self.assertEqual(data['usUnits'], self.unit_system)
 
     def test_payload_good(self):
-        SUT = MessageCallbackFactory(self.message_handler_config, None)
+        topics = TopicX(self.topic_config)
+
+        SUT = MessageCallbackFactory(self.message_handler_config, topics)
 
         payload_dict = dict(self.payload_dict)
         payload_dict['dateTime'] = time.time()
         payload_dict['usUnits'] = random.randint(1, 10)
-
-        self.userdata['topics'][self.topic]['queue'] = deque()
 
         if six.PY2:
             payload = json.dumps(payload_dict)
@@ -360,9 +361,9 @@ class TestJsonPayload(unittest.TestCase):
         msg.topic = self.topic
         msg.payload = payload
 
-        SUT._on_message_json(None, self.userdata, msg)
+        SUT._on_message_json(None, None, msg)
 
-        queue = self.userdata['topics'][self.topic]['queue']
+        queue = SUT.topics.get_queue(self.topic)
         self.assertEqual(len(queue), 1)
         data = queue[0]
         self.assertDictEqual(data, payload_dict)
@@ -372,12 +373,11 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
     unit_system = weewx.units.unit_constants[unit_system_name]
 
     topic = 'foo/bar'
-    userdata = {}
-    userdata['full_topic_fieldname'] = False
-    userdata['topics'] = {}
-    userdata['topics'][topic] = {}
-    userdata['topics'][topic]['unit_system'] = unit_system
-    userdata['topics'][topic]['max_queue'] = six.MAXSIZE
+    topics = {}
+    topics[topic] = {}
+    topics[topic]['unit_system'] = unit_system_name
+    topics[topic]['max_queue'] = six.MAXSIZE
+    topic_config = configobj.ConfigObj(topics)
 
     payload_dict = {
         'inTemp': round(random.uniform(1, 100), 2),
@@ -395,7 +395,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         msg.payload = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
 
         with mock.patch('user.MQTTSubscribe.logerr') as mock_logerr:
-            SUT._on_message_individual(None, self.userdata, msg)
+            SUT._on_message_individual(None, None, msg)
             self.assertEqual(mock_logerr.call_count, 2)
 
     def test_empty_payload(self):
@@ -406,23 +406,22 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         msg.payload = ''
 
         with mock.patch('user.MQTTSubscribe.logerr') as mock_logerr:
-            SUT._on_message_individual(None, self.userdata, msg)
+            SUT._on_message_individual(None, None, msg)
             self.assertEqual(mock_logerr.call_count, 2)
 
     def test_None_payload(self):
         fieldname = b'bar'
+        topics = TopicX(self.topic_config)
 
-        SUT = MessageCallbackFactory(self.message_handler_config, None)
-
-        self.userdata['topics'][self.topic]['queue'] = deque()
+        SUT = MessageCallbackFactory(self.message_handler_config, topics)
 
         msg = Msg()
         msg.topic = self.topic
         msg.payload = None
 
-        SUT._on_message_individual(None, self.userdata, msg)
+        SUT._on_message_individual(None, None, msg)
 
-        queue = self.userdata['topics'][self.topic]['queue']
+        queue = SUT.topics.get_queue(self.topic)
 
         self.assertEqual(len(queue), 1)
         data = queue[0]
@@ -436,22 +435,24 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
     def test_single_topic(self):
         fieldname = b'bar'
         topic = fieldname.decode('utf-8')
+        
+        topics = {}
+        topics[topic] = {}
+        topics[topic]['unit_system'] = self.unit_system_name
+        topics[topic]['max_queue'] = six.MAXSIZE
+        topic_config = configobj.ConfigObj(topics)
+        topics = TopicX(topic_config)        
 
-        SUT = MessageCallbackFactory(self.message_handler_config, None)
-
-        self.userdata['topics'][topic] = {}
-        self.userdata['topics'][topic]['queue'] = deque()
-        self.userdata['topics'][topic]['max_queue'] = six.MAXSIZE
-        self.userdata['topics'][topic]['unit_system'] = self.unit_system
+        SUT = MessageCallbackFactory(self.message_handler_config, topics)
 
         msg = Msg()
         msg.topic = topic
         payload = random.uniform(1, 100)
         msg.payload = str(payload)
 
-        SUT._on_message_individual(None, self.userdata, msg)
+        SUT._on_message_individual(None, None, msg)
 
-        queue = self.userdata['topics'][topic]['queue']
+        queue = SUT.topics.get_queue(topic)
         self.assertEqual(len(queue), 1)
         data = queue[0]
         self.assertIn('dateTime', data)
@@ -466,21 +467,23 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         fieldname = b'bar'
         topic = 'foo1/foo2/' + fieldname.decode('utf-8')
 
-        SUT = MessageCallbackFactory(self.message_handler_config, None)
+        topics = {}
+        topics[topic] = {}
+        topics[topic]['unit_system'] = self.unit_system_name
+        topics[topic]['max_queue'] = six.MAXSIZE
+        topic_config = configobj.ConfigObj(topics)
+        topics = TopicX(topic_config)        
 
-        self.userdata['topics'][topic] = {}
-        self.userdata['topics'][topic]['queue'] = deque()
-        self.userdata['topics'][topic]['max_queue'] = six.MAXSIZE
-        self.userdata['topics'][topic]['unit_system'] = self.unit_system
+        SUT = MessageCallbackFactory(self.message_handler_config, topics)
 
         msg = Msg()
         msg.topic = topic
         payload = random.uniform(1, 100)
         msg.payload = str(payload)
 
-        SUT._on_message_individual(None, self.userdata, msg)
+        SUT._on_message_individual(None, None, msg)
 
-        queue = self.userdata['topics'][topic]['queue']
+        queue = SUT.topics.get_queue(topic)
         self.assertEqual(len(queue), 1)
         data = queue[0]
         self.assertIn('dateTime', data)
@@ -494,22 +497,24 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
     def test_two_topics(self):
         fieldname = b'bar'
         topic = 'foo/' + fieldname.decode('utf-8')
+        
+        topics = {}
+        topics[topic] = {}
+        topics[topic]['unit_system'] = self.unit_system_name
+        topics[topic]['max_queue'] = six.MAXSIZE
+        topic_config = configobj.ConfigObj(topics)
+        topics = TopicX(topic_config)
 
-        SUT = MessageCallbackFactory(self.message_handler_config, None)
-
-        self.userdata['topics'][topic] = {}
-        self.userdata['topics'][topic]['queue'] = deque()
-        self.userdata['topics'][topic]['max_queue'] = six.MAXSIZE
-        self.userdata['topics'][topic]['unit_system'] = self.unit_system
+        SUT = MessageCallbackFactory(self.message_handler_config, topics)
 
         msg = Msg()
         msg.topic = topic
         payload = random.uniform(1, 100)
         msg.payload = str(payload)
 
-        SUT._on_message_individual(None, self.userdata, msg)
+        SUT._on_message_individual(None, None, msg)
 
-        queue = self.userdata['topics'][topic]['queue']
+        queue = SUT.topics.get_queue(topic)
         self.assertEqual(len(queue), 1)
         data = queue[0]
         self.assertIn('dateTime', data)
@@ -525,12 +530,11 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
     unit_system = weewx.units.unit_constants[unit_system_name]
 
     topic = 'foo/bar'
-    userdata = {}
-    userdata['full_topic_fieldname'] = True
-    userdata['topics'] = {}
-    userdata['topics'][topic] = {}
-    userdata['topics'][topic]['unit_system'] = unit_system
-    userdata['topics'][topic]['max_queue'] = six.MAXSIZE
+    topics = {}
+    topics[topic] = {}
+    topics[topic]['unit_system'] = unit_system_name
+    topics[topic]['max_queue'] = six.MAXSIZE
+    topic_config = configobj.ConfigObj(topics)
 
     payload_dict = {
         'inTemp': round(random.uniform(1, 100), 2),
@@ -548,7 +552,7 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
         msg.payload = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
 
         with mock.patch('user.MQTTSubscribe.logerr') as mock_logerr:
-            SUT._on_message_individual(None, self.userdata, msg)
+            SUT._on_message_individual(None, None, msg)
             self.assertEqual(mock_logerr.call_count, 2)
 
     def test_empty_payload(self):
@@ -559,26 +563,25 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
         msg.payload = ''
 
         with mock.patch('user.MQTTSubscribe.logerr') as mock_logerr:
-            SUT._on_message_individual(None, self.userdata, msg)
+            SUT._on_message_individual(None, None, msg)
             self.assertEqual(mock_logerr.call_count, 2)
 
     def test_None_payload(self):
         topic_byte = b'foo/bar' # ToDo - use self.topic
+        topics = TopicX(self.topic_config)      
 
         message_handler_config = dict(self.message_handler_config)
         message_handler_config['full_topic_fieldname'] = True
 
-        SUT = MessageCallbackFactory(message_handler_config, None)
-
-        self.userdata['topics'][self.topic]['queue'] = deque()
+        SUT = MessageCallbackFactory(message_handler_config, topics)
 
         msg = Msg()
         msg.topic = self.topic
         msg.payload = None
 
-        SUT._on_message_individual(None, self.userdata, msg)
+        SUT._on_message_individual(None, None, msg)
 
-        queue = self.userdata['topics'][self.topic]['queue']
+        queue = SUT.topics.get_queue(self.topic)
         self.assertEqual(len(queue), 1)
         data = queue[0]
         self.assertIn('dateTime', data)
@@ -591,22 +594,22 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
     def test_single_topic(self):
         fieldname = b'bar'
         topic = fieldname.decode('utf-8')
-
-        SUT = MessageCallbackFactory(self.message_handler_config, None)
-
-        self.userdata['topics'][topic] = {}
-        self.userdata['topics'][topic]['queue'] = deque()
-        self.userdata['topics'][topic]['max_queue'] = six.MAXSIZE
-        self.userdata['topics'][topic]['unit_system'] = self.unit_system
-
+        
+        topics = {}
+        topics[topic] = {}
+        topics[topic]['unit_system'] = self.unit_system_name
+        topics[topic]['max_queue'] = six.MAXSIZE
+        topic_config = configobj.ConfigObj(topics)
+        topics = TopicX(topic_config)
+        SUT = MessageCallbackFactory(self.message_handler_config, topics)
         msg = Msg()
         msg.topic = topic
         payload = random.uniform(1, 100)
         msg.payload = str(payload)
 
-        SUT._on_message_individual(None, self.userdata, msg)
+        SUT._on_message_individual(None, None, msg)
 
-        queue = self.userdata['topics'][topic]['queue']
+        queue = SUT.topics.get_queue(topic)
         self.assertEqual(len(queue), 1)
         data = queue[0]
         self.assertIn('dateTime', data)
@@ -621,25 +624,27 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
         fieldname = b'bar'
         topic = 'foo1/foo2/' + fieldname.decode('utf-8')
         topic_byte = b'foo1/foo2/bar' # ToDo - fix up
+        
+        topics = {}
+        topics[topic] = {}
+        topics[topic]['unit_system'] = self.unit_system_name
+        topics[topic]['max_queue'] = six.MAXSIZE
+        topic_config = configobj.ConfigObj(topics)
+        topics = TopicX(topic_config)
 
         message_handler_config = dict(self.message_handler_config)
         message_handler_config['full_topic_fieldname'] = True
 
-        SUT = MessageCallbackFactory(message_handler_config, None)
-
-        self.userdata['topics'][topic] = {}
-        self.userdata['topics'][topic]['queue'] = deque()
-        self.userdata['topics'][topic]['max_queue'] = six.MAXSIZE
-        self.userdata['topics'][topic]['unit_system'] = self.unit_system
+        SUT = MessageCallbackFactory(message_handler_config, topics)
 
         msg = Msg()
         msg.topic = topic
         payload = random.uniform(1, 100)
         msg.payload = str(payload)
 
-        SUT._on_message_individual(None, self.userdata, msg)
+        SUT._on_message_individual(None, None, msg)
 
-        queue = self.userdata['topics'][topic]['queue']
+        queue = SUT.topics.get_queue(topic)
         self.assertEqual(len(queue), 1)
         data = queue[0]
         self.assertIn('dateTime', data)
@@ -654,25 +659,27 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
         fieldname = b'bar'
         topic = 'foo/' + fieldname.decode('utf-8')
         topic_byte = b'foo/bar' # ToDo - fix up
+        
+        topics = {}
+        topics[topic] = {}
+        topics[topic]['unit_system'] = self.unit_system_name
+        topics[topic]['max_queue'] = six.MAXSIZE
+        topic_config = configobj.ConfigObj(topics)
+        topics = TopicX(topic_config)
 
         message_handler_config = dict(self.message_handler_config)
         message_handler_config['full_topic_fieldname'] = True
 
-        SUT = MessageCallbackFactory(message_handler_config, None)
-
-        self.userdata['topics'][topic] = {}
-        self.userdata['topics'][topic]['queue'] = deque()
-        self.userdata['topics'][topic]['max_queue'] = six.MAXSIZE
-        self.userdata['topics'][topic]['unit_system'] = self.unit_system
+        SUT = MessageCallbackFactory(message_handler_config, topics)
 
         msg = Msg()
         msg.topic = topic
         payload = random.uniform(1, 100)
         msg.payload = str(payload)
 
-        SUT._on_message_individual(None, self.userdata, msg)
+        SUT._on_message_individual(None, None, msg)
 
-        queue = self.userdata['topics'][topic]['queue']
+        queue = SUT.topics.get_queue(topic)
         self.assertEqual(len(queue), 1)
         data = queue[0]
         self.assertIn('dateTime', data)
