@@ -199,6 +199,8 @@ class TopicX:
 
         max_queue = config.get('max_queue', six.MAXSIZE)
 
+        self.wind_fields = ['windGust', 'windGustDir', 'windDir', 'windSpeed']
+
         self.topics = {}
         self.subscribed_topics = {}
         self.queues = []
@@ -228,6 +230,11 @@ class TopicX:
     def Queues(self):
         return self.queues
 
+    def append_data(self, topic, data, fieldname=None):
+        if fieldname in self.wind_fields:
+            self.get_wind_queue(topic).append(data,)
+        else:
+            self.get_queue(topic).append(data,)
 
     def get_unit_system(self, topic):
         return self._get_value('unit_system', topic)
@@ -267,10 +274,6 @@ class MessageCallbackFactory:
 
         if self.type not in self.callbacks:
             raise ValueError("Invalid type configured: %s" % self.type)
-
-    @property
-    def Queues(self):
-        return self.topics.Queues
 
     def get_callback(self):
         return self.callbacks[self.type]
@@ -328,7 +331,7 @@ class MessageCallbackFactory:
                 if 'usUnits' not in data:
                     data['usUnits'] = self.topics.get_unit_system(msg.topic)
 
-                self.topics.get_queue(msg.topic).append(data,)
+                self.topics.append_data(msg.topic, data)
 
                 logdbg(self.console, "MQTTSubscribe", "Added to queue: %s" % to_sorted_string(data))
             else:
@@ -358,7 +361,7 @@ class MessageCallbackFactory:
             if 'usUnits' not in data:
                 data['usUnits'] = self.topics.get_unit_system(msg.topic)
 
-            self.topics.get_queue(msg.topic).append(data,)
+            self.topics.append_data(msg.topic, data)
 
             logdbg(self.console, "MQTTSubscribe", "Added to queue: %s" % to_sorted_string(data))
         except Exception as exception:
@@ -385,10 +388,7 @@ class MessageCallbackFactory:
             data['usUnits'] = self.topics.get_unit_system(msg.topic)
             data[fieldname] = to_float(msg.payload)
 
-            if fieldname in wind_fields:
-                self.topics.get_wind_queue(topic).append(data,)
-            else:
-                self.topics.get_queue(msg.topic).append(data,)
+            self.topics.append_data(msg.topic, data)
         except Exception as exception:
             logerr(self.console, "MQTTSubscribe", "on_message_individual failed with: %s" % exception)
             logerr(self.console, "MQTTSubscribe", "**** Ignoring topic=%s and payload=%s" % (msg.topic, msg.payload))
@@ -468,7 +468,7 @@ class MQTTSubscribe():
 
     @property
     def Queues(self):
-        return self.messageCallBackFactory.Queues
+        return self.topics2.Queues
 
     @property
     def Subscribed_topics(self):
