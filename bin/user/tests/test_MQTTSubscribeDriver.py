@@ -42,18 +42,6 @@ class TestgenLoopPackets(unittest.TestCase):
         self.config_dict = {}
         self.config_dict['topic'] = topic
 
-        self.topics = {}
-        self.topics[topic] = {}
-        self.topics[topic]['unit_system'] = 'US'
-        self.topics[topic]['max_queue'] = six.MAXSIZE
-        self.topic_config = configobj.ConfigObj(self.topics)
-
-        ## self.topics = {}
-        ## self.topics[topic] = {}
-        ## self.topics[topic]['queue'] = deque()
-        ## self.topics[topic]['queue'].append(self.queue_data, )
-        ## self.topics[topic]['queue_wind'] = deque()
-
         self.queues = []
         self.queues.append({
             'queue': deque(),
@@ -64,13 +52,10 @@ class TestgenLoopPackets(unittest.TestCase):
     def test_queue_empty(self):
         topic = 'foo/bar'
         self.setup_queue_tests(topic)
-        self.topics2 = TopicX(self.topic_config)
-        ####test = self.topics2.get_queue(topic) ## forcing caching of topics - investigate
         queue = deque()
 
         with mock.patch('user.MQTTSubscribe.MQTTSubscribe') as mock_manager:
             with mock.patch('user.MQTTSubscribe.time') as mock_time:
-                ## type(mock_manager.return_value).topics2 = mock.PropertyMock(return_value = self.topics2)
                 type(mock_manager.return_value).Subscribed_topics = mock.PropertyMock(return_value = [topic])
                 type(mock_manager.return_value).get_wind_queue = mock.Mock(return_value=deque())
                 type(mock_manager.return_value).get_queue = mock.Mock(return_value=queue)
@@ -83,8 +68,6 @@ class TestgenLoopPackets(unittest.TestCase):
                 while mock_time.sleep.call_count <= 0:
                     time.sleep(1)
 
-                type(mock_manager.return_value).Topics = mock.PropertyMock(return_value = self.topics)
-                ## self.topics2.get_queue(topic).append(self.queue_data, )
                 queue.append(self.queue_data, )
 
                 # wait for queue to be processed
@@ -97,15 +80,11 @@ class TestgenLoopPackets(unittest.TestCase):
     def test_queue(self):
         topic = 'foo/bar'
         self.setup_queue_tests(topic)
-        self.topics2 = TopicX(self.topic_config)
-        self.topics2.get_queue(topic).append(self.queue_data, )
         queue = deque()
         queue.append(self.queue_data, )
 
         with mock.patch('user.MQTTSubscribe.MQTTSubscribe') as mock_manager:
             with mock.patch('user.MQTTSubscribe.time') as mock_time:
-                type(mock_manager.return_value).Topics = mock.PropertyMock(return_value = self.topics)
-                ## type(mock_manager.return_value).topics2 = mock.PropertyMock(return_value = self.topics2)
                 type(mock_manager.return_value).Subscribed_topics = mock.PropertyMock(return_value = [topic])
                 type(mock_manager.return_value).get_wind_queue = mock.Mock(return_value=deque())
                 type(mock_manager.return_value).get_queue = mock.Mock(return_value=queue)
@@ -131,18 +110,6 @@ class TestgenLoopPackets(unittest.TestCase):
         self.config_dict = {}
         self.config_dict['topic'] = topic
 
-        ## self.topics = {}
-        ## self.topics[topic] = {}
-        ## self.topics[topic]['queue'] = deque()
-        ## self.topics[topic]['queue_wind'] = deque()
-        ## self.topics[topic]['queue_wind'].append(self.queue_data, )
-
-        self.topics = {}
-        self.topics[topic] = {}
-        self.topics[topic]['unit_system'] = 'US'
-        self.topics[topic]['max_queue'] = six.MAXSIZE
-        self.topic_config = configobj.ConfigObj(self.topics)
-
         self.queues = []
         self.queues.append({
             'queue': deque(),
@@ -153,17 +120,13 @@ class TestgenLoopPackets(unittest.TestCase):
     def test_wind_queue_empty(self):
         topic = 'foo/bar'
         self.setup_wind_queue_tests(topic)
-        self.topics2 = TopicX(self.topic_config)
-        ####test = self.topics2.get_queue(topic) ## forcing caching of topics - investigate
         wind_queue = deque()
-
 
         with mock.patch('user.MQTTSubscribe.MQTTSubscribe') as mock_manager:
             with mock.patch('user.MQTTSubscribe.time') as mock_time:
                 with mock.patch('user.MQTTSubscribe.CollectData') as mock_CollectData:
                     type(mock_CollectData.return_value).get_data = mock.Mock(return_value={})
                     type(mock_CollectData.return_value).add_data = mock.Mock(return_value=self.aggregate_data)
-                    ## type(mock_manager.return_value).topics2 = mock.PropertyMock(return_value = self.topics2)
                     type(mock_manager.return_value).Subscribed_topics = mock.PropertyMock(return_value = [topic])
                     type(mock_manager.return_value).get_queue = mock.Mock(return_value=deque())
                     type(mock_manager.return_value).get_wind_queue = mock.Mock(return_value=wind_queue)
@@ -175,8 +138,6 @@ class TestgenLoopPackets(unittest.TestCase):
                     while mock_time.sleep.call_count <= 0:
                         time.sleep(1)
 
-                    type(mock_manager.return_value).Topics = mock.PropertyMock(return_value = self.topics)
-                    ## self.topics2.get_wind_queue(topic).append(self.queue_data, )
                     wind_queue.append(self.queue_data, )
 
                     # wait for queue to be processed
@@ -189,16 +150,12 @@ class TestgenLoopPackets(unittest.TestCase):
     def test_wind_queue(self):
         topic = 'foo/bar'
         self.setup_wind_queue_tests(topic)
-        self.topics2 = TopicX(self.topic_config)
-        self.topics2.get_wind_queue(topic).append(self.queue_data, )
         wind_queue = deque()
         wind_queue.append(self.queue_data, )
 
         with mock.patch('user.MQTTSubscribe.MQTTSubscribe') as mock_manager:
             with mock.patch('user.MQTTSubscribe.time') as mock_time:
                 with mock.patch('user.MQTTSubscribe.CollectData') as mock_CollectData:
-                    ## type(mock_manager.return_value).topics2 = mock.PropertyMock(return_value = self.topics2)
-                    type(mock_manager.return_value).Topics = mock.PropertyMock(return_value = self.topics)
                     type(mock_manager.return_value).Subscribed_topics = mock.PropertyMock(return_value = [topic])
                     type(mock_manager.return_value).get_queue = mock.Mock(return_value=deque())
                     type(mock_manager.return_value).get_wind_queue = mock.Mock(return_value=wind_queue)
@@ -233,18 +190,6 @@ class TestgenArchiveRecords(unittest.TestCase):
         self.config_dict['topics']['foo/bar'] = {}
         self.config_dict['topics'][archive_topic] = {}
 
-        ##self.topics = {}
-        ## self.topics[archive_topic] = {}
-        ## self.topics[archive_topic]['queue'] = deque()
-        ## self.topics[archive_topic]['queue'].append(self.queue_data, )
-        ## self.topics[archive_topic]['queue_wind'] = deque()
-
-        self.topics = {}
-        self.topics[archive_topic] = {}
-        self.topics[archive_topic]['unit_system'] = 'US'
-        self.topics[archive_topic]['max_queue'] = six.MAXSIZE
-        self.topic_config = configobj.ConfigObj(self.topics)
-
         self.queues = []
         self.queues.append({
             'queue': deque(),
@@ -255,11 +200,9 @@ class TestgenArchiveRecords(unittest.TestCase):
     def test_empty_queue(self):
         archive_topic = 'archive'
         self.setup_archive_queue_tests(archive_topic)
-        self.topics2 = TopicX(self.topic_config)
         archive_queue = deque()
 
         with mock.patch('user.MQTTSubscribe.MQTTSubscribe') as mock_manager:
-            ## type(mock_manager.return_value).topics2 = mock.PropertyMock(return_value = self.topics2)
             type(mock_manager.return_value).get_queue = mock.Mock(return_value=archive_queue)
             SUT = MQTTSubscribeDriver(**self.config_dict)
             record = None
@@ -275,14 +218,10 @@ class TestgenArchiveRecords(unittest.TestCase):
     def test_queue_element_in_future(self):
         archive_topic = 'archive'
         self.setup_archive_queue_tests(archive_topic)
-        self.topics2 = TopicX(self.topic_config)
-        self.topics2.get_queue(archive_topic).append(self.queue_data, )
         archive_queue = deque()
         archive_queue.append(self.queue_data)
 
         with mock.patch('user.MQTTSubscribe.MQTTSubscribe') as mock_manager:
-            type(mock_manager.return_value).Topics = mock.PropertyMock(return_value = self.topics)
-            ## type(mock_manager.return_value).topics2 = mock.PropertyMock(return_value = self.topics2)
             type(mock_manager.return_value).get_queue = mock.Mock(return_value=archive_queue)
 
             SUT = MQTTSubscribeDriver(**self.config_dict)
@@ -299,19 +238,12 @@ class TestgenArchiveRecords(unittest.TestCase):
     def test_queue(self):
         archive_topic = 'archive'
         self.setup_archive_queue_tests(archive_topic)
-        self.topics2 = TopicX(self.topic_config)
-        # ToDo - cleanup
-        self.topics[archive_topic]['queue'] = deque()
         queue_list = [self.queue_data, self.queue_data]
         archive_queue = deque()
         for q in queue_list:
-            ## self.topics[archive_topic]['queue'].append(q)
-            ## self.topics2.get_queue(archive_topic).append(q, )
             archive_queue.append(q)
 
         with mock.patch('user.MQTTSubscribe.MQTTSubscribe') as mock_manager:
-            type(mock_manager.return_value).Topics = mock.PropertyMock(return_value = self.topics)
-            ## type(mock_manager.return_value).topics2 = mock.PropertyMock(return_value = self.topics2)
             type(mock_manager.return_value).get_queue = mock.Mock(return_value=archive_queue)
             records = list()
 
