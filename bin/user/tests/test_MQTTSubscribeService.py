@@ -61,7 +61,14 @@ class Testnew_loop_packet(unittest.TestCase):
         self.topics[topic]['max_queue'] = six.MAXSIZE
         self.topic_config = configobj.ConfigObj(self.topics)
         self.topics2 = TopicX(self.topic_config)
-        self.topics2.get_queue(topic).append(self.queue_data, )      
+        self.topics2.get_queue(topic).append(self.queue_data, )
+
+        self.queues = []
+        self.queues.append({
+            'queue': deque(),
+            'queue_wind': deque()
+            }
+        )
 
     def test_queue_empty(self):
         topic = 'foo/bar'
@@ -96,6 +103,7 @@ class Testnew_loop_packet(unittest.TestCase):
         end_period_ts = (int(current_time / 300) + 1) * 300
         start_ts = end_period_ts - 300
         self.setup_queue_tests(start_ts, end_period_ts, topic)
+        self.queues[0]['queue'].append(self.queue_data)
 
         new_loop_packet_event = weewx.Event(weewx.NEW_LOOP_PACKET,
                                                     packet=self.packet_data)
@@ -104,7 +112,8 @@ class Testnew_loop_packet(unittest.TestCase):
             with mock.patch('user.MQTTSubscribe.weewx.units.to_std_system') as mock_to_std_system:
                 with mock.patch('user.MQTTSubscribe.weewx.accum.Accum') as mock_Accum:
                     type(mock_manager.return_value).Topics = mock.PropertyMock(return_value = self.topics)
-                    type(mock_manager.return_value).topics2 = mock.PropertyMock(return_value = self.topics2)
+                    ## type(mock_manager.return_value).topics2 = mock.PropertyMock(return_value = self.topics2)
+                    type(mock_manager.return_value).Queues = mock.PropertyMock(return_value = self.queues)
                     type(mock_Accum.return_value).isEmpty = mock.PropertyMock(return_value = True)
                     type(mock_Accum.return_value).addRecord = mock.Mock(side_effect=weewx.accum.OutOfSpan("Attempt to add out-of-interval record"))
 
@@ -165,7 +174,8 @@ class Testnew_loop_packet(unittest.TestCase):
                 with mock.patch('user.MQTTSubscribe.weewx.accum.Accum') as mock_Accum:
                     mock_to_std_system.return_value = self.target_data
                     type(mock_manager.return_value).Topics = mock.PropertyMock(return_value = self.topics)
-                    type(mock_manager.return_value).topics2 = mock.PropertyMock(return_value = self.topics2)
+                    ## type(mock_manager.return_value).topics2 = mock.PropertyMock(return_value = self.topics2)
+                    type(mock_manager.return_value).Queues = mock.PropertyMock(return_value = self.queues)
                     type(mock_Accum.return_value).isEmpty = mock.PropertyMock(return_value = False)
                     type(mock_Accum.return_value).getRecord = mock.Mock(return_value=self.aggregate_data)
 
@@ -211,7 +221,14 @@ class Testnew_loop_packet(unittest.TestCase):
         self.topics[topic]['max_queue'] = six.MAXSIZE
         self.topic_config = configobj.ConfigObj(self.topics)
         self.topics2 = TopicX(self.topic_config)
-        self.topics2.get_wind_queue(topic).append(self.queue_data, )      
+        self.topics2.get_wind_queue(topic).append(self.queue_data, )
+
+        self.queues = []
+        self.queues.append({
+            'queue': deque(),
+            'queue_wind': deque()
+            }
+        )
 
     def test_wind_queue_empty(self):
         current_time = int(time.time() + 0.5)
@@ -259,7 +276,8 @@ class Testnew_loop_packet(unittest.TestCase):
                 with mock.patch('user.MQTTSubscribe.weewx.accum.Accum') as mock_Accum:
                     with mock.patch('user.MQTTSubscribe.CollectData') as mock_CollectData:
                         type(mock_manager.return_value).Topics = mock.PropertyMock(return_value = self.topics)
-                        type(mock_manager.return_value).topics2 = mock.PropertyMock(return_value = self.topics2)
+                        ## type(mock_manager.return_value).topics2 = mock.PropertyMock(return_value = self.topics2)
+                        type(mock_manager.return_value).Queues = mock.PropertyMock(return_value = self.queues)
                         type(mock_Accum.return_value).isEmpty = mock.PropertyMock(return_value = True)
                         type(mock_Accum.return_value).addRecord = mock.Mock(side_effect=weewx.accum.OutOfSpan("Attempt to add out-of-interval record"))
                         type(mock_CollectData.return_value).add_data = mock.Mock(return_value={})
@@ -285,6 +303,7 @@ class Testnew_loop_packet(unittest.TestCase):
         topic = 'foo/bar'
 
         self.setup_wind_queue_tests(start_ts, end_period_ts, topic)
+	self.queues[0]['queue_wind'].append(self.queue_data)
 
         new_loop_packet_event = weewx.Event(weewx.NEW_LOOP_PACKET,
                                                     packet=self.packet_data)
@@ -294,7 +313,8 @@ class Testnew_loop_packet(unittest.TestCase):
                 with mock.patch('user.MQTTSubscribe.weewx.accum.Accum') as mock_Accum:
                     with mock.patch('user.MQTTSubscribe.CollectData') as mock_CollectData:
                         type(mock_manager.return_value).Topics = mock.PropertyMock(return_value = self.topics)
-                        type(mock_manager.return_value).topics2 = mock.PropertyMock(return_value = self.topics2)
+                        ## type(mock_manager.return_value).topics2 = mock.PropertyMock(return_value = self.topics2)
+                        type(mock_manager.return_value).Queues = mock.PropertyMock(return_value = self.queues)                        
                         type(mock_Accum.return_value).isEmpty = mock.PropertyMock(return_value = True)
                         type(mock_Accum.return_value).addRecord = mock.Mock(side_effect=weewx.accum.OutOfSpan("Attempt to add out-of-interval record"))
                         type(mock_CollectData.return_value).add_data = mock.Mock(return_value=self.aggregate_data)
@@ -352,6 +372,7 @@ class Testnew_loop_packet(unittest.TestCase):
         topic = 'foo/bar'
 
         self.setup_wind_queue_tests(start_ts, end_period_ts, topic)
+        self.queues[0]['queue_wind'].append(self.queue_data)
 
         target_data = {
             'windSpeed': random.uniform(1, 100),
@@ -371,7 +392,8 @@ class Testnew_loop_packet(unittest.TestCase):
                     with mock.patch('user.MQTTSubscribe.CollectData') as mock_CollectData:
                         mock_to_std_system.return_value = target_data
                         type(mock_manager.return_value).Topics = mock.PropertyMock(return_value = self.topics)
-                        type(mock_manager.return_value).topics2 = mock.PropertyMock(return_value = self.topics2)
+                        ## type(mock_manager.return_value).topics2 = mock.PropertyMock(return_value = self.topics2)
+                        type(mock_manager.return_value).Queues = mock.PropertyMock(return_value = self.queues)
                         type(mock_Accum.return_value).isEmpty = mock.PropertyMock(return_value = False)
                         type(mock_Accum.return_value).getRecord = mock.Mock(return_value=self.aggregate_data)
                         type(mock_CollectData.return_value).add_data = mock.Mock(return_value={})
@@ -413,8 +435,8 @@ class Testnew_loop_packet(unittest.TestCase):
                     with mock.patch('user.MQTTSubscribe.CollectData') as mock_CollectData:
                         mock_to_std_system.return_value = target_data
                         type(mock_manager.return_value).Topics = mock.PropertyMock(return_value = self.topics)
-                        type(mock_manager.return_value).topics2 = mock.PropertyMock(return_value = self.topics2)
-
+                        ##type(mock_manager.return_value).topics2 = mock.PropertyMock(return_value = self.topics2)
+                        type(mock_manager.return_value).Queues = mock.PropertyMock(return_value = self.queues)
                         type(mock_Accum.return_value).isEmpty = mock.PropertyMock(return_value = False)
                         type(mock_Accum.return_value).getRecord = mock.Mock(return_value=self.aggregate_data)
                         type(mock_CollectData.return_value).add_data = mock.Mock(return_value=self.aggregate_data)
@@ -478,7 +500,14 @@ class Testnew_archive_record(unittest.TestCase):
         self.topics[topic]['max_queue'] = six.MAXSIZE
         self.topic_config = configobj.ConfigObj(self.topics)
         self.topics2 = TopicX(self.topic_config)
-        self.topics2.get_queue(topic).append(self.queue_data, )      
+        self.topics2.get_queue(topic).append(self.queue_data, )
+
+        self.queues = []
+        self.queues.append({
+            'queue': deque(),
+            'queue_wind': deque()
+            }
+        )
 
     def test_queue_empty(self):
         topic = 'foo/bar'
@@ -516,6 +545,7 @@ class Testnew_archive_record(unittest.TestCase):
         end_period_ts = (int(current_time / 300) + 1) * 300
         start_ts = end_period_ts - 300
         self.setup_archive_queue_tests(start_ts, end_period_ts, topic)
+        self.queues[0]['queue'].append(self.queue_data)
 
         new_loop_record_event = weewx.Event(weewx.NEW_ARCHIVE_RECORD,
                                                     record=self.record_data,
@@ -525,7 +555,8 @@ class Testnew_archive_record(unittest.TestCase):
             with mock.patch('user.MQTTSubscribe.weewx.units.to_std_system') as mock_to_std_system:
                 with mock.patch('user.MQTTSubscribe.weewx.accum.Accum') as mock_Accum:
                     type(mock_manager.return_value).Topics = mock.PropertyMock(return_value = self.topics)
-                    type(mock_manager.return_value).topics2 = mock.PropertyMock(return_value = self.topics2)
+                    ## type(mock_manager.return_value).topics2 = mock.PropertyMock(return_value = self.topics2)
+                    type(mock_manager.return_value).Queues = mock.PropertyMock(return_value = self.queues)
                     type(mock_Accum.return_value).isEmpty = mock.PropertyMock(return_value = True)
                     type(mock_Accum.return_value).addRecord = mock.Mock(side_effect=weewx.accum.OutOfSpan("Attempt to add out-of-interval record"))
 
@@ -588,7 +619,8 @@ class Testnew_archive_record(unittest.TestCase):
                 with mock.patch('user.MQTTSubscribe.weewx.accum.Accum') as mock_Accum:
                     mock_to_std_system.return_value = self.target_data
                     type(mock_manager.return_value).Topics = mock.PropertyMock(return_value = self.topics)
-                    type(mock_manager.return_value).topics2 = mock.PropertyMock(return_value = self.topics2)
+                    ## type(mock_manager.return_value).topics2 = mock.PropertyMock(return_value = self.topics2)
+                    type(mock_manager.return_value).Queues = mock.PropertyMock(return_value = self.queues)
                     type(mock_Accum.return_value).isEmpty = mock.PropertyMock(return_value = False)
                     type(mock_Accum.return_value).getRecord = mock.Mock(return_value=self.aggregate_data)
 

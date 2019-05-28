@@ -303,7 +303,7 @@ class MessageCallbackFactory:
         # Wrap all the processing in a try, so it doesn't crash and burn on any error
         try:
             topic = msg.topic
-            logdbg(self.console, "MQTTSubscribe", "For %s received: %s" %(msg.topic, msg.payload))            
+            logdbg(self.console, "MQTTSubscribe", "For %s received: %s" %(msg.topic, msg.payload))
 
             ## Todo - replace
             ## self._queue_size_check(topics[topic]['queue'], topics[topic]['max_queue'])
@@ -340,7 +340,7 @@ class MessageCallbackFactory:
     def _on_message_json(self, client, userdata, msg):
         # Wrap all the processing in a try, so it doesn't crash and burn on any error
         try:
-            logdbg(self.console, "MQTTSubscribe", "For %s received: %s" %(msg.topic, msg.payload))            
+            logdbg(self.console, "MQTTSubscribe", "For %s received: %s" %(msg.topic, msg.payload))
 
             ## ToDo - replace
             ## self._queue_size_check(topics[topic]['queue'], topics[topic]['max_queue'])
@@ -470,6 +470,10 @@ class MQTTSubscribe():
     def Queues(self):
         return self.messageCallBackFactory.Queues
 
+    @property
+    def Subscribed_topics(self):
+        return self.topics2.subscribed_topics
+
     # start subscribing to the topics
     def start(self):
         logdbg(self.console, "MQTTSubscribe", "Starting loop")
@@ -546,7 +550,7 @@ class MQTTSubscribeService(StdService):
         logdbg(self.console, "MQTTSubscribeService", "Wind queue size is: %i" % len(queue_wind))
         while (len(queue_wind) > 0 and queue_wind[0]['dateTime'] <= end_ts):
             archive_data = queue_wind.popleft()
-            logdbg(self.console, "MQTTSubscribeService", "Processing: %s" % to_sorted_string(archive_data))            
+            logdbg(self.console, "MQTTSubscribeService", "Processing: %s" % to_sorted_string(archive_data))
             try:
                 data = collector.add_data(archive_data)
                 if data:
@@ -554,7 +558,7 @@ class MQTTSubscribeService(StdService):
                     accumulator.addRecord(data)
             except weewx.accum.OutOfSpan:
                 loginf(self.console, "MQTTSubscribeService", "Ignoring record outside of interval %f %f %f %s"
-                    %(start_ts, end_ts, archive_data['dateTime'], to_sorted_string(archive_data)))            
+                    %(start_ts, end_ts, archive_data['dateTime'], to_sorted_string(archive_data)))
 
         wind_data = collector.get_data()
         if wind_data:
@@ -580,9 +584,9 @@ class MQTTSubscribeService(StdService):
     def new_loop_packet(self, event):
         start_ts = self.end_ts - self.overlap
         self.end_ts = event.packet['dateTime']
-        ## ToDo - stop using topics2                
-        for queue in self.manager.topics2.Queues:
-        # for queue in self.manager.Queues:
+        ## ToDo - stop using topics2
+        ## for queue in self.manager.topics2.Queues:
+        for queue in self.manager.Queues:
             target_data = self._process_data(queue['queue'], queue['queue_wind'], start_ts, self.end_ts, event.packet)
             event.packet.update(target_data)
             logdbg(self.console, "MQTTSubscribeService", "Packet after update is: %s" % to_sorted_string(event.packet))
@@ -593,8 +597,9 @@ class MQTTSubscribeService(StdService):
     def new_archive_record(self, event):
         end_ts = event.record['dateTime']
         start_ts = end_ts - event.record['interval'] * 60 - self.overlap
-        ## ToDo - stop using topics2                
-        for queue in self.manager.topics2.Queues:
+        ## ToDo - stop using topics2
+        ## for queue in self.manager.topics2.Queues:
+        for queue in self.manager.Queues:
             target_data = self._process_data(queue['queue'], queue['queue_wind'], start_ts, self.end_ts, event.record)
             event.record.update(target_data)
             logdbg(self.console, "MQTTSubscribeService", "Record after update is: %s" % to_sorted_string(event.record))
@@ -627,20 +632,20 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice):
     def genLoopPackets(self):
       while True:
         ## ToDo - stop using topics2
-        for topic in self.manager.topics2.subscribed_topics: # investigate that topics might not be cached.. therefore use subscribed
+        for topic in self.manager.Subscribed_topics: # investigate that topics might not be cached.. therefore use subscribed
             if topic == self.archive_topic:
                 continue
 
-            ## ToDo - stop using topics2                
-            queue = self.manager.topics2.get_queue(topic)
+            ## ToDo - stop using topics2
+            queue = self.manager.get_queue(topic)
             logdbg(self.console, "MQTTSubscribeDriver", "Queue is size %i" % len(queue))
             while len(queue) > 0:
                 packet = queue.popleft()
                 logdbg(self.console, "MQTTSubscribeDriver", "Packet: %s" % to_sorted_string(packet))
                 yield packet
  
-            ## ToDo - stop using topics2                
-            queue_wind = self.manager.topics2.get_wind_queue(topic)
+            ## ToDo - stop using topics2
+            queue_wind = self.manager.get_wind_queue(topic)
             logdbg(self.console, "MQTTSubscribeDriver", "Wind queue is size %i" % len(queue_wind))
 
             collector = CollectData(self.wind_fields)
@@ -663,8 +668,9 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice):
             logdbg(self.console, "MQTTSubscribeDriver", "No archive topic configured.")
             raise NotImplementedError
         else:
-            ## ToDo - stop using topics2                
-            queue= self.manager.topics2.get_queue(self.archive_topic)
+            ## ToDo - stop using topics2
+            ## queue= self.manager.topics2.get_queue(self.archive_topic)
+            queue= self.manager.get_queue(self.archive_topic)
             logdbg(self.console, "MQTTSubscribeDriver", "Archive queue is size %i and date is %f." %(len(queue), lastgood_ts))
             while (len(queue) > 0 and queue[0]['dateTime'] <= lastgood_ts):
                 archive_record = queue.popleft()
@@ -881,7 +887,7 @@ if __name__ == '__main__': # pragma: no cover
         while i < record_count:
             current_time = int(time.time() + 0.5)
             end_period_ts = (int(current_time / interval) + 1) * interval
-            end_delay_ts  =  end_period_ts + delay
+            end_delay_ts = end_period_ts + delay
             sleep_amount = end_delay_ts - current_time
 
             print("Sleeping %i seconds" % sleep_amount)
