@@ -188,10 +188,11 @@ class CollectData:
         return self.data
 
 class TopicX:
-    def __init__(self, config):
+    def __init__(self, config, console=False):
         if len(config.sections) < 1:
             raise ValueError("At least one topic must be configured.")
 
+        self.console = console
         default_unit_system_name = config.get('unit_system', 'US').strip().upper()
         if default_unit_system_name not in weewx.units.unit_constants:
             raise ValueError("MQTTSubscribe: Unknown unit system: %s" % default_unit_system_name)
@@ -226,26 +227,54 @@ class TopicX:
                 }
             )
 
-    @property
-    def Queues(self):
-        return self.queues
-
     def append_data(self, topic, data, fieldname=None):
         if fieldname in self.wind_fields:
-            self.get_wind_queue(topic).append(data,)
+            queue = self._get_wind_queue(topic)
         else:
-            self.get_queue(topic).append(data,)
+            queue = self._get_queue(topic)
+        
+        self._queue_size_check(queue, self._get_max_queue(topic))
 
-    def get_unit_system(self, topic):
+        if 'dateTime' not in data:
+            data['dateTime'] = time.time()
+        if 'usUnits' not in data:
+            data['usUnits'] = self._get_unit_system(topic)        
+        queue.append(data,)
+
+    def get_data(self, topic, end_ts=six.MAXSIZE):
+        queue = self._get_queue(topic)
+        logdbg(self.console, "MQTTSubscribeService", "Queue size is: %i" % len(queue))
+        while (len(queue) > 0 and queue[0]['dateTime'] <= end_ts):
+            yield queue.popleft()
+
+        wind_queue = self._get_wind_queue(topic)
+        logdbg(self.console, "MQTTSubscribeService", "Wind queue size is: %i" % len(queue_wind))
+        collector = CollectData(self.wind_fields)
+        while (len(queue_wind) > 0 and queue_wind[0]['dateTime'] <= end_ts):
+            wind_data = queue_wind.popleft()
+            data = collector.add_data(wind_data)
+            if data:
+                yield data
+
+        data = collector.add_data(wind_data)
+        if data:
+            yield data
+
+    def _get_unit_system(self, topic):
         return self._get_value('unit_system', topic)
 
-    def get_max_queue(self, topic):
+    def _queue_size_check(self, queue, max_queue):
+        while len(queue) >= max_queue:
+            element = queue.popleft()
+            logerr(self.console, "MQTTSubscribe", "Queue limit %i reached. Removing: %s" %(max_queue, element))        
+
+    def _get_max_queue(self, topic):
         return self._get_value('max_queue', topic)
 
-    def get_queue(self, topic):
+    def _get_queue(self, topic):
         return self._get_value('queue', topic)
 
-    def get_wind_queue(self, topic):
+    def _get_wind_queue(self, topic):
         return self._get_value('queue_wind', topic)
 
     def _get_value(self, value, topic):
@@ -308,9 +337,6 @@ class MessageCallbackFactory:
             topic = msg.topic
             logdbg(self.console, "MQTTSubscribe", "For %s received: %s" %(msg.topic, msg.payload))
 
-            ## Todo - replace
-            ## self._queue_size_check(topics[topic]['queue'], topics[topic]['max_queue'])
-
             fields = msg.payload.split(self.keyword_delimiter)
             data = {}
             for field in fields:
@@ -326,11 +352,6 @@ class MessageCallbackFactory:
                 data[self.label_map.get(name, name)] = to_float(value)
 
             if data:
-                if 'dateTime' not in data:
-                    data['dateTime'] = time.time()
-                if 'usUnits' not in data:
-                    data['usUnits'] = self.topics.get_unit_system(msg.topic)
-
                 self.topics.append_data(msg.topic, data)
 
                 logdbg(self.console, "MQTTSubscribe", "Added to queue: %s" % to_sorted_string(data))
@@ -344,10 +365,6 @@ class MessageCallbackFactory:
         # Wrap all the processing in a try, so it doesn't crash and burn on any error
         try:
             logdbg(self.console, "MQTTSubscribe", "For %s received: %s" %(msg.topic, msg.payload))
-
-            ## ToDo - replace
-            ## self._queue_size_check(topics[topic]['queue'], topics[topic]['max_queue'])
-
             # ToDo - better way?
             if six.PY2:
                 data = self._byteify(
@@ -355,11 +372,6 @@ class MessageCallbackFactory:
                     ignore_dicts=True)
             else:
                 data = json.loads(msg.payload.decode("utf-8"))
-
-            if 'dateTime' not in data:
-                data['dateTime'] = time.time()
-            if 'usUnits' not in data:
-                data['usUnits'] = self.topics.get_unit_system(msg.topic)
 
             self.topics.append_data(msg.topic, data)
 
@@ -384,8 +396,6 @@ class MessageCallbackFactory:
             fieldname = self.label_map.get(key,key)
 
             data = {}
-            data['dateTime'] = time.time()
-            data['usUnits'] = self.topics.get_unit_system(msg.topic)
             data[fieldname] = to_float(msg.payload)
 
             self.topics.append_data(msg.topic, data)
@@ -466,9 +476,9 @@ class MQTTSubscribe():
 
         self.client.connect(host, port, keepalive)
 
-    @property
-    def Queues(self):
-        return self.topics2.Queues
+    ##@property
+    ##def Queues(self):
+    ##    return self.topics2.Queues
 
     @property
     def Subscribed_topics(self):
@@ -501,7 +511,7 @@ class MQTTSubscribeService(StdService):
 
         service_dict = config_dict.get('MQTTSubscribeService', {})
         self.console = to_bool(service_dict.get('console', False))
-        self.enable =  to_bool(service_dict.get('enable', True))
+        self.enable = to_bool(service_dict.get('enable', True))
         if not self.enable:
             loginf(self.console, "MQTTSubscribeService", "Service is not enabled, exiting.")
             return
@@ -531,10 +541,26 @@ class MQTTSubscribeService(StdService):
     def shutDown(self):
         self.manager.shutDown()
 
-    def _process_data(self, queue, queue_wind, start_ts, end_ts, record):
+    def _process_data(self, topic, start_ts, end_ts, record):
+        ## queue = self.manager.get_queue(topic)
+        ## queue_wind = self.manager.get_wind_queue(topic)
+
         logdbg(self.console, "MQTTSubscribeService", "Processing interval: %f %f" %(start_ts, end_ts))
         accumulator = weewx.accum.Accum(weeutil.weeutil.TimeSpan(start_ts, end_ts))
+        while True:
+            data = self.manager.get_data(topic, end_ts)
+            if data:
+                try:
+                    logdbg(self.console, "MQTTSubscribeService", "Data to accumulate: %s" % to_sorted_string(data))
+                    accumulator.addRecord(data)
+                except weewx.accum.OutOfSpan:
+                        loginf(self.console, "MQTTSubscribeService", "Ignoring record outside of interval %f %f %f %s"
+                                 %(start_ts, end_ts, data['dateTime'], to_sorted_string(data)))
+            else:
+                break
 
+        ##
+        """
         logdbg(self.console, "MQTTSubscribeService", "Queue size is: %i" % len(queue))
         while (len(queue) > 0 and queue[0]['dateTime'] <= end_ts):
             archive_data = queue.popleft()
@@ -568,6 +594,7 @@ class MQTTSubscribeService(StdService):
             except weewx.accum.OutOfSpan:
                 loginf(self.console, "MQTTSubscribeService", "Ignoring record outside of interval %f %f %f %s"
                     %(start_ts, end_ts, wind_data['dateTime'], to_sorted_string(wind_data)))
+        """
 
         target_data = {}
         if not accumulator.isEmpty:
@@ -586,8 +613,9 @@ class MQTTSubscribeService(StdService):
         self.end_ts = event.packet['dateTime']
         ## ToDo - stop using topics2
         ## for queue in self.manager.topics2.Queues:
-        for queue in self.manager.Queues:
-            target_data = self._process_data(queue['queue'], queue['queue_wind'], start_ts, self.end_ts, event.packet)
+        ## for queue in self.manager.Queues:
+        for topic in self.manager.Subscribed_topics: # investigate that topics might not be cached.. therefore use subscribed
+            target_data = self._process_data(topic, start_ts, self.end_ts, event.packet)
             event.packet.update(target_data)
             logdbg(self.console, "MQTTSubscribeService", "Packet after update is: %s" % to_sorted_string(event.packet))
 
@@ -599,8 +627,9 @@ class MQTTSubscribeService(StdService):
         start_ts = end_ts - event.record['interval'] * 60 - self.overlap
         ## ToDo - stop using topics2
         ## for queue in self.manager.topics2.Queues:
-        for queue in self.manager.Queues:
-            target_data = self._process_data(queue['queue'], queue['queue_wind'], start_ts, self.end_ts, event.record)
+        ## for queue in self.manager.Queues:
+        for topic in self.manager.Subscribed_topics: # investigate that topics might not be cached.. therefore use subscribed
+            target_data = self._process_data(topic, start_ts, self.end_ts, event.record)
             event.record.update(target_data)
             logdbg(self.console, "MQTTSubscribeService", "Record after update is: %s" % to_sorted_string(event.record))
 

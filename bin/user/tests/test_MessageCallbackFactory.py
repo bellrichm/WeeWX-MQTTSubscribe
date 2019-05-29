@@ -194,7 +194,7 @@ class TestKeywordload(unittest.TestCase):
 
         SUT._on_message_keyword(None, None, msg)
 
-        queue = SUT.topics.get_queue(self.topic)
+        queue = SUT.topics._get_queue(self.topic) # Todo - check call to append_data
         self.assertEqual(len(queue), 1)
         data = queue[0]
         self.assertDictContainsSubset(payload_dict, data)
@@ -219,7 +219,7 @@ class TestKeywordload(unittest.TestCase):
         msg.payload = payload_str
 
         SUT._on_message_keyword(None, None, msg)
-        queue = SUT.topics.get_queue(self.topic)
+        queue = SUT.topics._get_queue(self.topic) # Todo - check call to append_data
         self.assertEqual(len(queue), 1)
         data = queue[0]
         self.assertIn('usUnits', data)
@@ -245,7 +245,7 @@ class TestKeywordload(unittest.TestCase):
         msg.payload = payload_str
 
         SUT._on_message_keyword(None, None, msg)
-        queue = SUT.topics.get_queue(self.topic)
+        queue = SUT.topics._get_queue(self.topic) # Todo - check call to append_data
         self.assertEqual(len(queue), 1)
         data = queue[0]
         self.assertDictEqual(data, payload_dict)
@@ -311,7 +311,7 @@ class TestJsonPayload(unittest.TestCase):
 
         SUT._on_message_json(None, None, msg)
 
-        queue = SUT.topics.get_queue(self.topic)
+        queue = SUT.topics._get_queue(self.topic) # Todo - check call to append_data
         self.assertEqual(len(queue), 1)
         data = queue[0]
         self.assertDictContainsSubset(payload_dict, data)
@@ -336,7 +336,7 @@ class TestJsonPayload(unittest.TestCase):
 
         SUT._on_message_json(None, None, msg)
 
-        queue = SUT.topics.get_queue(self.topic)
+        queue = SUT.topics._get_queue(self.topic) # Todo - check call to append_data
         self.assertEqual(len(queue), 1)
         data = queue[0]
         self.assertDictContainsSubset(payload_dict, data)
@@ -363,7 +363,7 @@ class TestJsonPayload(unittest.TestCase):
 
         SUT._on_message_json(None, None, msg)
 
-        queue = SUT.topics.get_queue(self.topic)
+        queue = SUT.topics._get_queue(self.topic) # Todo - check call to append_data
         self.assertEqual(len(queue), 1)
         data = queue[0]
         self.assertDictEqual(data, payload_dict)
@@ -421,7 +421,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
 
         SUT._on_message_individual(None, None, msg)
 
-        queue = SUT.topics.get_queue(self.topic)
+        queue = SUT.topics._get_queue(self.topic) # Todo - check call to append_data
 
         self.assertEqual(len(queue), 1)
         data = queue[0]
@@ -452,7 +452,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
 
         SUT._on_message_individual(None, None, msg)
 
-        queue = SUT.topics.get_queue(topic)
+        queue = SUT.topics._get_queue(topic) # Todo - check call to append_data
         self.assertEqual(len(queue), 1)
         data = queue[0]
         self.assertIn('dateTime', data)
@@ -483,7 +483,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
 
         SUT._on_message_individual(None, None, msg)
 
-        queue = SUT.topics.get_queue(topic)
+        queue = SUT.topics._get_queue(topic) # Todo - check call to append_data
         self.assertEqual(len(queue), 1)
         data = queue[0]
         self.assertIn('dateTime', data)
@@ -514,7 +514,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
 
         SUT._on_message_individual(None, None, msg)
 
-        queue = SUT.topics.get_queue(topic)
+        queue = SUT.topics._get_queue(topic) # Todo - check call to append_data
         self.assertEqual(len(queue), 1)
         data = queue[0]
         self.assertIn('dateTime', data)
@@ -581,7 +581,7 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
 
         SUT._on_message_individual(None, None, msg)
 
-        queue = SUT.topics.get_queue(self.topic)
+        queue = SUT.topics._get_queue(self.topic) # Todo - check call to append_data
         self.assertEqual(len(queue), 1)
         data = queue[0]
         self.assertIn('dateTime', data)
@@ -609,7 +609,7 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
 
         SUT._on_message_individual(None, None, msg)
 
-        queue = SUT.topics.get_queue(topic)
+        queue = SUT.topics._get_queue(topic) # Todo - check call to append_data
         self.assertEqual(len(queue), 1)
         data = queue[0]
         self.assertIn('dateTime', data)
@@ -644,7 +644,7 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
 
         SUT._on_message_individual(None, None, msg)
 
-        queue = SUT.topics.get_queue(topic)
+        queue = SUT.topics._get_queue(topic) # Todo - check call to append_data
         self.assertEqual(len(queue), 1)
         data = queue[0]
         self.assertIn('dateTime', data)
@@ -679,7 +679,7 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
 
         SUT._on_message_individual(None, None, msg)
 
-        queue = SUT.topics.get_queue(topic)
+        queue = SUT.topics._get_queue(topic) # Todo - check call to append_data
         self.assertEqual(len(queue), 1)
         data = queue[0]
         self.assertIn('dateTime', data)
