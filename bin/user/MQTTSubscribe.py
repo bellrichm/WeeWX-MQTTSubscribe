@@ -665,7 +665,15 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice):
             if topic == self.archive_topic:
                 continue
 
+            while True:
+                data = self.manager.get_data(topic)
+                if data:
+                    yield data
+                else:
+                    break
+
             ## ToDo - stop using topics2
+            """
             queue = self.manager.get_queue(topic)
             logdbg(self.console, "MQTTSubscribeDriver", "Queue is size %i" % len(queue))
             while len(queue) > 0:
@@ -689,6 +697,8 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice):
             if wind_data:
                 logdbg(self.console, "MQTTSubscribeDriver", "Packet post loop: %s" % to_sorted_string(wind_data))
                 yield wind_data
+            """
+
             logdbg(self.console, "MQTTSubscribeDriver", "Queues are empty.")
         time.sleep(self.wait_before_retry)
 
@@ -697,14 +707,20 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice):
             logdbg(self.console, "MQTTSubscribeDriver", "No archive topic configured.")
             raise NotImplementedError
         else:
+            while True:
+                data = self.manager.get_data(self.archive_topic, lastgood_ts)
+                if data:
+                    yield data
+                else:
+                    break
             ## ToDo - stop using topics2
             ## queue= self.manager.topics2.get_queue(self.archive_topic)
-            queue= self.manager.get_queue(self.archive_topic)
-            logdbg(self.console, "MQTTSubscribeDriver", "Archive queue is size %i and date is %f." %(len(queue), lastgood_ts))
-            while (len(queue) > 0 and queue[0]['dateTime'] <= lastgood_ts):
-                archive_record = queue.popleft()
-                logdbg(self.console, "MQTTSubscribeDriver", "Archive record: %s" % to_sorted_string(archive_record))
-                yield archive_record
+            ##queue= self.manager.get_queue(self.archive_topic)
+            ##logdbg(self.console, "MQTTSubscribeDriver", "Archive queue is size %i and date is %f." %(len(queue), lastgood_ts))
+            ##while (len(queue) > 0 and queue[0]['dateTime'] <= lastgood_ts):
+            ##    archive_record = queue.popleft()
+            ##    logdbg(self.console, "MQTTSubscribeDriver", "Archive record: %s" % to_sorted_string(archive_record))
+            ##    yield archive_record
 
 class MQTTSubscribeDriverConfEditor(weewx.drivers.AbstractConfEditor): # pragma: no cover
     @property
