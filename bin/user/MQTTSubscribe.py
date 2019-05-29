@@ -85,8 +85,8 @@ Configuration:
     # Only used by the driver.
     archive_topic =
 
-    # The message handler to use
-    [[message_handler]]
+    # Configuration for the message callback.
+    [[message_callback]]
         # The format of the MQTT payload.
         # Currently support: individual, json, keyword
         # Must be specified.
@@ -187,7 +187,7 @@ class CollectData:
     def get_data(self):
         return self.data
 
-class TopicX:
+class TopicManager:
     def __init__(self, config, console=False):
         if len(config.sections) < 1:
             raise ValueError("At least one topic must be configured.")
@@ -290,7 +290,7 @@ class TopicX:
                 self.topics[topic] = subscribed_topic
                 return subscribed_topic
 
-class MessageCallbackFactory:
+class MessageCallbackProvider:
     def __init__(self, config, topics, console=False):
         self.console = console
         self.topics = topics
@@ -408,12 +408,12 @@ class MessageCallbackFactory:
 class MQTTSubscribe():
     def __init__(self, service_dict):
         self.console = to_bool(service_dict.get('console', False))
-        message_handler_config = service_dict.get('message_handler', None)
-        if message_handler_config is None:
-            raise ValueError("[[message_handler]] is required.")
+        message_callback_config = service_dict.get('message_callback', None)
+        if message_callback_config is None:
+            raise ValueError("[[message_callback]] is required.")
 
-        message_callback_factory = service_dict.get('message_callback_factory', 'user.MQTTSubscribe.MessageCallbackFactory')
-        self.topics2 = TopicX(service_dict.get('topics', {}))
+        message_callback_provider_name = service_dict.get('message_callback_provider', 'user.MQTTSubscribe.MessageCallbackProvider')
+        self.manager = TopicManager(service_dict.get('topics', {}))
 
         clientid = service_dict.get('clientid',
                                 'MQTTSubscribe-' + str(random.randint(1000, 9999)))
@@ -432,8 +432,8 @@ class MQTTSubscribe():
         ##    raise ValueError("Archive topic %s must be in [[topics]]" % self.archive_topic)
 
         loginf(self.console, "MQTTSubscribe", "Console is %s" % self.console)
-        loginf(self.console, "MQTTSubscribe", "Message handler config is %s" % message_handler_config)
-        loginf(self.console, "MQTTSubscribe", "Message callback factory is %s" % message_callback_factory)
+        loginf(self.console, "MQTTSubscribe", "Message callback config is %s" % message_callback_config)
+        loginf(self.console, "MQTTSubscribe", "Message callback provider is %s" % message_callback_provider_name)
         loginf(self.console, "MQTTSubscribe", "Client id is %s" % clientid)
         loginf(self.console, "MQTTSubscribe", "MQTTSubscribe version is %s" % VERSION)
         loginf(self.console, "MQTTSubscribe", "Host is %s" % host)
@@ -461,12 +461,12 @@ class MQTTSubscribe():
         if log:
             self.client.on_log = self._on_log
 
-        MessageCallbackFactory_class = weeutil.weeutil._get_object(message_callback_factory)
-        self.messageCallBackFactory = MessageCallbackFactory_class(message_handler_config,
-                                                              self.topics2,
+        MessageCallbackProvider_class = weeutil.weeutil._get_object(message_callback_provider_name)
+        message_callback_provider = MessageCallbackProvider_class(message_callback_config,
+                                                              self.manager,
                                                               self.console)
 
-        self.client.on_message = self.messageCallBackFactory.get_callback()
+        self.client.on_message = message_callback_provider.get_callback()
 
         self.client.on_connect = self._on_connect
         self.client.on_disconnect = self._on_disconnect
@@ -478,11 +478,11 @@ class MQTTSubscribe():
 
     ##@property
     ##def Queues(self):
-    ##    return self.topics2.Queues
+    ##    return self.manager.Queues
 
     @property
     def Subscribed_topics(self):
-        return self.topics2.subscribed_topics
+        return self.manager.subscribed_topics
 
     # start subscribing to the topics
     def start(self):
@@ -495,8 +495,8 @@ class MQTTSubscribe():
 
     def _on_connect(self, client, userdata, flags, rc):
         logdbg(self.console, "MQTTSubscribe", "Connected with result code %i" % rc)
-        ## ToDo - stop using topics2
-        for topic in self.topics2.subscribed_topics:
+        ## ToDo - stop using manager
+        for topic in self.manager.subscribed_topics:
             client.subscribe(topic)
 
     def _on_disconnect(self, client, userdata, rc):
@@ -528,8 +528,8 @@ class MQTTSubscribeService(StdService):
         self.end_ts = 0 # prime for processing loop packet
         self.wind_fields = ['windGust', 'windGustDir', 'windDir', 'windSpeed']
 
-        self.manager = MQTTSubscribe(service_dict)
-        self.manager.start()
+        self.subscriber = MQTTSubscribe(service_dict)
+        self.subscriber.start()
 
         if (binding == 'archive'):
             self.bind(weewx.NEW_ARCHIVE_RECORD, self.new_archive_record)
@@ -539,16 +539,16 @@ class MQTTSubscribeService(StdService):
             raise ValueError("MQTTSubscribeService: Unknown binding: %s" % binding)
 
     def shutDown(self):
-        self.manager.shutDown()
+        self.subscriber.shutDown()
 
     def _process_data(self, topic, start_ts, end_ts, record):
-        ## queue = self.manager.get_queue(topic)
-        ## queue_wind = self.manager.get_wind_queue(topic)
+        ## queue = self.subscriber.get_queue(topic)
+        ## queue_wind = self.subscriber.get_wind_queue(topic)
 
         logdbg(self.console, "MQTTSubscribeService", "Processing interval: %f %f" %(start_ts, end_ts))
         accumulator = weewx.accum.Accum(weeutil.weeutil.TimeSpan(start_ts, end_ts))
         while True:
-            data = self.manager.get_data(topic, end_ts)
+            data = self.subscriber.get_data(topic, end_ts)
             if data:
                 try:
                     logdbg(self.console, "MQTTSubscribeService", "Data to accumulate: %s" % to_sorted_string(data))
@@ -612,9 +612,9 @@ class MQTTSubscribeService(StdService):
         start_ts = self.end_ts - self.overlap
         self.end_ts = event.packet['dateTime']
         ## ToDo - stop using topics2
-        ## for queue in self.manager.topics2.Queues:
-        ## for queue in self.manager.Queues:
-        for topic in self.manager.Subscribed_topics: # investigate that topics might not be cached.. therefore use subscribed
+        ## for queue in self.subscriber.topics2.Queues:
+        ## for queue in self.subscriber.Queues:
+        for topic in self.subscriber.Subscribed_topics: # investigate that topics might not be cached.. therefore use subscribed
             target_data = self._process_data(topic, start_ts, self.end_ts, event.packet)
             event.packet.update(target_data)
             logdbg(self.console, "MQTTSubscribeService", "Packet after update is: %s" % to_sorted_string(event.packet))
@@ -626,9 +626,9 @@ class MQTTSubscribeService(StdService):
         end_ts = event.record['dateTime']
         start_ts = end_ts - event.record['interval'] * 60 - self.overlap
         ## ToDo - stop using topics2
-        ## for queue in self.manager.topics2.Queues:
-        ## for queue in self.manager.Queues:
-        for topic in self.manager.Subscribed_topics: # investigate that topics might not be cached.. therefore use subscribed
+        ## for queue in self.subscriber.topics2.Queues:
+        ## for queue in self.subscriber.Queues:
+        for topic in self.subscriber.Subscribed_topics: # investigate that topics might not be cached.. therefore use subscribed
             target_data = self._process_data(topic, start_ts, self.end_ts, event.record)
             event.record.update(target_data)
             logdbg(self.console, "MQTTSubscribeService", "Record after update is: %s" % to_sorted_string(event.record))
@@ -651,8 +651,8 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice):
 
       self.wind_fields = ['windGust', 'windGustDir', 'windDir', 'windSpeed']
 
-      self.manager = MQTTSubscribe(stn_dict)
-      self.manager.start()
+      self.subscriber = MQTTSubscribe(stn_dict)
+      self.subscriber.start()
 
     @property
     def hardware_name(self):
@@ -661,12 +661,12 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice):
     def genLoopPackets(self):
       while True:
         ## ToDo - stop using topics2
-        for topic in self.manager.Subscribed_topics: # investigate that topics might not be cached.. therefore use subscribed
+        for topic in self.subscriber.Subscribed_topics: # investigate that topics might not be cached.. therefore use subscribed
             if topic == self.archive_topic:
                 continue
 
             while True:
-                data = self.manager.get_data(topic)
+                data = self.subscriber.get_data(topic)
                 if data:
                     yield data
                 else:
@@ -674,7 +674,7 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice):
 
             ## ToDo - stop using topics2
             """
-            queue = self.manager.get_queue(topic)
+            queue = self.subscriber.get_queue(topic)
             logdbg(self.console, "MQTTSubscribeDriver", "Queue is size %i" % len(queue))
             while len(queue) > 0:
                 packet = queue.popleft()
@@ -682,7 +682,7 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice):
                 yield packet
  
             ## ToDo - stop using topics2
-            queue_wind = self.manager.get_wind_queue(topic)
+            queue_wind = self.subscriber.get_wind_queue(topic)
             logdbg(self.console, "MQTTSubscribeDriver", "Wind queue is size %i" % len(queue_wind))
 
             collector = CollectData(self.wind_fields)
@@ -708,14 +708,14 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice):
             raise NotImplementedError
         else:
             while True:
-                data = self.manager.get_data(self.archive_topic, lastgood_ts)
+                data = self.subscriber.get_data(self.archive_topic, lastgood_ts)
                 if data:
                     yield data
                 else:
                     break
             ## ToDo - stop using topics2
-            ## queue= self.manager.topics2.get_queue(self.archive_topic)
-            ##queue= self.manager.get_queue(self.archive_topic)
+            ## queue= self.subscriber.topics2.get_queue(self.archive_topic)
+            ##queue= self.subscriber.get_queue(self.archive_topic)
             ##logdbg(self.console, "MQTTSubscribeDriver", "Archive queue is size %i and date is %f." %(len(queue), lastgood_ts))
             ##while (len(queue) > 0 and queue[0]['dateTime'] <= lastgood_ts):
             ##    archive_record = queue.popleft()
@@ -749,8 +749,8 @@ class MQTTSubscribeDriverConfEditor(weewx.drivers.AbstractConfEditor): # pragma:
     # Default is: US
     unit_system = US
 
-    # The message handler to use
-    [[message_handler]]
+    # Configuration for the message callback.
+    [[message_callback]]
         # The format of the MQTT payload.
         # Currently support: individual, json, keyword
         # Must be specified.
@@ -763,7 +763,7 @@ class MQTTSubscribeDriverConfEditor(weewx.drivers.AbstractConfEditor): # pragma:
 """
     def prompt_for_settings(self):
         settings = {}
-        settings['message_handler'] = {}
+        settings['message_callback'] = {}
         settingd['topics'] = {}
 
         print("Enter the host.")
@@ -779,7 +779,7 @@ class MQTTSubscribeDriverConfEditor(weewx.drivers.AbstractConfEditor): # pragma:
         settings['topics']['unit_system'] = self._prompt('unit_system', 'US', ['US', 'METRIC', 'METRICWX'])
 
         print("Enter the MQTT paylod type: individual|json|keyword")
-        settings['message_handler']['type'] = self._prompt('type', 'json', ['individual', 'json', 'keyword'])
+        settings['message_callback']['type'] = self._prompt('type', 'json', ['individual', 'json', 'keyword'])
 
         return settings
 

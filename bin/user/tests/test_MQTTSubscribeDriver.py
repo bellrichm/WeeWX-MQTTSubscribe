@@ -11,7 +11,7 @@ import time
 import threading
 import weewx
 
-from user.MQTTSubscribe import MQTTSubscribeDriver, TopicX
+from user.MQTTSubscribe import MQTTSubscribeDriver
 
 class GetLoopPacketThread(threading.Thread):
     def __init__(self, driver):

@@ -10,8 +10,7 @@ import six
 import time
 import weewx
 
-import user.MQTTSubscribe
-from user.MQTTSubscribe import MQTTSubscribe, MQTTSubscribeService, TopicX
+from user.MQTTSubscribe import MQTTSubscribeService
 
 class Testnew_loop_packet(unittest.TestCase):
     mock_StdEngine = mock.Mock(spec=weewx.engine.StdEngine)

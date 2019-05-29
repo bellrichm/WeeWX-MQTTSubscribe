@@ -12,7 +12,8 @@ import time
 import weewx
 from collections import deque
 
-from user.MQTTSubscribe import MessageCallbackFactory, TopicX
+# ToDo - mock TopicManager
+from user.MQTTSubscribe import MessageCallbackProvider, TopicManager
 
 class Msg():
     pass
@@ -23,13 +24,13 @@ class TestGetDefaultCallBacks(unittest.TestCase):
         message_handler_config['type'] = 'foobar'
 
         # ToDo - check exception
-        #SUT = MessageCallbackFactory(message_handler_config, None)
+        #SUT = MessageCallbackProvider(message_handler_config, None)
 
     def test_get_individual_payload_type(self):
         message_handler_config = {}
         message_handler_config['type'] = 'individual'
 
-        SUT = MessageCallbackFactory(message_handler_config, None)
+        SUT = MessageCallbackProvider(message_handler_config, None)
 
         callback = SUT.get_callback()
         self.assertEqual(callback, SUT._on_message_individual)
@@ -38,7 +39,7 @@ class TestGetDefaultCallBacks(unittest.TestCase):
         message_handler_config = {}
         message_handler_config['type'] = 'json'
 
-        SUT = MessageCallbackFactory(message_handler_config, None)
+        SUT = MessageCallbackProvider(message_handler_config, None)
 
         callback = SUT.get_callback()
         self.assertEqual(callback, SUT._on_message_json)
@@ -47,7 +48,7 @@ class TestGetDefaultCallBacks(unittest.TestCase):
         message_handler_config = {}
         message_handler_config['type'] = 'keyword'
 
-        SUT = MessageCallbackFactory(message_handler_config, None)
+        SUT = MessageCallbackProvider(message_handler_config, None)
 
         callback = SUT.get_callback()
         self.assertEqual(callback, SUT._on_message_keyword)
@@ -58,7 +59,7 @@ class TestQueueSizeCheck(unittest.TestCase):
         message_handler_config = {}
         message_handler_config['type'] = 'json'
 
-        SUT = MessageCallbackFactory(message_handler_config, None)
+        SUT = MessageCallbackProvider(message_handler_config, None)
 
         queue = deque()
         queue.append( ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), )
@@ -77,7 +78,7 @@ class TestQueueSizeCheck(unittest.TestCase):
         message_handler_config = {}
         message_handler_config['type'] = 'json'
 
-        SUT = MessageCallbackFactory(message_handler_config, None)
+        SUT = MessageCallbackProvider(message_handler_config, None)
 
         queue = deque()
         queue.append( ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), )
@@ -96,7 +97,7 @@ class TestQueueSizeCheck(unittest.TestCase):
         message_handler_config = {}
         message_handler_config['type'] = 'json'
 
-        SUT = MessageCallbackFactory(message_handler_config, None)
+        SUT = MessageCallbackProvider(message_handler_config, None)
 
         queue = deque()
         queue.append( ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), )
@@ -131,7 +132,7 @@ class TestKeywordload(unittest.TestCase):
     message_handler_config['type'] = 'keyword'
 
     def test_payload_empty(self):
-        SUT = MessageCallbackFactory(self.message_handler_config, None)
+        SUT = MessageCallbackProvider(self.message_handler_config, None)
 
         msg = Msg()
         msg.topic = self.topic
@@ -142,7 +143,7 @@ class TestKeywordload(unittest.TestCase):
             self.assertEqual(mock_logerr.call_count, 3)
 
     def test_payload_bad_data(self):
-        SUT = MessageCallbackFactory(self.message_handler_config, None)
+        SUT = MessageCallbackProvider(self.message_handler_config, None)
 
         msg = Msg()
         msg.topic = self.topic
@@ -153,7 +154,7 @@ class TestKeywordload(unittest.TestCase):
             self.assertEqual(mock_logerr.call_count, 2)
 
     def test_payload_missing_delimiter(self):
-        SUT = MessageCallbackFactory(self.message_handler_config, None)
+        SUT = MessageCallbackProvider(self.message_handler_config, None)
 
         msg = Msg()
         msg.topic = self.topic
@@ -164,7 +165,7 @@ class TestKeywordload(unittest.TestCase):
             self.assertEqual(mock_logerr.call_count, 2)
 
     def test_payload_missing_separator(self):
-        SUT = MessageCallbackFactory(self.message_handler_config, None)
+        SUT = MessageCallbackProvider(self.message_handler_config, None)
 
         msg = Msg()
         msg.topic = self.topic
@@ -175,9 +176,9 @@ class TestKeywordload(unittest.TestCase):
             self.assertEqual(mock_logerr.call_count, 3)
 
     def test_payload_missing_dateTime(self):
-        topics = TopicX(self.topic_config)
+        manager = TopicManager(self.topic_config)
 
-        SUT = MessageCallbackFactory(self.message_handler_config, topics)
+        SUT = MessageCallbackProvider(self.message_handler_config, manager)
 
         payload_dict = dict(self.payload_dict)
         payload_dict['usUnits'] = random.randint(1, 10)
@@ -201,9 +202,9 @@ class TestKeywordload(unittest.TestCase):
         self.assertIn('dateTime', data)
 
     def test_payload_missing_units(self):
-        topics = TopicX(self.topic_config)
+        manager = TopicManager(self.topic_config)
 
-        SUT = MessageCallbackFactory(self.message_handler_config, topics)
+        SUT = MessageCallbackProvider(self.message_handler_config, manager)
 
         payload_dict = dict(self.payload_dict)
         payload_dict['dateTime'] = time.time()
@@ -226,9 +227,9 @@ class TestKeywordload(unittest.TestCase):
         self.assertEqual(data['usUnits'], self.unit_system)
 
     def test_payload_good(self):
-        topics = TopicX(self.topic_config)
+        manager = TopicManager(self.topic_config)
 
-        SUT = MessageCallbackFactory(self.message_handler_config, topics)
+        SUT = MessageCallbackProvider(self.message_handler_config, manager)
 
         payload_dict = dict(self.payload_dict)
         payload_dict['dateTime'] = round(time.time(), 2)
@@ -271,7 +272,7 @@ class TestJsonPayload(unittest.TestCase):
     message_handler_config['type'] = 'json'
 
     def test_invalid_json(self):
-        SUT = MessageCallbackFactory(self.message_handler_config, None)
+        SUT = MessageCallbackProvider(self.message_handler_config, None)
 
         msg = Msg()
         msg.topic = self.topic
@@ -282,7 +283,7 @@ class TestJsonPayload(unittest.TestCase):
             self.assertEqual(mock_logerr.call_count, 2)
 
     def test_empty_payload(self):
-        SUT = MessageCallbackFactory(self.message_handler_config, None)
+        SUT = MessageCallbackProvider(self.message_handler_config, None)
 
         msg = Msg()
         msg.topic = self.topic
@@ -293,9 +294,9 @@ class TestJsonPayload(unittest.TestCase):
             self.assertEqual(mock_logerr.call_count, 2)
 
     def test_missing_dateTime(self):
-        topics = TopicX(self.topic_config)
+        manager = TopicManager(self.topic_config)
 
-        SUT = MessageCallbackFactory(self.message_handler_config, topics)
+        SUT = MessageCallbackProvider(self.message_handler_config, manager)
 
         payload_dict = dict(self.payload_dict)
         payload_dict['usUnits'] = random.randint(1, 10)
@@ -318,9 +319,9 @@ class TestJsonPayload(unittest.TestCase):
         self.assertIn('dateTime', data)
 
     def test_missing_units(self):
-        topics = TopicX(self.topic_config)
+        manager = TopicManager(self.topic_config)
 
-        SUT = MessageCallbackFactory(self.message_handler_config, topics)
+        SUT = MessageCallbackProvider(self.message_handler_config, manager)
 
         payload_dict = dict(self.payload_dict)
         payload_dict['dateTime'] = time.time()
@@ -344,9 +345,9 @@ class TestJsonPayload(unittest.TestCase):
         self.assertEqual(data['usUnits'], self.unit_system)
 
     def test_payload_good(self):
-        topics = TopicX(self.topic_config)
+        manager = TopicManager(self.topic_config)
 
-        SUT = MessageCallbackFactory(self.message_handler_config, topics)
+        SUT = MessageCallbackProvider(self.message_handler_config, manager)
 
         payload_dict = dict(self.payload_dict)
         payload_dict['dateTime'] = time.time()
@@ -388,7 +389,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
     message_handler_config['type'] = 'individual'
 
     def test_bad_payload(self):
-        SUT = MessageCallbackFactory(self.message_handler_config, None)
+        SUT = MessageCallbackProvider(self.message_handler_config, None)
 
         msg = Msg()
         msg.topic = self.topic
@@ -399,7 +400,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
             self.assertEqual(mock_logerr.call_count, 2)
 
     def test_empty_payload(self):
-        SUT = MessageCallbackFactory(self.message_handler_config, None)
+        SUT = MessageCallbackProvider(self.message_handler_config, None)
 
         msg = Msg()
         msg.topic = self.topic
@@ -411,9 +412,9 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
 
     def test_None_payload(self):
         fieldname = b'bar'
-        topics = TopicX(self.topic_config)
+        manager = TopicManager(self.topic_config)
 
-        SUT = MessageCallbackFactory(self.message_handler_config, topics)
+        SUT = MessageCallbackProvider(self.message_handler_config, manager)
 
         msg = Msg()
         msg.topic = self.topic
@@ -441,9 +442,9 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         topics[topic]['unit_system'] = self.unit_system_name
         topics[topic]['max_queue'] = six.MAXSIZE
         topic_config = configobj.ConfigObj(topics)
-        topics = TopicX(topic_config)        
+        manager = TopicManager(topic_config)        
 
-        SUT = MessageCallbackFactory(self.message_handler_config, topics)
+        SUT = MessageCallbackProvider(self.message_handler_config, manager)
 
         msg = Msg()
         msg.topic = topic
@@ -472,9 +473,9 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         topics[topic]['unit_system'] = self.unit_system_name
         topics[topic]['max_queue'] = six.MAXSIZE
         topic_config = configobj.ConfigObj(topics)
-        topics = TopicX(topic_config)        
+        manager = TopicManager(topic_config)        
 
-        SUT = MessageCallbackFactory(self.message_handler_config, topics)
+        SUT = MessageCallbackProvider(self.message_handler_config, manager)
 
         msg = Msg()
         msg.topic = topic
@@ -503,9 +504,9 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         topics[topic]['unit_system'] = self.unit_system_name
         topics[topic]['max_queue'] = six.MAXSIZE
         topic_config = configobj.ConfigObj(topics)
-        topics = TopicX(topic_config)
+        manager = TopicManager(topic_config)
 
-        SUT = MessageCallbackFactory(self.message_handler_config, topics)
+        SUT = MessageCallbackProvider(self.message_handler_config, manager)
 
         msg = Msg()
         msg.topic = topic
@@ -545,7 +546,7 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
     message_handler_config['type'] = 'individual'
 
     def test_bad_payload(self):
-        SUT = MessageCallbackFactory(self.message_handler_config, None)
+        SUT = MessageCallbackProvider(self.message_handler_config, None)
 
         msg = Msg()
         msg.topic = self.topic
@@ -556,7 +557,7 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
             self.assertEqual(mock_logerr.call_count, 2)
 
     def test_empty_payload(self):
-        SUT = MessageCallbackFactory(self.message_handler_config, None)
+        SUT = MessageCallbackProvider(self.message_handler_config, None)
 
         msg = Msg()
         msg.topic = self.topic
@@ -568,12 +569,12 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
 
     def test_None_payload(self):
         topic_byte = b'foo/bar' # ToDo - use self.topic
-        topics = TopicX(self.topic_config)      
+        manager = TopicManager(self.topic_config)      
 
         message_handler_config = dict(self.message_handler_config)
         message_handler_config['full_topic_fieldname'] = True
 
-        SUT = MessageCallbackFactory(message_handler_config, topics)
+        SUT = MessageCallbackProvider(message_handler_config, manager)
 
         msg = Msg()
         msg.topic = self.topic
@@ -600,8 +601,8 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
         topics[topic]['unit_system'] = self.unit_system_name
         topics[topic]['max_queue'] = six.MAXSIZE
         topic_config = configobj.ConfigObj(topics)
-        topics = TopicX(topic_config)
-        SUT = MessageCallbackFactory(self.message_handler_config, topics)
+        manager = TopicManager(topic_config)
+        SUT = MessageCallbackProvider(self.message_handler_config, manager)
         msg = Msg()
         msg.topic = topic
         payload = random.uniform(1, 100)
@@ -630,12 +631,12 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
         topics[topic]['unit_system'] = self.unit_system_name
         topics[topic]['max_queue'] = six.MAXSIZE
         topic_config = configobj.ConfigObj(topics)
-        topics = TopicX(topic_config)
+        manager = TopicManager(topic_config)
 
         message_handler_config = dict(self.message_handler_config)
         message_handler_config['full_topic_fieldname'] = True
 
-        SUT = MessageCallbackFactory(message_handler_config, topics)
+        SUT = MessageCallbackProvider(message_handler_config, manager)
 
         msg = Msg()
         msg.topic = topic
@@ -665,12 +666,12 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
         topics[topic]['unit_system'] = self.unit_system_name
         topics[topic]['max_queue'] = six.MAXSIZE
         topic_config = configobj.ConfigObj(topics)
-        topics = TopicX(topic_config)
+        manager = TopicManager(topic_config)
 
         message_handler_config = dict(self.message_handler_config)
         message_handler_config['full_topic_fieldname'] = True
 
-        SUT = MessageCallbackFactory(message_handler_config, topics)
+        SUT = MessageCallbackProvider(message_handler_config, manager)
 
         msg = Msg()
         msg.topic = topic

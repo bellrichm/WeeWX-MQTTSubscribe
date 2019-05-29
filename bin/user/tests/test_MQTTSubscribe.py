@@ -34,7 +34,7 @@ class TestInitialization(unittest.TestCase):
             'username': None,
             'password': ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),
             'archive_topic': None,
-            'message_handler': {},
+            'message_callback': {},
             'topics': {
                 'foobar': {}
             }
@@ -43,7 +43,7 @@ class TestInitialization(unittest.TestCase):
         config = configobj.ConfigObj(config_dict)
 
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
-            with mock.patch('user.MQTTSubscribe.MessageCallbackFactory') as mock_factory:
+            with mock.patch('user.MQTTSubscribe.MessageCallbackProvider') as mock_provider:
                 SUT = MQTTSubscribe(config)
 
                 SUT.client.username_pw_set.assert_not_called()
@@ -65,7 +65,7 @@ class TestInitialization(unittest.TestCase):
             'username': ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),
             'password': None,
             'archive_topic': None,
-            'message_handler': {},
+            'message_callback': {},
             'topics': {
                 'foobar': {}
             }
@@ -74,7 +74,7 @@ class TestInitialization(unittest.TestCase):
         config = configobj.ConfigObj(config_dict)
 
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
-            with mock.patch('user.MQTTSubscribe.MessageCallbackFactory') as mock_factory:
+            with mock.patch('user.MQTTSubscribe.MessageCallbackProvider') as mock_provider:
                 SUT = MQTTSubscribe(config)
 
                 SUT.client.username_pw_set.assert_not_called()
@@ -96,7 +96,7 @@ class TestInitialization(unittest.TestCase):
             'username': None,
             'password': None,
             'archive_topic': None,
-            'message_handler': {},
+            'message_callback': {},
             'topics': {
                 'foobar': {}
             }
@@ -105,7 +105,7 @@ class TestInitialization(unittest.TestCase):
         config = configobj.ConfigObj(config_dict)
 
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
-            with mock.patch('user.MQTTSubscribe.MessageCallbackFactory') as mock_factory:
+            with mock.patch('user.MQTTSubscribe.MessageCallbackProvider') as mock_provider:
                 SUT = MQTTSubscribe(config)
 
                 SUT.client.username_pw_set.assert_not_called()
@@ -129,7 +129,7 @@ class TestInitialization(unittest.TestCase):
             'username': username,
             'password': password,
             'archive_topic': None,
-            'message_handler': {},
+            'message_callback': {},
             'topics': {
                 'foobar': {}
             }
@@ -138,7 +138,7 @@ class TestInitialization(unittest.TestCase):
         config = configobj.ConfigObj(config_dict)
 
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
-            with mock.patch('user.MQTTSubscribe.MessageCallbackFactory') as mock_factory:
+            with mock.patch('user.MQTTSubscribe.MessageCallbackProvider') as mock_provider:
                 SUT = MQTTSubscribe(config)
 
                 SUT.client.username_pw_set.assert_called_once_with(username, password)
@@ -168,12 +168,12 @@ class Teston_connect(unittest.TestCase):
         config_dict['topics'] = {}
         config_dict['topics'][topic1] = {}
         config_dict['topics'][topic2] = {}
-        config_dict['message_handler'] = {}
+        config_dict['message_callback'] = {}
 
         config = configobj.ConfigObj(config_dict)
 
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
-            with mock.patch('user.MQTTSubscribe.MessageCallbackFactory') as mock_factory:
+            with mock.patch('user.MQTTSubscribe.MessageCallbackProvider') as mock_provider:
                 SUT = MQTTSubscribe(config)
 
                 rc = random.randint(1, 10)
