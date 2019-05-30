@@ -245,12 +245,12 @@ class TopicManager:
 
     def get_data(self, topic, end_ts=six.MAXSIZE):
         queue = self._get_queue(topic)
-        logdbg(self.console, "MQTTSubscribeService", "Queue size is: %i" % len(queue))
+        logdbg(self.console, "MQTTSubscribe", "TopicManager queue size is: %i" % len(queue))
         while (len(queue) > 0 and queue[0]['dateTime'] <= end_ts):
             yield queue.popleft()
 
         queue_wind = self._get_wind_queue(topic)
-        logdbg(self.console, "MQTTSubscribeService", "Wind queue size is: %i" % len(queue_wind))
+        logdbg(self.console, "MQTTSubscribe", "TopicManager wind queue size is: %i" % len(queue_wind))
         collector = CollectData(self.wind_fields)
         while (len(queue_wind) > 0 and queue_wind[0]['dateTime'] <= end_ts):
             wind_data = queue_wind.popleft()
@@ -265,7 +265,7 @@ class TopicManager:
     def _queue_size_check(self, queue, max_queue):
         while len(queue) >= max_queue:
             element = queue.popleft()
-            logerr(self.console, "MQTTSubscribe", "Queue limit %i reached. Removing: %s" %(max_queue, element))
+            logerr(self.console, "MQTTSubscribe", "TopicManager queue limit %i reached. Removing: %s" %(max_queue, element))
 
     def _get_unit_system(self, topic):
         return self._get_value('unit_system', topic)
@@ -337,7 +337,7 @@ class MessageCallbackProvider:
         # Wrap all the processing in a try, so it doesn't crash and burn on any error
         try:
             topic = msg.topic
-            logdbg(self.console, "MQTTSubscribe", "For %s received: %s" %(msg.topic, msg.payload))
+            logdbg(self.console, "MQTTSubscribe", "MessageCallbackProvider For %s received: %s" %(msg.topic, msg.payload))
 
             fields = msg.payload.split(self.keyword_delimiter)
             data = {}
@@ -345,8 +345,8 @@ class MessageCallbackProvider:
                 eq_index = field.find(self.keyword_separator)
                 # Ignore all fields that do not have the separator
                 if eq_index == -1:
-                    logerr(self.console, "MQTTSubscribe", "on_message_keyword failed to find separator: %s" % self.keyword_separator)
-                    logerr(self.console, "MQTTSubscribe", "**** Ignoring field=%s " % field)
+                    logerr(self.console, "MQTTSubscribe", "MessageCallbackProvider on_message_keyword failed to find separator: %s" % self.keyword_separator)
+                    logerr(self.console, "MQTTSubscribe", "**** MessageCallbackProvider Ignoring field=%s " % field)
                     continue
 
                 name = field[:eq_index].strip()
@@ -356,17 +356,17 @@ class MessageCallbackProvider:
             if data:
                 self.topics.append_data(msg.topic, data)
 
-                logdbg(self.console, "MQTTSubscribe", "Added to queue: %s" % to_sorted_string(data))
+                logdbg(self.console, "MQTTSubscribe", "MessageCallbackProvider Added to queue: %s" % to_sorted_string(data))
             else:
-                logerr(self.console, "MQTTSubscribe", "on_message_keyword failed to find data in: topic=%s and payload=%s" % (msg.topic, msg.payload))
+                logerr(self.console, "MQTTSubscribe", "MessageCallbackProvider on_message_keyword failed to find data in: topic=%s and payload=%s" % (msg.topic, msg.payload))
         except Exception as exception:
-            logerr(self.console, "MQTTSubscribe", "on_message_keyword failed with: %s" % exception)
-            logerr(self.console, "MQTTSubscribe", "**** Ignoring topic=%s and payload=%s" % (msg.topic, msg.payload))
+            logerr(self.console, "MQTTSubscribe", "MessageCallbackProvider on_message_keyword failed with: %s" % exception)
+            logerr(self.console, "MQTTSubscribe", "**** MessageCallbackProvider Ignoring topic=%s and payload=%s" % (msg.topic, msg.payload))
 
     def _on_message_json(self, client, userdata, msg):
         # Wrap all the processing in a try, so it doesn't crash and burn on any error
         try:
-            logdbg(self.console, "MQTTSubscribe", "For %s received: %s" %(msg.topic, msg.payload))
+            logdbg(self.console, "MQTTSubscribe", "MessageCallbackProvider For %s received: %s" %(msg.topic, msg.payload))
             # ToDo - better way?
             if six.PY2:
                 data = self._byteify(
@@ -377,17 +377,17 @@ class MessageCallbackProvider:
 
             self.topics.append_data(msg.topic, data)
 
-            logdbg(self.console, "MQTTSubscribe", "Added to queue: %s" % to_sorted_string(data))
+            logdbg(self.console, "MQTTSubscribe", "MessageCallbackProvider Added to queue: %s" % to_sorted_string(data))
         except Exception as exception:
-            logerr(self.console, "MQTTSubscribe", "on_message_json failed with: %s" % exception)
-            logerr(self.console, "MQTTSubscribe", "**** Ignoring topic=%s and payload=%s" % (msg.topic, msg.payload))
+            logerr(self.console, "MQTTSubscribe", "MessageCallbackProvider on_message_json failed with: %s" % exception)
+            logerr(self.console, "MQTTSubscribe", "**** MessageCallbackProvider Ignoring topic=%s and payload=%s" % (msg.topic, msg.payload))
 
     def _on_message_individual(self, client, userdata, msg):
         wind_fields = ['windGust', 'windGustDir', 'windDir', 'windSpeed']
 
         # Wrap all the processing in a try, so it doesn't crash and burn on any error
         try:
-            logdbg(self.console, "MQTTSubscribe", "For %s received: %s" %(msg.topic, msg.payload))
+            logdbg(self.console, "MQTTSubscribe", "MessageCallbackProvider For %s received: %s" %(msg.topic, msg.payload))
 
             if self.full_topic_fieldname:
                 key = msg.topic.encode('ascii', 'ignore') # ToDo - research
@@ -402,8 +402,8 @@ class MessageCallbackProvider:
 
             self.topics.append_data(msg.topic, data)
         except Exception as exception:
-            logerr(self.console, "MQTTSubscribe", "on_message_individual failed with: %s" % exception)
-            logerr(self.console, "MQTTSubscribe", "**** Ignoring topic=%s and payload=%s" % (msg.topic, msg.payload))
+            logerr(self.console, "MQTTSubscribe", "MessageCallbackProvider on_message_individual failed with: %s" % exception)
+            logerr(self.console, "MQTTSubscribe", "**** MessageCallbackProvider Ignoring topic=%s and payload=%s" % (msg.topic, msg.payload))
 
 # Class to manage MQTT subscriptions
 # If payload format that is not supported, subclass and implement on_message methos
@@ -607,7 +607,7 @@ class MQTTSubscribeService(StdService):
             logdbg(self.console, "MQTTSubscribeService", "Data prior to conversion is: %s" % to_sorted_string(aggregate_data))
             target_data = weewx.units.to_std_system(aggregate_data, record['usUnits'])
             logdbg(self.console, "MQTTSubscribeService", "Data after to conversion is: %s" % to_sorted_string(target_data))
-            logdbg(self.console, "MQTTSubscribeService", "Record prior to update is: %s" % to_sorted_string(record))
+            ## logdbg(self.console, "MQTTSubscribeService", "Record prior to update is: %s" % to_sorted_string(record))
         else:
             logdbg(self.console, "MQTTSubscribeService", "Queue was empty")
 
@@ -620,6 +620,7 @@ class MQTTSubscribeService(StdService):
         ## for queue in self.subscriber.topics2.Queues:
         ## for queue in self.subscriber.Queues:
         for topic in self.subscriber.Subscribed_topics: # investigate that topics might not be cached.. therefore use subscribed
+            logdbg(self.console, "MQTTSubscribeService", "Packet prior to update is: %s" % to_sorted_string(event.packet))
             target_data = self._process_data(topic, start_ts, self.end_ts, event.packet)
             event.packet.update(target_data)
             logdbg(self.console, "MQTTSubscribeService", "Packet after update is: %s" % to_sorted_string(event.packet))
@@ -634,6 +635,7 @@ class MQTTSubscribeService(StdService):
         ## for queue in self.subscriber.topics2.Queues:
         ## for queue in self.subscriber.Queues:
         for topic in self.subscriber.Subscribed_topics: # investigate that topics might not be cached.. therefore use subscribed
+            logdbg(self.console, "MQTTSubscribeService", "Record prior to update is: %s" % to_sorted_string(event.record))
             target_data = self._process_data(topic, start_ts, self.end_ts, event.record)
             event.record.update(target_data)
             logdbg(self.console, "MQTTSubscribeService", "Record after update is: %s" % to_sorted_string(event.record))
