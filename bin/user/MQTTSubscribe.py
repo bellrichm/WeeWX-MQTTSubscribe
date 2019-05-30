@@ -258,7 +258,7 @@ class TopicManager:
             if data:
                 yield data
 
-        data = collector.add_data(wind_data)
+        data = collector.get_data()
         if data:
             yield data
 

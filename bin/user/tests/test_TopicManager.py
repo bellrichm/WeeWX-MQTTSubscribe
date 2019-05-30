@@ -149,5 +149,114 @@ class TestAppendData(unittest.TestCase):
         self.assertDictContainsSubset(queue_data, queue_element)
         self.assertIn('usUnits', queue_element)
 
+class TestGetQueueData(unittest.TestCase):
+    topic = 'foo/bar'
+    config_dict = {}
+    config_dict[topic] = {}
+    config = configobj.ConfigObj(config_dict)
+
+    def create_queue_data(self):
+        return {
+            'inTemp': random.uniform(1, 100),
+            'outTemp': random.uniform(1, 100),
+            'usUnits': 1,
+            'dateTime': time.time()
+        }
+
+    def test_queue_empty(self):
+        with mock.patch('user.MQTTSubscribe.CollectData') as mock_CollectData:
+            type(mock_CollectData.return_value).get_data = mock.Mock(return_value={})
+            SUT = TopicManager(self.config)
+
+            gen = SUT.get_data(self.topic)
+            data = next(gen, None)
+
+            self.assertIsNone(data)
+
+    def test_queue_datetime_in_future(self):
+        with mock.patch('user.MQTTSubscribe.CollectData') as mock_CollectData:
+            type(mock_CollectData.return_value).get_data = mock.Mock(return_value={})
+            SUT = TopicManager(self.config)
+            SUT.append_data(self.topic, self.create_queue_data())
+            gen = SUT.get_data(self.topic, 0)
+            data = next(gen, None)
+
+            self.assertIsNone(data)
+
+    def test_queue_good(self):
+        with mock.patch('user.MQTTSubscribe.CollectData') as mock_CollectData:
+            type(mock_CollectData.return_value).get_data = mock.Mock(return_value={})
+            SUT = TopicManager(self.config)
+            elem_one = self.create_queue_data()
+            elem_two = self.create_queue_data()
+            elem_three = self.create_queue_data()
+            SUT.append_data(self.topic, elem_one)
+            SUT.append_data(self.topic, elem_two)
+            SUT.append_data(self.topic, elem_three)
+
+            elements = []
+            for data in SUT.get_data(self.topic):
+                elements.append(data)
+
+            self.assertEqual(len(elements), 3)
+            self.assertDictEqual(elements[0], elem_one)
+            self.assertDictEqual(elements[1], elem_two)
+            self.assertDictEqual(elements[2], elem_three)
+
+class TestGetWindQueueData(unittest.TestCase):
+    topic = 'foo/bar'
+    config_dict = {}
+    config_dict[topic] = {}
+    config = configobj.ConfigObj(config_dict)
+
+    fieldname = 'windSpeed'
+
+    def create_queue_data(self):
+        return {
+            self.fieldname: random.uniform(1, 100),
+            'usUnits': 1,
+            'dateTime': time.time()
+        }
+
+    def test_queue_datetime_in_future(self):
+        with mock.patch('user.MQTTSubscribe.CollectData') as mock_CollectData:
+            type(mock_CollectData.return_value).get_data = mock.Mock(return_value={})
+            SUT = TopicManager(self.config)
+            SUT.append_data(self.topic, self.create_queue_data(), fieldname=self.fieldname)
+            gen = SUT.get_data(self.topic, 0)
+            data = next(gen, None)
+
+            self.assertIsNone(data)
+
+    def test_add_to_collector_returns_data(self):
+        collected_data = self.create_queue_data()
+        with mock.patch('user.MQTTSubscribe.CollectData') as mock_CollectData:
+            type(mock_CollectData.return_value).get_data = mock.Mock(return_value={})
+            type(mock_CollectData.return_value).add_data = mock.Mock(return_value=collected_data)
+            SUT = TopicManager(self.config)
+            SUT.append_data(self.topic, self.create_queue_data(), fieldname=self.fieldname)
+            gen = SUT.get_data(self.topic)
+            data = next(gen, None)
+
+            self.assertEqual(data, collected_data)
+
+            data = next(gen, None)
+            self.assertIsNone(data)
+
+    def test_get_from_collector_returns_data(self):
+        collected_data = self.create_queue_data()
+        with mock.patch('user.MQTTSubscribe.CollectData') as mock_CollectData:
+            type(mock_CollectData.return_value).get_data = mock.Mock(return_value=collected_data)
+            type(mock_CollectData.return_value).add_data = mock.Mock(return_value={})
+            SUT = TopicManager(self.config)
+            SUT.append_data(self.topic, self.create_queue_data(), fieldname=self.fieldname)
+            gen = SUT.get_data(self.topic)
+            data = next(gen, None)
+
+            self.assertEqual(data, collected_data)
+
+            data = next(gen, None)
+            self.assertIsNone(data)
+
 if __name__ == '__main__':
     unittest.main()
