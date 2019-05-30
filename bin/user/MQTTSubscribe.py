@@ -486,6 +486,9 @@ class MQTTSubscribe():
     def Subscribed_topics(self):
         return self.manager.subscribed_topics
 
+    def get_data(self, topic, end_ts=six.MAXSIZE):
+        return self.manager.get_data(topic, end_ts)
+
     # start subscribing to the topics
     def start(self):
         logdbg(self.console, "MQTTSubscribe", "Starting loop")
@@ -549,8 +552,8 @@ class MQTTSubscribeService(StdService):
 
         logdbg(self.console, "MQTTSubscribeService", "Processing interval: %f %f" %(start_ts, end_ts))
         accumulator = weewx.accum.Accum(weeutil.weeutil.TimeSpan(start_ts, end_ts))
-        while True:
-            data = self.subscriber.get_data(topic, end_ts)
+       ### while True:
+        for data in self.subscriber.get_data(topic, end_ts):
             if data:
                 try:
                     logdbg(self.console, "MQTTSubscribeService", "Data to accumulate: %s" % to_sorted_string(data))
@@ -667,8 +670,8 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice):
             if topic == self.archive_topic:
                 continue
 
-            while True:
-                data = self.subscriber.get_data(topic)
+            ###while True:
+            for data in self.subscriber.get_data(topic):
                 if data:
                     yield data
                 else:
@@ -709,8 +712,8 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice):
             logdbg(self.console, "MQTTSubscribeDriver", "No archive topic configured.")
             raise NotImplementedError
         else:
-            while True:
-                data = self.subscriber.get_data(self.archive_topic, lastgood_ts)
+           ###  while True:
+            for data in self.subscriber.get_data(self.archive_topic, lastgood_ts):
                 if data:
                     yield data
                 else:
