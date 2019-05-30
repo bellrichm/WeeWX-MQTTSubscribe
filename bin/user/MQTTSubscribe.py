@@ -204,7 +204,7 @@ class TopicManager:
 
         self.topics = {}
         self.subscribed_topics = {}
-        self.queues = []
+        ##self.queues = []
 
         for topic in config.sections:
             topic_dict = config.get(topic, {})
@@ -220,14 +220,15 @@ class TopicManager:
             self.subscribed_topics[topic]['queue'] = deque()
             self.subscribed_topics[topic]['queue_wind'] = deque()
 
-            self.queues.append(
-                {
-                    'queue': self.subscribed_topics[topic]['queue'],
-                    'queue_wind': self.subscribed_topics[topic]['queue_wind']
-                }
-            )
+            ##self.queues.append(
+            ##    {
+            ##        'queue': self.subscribed_topics[topic]['queue'],
+            ##        'queue_wind': self.subscribed_topics[topic]['queue_wind']
+            ##    }
+            ##)
 
-    def append_data(self, topic, data, fieldname=None):
+    def append_data(self, topic, in_data, fieldname=None):
+        data = dict(in_data)
         if fieldname in self.wind_fields:
             queue = self._get_wind_queue(topic)
         else:
@@ -239,6 +240,7 @@ class TopicManager:
             data['dateTime'] = time.time()
         if 'usUnits' not in data:
             data['usUnits'] = self._get_unit_system(topic)        
+
         queue.append(data,)
 
     def get_data(self, topic, end_ts=six.MAXSIZE):
@@ -247,7 +249,7 @@ class TopicManager:
         while (len(queue) > 0 and queue[0]['dateTime'] <= end_ts):
             yield queue.popleft()
 
-        wind_queue = self._get_wind_queue(topic)
+        queue_wind = self._get_wind_queue(topic)
         logdbg(self.console, "MQTTSubscribeService", "Wind queue size is: %i" % len(queue_wind))
         collector = CollectData(self.wind_fields)
         while (len(queue_wind) > 0 and queue_wind[0]['dateTime'] <= end_ts):
@@ -260,13 +262,13 @@ class TopicManager:
         if data:
             yield data
 
-    def _get_unit_system(self, topic):
-        return self._get_value('unit_system', topic)
-
     def _queue_size_check(self, queue, max_queue):
         while len(queue) >= max_queue:
             element = queue.popleft()
-            logerr(self.console, "MQTTSubscribe", "Queue limit %i reached. Removing: %s" %(max_queue, element))        
+            logerr(self.console, "MQTTSubscribe", "Queue limit %i reached. Removing: %s" %(max_queue, element))
+
+    def _get_unit_system(self, topic):
+        return self._get_value('unit_system', topic)
 
     def _get_max_queue(self, topic):
         return self._get_value('max_queue', topic)
