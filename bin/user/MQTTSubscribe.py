@@ -166,7 +166,7 @@ def logerr(console, prefix, msg):
     logmsg(console, syslog.LOG_ERR, prefix, msg)
 
 class CollectData:
-    def __init__(self, fields):
+    def __init__(self, fields, console=False):
         self.fields = fields
         self.data = {}
 
@@ -239,27 +239,32 @@ class TopicManager:
         if 'dateTime' not in data:
             data['dateTime'] = time.time()
         if 'usUnits' not in data:
-            data['usUnits'] = self._get_unit_system(topic)        
+            data['usUnits'] = self._get_unit_system(topic)
 
+        logdbg(self.console, "MQTTSubscribe", "TopicManager Added to queue %s %s: %s" %(topic, self._lookup_topic(topic), to_sorted_string(data)))
         queue.append(data,)
 
     def get_data(self, topic, end_ts=six.MAXSIZE):
         queue = self._get_queue(topic)
         logdbg(self.console, "MQTTSubscribe", "TopicManager queue size is: %i" % len(queue))
         while (len(queue) > 0 and queue[0]['dateTime'] <= end_ts):
-            yield queue.popleft()
+            data = queue.popleft()
+            logdbg(self.console, "MQTTSubscribe", "TopicManager Retrieved queue %s: %s" %(topic, to_sorted_string(data)))
+            yield data
 
         queue_wind = self._get_wind_queue(topic)
         logdbg(self.console, "MQTTSubscribe", "TopicManager wind queue size is: %i" % len(queue_wind))
-        collector = CollectData(self.wind_fields)
+        collector = CollectData(self.wind_fields, self.console)
         while (len(queue_wind) > 0 and queue_wind[0]['dateTime'] <= end_ts):
             wind_data = queue_wind.popleft()
             data = collector.add_data(wind_data)
             if data:
+                logdbg(self.console, "MQTTSubscribe", "TopicManager Retrieved wind queue %s: %s" %(topic, to_sorted_string(data)))
                 yield data
 
         data = collector.get_data()
         if data:
+            logdbg(self.console, "MQTTSubscribe", "TopicManager Retrieved wind queue final %s: %s" %(topic, to_sorted_string(data)))
             yield data
 
     def _queue_size_check(self, queue, max_queue):
@@ -356,7 +361,7 @@ class MessageCallbackProvider:
             if data:
                 self.topics.append_data(msg.topic, data)
 
-                logdbg(self.console, "MQTTSubscribe", "MessageCallbackProvider Added to queue: %s" % to_sorted_string(data))
+                ## logdbg(self.console, "MQTTSubscribe", "MessageCallbackProvider Added to queue: %s" % to_sorted_string(data))
             else:
                 logerr(self.console, "MQTTSubscribe", "MessageCallbackProvider on_message_keyword failed to find data in: topic=%s and payload=%s" % (msg.topic, msg.payload))
         except Exception as exception:
@@ -377,7 +382,7 @@ class MessageCallbackProvider:
 
             self.topics.append_data(msg.topic, data)
 
-            logdbg(self.console, "MQTTSubscribe", "MessageCallbackProvider Added to queue: %s" % to_sorted_string(data))
+            ## logdbg(self.console, "MQTTSubscribe", "MessageCallbackProvider Added to queue: %s" % to_sorted_string(data))
         except Exception as exception:
             logerr(self.console, "MQTTSubscribe", "MessageCallbackProvider on_message_json failed with: %s" % exception)
             logerr(self.console, "MQTTSubscribe", "**** MessageCallbackProvider Ignoring topic=%s and payload=%s" % (msg.topic, msg.payload))
@@ -415,7 +420,7 @@ class MQTTSubscribe():
             raise ValueError("[[message_callback]] is required.")
 
         message_callback_provider_name = service_dict.get('message_callback_provider', 'user.MQTTSubscribe.MessageCallbackProvider')
-        self.manager = TopicManager(service_dict.get('topics', {}))
+        self.manager = TopicManager(service_dict.get('topics', {}), self.console)
 
         clientid = service_dict.get('clientid',
                                 'MQTTSubscribe-' + str(random.randint(1000, 9999)))
