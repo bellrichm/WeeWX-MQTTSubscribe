@@ -552,12 +552,9 @@ class MQTTSubscribeService(StdService):
         self.subscriber.shutDown()
 
     def _process_data(self, topic, start_ts, end_ts, record):
-        ## queue = self.subscriber.get_queue(topic)
-        ## queue_wind = self.subscriber.get_wind_queue(topic)
-
         logdbg(self.console, "MQTTSubscribeService", "Processing interval: %f %f" %(start_ts, end_ts))
         accumulator = weewx.accum.Accum(weeutil.weeutil.TimeSpan(start_ts, end_ts))
-       ### while True:
+
         for data in self.subscriber.get_data(topic, end_ts):
             if data:
                 try:
@@ -568,6 +565,17 @@ class MQTTSubscribeService(StdService):
                                  %(start_ts, end_ts, data['dateTime'], to_sorted_string(data)))
             else:
                 break
+
+        target_data = {}
+        if not accumulator.isEmpty:
+            aggregate_data = accumulator.getRecord()
+            logdbg(self.console, "MQTTSubscribeService", "Data prior to conversion is: %s" % to_sorted_string(aggregate_data))
+            target_data = weewx.units.to_std_system(aggregate_data, record['usUnits'])
+            logdbg(self.console, "MQTTSubscribeService", "Data after to conversion is: %s" % to_sorted_string(target_data))
+        else:
+            logdbg(self.console, "MQTTSubscribeService", "Queue was empty")
+
+        return target_data
 
         ##
         """
@@ -605,18 +613,6 @@ class MQTTSubscribeService(StdService):
                 loginf(self.console, "MQTTSubscribeService", "Ignoring record outside of interval %f %f %f %s"
                     %(start_ts, end_ts, wind_data['dateTime'], to_sorted_string(wind_data)))
         """
-
-        target_data = {}
-        if not accumulator.isEmpty:
-            aggregate_data = accumulator.getRecord()
-            logdbg(self.console, "MQTTSubscribeService", "Data prior to conversion is: %s" % to_sorted_string(aggregate_data))
-            target_data = weewx.units.to_std_system(aggregate_data, record['usUnits'])
-            logdbg(self.console, "MQTTSubscribeService", "Data after to conversion is: %s" % to_sorted_string(target_data))
-            ## logdbg(self.console, "MQTTSubscribeService", "Record prior to update is: %s" % to_sorted_string(record))
-        else:
-            logdbg(self.console, "MQTTSubscribeService", "Queue was empty")
-
-        return target_data
 
     def new_loop_packet(self, event):
         start_ts = self.end_ts - self.overlap
