@@ -49,7 +49,7 @@ MQTTSubscribeService_config = """
     binding = loop
 
     # The message handler to use
-    [[Message_Handler]]
+    [[message_callback]]
         # The format of the MQTT payload.
         # Currently support: individual, json, keyword
         # Must be specified.
@@ -77,7 +77,7 @@ class MQTTSubscribeServiceInstaller(ExtensionInstaller):
             install_type = ''
         
         install_dict = {
-            'version': '1.1.0rc25',
+            'version': '1.1.0rc27',
             'name': 'MQTTSubscribe',
             'description': 'Augment WeeWX records or packets with data MQTT',
             'author': "Rich Bell",
