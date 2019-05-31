@@ -147,7 +147,7 @@ import weewx.drivers
 from weewx.engine import StdService
 from collections import deque
 
-VERSION='1.1.0rc26'
+VERSION='1.1.0rc27'
 DRIVER_NAME = 'MQTTSubscribeDriver'
 DRIVER_VERSION = VERSION
 
@@ -193,6 +193,9 @@ class TopicManager:
             raise ValueError("At least one topic must be configured.")
 
         self.console = console
+        loginf(self.console, "MQTTSubscribe", "TopicManager config is %s" % config)
+
+
         default_unit_system_name = config.get('unit_system', 'US').strip().upper()
         if default_unit_system_name not in weewx.units.unit_constants:
             raise ValueError("MQTTSubscribe: Unknown unit system: %s" % default_unit_system_name)
@@ -204,7 +207,6 @@ class TopicManager:
 
         self.topics = {}
         self.subscribed_topics = {}
-        ##self.queues = []
 
         for topic in config.sections:
             topic_dict = config.get(topic, {})
@@ -219,13 +221,6 @@ class TopicManager:
             self.subscribed_topics[topic]['max_queue'] = topic_dict.get('max_queue',max_queue)
             self.subscribed_topics[topic]['queue'] = deque()
             self.subscribed_topics[topic]['queue_wind'] = deque()
-
-            ##self.queues.append(
-            ##    {
-            ##        'queue': self.subscribed_topics[topic]['queue'],
-            ##        'queue_wind': self.subscribed_topics[topic]['queue_wind']
-            ##    }
-            ##)
 
     def append_data(self, topic, in_data, fieldname=None):
         data = dict(in_data)
@@ -360,10 +355,9 @@ class MessageCallbackProvider:
 
             if data:
                 self.topics.append_data(msg.topic, data)
-
-                ## logdbg(self.console, "MQTTSubscribe", "MessageCallbackProvider Added to queue: %s" % to_sorted_string(data))
             else:
                 logerr(self.console, "MQTTSubscribe", "MessageCallbackProvider on_message_keyword failed to find data in: topic=%s and payload=%s" % (msg.topic, msg.payload))
+        
         except Exception as exception:
             logerr(self.console, "MQTTSubscribe", "MessageCallbackProvider on_message_keyword failed with: %s" % exception)
             logerr(self.console, "MQTTSubscribe", "**** MessageCallbackProvider Ignoring topic=%s and payload=%s" % (msg.topic, msg.payload))
@@ -382,7 +376,6 @@ class MessageCallbackProvider:
 
             self.topics.append_data(msg.topic, data)
 
-            ## logdbg(self.console, "MQTTSubscribe", "MessageCallbackProvider Added to queue: %s" % to_sorted_string(data))
         except Exception as exception:
             logerr(self.console, "MQTTSubscribe", "MessageCallbackProvider on_message_json failed with: %s" % exception)
             logerr(self.console, "MQTTSubscribe", "**** MessageCallbackProvider Ignoring topic=%s and payload=%s" % (msg.topic, msg.payload))
@@ -434,9 +427,8 @@ class MQTTSubscribe():
 
         self.archive_topic = service_dict.get('archive_topic', None)
 
-        ## ToDo - need to rework
-        ##if self.archive_topic and self.archive_topic not in service_dict['topics']:
-        ##    raise ValueError("Archive topic %s must be in [[topics]]" % self.archive_topic)
+        if self.archive_topic and self.archive_topic not in service_dict['topics']:
+            raise ValueError("Archive topic %s must be in [[topics]]" % self.archive_topic)
 
         loginf(self.console, "MQTTSubscribe", "Console is %s" % self.console)
         loginf(self.console, "MQTTSubscribe", "Message callback config is %s" % message_callback_config)
@@ -452,8 +444,6 @@ class MQTTSubscribe():
         else:
             loginf(self.console, "MQTTSubscribe", "Password is not set")
         loginf(self.console, "MQTTSubscribe", "Archive topic is %s" % self.archive_topic)
-        ## ToDo - need to rework
-        ## loginf(self.console, "MQTTSubscribe", "Topics are %s" % self.topics)
 
         self.logger = {
             mqtt.MQTT_LOG_INFO: loginf,
@@ -483,10 +473,6 @@ class MQTTSubscribe():
 
         self.client.connect(host, port, keepalive)
 
-    ##@property
-    ##def Queues(self):
-    ##    return self.manager.Queues
-
     @property
     def Subscribed_topics(self):
         return self.manager.subscribed_topics
@@ -505,7 +491,6 @@ class MQTTSubscribe():
 
     def _on_connect(self, client, userdata, flags, rc):
         logdbg(self.console, "MQTTSubscribe", "Connected with result code %i" % rc)
-        ## ToDo - stop using manager
         for topic in self.manager.subscribed_topics:
             client.subscribe(topic)
 
@@ -577,49 +562,10 @@ class MQTTSubscribeService(StdService):
 
         return target_data
 
-        ##
-        """
-        logdbg(self.console, "MQTTSubscribeService", "Queue size is: %i" % len(queue))
-        while (len(queue) > 0 and queue[0]['dateTime'] <= end_ts):
-            archive_data = queue.popleft()
-            logdbg(self.console, "MQTTSubscribeService", "Processing: %s" % to_sorted_string(archive_data))
-            try:
-                logdbg(self.console, "MQTTSubscribeService", "Data to accumulate: %s" % to_sorted_string(archive_data))
-                accumulator.addRecord(archive_data)
-            except weewx.accum.OutOfSpan:
-                loginf(self.console, "MQTTSubscribeService", "Ignoring record outside of interval %f %f %f %s"
-                    %(start_ts, end_ts, archive_data['dateTime'], to_sorted_string(archive_data)))
-
-        collector = CollectData(self.wind_fields)
-        logdbg(self.console, "MQTTSubscribeService", "Wind queue size is: %i" % len(queue_wind))
-        while (len(queue_wind) > 0 and queue_wind[0]['dateTime'] <= end_ts):
-            archive_data = queue_wind.popleft()
-            logdbg(self.console, "MQTTSubscribeService", "Processing: %s" % to_sorted_string(archive_data))
-            try:
-                data = collector.add_data(archive_data)
-                if data:
-                    logdbg(self.console, "MQTTSubscribeService", "Data to accumulate: %s" % to_sorted_string(data))
-                    accumulator.addRecord(data)
-            except weewx.accum.OutOfSpan:
-                loginf(self.console, "MQTTSubscribeService", "Ignoring record outside of interval %f %f %f %s"
-                    %(start_ts, end_ts, archive_data['dateTime'], to_sorted_string(archive_data)))
-
-        wind_data = collector.get_data()
-        if wind_data:
-            logdbg(self.console, "MQTTSubscribeService", "Data to accumulate post loop: %s" % to_sorted_string(wind_data))
-            try:
-                accumulator.addRecord(wind_data)
-            except weewx.accum.OutOfSpan:
-                loginf(self.console, "MQTTSubscribeService", "Ignoring record outside of interval %f %f %f %s"
-                    %(start_ts, end_ts, wind_data['dateTime'], to_sorted_string(wind_data)))
-        """
-
     def new_loop_packet(self, event):
         start_ts = self.end_ts - self.overlap
         self.end_ts = event.packet['dateTime']
-        ## ToDo - stop using topics2
-        ## for queue in self.subscriber.topics2.Queues:
-        ## for queue in self.subscriber.Queues:
+
         for topic in self.subscriber.Subscribed_topics: # investigate that topics might not be cached.. therefore use subscribed
             logdbg(self.console, "MQTTSubscribeService", "Packet prior to update is: %s" % to_sorted_string(event.packet))
             target_data = self._process_data(topic, start_ts, self.end_ts, event.packet)
@@ -632,9 +578,7 @@ class MQTTSubscribeService(StdService):
     def new_archive_record(self, event):
         end_ts = event.record['dateTime']
         start_ts = end_ts - event.record['interval'] * 60 - self.overlap
-        ## ToDo - stop using topics2
-        ## for queue in self.subscriber.topics2.Queues:
-        ## for queue in self.subscriber.Queues:
+
         for topic in self.subscriber.Subscribed_topics: # investigate that topics might not be cached.. therefore use subscribed
             logdbg(self.console, "MQTTSubscribeService", "Record prior to update is: %s" % to_sorted_string(event.record))
             target_data = self._process_data(topic, start_ts, self.end_ts, event.record)
@@ -668,46 +612,18 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice):
 
     def genLoopPackets(self):
       while True:
-        ## ToDo - stop using topics2
         for topic in self.subscriber.Subscribed_topics: # investigate that topics might not be cached.. therefore use subscribed
             if topic == self.archive_topic:
                 continue
 
-            ###while True:
             for data in self.subscriber.get_data(topic):
                 if data:
                     yield data
                 else:
                     break
 
-            ## ToDo - stop using topics2
-            """
-            queue = self.subscriber.get_queue(topic)
-            logdbg(self.console, "MQTTSubscribeDriver", "Queue is size %i" % len(queue))
-            while len(queue) > 0:
-                packet = queue.popleft()
-                logdbg(self.console, "MQTTSubscribeDriver", "Packet: %s" % to_sorted_string(packet))
-                yield packet
- 
-            ## ToDo - stop using topics2
-            queue_wind = self.subscriber.get_wind_queue(topic)
-            logdbg(self.console, "MQTTSubscribeDriver", "Wind queue is size %i" % len(queue_wind))
-
-            collector = CollectData(self.wind_fields)
-            while len(queue_wind) > 0:
-                packet = queue_wind.popleft()
-                data = collector.add_data(packet)
-                if data:
-                    logdbg(self.console, "MQTTSubscribeDriver", "Packet: %s" % to_sorted_string(data))
-                    yield data
-                    
-            wind_data = collector.get_data()
-            if wind_data:
-                logdbg(self.console, "MQTTSubscribeDriver", "Packet post loop: %s" % to_sorted_string(wind_data))
-                yield wind_data
-            """
-
             logdbg(self.console, "MQTTSubscribeDriver", "Queues are empty.")
+        
         time.sleep(self.wait_before_retry)
 
     def genArchiveRecords(self, lastgood_ts):
@@ -715,20 +631,11 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice):
             logdbg(self.console, "MQTTSubscribeDriver", "No archive topic configured.")
             raise NotImplementedError
         else:
-           ###  while True:
             for data in self.subscriber.get_data(self.archive_topic, lastgood_ts):
                 if data:
                     yield data
                 else:
                     break
-            ## ToDo - stop using topics2
-            ## queue= self.subscriber.topics2.get_queue(self.archive_topic)
-            ##queue= self.subscriber.get_queue(self.archive_topic)
-            ##logdbg(self.console, "MQTTSubscribeDriver", "Archive queue is size %i and date is %f." %(len(queue), lastgood_ts))
-            ##while (len(queue) > 0 and queue[0]['dateTime'] <= lastgood_ts):
-            ##    archive_record = queue.popleft()
-            ##    logdbg(self.console, "MQTTSubscribeDriver", "Archive record: %s" % to_sorted_string(archive_record))
-            ##    yield archive_record
 
 class MQTTSubscribeDriverConfEditor(weewx.drivers.AbstractConfEditor): # pragma: no cover
     @property
