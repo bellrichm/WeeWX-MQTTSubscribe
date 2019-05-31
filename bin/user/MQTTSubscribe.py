@@ -293,9 +293,9 @@ class TopicManager:
                 return subscribed_topic
 
 class MessageCallbackProvider:
-    def __init__(self, config, topics, console=False):
+    def __init__(self, config, topic_manager, console=False):
         self.console = console
-        self.topics = topics
+        self.topic_manager = topic_manager
         self._setup_callbacks()
         self.type = config.get('type', None)
         self.keyword_delimiter = config.get('keyword_delimiter', ',')
@@ -354,7 +354,7 @@ class MessageCallbackProvider:
                 data[self.label_map.get(name, name)] = to_float(value)
 
             if data:
-                self.topics.append_data(msg.topic, data)
+                self.topic_manager.append_data(msg.topic, data)
             else:
                 logerr(self.console, "MQTTSubscribe", "MessageCallbackProvider on_message_keyword failed to find data in: topic=%s and payload=%s" % (msg.topic, msg.payload))
         
@@ -374,7 +374,7 @@ class MessageCallbackProvider:
             else:
                 data = json.loads(msg.payload.decode("utf-8"))
 
-            self.topics.append_data(msg.topic, data)
+            self.topic_manager.append_data(msg.topic, data)
 
         except Exception as exception:
             logerr(self.console, "MQTTSubscribe", "MessageCallbackProvider on_message_json failed with: %s" % exception)
@@ -398,7 +398,7 @@ class MessageCallbackProvider:
             data = {}
             data[fieldname] = to_float(msg.payload)
 
-            self.topics.append_data(msg.topic, data)
+            self.topic_manager.append_data(msg.topic, data)
         except Exception as exception:
             logerr(self.console, "MQTTSubscribe", "MessageCallbackProvider on_message_individual failed with: %s" % exception)
             logerr(self.console, "MQTTSubscribe", "**** MessageCallbackProvider Ignoring topic=%s and payload=%s" % (msg.topic, msg.payload))
