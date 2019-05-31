@@ -1,0 +1,18 @@
+V1.1.0
+Enhancements/Fixes:
+- Support 'keyword' payload type. For example: (field1=value1, field2=value2).
+- Support subscribing to multiple topics.
+- Support using the full topic as the observation name with payload type 'individual'. This name can then be mapped to the appropriate WeeWX name. 
+- Improved/fixed handling of multi-level topics with payload type 'individual' so that the rightmost topic is the observation name.
+- Improved/fixed the processing of wind data for payload type 'individual'.
+- Support installing the service as an extension via wee_extension
+- Support configuration the driver via wee_config.
+- (BETA) Support message callback provider. Ability to replace the MQTT on_message callback with custom method.
+
+Internal improvements:
+- Additional documentation.
+- Added tests.
+- Refactor to eliminate need for multiple inheritance.
+- Improved management of the configuration data.
+- Improved logging.
+- Additional python 3 support.
