@@ -53,65 +53,6 @@ class TestGetDefaultCallBacks(unittest.TestCase):
         callback = SUT.get_callback()
         self.assertEqual(callback, SUT._on_message_keyword)
 
-@unittest.skip("need to update")
-class TestQueueSizeCheck(unittest.TestCase):
-    def test_queue_max_reached(self):
-        message_handler_config = {}
-        message_handler_config['type'] = 'json'
-
-        SUT = MessageCallbackProvider(message_handler_config, None)
-
-        queue = deque()
-        queue.append( ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), )
-        queue.append( ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), )
-        queue.append( ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), )
-        queue.append( ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), )
-        orig_queue_size = len(queue)
-        max_queue = 2
-
-        with mock.patch('user.MQTTSubscribe.logerr') as mock_logerr:
-            SUT._queue_size_check(queue, max_queue)
-            self.assertEqual(mock_logerr.call_count, orig_queue_size-max_queue+1)
-            self.assertEqual(len(queue), max_queue-1)
-
-    def test_queue_max_not_reached(self):
-        message_handler_config = {}
-        message_handler_config['type'] = 'json'
-
-        SUT = MessageCallbackProvider(message_handler_config, None)
-
-        queue = deque()
-        queue.append( ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), )
-        queue.append( ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), )
-        queue.append( ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), )
-        queue.append( ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), )
-        orig_queue_size = len(queue)
-        max_queue = 7
-
-        with mock.patch('user.MQTTSubscribe.logerr') as mock_logerr:
-            SUT._queue_size_check(queue, max_queue)
-            self.assertEqual(mock_logerr.call_count, 0)
-            self.assertEqual(len(queue), orig_queue_size)
-
-    def test_queue_max_equal(self):
-        message_handler_config = {}
-        message_handler_config['type'] = 'json'
-
-        SUT = MessageCallbackProvider(message_handler_config, None)
-
-        queue = deque()
-        queue.append( ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), )
-        queue.append( ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), )
-        queue.append( ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), )
-        queue.append( ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), )
-        orig_queue_size = len(queue)
-        max_queue = 4
-
-        with mock.patch('user.MQTTSubscribe.logerr') as mock_logerr:
-            SUT._queue_size_check(queue, max_queue)
-            self.assertEqual(mock_logerr.call_count, orig_queue_size-max_queue+1)
-            self.assertEqual(len(queue), max_queue-1)
-
 class TestKeywordload(unittest.TestCase):
     unit_system_name = 'US'
     unit_system = weewx.units.unit_constants[unit_system_name]
