@@ -22,6 +22,8 @@ Because there are [multiple methods to install WeeWX](http://weewx.com/docs/user
 * *$BIN_ROOT* - The directory where WeeWX executables are located. 
 * *$CONFIG_ROOT* - The directory where the configuration (typically, weewx.conf) is located.
 
+Prior to making any updates/changes, always make a backup.
+
 ## Preqrequisites
 1. Install the paho MQTT client.
 
@@ -48,7 +50,7 @@ Because there are [multiple methods to install WeeWX](http://weewx.com/docs/user
         set the environment variable MQTTSubscribe_install_type to DRIVER. For example,
         
         ```
-        MQTTSubscribe_install_type=DRIVER --install=$DOWNLOAD_ROOT/v.X.Y.Z.tar.gz
+        MQTTSubscribe_install_type=DRIVER $BIN_ROOT/wee_extension --install=$DOWNLOAD_ROOT/v.X.Y.Z.tar.gz
         ```
         
         And then configure the driver.
@@ -68,7 +70,7 @@ Because there are [multiple methods to install WeeWX](http://weewx.com/docs/user
         To enable, set the environment variable MQTTSubscribe_install_type to SERVICE. For example,
         
         ```
-        MQTTSubscribe_install_type=SERVICE --install=$DOWNLOAD_DIR/v.X.Y.Z.tar.gz
+        MQTTSubscribe_install_type=SERVICE $BIN_ROOT/wee_extension --install=$DOWNLOAD_DIR/v.X.Y.Z.tar.gz
         ```
         
         In either case, edit the [MQTTSubscribeService] stanza as required.
