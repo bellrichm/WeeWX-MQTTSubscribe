@@ -404,7 +404,6 @@ class MessageCallbackProvider:
             logerr(self.console, "MQTTSubscribe", "**** MessageCallbackProvider Ignoring topic=%s and payload=%s" % (msg.topic, msg.payload))
 
 # Class to manage MQTT subscriptions
-# If payload format that is not supported, subclass and implement on_message methos
 class MQTTSubscribe():
     def __init__(self, service_dict):
         self.console = to_bool(service_dict.get('console', False))
@@ -586,7 +585,8 @@ class MQTTSubscribeService(StdService):
             logdbg(self.console, "MQTTSubscribeService", "Record after update is: %s" % to_sorted_string(event.record))
 
 def loader(config_dict, engine):
-    return MQTTSubscribeDriver(**config_dict[DRIVER_NAME])
+    config = configobj.ConfigObj(config_dict)
+    return MQTTSubscribeDriver(**config[DRIVER_NAME])
 
 def confeditor_loader():
     return MQTTSubscribeDriverConfEditor()
