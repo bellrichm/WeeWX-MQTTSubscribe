@@ -84,15 +84,15 @@ class TestKeywordload(unittest.TestCase):
             self.assertEqual(mock_logerr.call_count, 3)
 
     def test_payload_bad_data(self):
-        SUT = MessageCallbackProvider(self.message_handler_config, None, None)
+        mock_logger = mock.Mock(spec=Logger)
+        SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, None)
 
         msg = Msg()
         msg.topic = self.topic
         msg.payload = 'field=value'
 
-        with mock.patch('user.MQTTSubscribe.logerr') as mock_logerr:
-            SUT._on_message_keyword(None, None, msg)
-            self.assertEqual(mock_logerr.call_count, 2)
+        SUT._on_message_keyword(None, None, msg)
+        self.assertEqual(mock_logger.logerr.call_count, 2)
 
     def test_payload_missing_delimiter(self):
         SUT = MessageCallbackProvider(self.message_handler_config, None, None)
