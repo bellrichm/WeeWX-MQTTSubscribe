@@ -311,8 +311,8 @@ class TopicManager:
                 return subscribed_topic
 
 class MessageCallbackProvider:
-    def __init__(self, config, topic_manager, console=False):
-        self.console = console
+    def __init__(self, config, logger, topic_manager):
+        self.logger = logger
         self.topic_manager = topic_manager
         self._setup_callbacks()
         self.type = config.get('type', None)
@@ -355,7 +355,7 @@ class MessageCallbackProvider:
         # Wrap all the processing in a try, so it doesn't crash and burn on any error
         try:
             topic = msg.topic
-            logdbg(self.console, "MQTTSubscribe", "MessageCallbackProvider For %s received: %s" %(msg.topic, msg.payload))
+            self.logger.logdbg("MQTTSubscribe", "MessageCallbackProvider For %s received: %s" %(msg.topic, msg.payload))
 
             fields = msg.payload.split(self.keyword_delimiter)
             data = {}
@@ -363,8 +363,8 @@ class MessageCallbackProvider:
                 eq_index = field.find(self.keyword_separator)
                 # Ignore all fields that do not have the separator
                 if eq_index == -1:
-                    logerr(self.console, "MQTTSubscribe", "MessageCallbackProvider on_message_keyword failed to find separator: %s" % self.keyword_separator)
-                    logerr(self.console, "MQTTSubscribe", "**** MessageCallbackProvider Ignoring field=%s " % field)
+                    self.logger.logerr("MQTTSubscribe", "MessageCallbackProvider on_message_keyword failed to find separator: %s" % self.keyword_separator)
+                    self.logger.logerr("MQTTSubscribe", "**** MessageCallbackProvider Ignoring field=%s " % field)
                     continue
 
                 name = field[:eq_index].strip()
@@ -374,16 +374,16 @@ class MessageCallbackProvider:
             if data:
                 self.topic_manager.append_data(msg.topic, data)
             else:
-                logerr(self.console, "MQTTSubscribe", "MessageCallbackProvider on_message_keyword failed to find data in: topic=%s and payload=%s" % (msg.topic, msg.payload))
+                self.logger.logerr("MQTTSubscribe", "MessageCallbackProvider on_message_keyword failed to find data in: topic=%s and payload=%s" % (msg.topic, msg.payload))
         
         except Exception as exception:
-            logerr(self.console, "MQTTSubscribe", "MessageCallbackProvider on_message_keyword failed with: %s" % exception)
-            logerr(self.console, "MQTTSubscribe", "**** MessageCallbackProvider Ignoring topic=%s and payload=%s" % (msg.topic, msg.payload))
+            self.logger.logerr("MQTTSubscribe", "MessageCallbackProvider on_message_keyword failed with: %s" % exception)
+            self.logger.logerr("MQTTSubscribe", "**** MessageCallbackProvider Ignoring topic=%s and payload=%s" % (msg.topic, msg.payload))
 
     def _on_message_json(self, client, userdata, msg):
         # Wrap all the processing in a try, so it doesn't crash and burn on any error
         try:
-            logdbg(self.console, "MQTTSubscribe", "MessageCallbackProvider For %s received: %s" %(msg.topic, msg.payload))
+            self.logger.logdbg("MQTTSubscribe", "MessageCallbackProvider For %s received: %s" %(msg.topic, msg.payload))
             # ToDo - better way?
             if six.PY2:
                 data = self._byteify(
@@ -395,15 +395,15 @@ class MessageCallbackProvider:
             self.topic_manager.append_data(msg.topic, data)
 
         except Exception as exception:
-            logerr(self.console, "MQTTSubscribe", "MessageCallbackProvider on_message_json failed with: %s" % exception)
-            logerr(self.console, "MQTTSubscribe", "**** MessageCallbackProvider Ignoring topic=%s and payload=%s" % (msg.topic, msg.payload))
+            self.logger.logerr("MQTTSubscribe", "MessageCallbackProvider on_message_json failed with: %s" % exception)
+            self.logger.logerr("MQTTSubscribe", "**** MessageCallbackProvider Ignoring topic=%s and payload=%s" % (msg.topic, msg.payload))
 
     def _on_message_individual(self, client, userdata, msg):
         wind_fields = ['windGust', 'windGustDir', 'windDir', 'windSpeed']
 
         # Wrap all the processing in a try, so it doesn't crash and burn on any error
         try:
-            logdbg(self.console, "MQTTSubscribe", "MessageCallbackProvider For %s received: %s" %(msg.topic, msg.payload))
+            logdbg("MQTTSubscribe", "MessageCallbackProvider For %s received: %s" %(msg.topic, msg.payload))
 
             if self.full_topic_fieldname:
                 key = msg.topic.encode('ascii', 'ignore') # ToDo - research
@@ -418,13 +418,15 @@ class MessageCallbackProvider:
 
             self.topic_manager.append_data(msg.topic, data)
         except Exception as exception:
-            logerr(self.console, "MQTTSubscribe", "MessageCallbackProvider on_message_individual failed with: %s" % exception)
-            logerr(self.console, "MQTTSubscribe", "**** MessageCallbackProvider Ignoring topic=%s and payload=%s" % (msg.topic, msg.payload))
+            self.logger.logerr("MQTTSubscribe", "MessageCallbackProvider on_message_individual failed with: %s" % exception)
+            self.logger.logerr("MQTTSubscribe", "**** MessageCallbackProvider Ignoring topic=%s and payload=%s" % (msg.topic, msg.payload))
 
 # Class to manage MQTT subscriptions
 class MQTTSubscribe():
     def __init__(self, service_dict):
         self.console = to_bool(service_dict.get('console', False))
+        self.logger = Logger(self.console)
+        
         message_callback_config = service_dict.get('message_callback', None)
         if message_callback_config is None:
             raise ValueError("[[message_callback]] is required.")
@@ -462,7 +464,7 @@ class MQTTSubscribe():
             loginf(self.console, "MQTTSubscribe", "Password is not set")
         loginf(self.console, "MQTTSubscribe", "Archive topic is %s" % self.archive_topic)
 
-        self.logger = {
+        self.mqtt_logger = {
             mqtt.MQTT_LOG_INFO: loginf,
             mqtt.MQTT_LOG_NOTICE: loginf,
             mqtt.MQTT_LOG_WARNING: loginf,
@@ -477,8 +479,8 @@ class MQTTSubscribe():
 
         MessageCallbackProvider_class = weeutil.weeutil._get_object(message_callback_provider_name)
         message_callback_provider = MessageCallbackProvider_class(message_callback_config,
-                                                              self.manager,
-                                                              self.console)
+                                                              self.logger,
+                                                              self.manager)
 
         self.client.on_message = message_callback_provider.get_callback()
 
@@ -515,7 +517,7 @@ class MQTTSubscribe():
         logdbg(self.console, "MQTTSubscribe", "Disconnected with result code %i" %rc)
 
     def _on_log(self, client, userdata, level, msg):
-        self.logger[level](self.console, "MQTTSubscribe/MQTT", msg)
+        self.mqtt_logger[level](self.console, "MQTTSubscribe/MQTT", msg)
 
 class MQTTSubscribeService(StdService):
     def __init__(self, engine, config_dict):
