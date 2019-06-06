@@ -164,6 +164,24 @@ def loginf(console, prefix, msg):
 
 def logerr(console, prefix, msg):
     logmsg(console, syslog.LOG_ERR, prefix, msg)
+    
+class Logger:
+    def __init__(console):
+        self.console = console
+        
+    def logmsg(dst, prefix, msg):
+        syslog.syslog(dst, '%s: %s' % (prefix, msg))
+        if self.console:
+            print('%s: %s' % (prefix, msg))
+
+    def logdbg(prefix, msg):
+        logmsg(syslog.LOG_DEBUG, prefix, msg)
+
+    def loginf(prefix, msg):
+        logmsg(syslog.LOG_INFO, prefix, msg)
+
+    def logerr(prefix, msg):
+        logmsg(syslog.LOG_ERR, prefix, msg)
 
 class CollectData:
     def __init__(self, fields, console=False):
