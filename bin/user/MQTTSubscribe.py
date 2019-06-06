@@ -166,21 +166,21 @@ def logerr(console, prefix, msg):
     logmsg(console, syslog.LOG_ERR, prefix, msg)
     
 class Logger:
-    def __init__(console):
+    def __init__(self, console):
         self.console = console
         
-    def logmsg(dst, prefix, msg):
+    def logmsg(self, dst, prefix, msg):
         syslog.syslog(dst, '%s: %s' % (prefix, msg))
         if self.console:
             print('%s: %s' % (prefix, msg))
 
-    def logdbg(prefix, msg):
-        logmsg(syslog.LOG_DEBUG, prefix, msg)
+    def logdbg(self, prefix, msg):
+        logmsg(self, syslog.LOG_DEBUG, prefix, msg)
 
-    def loginf(prefix, msg):
+    def loginf(self, prefix, msg):
         logmsg(syslog.LOG_INFO, prefix, msg)
 
-    def logerr(prefix, msg):
+    def logerr(self, prefix, msg):
         logmsg(syslog.LOG_ERR, prefix, msg)
 
 class CollectData:
@@ -403,7 +403,7 @@ class MessageCallbackProvider:
 
         # Wrap all the processing in a try, so it doesn't crash and burn on any error
         try:
-            logdbg("MQTTSubscribe", "MessageCallbackProvider For %s received: %s" %(msg.topic, msg.payload))
+            self.logger.logdbg("MQTTSubscribe", "MessageCallbackProvider For %s received: %s" %(msg.topic, msg.payload))
 
             if self.full_topic_fieldname:
                 key = msg.topic.encode('ascii', 'ignore') # ToDo - research
