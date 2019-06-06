@@ -77,7 +77,7 @@ class MQTTSubscribeServiceInstaller(ExtensionInstaller):
             install_type = ''
         
         install_dict = {
-            'version': '1.1.0',
+            'version': '1.1.1',
             'name': 'MQTTSubscribe',
             'description': 'Augment WeeWX records or packets with data MQTT',
             'author': "Rich Bell",
