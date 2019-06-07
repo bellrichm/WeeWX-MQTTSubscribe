@@ -57,11 +57,6 @@ class TestKeywordload(unittest.TestCase):
     unit_system = weewx.units.unit_constants[unit_system_name]
 
     topic = 'foo/bar'
-    topics = {}
-    topics[topic] = {}
-    topics[topic]['unit_system'] = unit_system_name
-    topics[topic]['max_queue'] = six.MAXSIZE
-    topic_config = configobj.ConfigObj(topics)
 
     payload_dict = {
         'inTemp': round(random.uniform(1, 100), 2),
@@ -145,7 +140,7 @@ class TestKeywordload(unittest.TestCase):
         SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, mock_manager)
 
         payload_dict = dict(self.payload_dict)
-        payload_dict['dateTime'] = time.time()
+        payload_dict['dateTime'] = round(time.time(), 2)
 
         payload_str=""
         delim=""
@@ -184,16 +179,7 @@ class TestKeywordload(unittest.TestCase):
         mock_manager.append_data.assert_called_once_with(msg.topic, payload_dict)
 
 class TestJsonPayload(unittest.TestCase):
-    unit_system_name = 'US'
-    unit_system = weewx.units.unit_constants[unit_system_name]
-
     topic = 'foo/bar'
-
-    topics = {}
-    topics[topic] = {}
-    topics[topic]['unit_system'] = unit_system_name
-    topics[topic]['max_queue'] = six.MAXSIZE
-    topic_config = configobj.ConfigObj(topics)
 
     payload_dict = {
         'inTemp': round(random.uniform(1, 100), 2),
@@ -293,16 +279,11 @@ class TestJsonPayload(unittest.TestCase):
         mock_manager.append_data.assert_called_once_with(msg.topic, payload_dict)
 
 class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
-    unit_system_name = 'US'
-    unit_system = weewx.units.unit_constants[unit_system_name]
-
-    topic = 'foo/bar'
-    topics = {}
-    topics[topic] = {}
-    topics[topic]['unit_system'] = unit_system_name
-    topics[topic]['max_queue'] = six.MAXSIZE
-    topic_config = configobj.ConfigObj(topics)
-
+    fieldname = b'bar'
+    topic = b'foo/' + fieldname
+    single_topic = fieldname
+    multi_topic = b'foo1/foo2/' + fieldname
+    
     payload_dict = {
         'inTemp': round(random.uniform(1, 100), 2),
         'outTemp': round(random.uniform(1, 100), 2)
@@ -334,82 +315,66 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         self.assertEqual(mock_logger.logerr.call_count, 2)
 
     def test_None_payload(self):
-        fieldname = b'bar'
-
         mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
 
         SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, mock_manager)
 
         msg = Msg()
-        msg.topic = self.topic
+        msg.topic = self.topic.decode('utf-8')
         msg.payload = None
 
         SUT._on_message_individual(None, None, msg)
 
-        mock_manager.append_data.assert_called_once_with(msg.topic, {'bar': None})
+        mock_manager.append_data.assert_called_once_with(msg.topic, {self.fieldname: None})
 
-    def test_single_topic(self):
-        fieldname = b'bar'
-        topic = fieldname.decode('utf-8')
-        
+    def test_single_topic(self):        
         mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
 
         SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, mock_manager)
 
         msg = Msg()
-        msg.topic = topic
+        msg.topic = self.single_topic.decode('utf-8')
         payload = round(random.uniform(1, 100), 2)
         msg.payload = str(payload)
 
         SUT._on_message_individual(None, None, msg)
-        mock_manager.append_data.assert_called_once_with(msg.topic, {msg.topic: payload})
+        mock_manager.append_data.assert_called_once_with(msg.topic, {self.fieldname: payload})
 
     def test_multiple_topics(self):
-        fieldname = b'bar'
-        topic = 'foo1/foo2/' + fieldname.decode('utf-8')
-
         mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
 
         SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, mock_manager)
 
         msg = Msg()
-        msg.topic = topic
+        msg.topic = self.multi_topic.decode('utf-8')
         payload = round(random.uniform(1, 100), 2)
         msg.payload = str(payload)
 
         SUT._on_message_individual(None, None, msg)
-        mock_manager.append_data.assert_called_once_with(msg.topic, {'bar': payload})
+        mock_manager.append_data.assert_called_once_with(msg.topic, {self.fieldname: payload})
 
     def test_two_topics(self):
-        fieldname = b'bar'
-        topic = 'foo/' + fieldname.decode('utf-8')
-
         mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
 
         SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, mock_manager)
 
         msg = Msg()
-        msg.topic = topic
+        msg.topic = self.topic.decode('utf-8')
         payload = round(random.uniform(1, 100), 2)
         msg.payload = str(payload)
 
         SUT._on_message_individual(None, None, msg)
-        mock_manager.append_data.assert_called_once_with(msg.topic, {'bar': payload})
+        mock_manager.append_data.assert_called_once_with(msg.topic, {self.fieldname: payload})
 
 class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
-    unit_system_name = 'US'
-    unit_system = weewx.units.unit_constants[unit_system_name]
-
-    topic = 'foo/bar'
-    topics = {}
-    topics[topic] = {}
-    topics[topic]['unit_system'] = unit_system_name
-    topics[topic]['max_queue'] = six.MAXSIZE
-    topic_config = configobj.ConfigObj(topics)
+    fieldname = b'bar'
+    topic = b'foo/' + fieldname
+    single_topic = fieldname
+    multi_topic = b'foo1/foo2/' + fieldname
 
     payload_dict = {
         'inTemp': round(random.uniform(1, 100), 2),
@@ -444,8 +409,6 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
         self.assertEqual(mock_logger.logerr.call_count, 2)
 
     def test_None_payload(self):
-        topic_byte = b'foo/bar' # ToDo - use self.topic
-
         mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
 
@@ -455,33 +418,26 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
         SUT = MessageCallbackProvider(message_handler_config, mock_logger, mock_manager)
 
         msg = Msg()
-        msg.topic = self.topic
+        msg.topic = self.topic.decode('utf-8')
         msg.payload = None
 
         SUT._on_message_individual(None, None, msg)
-        mock_manager.append_data.assert_called_once_with(msg.topic, {msg.topic: None})
+        mock_manager.append_data.assert_called_once_with(msg.topic, {self.topic: None})
 
     def test_single_topic(self):
-        fieldname = b'bar'
-        topic = fieldname.decode('utf-8')
-
         mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
 
         SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, mock_manager)
         msg = Msg()
-        msg.topic = topic
+        msg.topic = self.single_topic.decode('utf-8')
         payload = round(random.uniform(1, 100), 2)
         msg.payload = str(payload)
 
         SUT._on_message_individual(None, None, msg)
-        mock_manager.append_data.assert_called_once_with(msg.topic, {topic: payload})
+        mock_manager.append_data.assert_called_once_with(msg.topic, {self.fieldname: payload})
 
     def test_multiple_topics(self):
-        fieldname = b'bar'
-        topic = 'foo1/foo2/' + fieldname.decode('utf-8')
-        topic_byte = b'foo1/foo2/bar' # ToDo - fix up
-
         mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
 
@@ -491,18 +447,14 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
         SUT = MessageCallbackProvider(message_handler_config, mock_logger, mock_manager)
 
         msg = Msg()
-        msg.topic = topic
+        msg.topic = self.multi_topic.decode('utf-8')
         payload = round(random.uniform(1, 100), 2)
         msg.payload = str(payload)
 
         SUT._on_message_individual(None, None, msg)
-        mock_manager.append_data.assert_called_once_with(msg.topic, {topic: payload})
+        mock_manager.append_data.assert_called_once_with(msg.topic, {self.multi_topic: payload})
 
     def test_two_topics(self):
-        fieldname = b'bar'
-        topic = 'foo/' + fieldname.decode('utf-8')
-        topic_byte = b'foo/bar' # ToDo - fix up
-
         mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
 
@@ -512,12 +464,12 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
         SUT = MessageCallbackProvider(message_handler_config, mock_logger, mock_manager)
 
         msg = Msg()
-        msg.topic = topic
+        msg.topic = self.topic.decode('utf-8')
         payload = round(random.uniform(1, 100), 2)
         msg.payload = str(payload)
 
         SUT._on_message_individual(None, None, msg)
-        mock_manager.append_data.assert_called_once_with(msg.topic, {msg.topic: payload})
+        mock_manager.append_data.assert_called_once_with(msg.topic, {self.topic: payload})
 
 if __name__ == '__main__':
     unittest.main()
