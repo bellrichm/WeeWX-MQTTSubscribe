@@ -12,7 +12,6 @@ import time
 import weewx
 from collections import deque
 
-# ToDo - mock TopicManager
 from user.MQTTSubscribe import MessageCallbackProvider, TopicManager, Logger
 
 class Msg():
@@ -117,11 +116,10 @@ class TestKeywordload(unittest.TestCase):
         self.assertEqual(mock_logger.logerr.call_count, 3)
 
     def test_payload_missing_dateTime(self):
-        ml = mock.Mock(spec=Logger)
-        manager = TopicManager(self.topic_config, ml)
+        mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
 
-        SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, manager)
+        SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, mock_manager)
 
         payload_dict = dict(self.payload_dict)
         payload_dict['usUnits'] = random.randint(1, 10)
@@ -138,18 +136,13 @@ class TestKeywordload(unittest.TestCase):
 
         SUT._on_message_keyword(None, None, msg)
 
-        queue = SUT.topic_manager._get_queue(self.topic) # Todo - check call to append_data
-        self.assertEqual(len(queue), 1)
-        data = queue[0]
-        self.assertDictContainsSubset(payload_dict, data)
-        self.assertIn('dateTime', data)
+        mock_manager.append_data.assert_called_once_with(msg.topic, payload_dict)
 
     def test_payload_missing_units(self):
-        ml = mock.Mock(spec=Logger)
-        manager = TopicManager(self.topic_config, ml)
+        mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
 
-        SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, manager)
+        SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, mock_manager)
 
         payload_dict = dict(self.payload_dict)
         payload_dict['dateTime'] = time.time()
@@ -165,18 +158,13 @@ class TestKeywordload(unittest.TestCase):
         msg.payload = payload_str
 
         SUT._on_message_keyword(None, None, msg)
-        queue = SUT.topic_manager._get_queue(self.topic) # Todo - check call to append_data
-        self.assertEqual(len(queue), 1)
-        data = queue[0]
-        self.assertIn('usUnits', data)
-        self.assertEqual(data['usUnits'], self.unit_system)
+        mock_manager.append_data.assert_called_once_with(msg.topic, payload_dict)
 
     def test_payload_good(self):
-        ml = mock.Mock(spec=Logger)
-        manager = TopicManager(self.topic_config, ml)
+        mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
 
-        SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, manager)
+        SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, mock_manager)
 
         payload_dict = dict(self.payload_dict)
         payload_dict['dateTime'] = round(time.time(), 2)
@@ -193,10 +181,7 @@ class TestKeywordload(unittest.TestCase):
         msg.payload = payload_str
 
         SUT._on_message_keyword(None, None, msg)
-        queue = SUT.topic_manager._get_queue(self.topic) # Todo - check call to append_data
-        self.assertEqual(len(queue), 1)
-        data = queue[0]
-        self.assertDictEqual(data, payload_dict)
+        mock_manager.append_data.assert_called_once_with(msg.topic, payload_dict)
 
 class TestJsonPayload(unittest.TestCase):
     unit_system_name = 'US'
@@ -241,11 +226,10 @@ class TestJsonPayload(unittest.TestCase):
         self.assertEqual(mock_logger.logerr.call_count, 2)
 
     def test_missing_dateTime(self):
-        ml = mock.Mock(spec=Logger)
+        mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
-        manager = TopicManager(self.topic_config, ml)
 
-        SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, manager)
+        SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, mock_manager)
 
         payload_dict = dict(self.payload_dict)
         payload_dict['usUnits'] = random.randint(1, 10)
@@ -261,18 +245,13 @@ class TestJsonPayload(unittest.TestCase):
 
         SUT._on_message_json(None, None, msg)
 
-        queue = SUT.topic_manager._get_queue(self.topic) # Todo - check call to append_data
-        self.assertEqual(len(queue), 1)
-        data = queue[0]
-        self.assertDictContainsSubset(payload_dict, data)
-        self.assertIn('dateTime', data)
+        mock_manager.append_data.assert_called_once_with(msg.topic, payload_dict)
 
     def test_missing_units(self):
-        ml = mock.Mock(spec=Logger)
-        manager = TopicManager(self.topic_config, ml)
+        mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
 
-        SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, manager)
+        SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, mock_manager)
 
         payload_dict = dict(self.payload_dict)
         payload_dict['dateTime'] = time.time()
@@ -288,19 +267,13 @@ class TestJsonPayload(unittest.TestCase):
 
         SUT._on_message_json(None, None, msg)
 
-        queue = SUT.topic_manager._get_queue(self.topic) # Todo - check call to append_data
-        self.assertEqual(len(queue), 1)
-        data = queue[0]
-        self.assertDictContainsSubset(payload_dict, data)
-        self.assertIn('usUnits', data)
-        self.assertEqual(data['usUnits'], self.unit_system)
+        mock_manager.append_data.assert_called_once_with(msg.topic, payload_dict)
 
     def test_payload_good(self):
-        ml = mock.Mock(spec=Logger)
+        mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
-        manager = TopicManager(self.topic_config, ml)
 
-        SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, manager)
+        SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, mock_manager)
 
         payload_dict = dict(self.payload_dict)
         payload_dict['dateTime'] = time.time()
@@ -317,10 +290,7 @@ class TestJsonPayload(unittest.TestCase):
 
         SUT._on_message_json(None, None, msg)
 
-        queue = SUT.topic_manager._get_queue(self.topic) # Todo - check call to append_data
-        self.assertEqual(len(queue), 1)
-        data = queue[0]
-        self.assertDictEqual(data, payload_dict)
+        mock_manager.append_data.assert_called_once_with(msg.topic, payload_dict)
 
 class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
     unit_system_name = 'US'
@@ -365,11 +335,11 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
 
     def test_None_payload(self):
         fieldname = b'bar'
-        ml = mock.Mock(spec=Logger)
-        manager = TopicManager(self.topic_config, ml)
+
+        mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
 
-        SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, manager)
+        SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, mock_manager)
 
         msg = Msg()
         msg.topic = self.topic
@@ -377,115 +347,58 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
 
         SUT._on_message_individual(None, None, msg)
 
-        queue = SUT.topic_manager._get_queue(self.topic) # Todo - check call to append_data
-
-        self.assertEqual(len(queue), 1)
-        data = queue[0]
-        self.assertIn('dateTime', data)
-        self.assertIsInstance(data['dateTime'], float)
-        self.assertIn('usUnits', data)
-        self.assertEqual(data['usUnits'], self.unit_system)
-        self.assertIn(fieldname, data)
-        self.assertIsNone(data[fieldname])
+        mock_manager.append_data.assert_called_once_with(msg.topic, {'bar': None})
 
     def test_single_topic(self):
         fieldname = b'bar'
         topic = fieldname.decode('utf-8')
         
-        topics = {}
-        topics[topic] = {}
-        topics[topic]['unit_system'] = self.unit_system_name
-        topics[topic]['max_queue'] = six.MAXSIZE
-        topic_config = configobj.ConfigObj(topics)
-        ml = mock.Mock(spec=Logger)
-        manager = TopicManager(topic_config, ml)
+        mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
 
-        SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, manager)
+        SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, mock_manager)
 
         msg = Msg()
         msg.topic = topic
-        payload = random.uniform(1, 100)
+        payload = round(random.uniform(1, 100), 2)
         msg.payload = str(payload)
 
         SUT._on_message_individual(None, None, msg)
-
-        queue = SUT.topic_manager._get_queue(topic) # Todo - check call to append_data
-        self.assertEqual(len(queue), 1)
-        data = queue[0]
-        self.assertIn('dateTime', data)
-        self.assertIsInstance(data['dateTime'], float)
-        self.assertIn('usUnits', data)
-        self.assertEqual(data['usUnits'], self.unit_system)
-        self.assertIn(fieldname, data)
-        self.assertIsInstance(data[fieldname], float)
-        self.assertAlmostEqual(data[fieldname], payload)
+        mock_manager.append_data.assert_called_once_with(msg.topic, {msg.topic: payload})
 
     def test_multiple_topics(self):
         fieldname = b'bar'
         topic = 'foo1/foo2/' + fieldname.decode('utf-8')
 
-        topics = {}
-        topics[topic] = {}
-        topics[topic]['unit_system'] = self.unit_system_name
-        topics[topic]['max_queue'] = six.MAXSIZE
-        topic_config = configobj.ConfigObj(topics)
-        ml = mock.Mock(spec=Logger)
-        manager = TopicManager(topic_config, ml)
+        mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
 
-        SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, manager)
+        SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, mock_manager)
 
         msg = Msg()
         msg.topic = topic
-        payload = random.uniform(1, 100)
+        payload = round(random.uniform(1, 100), 2)
         msg.payload = str(payload)
 
         SUT._on_message_individual(None, None, msg)
-
-        queue = SUT.topic_manager._get_queue(topic) # Todo - check call to append_data
-        self.assertEqual(len(queue), 1)
-        data = queue[0]
-        self.assertIn('dateTime', data)
-        self.assertIsInstance(data['dateTime'], float)
-        self.assertIn('usUnits', data)
-        self.assertEqual(data['usUnits'], self.unit_system)
-        self.assertIn(fieldname, data)
-        self.assertIsInstance(data[fieldname], float)
-        self.assertAlmostEqual(data[fieldname], payload)
+        mock_manager.append_data.assert_called_once_with(msg.topic, {'bar': payload})
 
     def test_two_topics(self):
         fieldname = b'bar'
         topic = 'foo/' + fieldname.decode('utf-8')
-        
-        topics = {}
-        topics[topic] = {}
-        topics[topic]['unit_system'] = self.unit_system_name
-        topics[topic]['max_queue'] = six.MAXSIZE
-        topic_config = configobj.ConfigObj(topics)
-        ml = mock.Mock(spec=Logger)
-        manager = TopicManager(topic_config, ml)
+
+        mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
 
-        SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, manager)
+        SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, mock_manager)
 
         msg = Msg()
         msg.topic = topic
-        payload = random.uniform(1, 100)
+        payload = round(random.uniform(1, 100), 2)
         msg.payload = str(payload)
 
         SUT._on_message_individual(None, None, msg)
-
-        queue = SUT.topic_manager._get_queue(topic) # Todo - check call to append_data
-        self.assertEqual(len(queue), 1)
-        data = queue[0]
-        self.assertIn('dateTime', data)
-        self.assertIsInstance(data['dateTime'], float)
-        self.assertIn('usUnits', data)
-        self.assertEqual(data['usUnits'], self.unit_system)
-        self.assertIn(fieldname, data)
-        self.assertIsInstance(data[fieldname], float)
-        self.assertAlmostEqual(data[fieldname], payload)
+        mock_manager.append_data.assert_called_once_with(msg.topic, {'bar': payload})
 
 class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
     unit_system_name = 'US'
@@ -532,136 +445,79 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
 
     def test_None_payload(self):
         topic_byte = b'foo/bar' # ToDo - use self.topic
-        ml = mock.Mock(spec=Logger)
-        manager = TopicManager(self.topic_config, ml)
+
+        mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
 
         message_handler_config = dict(self.message_handler_config)
         message_handler_config['full_topic_fieldname'] = True
 
-        SUT = MessageCallbackProvider(message_handler_config, mock_logger, manager)
+        SUT = MessageCallbackProvider(message_handler_config, mock_logger, mock_manager)
 
         msg = Msg()
         msg.topic = self.topic
         msg.payload = None
 
         SUT._on_message_individual(None, None, msg)
-
-        queue = SUT.topic_manager._get_queue(self.topic) # Todo - check call to append_data
-        self.assertEqual(len(queue), 1)
-        data = queue[0]
-        self.assertIn('dateTime', data)
-        self.assertIsInstance(data['dateTime'], float)
-        self.assertIn('usUnits', data)
-        self.assertEqual(data['usUnits'], self.unit_system)
-        self.assertIn(topic_byte, data)
-        self.assertIsNone(data[topic_byte])
+        mock_manager.append_data.assert_called_once_with(msg.topic, {msg.topic: None})
 
     def test_single_topic(self):
         fieldname = b'bar'
         topic = fieldname.decode('utf-8')
-        
-        topics = {}
-        topics[topic] = {}
-        topics[topic]['unit_system'] = self.unit_system_name
-        topics[topic]['max_queue'] = six.MAXSIZE
-        topic_config = configobj.ConfigObj(topics)
-        ml = mock.Mock(spec=Logger)
-        manager = TopicManager(topic_config, ml)
+
+        mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
 
-        SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, manager)
+        SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, mock_manager)
         msg = Msg()
         msg.topic = topic
-        payload = random.uniform(1, 100)
+        payload = round(random.uniform(1, 100), 2)
         msg.payload = str(payload)
 
         SUT._on_message_individual(None, None, msg)
-
-        queue = SUT.topic_manager._get_queue(topic) # Todo - check call to append_data
-        self.assertEqual(len(queue), 1)
-        data = queue[0]
-        self.assertIn('dateTime', data)
-        self.assertIsInstance(data['dateTime'], float)
-        self.assertIn('usUnits', data)
-        self.assertEqual(data['usUnits'], self.unit_system)
-        self.assertIn(fieldname, data)
-        self.assertIsInstance(data[fieldname], float)
-        self.assertAlmostEqual(data[fieldname], payload)
+        mock_manager.append_data.assert_called_once_with(msg.topic, {topic: payload})
 
     def test_multiple_topics(self):
         fieldname = b'bar'
         topic = 'foo1/foo2/' + fieldname.decode('utf-8')
         topic_byte = b'foo1/foo2/bar' # ToDo - fix up
-        
-        topics = {}
-        topics[topic] = {}
-        topics[topic]['unit_system'] = self.unit_system_name
-        topics[topic]['max_queue'] = six.MAXSIZE
-        topic_config = configobj.ConfigObj(topics)
-        ml = mock.Mock(spec=Logger)
-        manager = TopicManager(topic_config, ml)
+
+        mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
 
         message_handler_config = dict(self.message_handler_config)
         message_handler_config['full_topic_fieldname'] = True
 
-        SUT = MessageCallbackProvider(message_handler_config, mock_logger, manager)
+        SUT = MessageCallbackProvider(message_handler_config, mock_logger, mock_manager)
 
         msg = Msg()
         msg.topic = topic
-        payload = random.uniform(1, 100)
+        payload = round(random.uniform(1, 100), 2)
         msg.payload = str(payload)
 
         SUT._on_message_individual(None, None, msg)
-
-        queue = SUT.topic_manager._get_queue(topic) # Todo - check call to append_data
-        self.assertEqual(len(queue), 1)
-        data = queue[0]
-        self.assertIn('dateTime', data)
-        self.assertIsInstance(data['dateTime'], float)
-        self.assertIn('usUnits', data)
-        self.assertEqual(data['usUnits'], self.unit_system)
-        self.assertIn(topic_byte, data)
-        self.assertIsInstance(data[topic_byte], float)
-        self.assertAlmostEqual(data[topic_byte], payload)
+        mock_manager.append_data.assert_called_once_with(msg.topic, {topic: payload})
 
     def test_two_topics(self):
         fieldname = b'bar'
         topic = 'foo/' + fieldname.decode('utf-8')
         topic_byte = b'foo/bar' # ToDo - fix up
-        
-        topics = {}
-        topics[topic] = {}
-        topics[topic]['unit_system'] = self.unit_system_name
-        topics[topic]['max_queue'] = six.MAXSIZE
-        topic_config = configobj.ConfigObj(topics)
-        ml = mock.Mock(spec=Logger)
-        manager = TopicManager(topic_config, ml)
+
+        mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
 
         message_handler_config = dict(self.message_handler_config)
         message_handler_config['full_topic_fieldname'] = True
 
-        SUT = MessageCallbackProvider(message_handler_config, mock_logger, manager)
+        SUT = MessageCallbackProvider(message_handler_config, mock_logger, mock_manager)
 
         msg = Msg()
         msg.topic = topic
-        payload = random.uniform(1, 100)
+        payload = round(random.uniform(1, 100), 2)
         msg.payload = str(payload)
 
         SUT._on_message_individual(None, None, msg)
-
-        queue = SUT.topic_manager._get_queue(topic) # Todo - check call to append_data
-        self.assertEqual(len(queue), 1)
-        data = queue[0]
-        self.assertIn('dateTime', data)
-        self.assertIsInstance(data['dateTime'], float)
-        self.assertIn('usUnits', data)
-        self.assertEqual(data['usUnits'], self.unit_system)
-        self.assertIn(topic_byte, data)
-        self.assertIsInstance(data[topic_byte], float)
-        self.assertAlmostEqual(data[topic_byte], payload)
+        mock_manager.append_data.assert_called_once_with(msg.topic, {msg.topic: payload})
 
 if __name__ == '__main__':
     unittest.main()
