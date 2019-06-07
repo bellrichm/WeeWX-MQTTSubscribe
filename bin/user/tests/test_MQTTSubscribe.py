@@ -12,7 +12,7 @@ import six
 import string
 import time
 import weewx
-from user.MQTTSubscribe import MQTTSubscribe
+from user.MQTTSubscribe import MQTTSubscribe, Logger
 
 class Msg():
     pass
@@ -42,9 +42,11 @@ class TestInitialization(unittest.TestCase):
 
         config = configobj.ConfigObj(config_dict)
 
+        mock_logger = mock.Mock(spec=Logger)
+
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
             with mock.patch('user.MQTTSubscribe.MessageCallbackProvider') as mock_provider:
-                SUT = MQTTSubscribe(config)
+                SUT = MQTTSubscribe(config, mock_logger)
 
                 SUT.client.username_pw_set.assert_not_called()
                 SUT.client.connect.assert_called_once_with(host, port, keepalive)
@@ -73,9 +75,11 @@ class TestInitialization(unittest.TestCase):
 
         config = configobj.ConfigObj(config_dict)
 
+        mock_logger = mock.Mock(spec=Logger)
+
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
             with mock.patch('user.MQTTSubscribe.MessageCallbackProvider') as mock_provider:
-                SUT = MQTTSubscribe(config)
+                SUT = MQTTSubscribe(config, mock_logger)
 
                 SUT.client.username_pw_set.assert_not_called()
                 SUT.client.connect.assert_called_once_with(host, port, keepalive)
@@ -104,9 +108,11 @@ class TestInitialization(unittest.TestCase):
 
         config = configobj.ConfigObj(config_dict)
 
+        mock_logger = mock.Mock(spec=Logger)
+
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
             with mock.patch('user.MQTTSubscribe.MessageCallbackProvider') as mock_provider:
-                SUT = MQTTSubscribe(config)
+                SUT = MQTTSubscribe(config, mock_logger)
 
                 SUT.client.username_pw_set.assert_not_called()
                 SUT.client.connect.assert_called_once_with(host, port, keepalive)
@@ -137,9 +143,11 @@ class TestInitialization(unittest.TestCase):
 
         config = configobj.ConfigObj(config_dict)
 
+        mock_logger = mock.Mock(spec=Logger)
+
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
             with mock.patch('user.MQTTSubscribe.MessageCallbackProvider') as mock_provider:
-                SUT = MQTTSubscribe(config)
+                SUT = MQTTSubscribe(config, mock_logger)
 
                 SUT.client.username_pw_set.assert_called_once_with(username, password)
                 SUT.client.connect.assert_called_once_with(host, port, keepalive)
@@ -172,9 +180,11 @@ class Teston_connect(unittest.TestCase):
 
         config = configobj.ConfigObj(config_dict)
 
+        mock_logger = mock.Mock(spec=Logger)
+
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
             with mock.patch('user.MQTTSubscribe.MessageCallbackProvider') as mock_provider:
-                SUT = MQTTSubscribe(config)
+                SUT = MQTTSubscribe(config, mock_logger)
 
                 rc = random.randint(1, 10)
                 SUT._on_connect(mock_client, None, None, rc,)

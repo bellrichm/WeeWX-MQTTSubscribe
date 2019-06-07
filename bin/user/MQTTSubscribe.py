@@ -409,9 +409,8 @@ class MessageCallbackProvider:
 
 # Class to manage MQTT subscriptions
 class MQTTSubscribe():
-    def __init__(self, service_dict):
-        self.console = to_bool(service_dict.get('console', False))
-        self.logger = Logger(self.console)
+    def __init__(self, service_dict, logger):
+        self.logger = logger
         
         message_callback_config = service_dict.get('message_callback', None)
         if message_callback_config is None:
@@ -435,7 +434,6 @@ class MQTTSubscribe():
         if self.archive_topic and self.archive_topic not in service_dict['topics']:
             raise ValueError("Archive topic %s must be in [[topics]]" % self.archive_topic)
 
-        self.logger.loginf("MQTTSubscribe", "Console is %s" % self.console)
         self.logger.loginf("MQTTSubscribe", "Message callback config is %s" % message_callback_config)
         self.logger.loginf("MQTTSubscribe", "Message callback provider is %s" % message_callback_provider_name)
         self.logger.loginf("MQTTSubscribe", "Client id is %s" % clientid)
@@ -510,8 +508,8 @@ class MQTTSubscribeService(StdService):
         super(MQTTSubscribeService, self).__init__(engine, config_dict)
 
         service_dict = config_dict.get('MQTTSubscribeService', {})
-        self.console = to_bool(service_dict.get('console', False))
-        self.logger = Logger(self.console)
+        console = to_bool(service_dict.get('console', False))
+        self.logger = Logger(console)
 
         self.enable = to_bool(service_dict.get('enable', True))
         if not self.enable:
@@ -530,7 +528,7 @@ class MQTTSubscribeService(StdService):
         self.end_ts = 0 # prime for processing loop packet
         self.wind_fields = ['windGust', 'windGustDir', 'windDir', 'windSpeed']
 
-        self.subscriber = MQTTSubscribe(service_dict)
+        self.subscriber = MQTTSubscribe(service_dict, self.logger)
         self.subscriber.start()
 
         if (binding == 'archive'):
@@ -603,8 +601,8 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice):
     """weewx driver that reads data from MQTT"""
 
     def __init__(self, **stn_dict):
-      self.console = to_bool(stn_dict.get('console', False))
-      self.logger = Logger(self.console)
+      console = to_bool(stn_dict.get('console', False))
+      self.logger = Logger(console)
 
       self.wait_before_retry = float(stn_dict.get('wait_before_retry', 2))
       self.archive_topic = stn_dict.get('archive_topic', None)
@@ -613,7 +611,7 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice):
 
       self.wind_fields = ['windGust', 'windGustDir', 'windDir', 'windSpeed']
 
-      self.subscriber = MQTTSubscribe(stn_dict)
+      self.subscriber = MQTTSubscribe(stn_dict, self.logger)
       self.subscriber.start()
 
     @property
