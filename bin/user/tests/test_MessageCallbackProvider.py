@@ -20,10 +20,14 @@ class Msg():
 class TestGetDefaultCallBacks(unittest.TestCase):
     def test_get_unknown_payload_type(self):
         message_handler_config = {}
-        message_handler_config['type'] = 'foobar'
+        payload_type = 'foobar'
+        message_handler_config['type'] = payload_type
 
-        # ToDo - check exception
-        #SUT = MessageCallbackProvider(message_handler_config, None, None)
+        with self.assertRaises(ValueError) as context:
+            SUT = MessageCallbackProvider(message_handler_config, None, None)
+
+        self.assertEqual(str(context.exception), "Invalid type configured: %s" % payload_type)
+
 
     def test_get_individual_payload_type(self):
         message_handler_config = {}
@@ -53,9 +57,6 @@ class TestGetDefaultCallBacks(unittest.TestCase):
         self.assertEqual(callback, SUT._on_message_keyword)
 
 class TestKeywordload(unittest.TestCase):
-    unit_system_name = 'US'
-    unit_system = weewx.units.unit_constants[unit_system_name]
-
     topic = 'foo/bar'
 
     payload_dict = {
