@@ -47,10 +47,9 @@ class TestQueueSizeCheck(unittest.TestCase):
         orig_queue_size = len(queue)
         max_queue = 7
 
-        with mock.patch('user.MQTTSubscribe.logerr') as mock_logerr:
-            SUT._queue_size_check(queue, max_queue)
-            self.assertEqual(mock_logerr.call_count, 0)
-            self.assertEqual(len(queue), orig_queue_size)
+        SUT._queue_size_check(queue, max_queue)
+        self.assertEqual(mock_logger.logerr.call_count, 0)
+        self.assertEqual(len(queue), orig_queue_size)
 
     def test_queue_max_equal(self):
         mock_logger = mock.Mock(spec=Logger)

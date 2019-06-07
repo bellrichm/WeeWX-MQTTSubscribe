@@ -10,7 +10,7 @@ import six
 import time
 import weewx
 
-from user.MQTTSubscribe import MQTTSubscribeService
+from user.MQTTSubscribe import MQTTSubscribeService, Logger
 
 class Testnew_loop_packet(unittest.TestCase):
     mock_StdEngine = mock.Mock(spec=weewx.engine.StdEngine)
@@ -93,19 +93,20 @@ class Testnew_loop_packet(unittest.TestCase):
         with mock.patch('user.MQTTSubscribe.MQTTSubscribe') as mock_manager:
             with mock.patch('user.MQTTSubscribe.weewx.units.to_std_system') as mock_to_std_system:
                 with mock.patch('user.MQTTSubscribe.weewx.accum.Accum') as mock_Accum:
-                    type(mock_manager.return_value).Subscribed_topics = mock.PropertyMock(return_value = [topic])
-                    type(mock_manager.return_value).get_data = mock.Mock(return_value=self.generator([self.queue_data, None]))
-                    type(mock_Accum.return_value).isEmpty = mock.PropertyMock(return_value = True)
-                    type(mock_Accum.return_value).addRecord = mock.Mock(side_effect=weewx.accum.OutOfSpan("Attempt to add out-of-interval record"))
+                    with mock.patch('user.MQTTSubscribe.Logger') as mock_logger:
+                        type(mock_manager.return_value).Subscribed_topics = mock.PropertyMock(return_value = [topic])
+                        type(mock_manager.return_value).get_data = mock.Mock(return_value=self.generator([self.queue_data, None]))
+                        type(mock_Accum.return_value).isEmpty = mock.PropertyMock(return_value = True)
+                        type(mock_Accum.return_value).addRecord = mock.Mock(side_effect=weewx.accum.OutOfSpan("Attempt to add out-of-interval record"))
 
-                    SUT = MQTTSubscribeService(self.mock_StdEngine, self.config_dict)
-                    SUT.end_ts = start_ts
+                        SUT = MQTTSubscribeService(self.mock_StdEngine, self.config_dict)
+                        SUT.end_ts = start_ts
 
-                    with mock.patch('user.MQTTSubscribe.loginf') as mock_loginf:
+                        mock_logger.reset_mock()
                         SUT.new_loop_packet(new_loop_packet_event)
 
                         self.assertDictEqual(new_loop_packet_event.packet, self.final_packet_data)
-                        mock_loginf.assert_called_once()
+                        mock_logger.return_value.loginf.assert_called_once()
                         mock_Accum.getRecord.assert_not_called()
                         mock_to_std_system.assert_not_called()
 
@@ -225,19 +226,21 @@ class Testnew_archive_record(unittest.TestCase):
         with mock.patch('user.MQTTSubscribe.MQTTSubscribe') as mock_manager:
             with mock.patch('user.MQTTSubscribe.weewx.units.to_std_system') as mock_to_std_system:
                 with mock.patch('user.MQTTSubscribe.weewx.accum.Accum') as mock_Accum:
-                    type(mock_manager.return_value).Subscribed_topics = mock.PropertyMock(return_value = [topic])
-                    type(mock_manager.return_value).get_data = mock.Mock(return_value=self.generator([self.queue_data, None]))
-                    type(mock_Accum.return_value).isEmpty = mock.PropertyMock(return_value = True)
-                    type(mock_Accum.return_value).addRecord = mock.Mock(side_effect=weewx.accum.OutOfSpan("Attempt to add out-of-interval record"))
+                    with mock.patch('user.MQTTSubscribe.Logger') as mock_logger:
 
-                    SUT = MQTTSubscribeService(self.mock_StdEngine, self.config_dict)
-                    SUT.end_ts = start_ts
+                        type(mock_manager.return_value).Subscribed_topics = mock.PropertyMock(return_value = [topic])
+                        type(mock_manager.return_value).get_data = mock.Mock(return_value=self.generator([self.queue_data, None]))
+                        type(mock_Accum.return_value).isEmpty = mock.PropertyMock(return_value = True)
+                        type(mock_Accum.return_value).addRecord = mock.Mock(side_effect=weewx.accum.OutOfSpan("Attempt to add out-of-interval record"))
 
-                    with mock.patch('user.MQTTSubscribe.loginf') as mock_loginf:
+                        SUT = MQTTSubscribeService(self.mock_StdEngine, self.config_dict)
+                        SUT.end_ts = start_ts
+
+                        mock_logger.reset_mock()
                         SUT.new_archive_record(new_loop_record_event)
 
                         self.assertDictEqual(new_loop_record_event.record, self.final_record_data)
-                        mock_loginf.assert_called_once()
+                        mock_logger.return_value.loginf.assert_called_once()
                         mock_Accum.getRecord.assert_not_called()
                         mock_to_std_system.assert_not_called()
 
