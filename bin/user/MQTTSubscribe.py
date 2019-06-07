@@ -184,7 +184,7 @@ class Logger:
         self.logmsg(syslog.LOG_ERR, prefix, msg)
 
 class CollectData:
-    def __init__(self, fields, console=False):
+    def __init__(self, fields):
         self.fields = fields
         self.data = {}
 
@@ -267,7 +267,7 @@ class TopicManager:
 
         queue_wind = self._get_wind_queue(topic)
         self.logger.logdbg("MQTTSubscribe", "TopicManager wind queue size is: %i" % len(queue_wind))
-        collector = CollectData(self.wind_fields, False)
+        collector = CollectData(self.wind_fields)
         while (len(queue_wind) > 0 and queue_wind[0]['dateTime'] <= end_ts):
             wind_data = queue_wind.popleft()
             data = collector.add_data(wind_data)
