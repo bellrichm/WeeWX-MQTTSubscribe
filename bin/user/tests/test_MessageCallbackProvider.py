@@ -117,7 +117,8 @@ class TestKeywordload(unittest.TestCase):
         self.assertEqual(mock_logger.logerr.call_count, 3)
 
     def test_payload_missing_dateTime(self):
-        manager = TopicManager(self.topic_config)
+        ml = mock.Mock(spec=Logger)
+        manager = TopicManager(self.topic_config, ml)
         mock_logger = mock.Mock(spec=Logger)
 
         SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, manager)
@@ -144,7 +145,8 @@ class TestKeywordload(unittest.TestCase):
         self.assertIn('dateTime', data)
 
     def test_payload_missing_units(self):
-        manager = TopicManager(self.topic_config)
+        ml = mock.Mock(spec=Logger)
+        manager = TopicManager(self.topic_config, ml)
         mock_logger = mock.Mock(spec=Logger)
 
         SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, manager)
@@ -170,7 +172,8 @@ class TestKeywordload(unittest.TestCase):
         self.assertEqual(data['usUnits'], self.unit_system)
 
     def test_payload_good(self):
-        manager = TopicManager(self.topic_config)
+        ml = mock.Mock(spec=Logger)
+        manager = TopicManager(self.topic_config, ml)
         mock_logger = mock.Mock(spec=Logger)
 
         SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, manager)
@@ -238,8 +241,9 @@ class TestJsonPayload(unittest.TestCase):
         self.assertEqual(mock_logger.logerr.call_count, 2)
 
     def test_missing_dateTime(self):
+        ml = mock.Mock(spec=Logger)
         mock_logger = mock.Mock(spec=Logger)
-        manager = TopicManager(self.topic_config)
+        manager = TopicManager(self.topic_config, ml)
 
         SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, manager)
 
@@ -264,7 +268,8 @@ class TestJsonPayload(unittest.TestCase):
         self.assertIn('dateTime', data)
 
     def test_missing_units(self):
-        manager = TopicManager(self.topic_config)
+        ml = mock.Mock(spec=Logger)
+        manager = TopicManager(self.topic_config, ml)
         mock_logger = mock.Mock(spec=Logger)
 
         SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, manager)
@@ -291,8 +296,9 @@ class TestJsonPayload(unittest.TestCase):
         self.assertEqual(data['usUnits'], self.unit_system)
 
     def test_payload_good(self):
+        ml = mock.Mock(spec=Logger)
         mock_logger = mock.Mock(spec=Logger)
-        manager = TopicManager(self.topic_config)
+        manager = TopicManager(self.topic_config, ml)
 
         SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, manager)
 
@@ -359,7 +365,8 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
 
     def test_None_payload(self):
         fieldname = b'bar'
-        manager = TopicManager(self.topic_config)
+        ml = mock.Mock(spec=Logger)
+        manager = TopicManager(self.topic_config, ml)
         mock_logger = mock.Mock(spec=Logger)
 
         SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, manager)
@@ -390,7 +397,8 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         topics[topic]['unit_system'] = self.unit_system_name
         topics[topic]['max_queue'] = six.MAXSIZE
         topic_config = configobj.ConfigObj(topics)
-        manager = TopicManager(topic_config)
+        ml = mock.Mock(spec=Logger)
+        manager = TopicManager(topic_config, ml)
         mock_logger = mock.Mock(spec=Logger)
 
         SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, manager)
@@ -422,7 +430,8 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         topics[topic]['unit_system'] = self.unit_system_name
         topics[topic]['max_queue'] = six.MAXSIZE
         topic_config = configobj.ConfigObj(topics)
-        manager = TopicManager(topic_config)
+        ml = mock.Mock(spec=Logger)
+        manager = TopicManager(topic_config, ml)
         mock_logger = mock.Mock(spec=Logger)
 
         SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, manager)
@@ -454,7 +463,8 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         topics[topic]['unit_system'] = self.unit_system_name
         topics[topic]['max_queue'] = six.MAXSIZE
         topic_config = configobj.ConfigObj(topics)
-        manager = TopicManager(topic_config)
+        ml = mock.Mock(spec=Logger)
+        manager = TopicManager(topic_config, ml)
         mock_logger = mock.Mock(spec=Logger)
 
         SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, manager)
@@ -522,7 +532,8 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
 
     def test_None_payload(self):
         topic_byte = b'foo/bar' # ToDo - use self.topic
-        manager = TopicManager(self.topic_config)
+        ml = mock.Mock(spec=Logger)
+        manager = TopicManager(self.topic_config, ml)
         mock_logger = mock.Mock(spec=Logger)
 
         message_handler_config = dict(self.message_handler_config)
@@ -555,7 +566,8 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
         topics[topic]['unit_system'] = self.unit_system_name
         topics[topic]['max_queue'] = six.MAXSIZE
         topic_config = configobj.ConfigObj(topics)
-        manager = TopicManager(topic_config)
+        ml = mock.Mock(spec=Logger)
+        manager = TopicManager(topic_config, ml)
         mock_logger = mock.Mock(spec=Logger)
 
         SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, manager)
@@ -587,7 +599,8 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
         topics[topic]['unit_system'] = self.unit_system_name
         topics[topic]['max_queue'] = six.MAXSIZE
         topic_config = configobj.ConfigObj(topics)
-        manager = TopicManager(topic_config)
+        ml = mock.Mock(spec=Logger)
+        manager = TopicManager(topic_config, ml)
         mock_logger = mock.Mock(spec=Logger)
 
         message_handler_config = dict(self.message_handler_config)
@@ -623,7 +636,8 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
         topics[topic]['unit_system'] = self.unit_system_name
         topics[topic]['max_queue'] = six.MAXSIZE
         topic_config = configobj.ConfigObj(topics)
-        manager = TopicManager(topic_config)
+        ml = mock.Mock(spec=Logger)
+        manager = TopicManager(topic_config, ml)
         mock_logger = mock.Mock(spec=Logger)
 
         message_handler_config = dict(self.message_handler_config)

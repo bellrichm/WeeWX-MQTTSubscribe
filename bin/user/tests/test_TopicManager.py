@@ -9,7 +9,7 @@ import random
 import string
 import time
 
-from user.MQTTSubscribe import TopicManager
+from user.MQTTSubscribe import TopicManager, Logger
 
 class TestQueueSizeCheck(unittest.TestCase):
     topic = 'foo/bar'
@@ -18,7 +18,9 @@ class TestQueueSizeCheck(unittest.TestCase):
     config = configobj.ConfigObj(config_dict)
 
     def test_queue_max_reached(self):
-        SUT = TopicManager(self.config)
+        mock_logger = mock.Mock(spec=Logger)
+
+        SUT = TopicManager(self.config, mock_logger)
 
         queue = deque()
         queue.append( ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), )
@@ -28,13 +30,14 @@ class TestQueueSizeCheck(unittest.TestCase):
         orig_queue_size = len(queue)
         max_queue = 2
 
-        with mock.patch('user.MQTTSubscribe.logerr') as mock_logerr:
-            SUT._queue_size_check(queue, max_queue)
-            self.assertEqual(mock_logerr.call_count, orig_queue_size-max_queue+1)
-            self.assertEqual(len(queue), max_queue-1)
+        SUT._queue_size_check(queue, max_queue)
+        self.assertEqual(mock_logger.logerr.call_count, orig_queue_size-max_queue+1)
+        self.assertEqual(len(queue), max_queue-1)
 
     def test_queue_max_not_reached(self):
-        SUT = TopicManager(self.config)
+        mock_logger = mock.Mock(spec=Logger)
+
+        SUT = TopicManager(self.config, mock_logger)
 
         queue = deque()
         queue.append( ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), )
@@ -50,7 +53,9 @@ class TestQueueSizeCheck(unittest.TestCase):
             self.assertEqual(len(queue), orig_queue_size)
 
     def test_queue_max_equal(self):
-        SUT = TopicManager(self.config)
+        mock_logger = mock.Mock(spec=Logger)
+
+        SUT = TopicManager(self.config, mock_logger)
 
         queue = deque()
         queue.append( ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), )
@@ -60,10 +65,9 @@ class TestQueueSizeCheck(unittest.TestCase):
         orig_queue_size = len(queue)
         max_queue = 4
 
-        with mock.patch('user.MQTTSubscribe.logerr') as mock_logerr:
-            SUT._queue_size_check(queue, max_queue)
-            self.assertEqual(mock_logerr.call_count, orig_queue_size-max_queue+1)
-            self.assertEqual(len(queue), max_queue-1)
+        SUT._queue_size_check(queue, max_queue)
+        self.assertEqual(mock_logger.logerr.call_count, orig_queue_size-max_queue+1)
+        self.assertEqual(len(queue), max_queue-1)
 
 class TestAppendData(unittest.TestCase):
     topic = 'foo/bar'
@@ -81,7 +85,9 @@ class TestAppendData(unittest.TestCase):
             'dateTime': time.time()
         }
 
-        SUT = TopicManager(self.config)
+        mock_logger = mock.Mock(spec=Logger)
+
+        SUT = TopicManager(self.config, mock_logger)
 
         SUT.append_data(self.topic, queue_data, fieldname=fieldname)
         queue = SUT._get_queue(self.topic)
@@ -100,7 +106,9 @@ class TestAppendData(unittest.TestCase):
             'dateTime': time.time()
         }
 
-        SUT = TopicManager(self.config)
+        mock_logger = mock.Mock(spec=Logger)
+
+        SUT = TopicManager(self.config, mock_logger)
 
         SUT.append_data(self.topic, queue_data)
         queue = SUT._get_queue(self.topic)
@@ -118,7 +126,9 @@ class TestAppendData(unittest.TestCase):
             'usUnits': 1
         }
 
-        SUT = TopicManager(self.config)
+        mock_logger = mock.Mock(spec=Logger)
+
+        SUT = TopicManager(self.config, mock_logger)
 
         SUT.append_data(self.topic, queue_data)
         queue = SUT._get_queue(self.topic)
@@ -137,7 +147,9 @@ class TestAppendData(unittest.TestCase):
             'dateTime': time.time()
         }
 
-        SUT = TopicManager(self.config)
+        mock_logger = mock.Mock(spec=Logger)
+
+        SUT = TopicManager(self.config, mock_logger)
 
         SUT.append_data(self.topic, queue_data)
         queue = SUT._get_queue(self.topic)
@@ -164,9 +176,11 @@ class TestGetQueueData(unittest.TestCase):
         }
 
     def test_queue_empty(self):
+        mock_logger = mock.Mock(spec=Logger)
+
         with mock.patch('user.MQTTSubscribe.CollectData') as mock_CollectData:
             type(mock_CollectData.return_value).get_data = mock.Mock(return_value={})
-            SUT = TopicManager(self.config)
+            SUT = TopicManager(self.config, mock_logger)
 
             gen = SUT.get_data(self.topic)
             data = next(gen, None)
@@ -174,9 +188,11 @@ class TestGetQueueData(unittest.TestCase):
             self.assertIsNone(data)
 
     def test_queue_datetime_in_future(self):
+        mock_logger = mock.Mock(spec=Logger)
+
         with mock.patch('user.MQTTSubscribe.CollectData') as mock_CollectData:
             type(mock_CollectData.return_value).get_data = mock.Mock(return_value={})
-            SUT = TopicManager(self.config)
+            SUT = TopicManager(self.config, mock_logger)
             SUT.append_data(self.topic, self.create_queue_data())
             gen = SUT.get_data(self.topic, 0)
             data = next(gen, None)
@@ -184,9 +200,11 @@ class TestGetQueueData(unittest.TestCase):
             self.assertIsNone(data)
 
     def test_queue_good(self):
+        mock_logger = mock.Mock(spec=Logger)
+
         with mock.patch('user.MQTTSubscribe.CollectData') as mock_CollectData:
             type(mock_CollectData.return_value).get_data = mock.Mock(return_value={})
-            SUT = TopicManager(self.config)
+            SUT = TopicManager(self.config, mock_logger)
             elem_one = self.create_queue_data()
             elem_two = self.create_queue_data()
             elem_three = self.create_queue_data()
@@ -219,9 +237,11 @@ class TestGetWindQueueData(unittest.TestCase):
         }
 
     def test_queue_datetime_in_future(self):
+        mock_logger = mock.Mock(spec=Logger)
+
         with mock.patch('user.MQTTSubscribe.CollectData') as mock_CollectData:
             type(mock_CollectData.return_value).get_data = mock.Mock(return_value={})
-            SUT = TopicManager(self.config)
+            SUT = TopicManager(self.config, mock_logger)
             SUT.append_data(self.topic, self.create_queue_data(), fieldname=self.fieldname)
             gen = SUT.get_data(self.topic, 0)
             data = next(gen, None)
@@ -229,11 +249,13 @@ class TestGetWindQueueData(unittest.TestCase):
             self.assertIsNone(data)
 
     def test_add_to_collector_returns_data(self):
+        mock_logger = mock.Mock(spec=Logger)
+
         collected_data = self.create_queue_data()
         with mock.patch('user.MQTTSubscribe.CollectData') as mock_CollectData:
             type(mock_CollectData.return_value).get_data = mock.Mock(return_value={})
             type(mock_CollectData.return_value).add_data = mock.Mock(return_value=collected_data)
-            SUT = TopicManager(self.config)
+            SUT = TopicManager(self.config, mock_logger)
             SUT.append_data(self.topic, self.create_queue_data(), fieldname=self.fieldname)
             gen = SUT.get_data(self.topic)
             data = next(gen, None)
@@ -244,11 +266,13 @@ class TestGetWindQueueData(unittest.TestCase):
             self.assertIsNone(data)
 
     def test_get_from_collector_returns_data(self):
+        mock_logger = mock.Mock(spec=Logger)
+
         collected_data = self.create_queue_data()
         with mock.patch('user.MQTTSubscribe.CollectData') as mock_CollectData:
             type(mock_CollectData.return_value).get_data = mock.Mock(return_value=collected_data)
             type(mock_CollectData.return_value).add_data = mock.Mock(return_value={})
-            SUT = TopicManager(self.config)
+            SUT = TopicManager(self.config, mock_logger)
             SUT.append_data(self.topic, self.create_queue_data(), fieldname=self.fieldname)
             gen = SUT.get_data(self.topic)
             data = next(gen, None)
