@@ -346,7 +346,7 @@ class MessageCallbackProvider:
         return data
 
     def _log_message(self, msg):
-    	self.logger.logdbg("MQTTSubscribe", "MessageCallbackProvider For %s received: %s" %(msg.topic, msg.payload))
+    	self.logger.logdbg("MQTTSubscribe", "MessageCallbackProvider For %s has QOS of %i and retain of %s received: %s" %(msg.topic, msg.qos, msg.retain, msg.payload))
 
     def _log_exception(self, exception, msg):
         self.logger.logerr("MQTTSubscribe", "MessageCallbackProvider on_message_keyword failed with: %s" % exception)
@@ -481,6 +481,8 @@ class MQTTSubscribe():
 
         self.client.on_message = message_callback_provider.get_callback()
 
+        self.client.on_subscribe = self._on_subscribe
+
         self.client.on_connect = self._on_connect
         self.client.on_disconnect = self._on_disconnect
 
@@ -506,12 +508,25 @@ class MQTTSubscribe():
         self.client.disconnect()
 
     def _on_connect(self, client, userdata, flags, rc):
+        # https://pypi.org/project/paho-mqtt/#on-connect
+        # rc:
+        # 0: Connection successful 
+        # 1: Connection refused - incorrect protocol version 
+        # 2: Connection refused - invalid client identifier 
+        # 3: Connection refused - server unavailable 
+        # 4: Connection refused - bad username or password 
+        # 5: Connection refused - not authorised 
+        # 6-255: Currently unused.
         self.logger.logdbg("MQTTSubscribe", "Connected with result code %i" % rc)
         for topic in self.manager.subscribed_topics:
-            client.subscribe(topic, self.manager.get_qos(topic))
+            (result, mid) = client.subscribe(topic, self.manager.get_qos(topic))
+            self.logger.logdbg("MQTTSubscribe","Subscribe to %s has a mid %i and rc %i" %(topic, mid, result))
 
     def _on_disconnect(self, client, userdata, rc):
         self.logger.logdbg("MQTTSubscribe", "Disconnected with result code %i" %rc)
+
+    def _on_subscribe(self, client, userdata, mid, granted_qos):
+        self.logger.logdbg("MQTTSubscribe", "Subscribed to topic mid: %i is size %i has a QOS of %i" %(mid, len(granted_qos), granted_qos[0]))
 
     def _on_log(self, client, userdata, level, msg):
         self.mqtt_logger[level]("MQTTSubscribe/MQTT", msg)
