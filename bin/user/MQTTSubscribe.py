@@ -345,11 +345,17 @@ class MessageCallbackProvider:
         # if it's anything else, return it in its original form
         return data
 
+    def _log_message(self, msg):
+    	self.logger.logdbg("MQTTSubscribe", "MessageCallbackProvider For %s received: %s" %(msg.topic, msg.payload))
+
+    def _log_exception(self, exception, msg):
+        self.logger.logerr("MQTTSubscribe", "MessageCallbackProvider on_message_keyword failed with: %s" % exception)
+        self.logger.logerr("MQTTSubscribe", "**** MessageCallbackProvider Ignoring topic=%s and payload=%s" % (msg.topic, msg.payload))
+
     def _on_message_keyword(self, client, userdata, msg):
         # Wrap all the processing in a try, so it doesn't crash and burn on any error
         try:
-            topic = msg.topic
-            self.logger.logdbg("MQTTSubscribe", "MessageCallbackProvider For %s received: %s" %(msg.topic, msg.payload))
+            self._log_message(msg)
 
             fields = msg.payload.split(self.keyword_delimiter)
             data = {}
@@ -371,13 +377,12 @@ class MessageCallbackProvider:
                 self.logger.logerr("MQTTSubscribe", "MessageCallbackProvider on_message_keyword failed to find data in: topic=%s and payload=%s" % (msg.topic, msg.payload))
         
         except Exception as exception:
-            self.logger.logerr("MQTTSubscribe", "MessageCallbackProvider on_message_keyword failed with: %s" % exception)
-            self.logger.logerr("MQTTSubscribe", "**** MessageCallbackProvider Ignoring topic=%s and payload=%s" % (msg.topic, msg.payload))
+            self._log_exception(exception, msg)
 
     def _on_message_json(self, client, userdata, msg):
         # Wrap all the processing in a try, so it doesn't crash and burn on any error
         try:
-            self.logger.logdbg("MQTTSubscribe", "MessageCallbackProvider For %s received: %s" %(msg.topic, msg.payload))
+            self._log_message(msg)
             # ToDo - better way?
             if six.PY2:
                 data = self._byteify(
@@ -389,15 +394,14 @@ class MessageCallbackProvider:
             self.topic_manager.append_data(msg.topic, data)
 
         except Exception as exception:
-            self.logger.logerr("MQTTSubscribe", "MessageCallbackProvider on_message_json failed with: %s" % exception)
-            self.logger.logerr("MQTTSubscribe", "**** MessageCallbackProvider Ignoring topic=%s and payload=%s" % (msg.topic, msg.payload))
+            self._log_exception(exception, msg)
 
     def _on_message_individual(self, client, userdata, msg):
         wind_fields = ['windGust', 'windGustDir', 'windDir', 'windSpeed']
 
         # Wrap all the processing in a try, so it doesn't crash and burn on any error
         try:
-            self.logger.logdbg("MQTTSubscribe", "MessageCallbackProvider For %s received: %s" %(msg.topic, msg.payload))
+            self._log_message(msg)
 
             if self.full_topic_fieldname:
                 key = msg.topic.encode('ascii', 'ignore') # ToDo - research
@@ -412,8 +416,7 @@ class MessageCallbackProvider:
 
             self.topic_manager.append_data(msg.topic, data)
         except Exception as exception:
-            self.logger.logerr("MQTTSubscribe", "MessageCallbackProvider on_message_individual failed with: %s" % exception)
-            self.logger.logerr("MQTTSubscribe", "**** MessageCallbackProvider Ignoring topic=%s and payload=%s" % (msg.topic, msg.payload))
+            self._log_exception(exception, msg)
 
 # Class to manage MQTT subscriptions
 class MQTTSubscribe():
@@ -499,7 +502,7 @@ class MQTTSubscribe():
         self.client.loop_start()
 
     # shut it down
-    def shutDown(self):
+    def disconnect(self):
         self.client.disconnect()
 
     def _on_connect(self, client, userdata, flags, rc):
@@ -549,7 +552,7 @@ class MQTTSubscribeService(StdService):
             raise ValueError("MQTTSubscribeService: Unknown binding: %s" % binding)
 
     def shutDown(self):
-        self.subscriber.shutDown()
+        self.subscriber.disconnect()
 
     def _process_data(self, topic, start_ts, end_ts, record):
         self.logger.logdbg("MQTTSubscribeService", "Processing interval: %f %f" %(start_ts, end_ts))
@@ -627,6 +630,9 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice):
     @property
     def hardware_name(self):
         return "MQTTSubscribeDriver"
+
+    def closePort(self):
+        self.subscriber.disconnect()
 
     def genLoopPackets(self):
       while True:
