@@ -432,7 +432,7 @@ class MQTTSubscribe():
 
         clientid = service_dict.get('clientid',
                                 'MQTTSubscribe-' + str(random.randint(1000, 9999)))
-        clean_session = service_dict.get('clean_session', True)
+        clean_session = to_bool(service_dict.get('clean_session', True))
 
         host = service_dict.get('host', 'localhost')
         keepalive = to_int(service_dict.get('keepalive', 60))
@@ -518,6 +518,7 @@ class MQTTSubscribe():
         # 5: Connection refused - not authorised 
         # 6-255: Currently unused.
         self.logger.logdbg("MQTTSubscribe", "Connected with result code %i" % rc)
+        self.logger.logdbg("MQTTSubscribe", "Connected flags %s" % str(flags))
         for topic in self.manager.subscribed_topics:
             (result, mid) = client.subscribe(topic, self.manager.get_qos(topic))
             self.logger.logdbg("MQTTSubscribe","Subscribe to %s has a mid %i and rc %i" %(topic, mid, result))
