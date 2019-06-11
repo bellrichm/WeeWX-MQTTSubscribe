@@ -200,6 +200,8 @@ class TopicManager:
 
         self.logger.loginf("MQTTSubscribe", "TopicManager config is %s" % config)
 
+        default_qos = to_int(config.get('qos', 0))
+
         default_unit_system_name = config.get('unit_system', 'US').strip().upper()
         if default_unit_system_name not in weewx.units.unit_constants:
             raise ValueError("MQTTSubscribe: Unknown unit system: %s" % default_unit_system_name)
@@ -215,6 +217,8 @@ class TopicManager:
         for topic in config.sections:
             topic_dict = config.get(topic, {})
 
+            qos = to_int(topic_dict.get('qos', default_qos))
+
             unit_system_name = topic_dict.get('unit_system', default_unit_system_name).strip().upper()
             if unit_system_name not in weewx.units.unit_constants:
                 raise ValueError("MQTTSubscribe: Unknown unit system: %s" % unit_system_name)
@@ -222,6 +226,7 @@ class TopicManager:
 
             self.subscribed_topics[topic] = {}
             self.subscribed_topics[topic]['unit_system'] = unit_system
+            self.subscribed_topics[topic]['qos'] = qos 
             self.subscribed_topics[topic]['max_queue'] = topic_dict.get('max_queue',max_queue)
             self.subscribed_topics[topic]['queue'] = deque()
             self.subscribed_topics[topic]['queue_wind'] = deque()
@@ -240,7 +245,7 @@ class TopicManager:
         if 'usUnits' not in data:
             data['usUnits'] = self._get_unit_system(topic)
 
-        self.logger.logdbg("MQTTSubscribe", "TopicManager Added to queue %s %s: %s" %(topic, self._lookup_topic(topic), to_sorted_string(data)))
+        self.logger.logdbg("MQTTSubscribe", "TopicManager Added to queue %s %s %s: %s" %(topic, self._lookup_topic(topic), weeutil.weeutil.timestamp_to_string(data['dateTime']), to_sorted_string(data)))
         queue.append(data,)
 
     def get_data(self, topic, end_ts=six.MAXSIZE):
@@ -248,7 +253,7 @@ class TopicManager:
         self.logger.logdbg("MQTTSubscribe", "TopicManager queue size is: %i" % len(queue))
         while (len(queue) > 0 and queue[0]['dateTime'] <= end_ts):
             data = queue.popleft()
-            self.logger.logdbg("MQTTSubscribe", "TopicManager Retrieved queue %s: %s" %(topic, to_sorted_string(data)))
+            self.logger.logdbg("MQTTSubscribe", "TopicManager Retrieved queue %s %s: %s" %(topic, weeutil.weeutil.timestamp_to_string(data['dateTime']), to_sorted_string(data)))
             yield data
 
         queue_wind = self._get_wind_queue(topic)
@@ -258,18 +263,21 @@ class TopicManager:
             wind_data = queue_wind.popleft()
             data = collector.add_data(wind_data)
             if data:
-                self.logger.logdbg("MQTTSubscribe", "TopicManager Retrieved wind queue %s: %s" %(topic, to_sorted_string(data)))
+                self.logger.logdbg("MQTTSubscribe", "TopicManager Retrieved wind queue %s %s: %s" %(topic, weeutil.weeutil.timestamp_to_string(data['dateTime']), to_sorted_string(data)))
                 yield data
 
         data = collector.get_data()
         if data:
-            self.logger.logdbg("MQTTSubscribe", "TopicManager Retrieved wind queue final %s: %s" %(topic, to_sorted_string(data)))
+            self.logger.logdbg("MQTTSubscribe", "TopicManager Retrieved wind queue final %s %s: %s" %(topic, weeutil.weeutil.timestamp_to_string(data['dateTime']), to_sorted_string(data)))
             yield data
 
     def _queue_size_check(self, queue, max_queue):
         while len(queue) >= max_queue:
             element = queue.popleft()
             self.logger.logerr("MQTTSubscribe", "TopicManager queue limit %i reached. Removing: %s" %(max_queue, element))
+
+    def get_qos(self, topic):
+        return self._get_value('qos', topic)
 
     def _get_unit_system(self, topic):
         return self._get_value('unit_system', topic)
@@ -421,6 +429,7 @@ class MQTTSubscribe():
 
         clientid = service_dict.get('clientid',
                                 'MQTTSubscribe-' + str(random.randint(1000, 9999)))
+        clean_session = service_dict.get('clean_session', True)
 
         host = service_dict.get('host', 'localhost')
         keepalive = to_int(service_dict.get('keepalive', 60))
@@ -437,6 +446,7 @@ class MQTTSubscribe():
         self.logger.loginf("MQTTSubscribe", "Message callback config is %s" % message_callback_config)
         self.logger.loginf("MQTTSubscribe", "Message callback provider is %s" % message_callback_provider_name)
         self.logger.loginf("MQTTSubscribe", "Client id is %s" % clientid)
+        self.logger.loginf("MQTTSubscribe", "Clean session is %s" % clean_session)
         self.logger.loginf("MQTTSubscribe", "MQTTSubscribe version is %s" % VERSION)
         self.logger.loginf("MQTTSubscribe", "Host is %s" % host)
         self.logger.loginf("MQTTSubscribe", "Port is %s" % port)
@@ -456,7 +466,7 @@ class MQTTSubscribe():
             mqtt.MQTT_LOG_DEBUG: self.logger.logdbg
         }
 
-        self.client = mqtt.Client(client_id=clientid)
+        self.client = mqtt.Client(client_id=clientid, clean_session=clean_session)
 
         if log:
             self.client.on_log = self._on_log
@@ -495,7 +505,7 @@ class MQTTSubscribe():
     def _on_connect(self, client, userdata, flags, rc):
         self.logger.logdbg("MQTTSubscribe", "Connected with result code %i" % rc)
         for topic in self.manager.subscribed_topics:
-            client.subscribe(topic)
+            client.subscribe(topic, self.manager.get_qos(topic))
 
     def _on_disconnect(self, client, userdata, rc):
         self.logger.logdbg("MQTTSubscribe", "Disconnected with result code %i" %rc)
@@ -548,20 +558,20 @@ class MQTTSubscribeService(StdService):
         for data in self.subscriber.get_data(topic, end_ts):
             if data:
                 try:
-                    self.logger.logdbg("MQTTSubscribeService", "Data to accumulate: %s" % to_sorted_string(data))
+                    self.logger.logdbg("MQTTSubscribeService", "Data to accumulate: %s %s" % (weeutil.weeutil.timestamp_to_string(data['dateTime']), to_sorted_string(data)))
                     accumulator.addRecord(data)
                 except weewx.accum.OutOfSpan:
                         self.logger.loginf("MQTTSubscribeService", "Ignoring record outside of interval %f %f %f %s"
-                                 %(start_ts, end_ts, data['dateTime'], to_sorted_string(data)))
+                                 %(start_ts, end_ts, data['dateTime'], (to_sorted_string(data))))
             else:
                 break
 
         target_data = {}
         if not accumulator.isEmpty:
             aggregate_data = accumulator.getRecord()
-            self.logger.logdbg("MQTTSubscribeService", "Data prior to conversion is: %s" % to_sorted_string(aggregate_data))
+            self.logger.logdbg("MQTTSubscribeService", "Data prior to conversion is: %s %s" % (weeutil.weeutil.timestamp_to_string(aggregate_data['dateTime']), to_sorted_string(aggregate_data)))
             target_data = weewx.units.to_std_system(aggregate_data, record['usUnits'])
-            self.logger.logdbg("MQTTSubscribeService", "Data after to conversion is: %s" % to_sorted_string(target_data))
+            self.logger.logdbg("MQTTSubscribeService", "Data after to conversion is: %s %s" % (weeutil.weeutil.timestamp_to_string(target_data['dateTime']), to_sorted_string(target_data)))
         else:
             self.logger.logdbg("MQTTSubscribeService", "Queue was empty")
 
@@ -572,10 +582,10 @@ class MQTTSubscribeService(StdService):
         self.end_ts = event.packet['dateTime']
 
         for topic in self.subscriber.Subscribed_topics: # investigate that topics might not be cached.. therefore use subscribed
-            self.logger.logdbg("MQTTSubscribeService", "Packet prior to update is: %s" % to_sorted_string(event.packet))
+            self.logger.logdbg("MQTTSubscribeService", "Packet prior to update is: %s %s" % (weeutil.weeutil.timestamp_to_string(event.packet['dateTime']), to_sorted_string(event.packet)))
             target_data = self._process_data(topic, start_ts, self.end_ts, event.packet)
             event.packet.update(target_data)
-            self.logger.logdbg("MQTTSubscribeService", "Packet after update is: %s" % to_sorted_string(event.packet))
+            self.logger.logdbg("MQTTSubscribeService", "Packet after update is: %s %s" % (weeutil.weeutil.timestamp_to_string(event.packet['dateTime']), to_sorted_string(event.packet)))
 
     # this works for hardware generation, but software generation does not 'quality control'
     # the archive record, so this data is not 'QC' in this case.
@@ -585,10 +595,10 @@ class MQTTSubscribeService(StdService):
         start_ts = end_ts - event.record['interval'] * 60 - self.overlap
 
         for topic in self.subscriber.Subscribed_topics: # investigate that topics might not be cached.. therefore use subscribed
-            self.logger.logdbg("MQTTSubscribeService", "Record prior to update is: %s" % to_sorted_string(event.record))
+            self.logger.logdbg("MQTTSubscribeService", "Record prior to update is: %s %s" % (weeutil.weeutil.timestamp_to_string(event.record['dateTime']), to_sorted_string(event.record)))
             target_data = self._process_data(topic, start_ts, self.end_ts, event.record)
             event.record.update(target_data)
-            self.logger.logdbg("MQTTSubscribeService", "Record after update is: %s" % to_sorted_string(event.record))
+            self.logger.logdbg("MQTTSubscribeService", "Record after update is: %s %s" % (weeutil.weeutil.timestamp_to_string(event.record['dateTime']), to_sorted_string(event.record)))
 
 def loader(config_dict, engine):
     config = configobj.ConfigObj(config_dict)
@@ -837,14 +847,14 @@ if __name__ == '__main__': # pragma: no cover
             time.sleep(sleep_amount)
 
             for record in driver.genArchiveRecords(end_period_ts):
-                print("Record is: %s" % to_sorted_string(record))
+                print("Record is: %s %s" % (weeutil.weeutil.timestamp_to_string(record['dateTime']), to_sorted_string(record)))
 
             i += 1
 
     def simulate_driver_packet(driver, record_count):
         i = 0
         for packet in driver.genLoopPackets():
-            print("Packet is: %s" % to_sorted_string(packet))
+            print("Packet is: %s %s" % (weeutil.weeutil.timestamp_to_string(packet['dateTime']), to_sorted_string(packet)))
             i += 1
             if i >= record_count:
                 break
@@ -871,12 +881,12 @@ if __name__ == '__main__': # pragma: no cover
                                                             record=data,
                                                             origin='hardware')
                 engine.dispatchEvent(new_archive_record_event)
-                print("Archive Record is: %s" % to_sorted_string(new_archive_record_event.record))
+                print("Archive Record is: %s %s" % (weeutil.weeutil.timestamp_to_string(new_archive_record_event.record['dateTime']), to_sorted_string(new_archive_record_event.record)))
             elif binding == 'loop':
                 new_loop_packet_event = weewx.Event(weewx.NEW_LOOP_PACKET,
                                                         packet=data)
                 engine.dispatchEvent(new_loop_packet_event)
-                print("Loop packet is: %s" % to_sorted_string(new_loop_packet_event.packet))
+                print("Loop packet is: %s %s" % (weeutil.weeutil.timestamp_to_string(new_loop_packet_event.packet['dateTime']), to_sorted_string(new_loop_packet_event.packet)))
             else:
                 pass
 
