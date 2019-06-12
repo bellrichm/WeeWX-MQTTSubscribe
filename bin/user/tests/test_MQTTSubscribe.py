@@ -180,18 +180,26 @@ class Teston_connect(unittest.TestCase):
 
         config = configobj.ConfigObj(config_dict)
 
+        subscribed_topics = dict(config_dict['topics'])
+        qos = 0
+
         mock_logger = mock.Mock(spec=Logger)
 
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
             with mock.patch('user.MQTTSubscribe.MessageCallbackProvider') as mock_provider:
-                SUT = MQTTSubscribe(config, mock_logger)
+                with mock.patch('user.MQTTSubscribe.TopicManager') as mock_manager:
+                    type(mock_manager.return_value).Subscribed_topics = mock.PropertyMock(return_value = subscribed_topics)
+                    type(mock_manager.return_value).get_qos = mock.Mock(return_value=qos)
+                    mock_client.subscribe.return_value = [1, 0]
 
-                rc = random.randint(1, 10)
-                SUT._on_connect(mock_client, None, None, rc,)
+                    SUT = MQTTSubscribe(config, mock_logger)
 
-                self.assertEqual(mock_client.subscribe.call_count, 2)
-                mock_client.subscribe.assert_any_call(topic1)
-                mock_client.subscribe.assert_any_call(topic2)
+                    rc = random.randint(1, 10)
+                    SUT._on_connect(mock_client, None, None, rc,)
+
+                    self.assertEqual(mock_client.subscribe.call_count, 2)
+                    mock_client.subscribe.assert_any_call(topic1, qos)
+                    mock_client.subscribe.assert_any_call(topic2, qos)
 
 if __name__ == '__main__':
     unittest.main()

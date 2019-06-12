@@ -519,7 +519,7 @@ class MQTTSubscribe():
         # 6-255: Currently unused.
         self.logger.logdbg("MQTTSubscribe", "Connected with result code %i" % rc)
         self.logger.logdbg("MQTTSubscribe", "Connected flags %s" % str(flags))
-        for topic in self.manager.subscribed_topics:
+        for topic in self.manager.Subscribed_topics:
             (result, mid) = client.subscribe(topic, self.manager.get_qos(topic))
             self.logger.logdbg("MQTTSubscribe","Subscribe to %s has a mid %i and rc %i" %(topic, mid, result))
 
@@ -634,6 +634,7 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice):
       self.logger = Logger(console)
 
       self.wait_before_retry = float(stn_dict.get('wait_before_retry', 2))
+      #self._archive_interval = to_int(stn_dict.get('archive_interval'), 300)
       self.archive_topic = stn_dict.get('archive_topic', None)
 
       self.logger.loginf("MQTTSubscribeDriver", "Wait before retry is %i" % self.wait_before_retry)
@@ -646,6 +647,10 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice):
     @property
     def hardware_name(self):
         return "MQTTSubscribeDriver"
+
+    #@property
+    #def archive_interval(self):
+    #    return self._archive_interval
 
     def closePort(self):
         self.subscriber.disconnect()
