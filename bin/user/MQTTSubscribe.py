@@ -637,7 +637,7 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice):
       self.logger = Logger(console)
 
       self.wait_before_retry = float(stn_dict.get('wait_before_retry', 2))
-      #self._archive_interval = to_int(stn_dict.get('archive_interval'), 300)
+      self._archive_interval = to_int(stn_dict.get('archive_interval', 300))
       self.archive_topic = stn_dict.get('archive_topic', None)
 
       self.logger.loginf("MQTTSubscribeDriver", "Wait before retry is %i" % self.wait_before_retry)
@@ -651,9 +651,9 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice):
     def hardware_name(self):
         return "MQTTSubscribeDriver"
 
-    #@property
-    #def archive_interval(self):
-    #    return self._archive_interval
+    @property
+    def archive_interval(self):
+        return self._archive_interval
 
     def closePort(self):
         self.subscriber.disconnect()
