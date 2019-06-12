@@ -74,6 +74,8 @@ class TestKeywordload(unittest.TestCase):
         msg = Msg()
         msg.topic = self.topic
         msg.payload = ''
+        msg.qos = 0
+        msg.retain = 0
 
         SUT._on_message_keyword(None, None, msg)
         self.assertEqual(mock_logger.logerr.call_count, 3)
@@ -107,6 +109,8 @@ class TestKeywordload(unittest.TestCase):
         msg = Msg()
         msg.topic = self.topic
         msg.payload = 'field1:1'
+        msg.qos = 0
+        msg.retain = 0
 
         SUT._on_message_keyword(None, None, msg)
         self.assertEqual(mock_logger.logerr.call_count, 3)
@@ -129,6 +133,8 @@ class TestKeywordload(unittest.TestCase):
         msg = Msg()
         msg.topic = self.topic
         msg.payload = payload_str
+        msg.qos = 0
+        msg.retain = 0
 
         SUT._on_message_keyword(None, None, msg)
 
@@ -152,6 +158,8 @@ class TestKeywordload(unittest.TestCase):
         msg = Msg()
         msg.topic = self.topic
         msg.payload = payload_str
+        msg.qos = 0
+        msg.retain = 0
 
         SUT._on_message_keyword(None, None, msg)
         mock_manager.append_data.assert_called_once_with(msg.topic, payload_dict)
@@ -175,6 +183,8 @@ class TestKeywordload(unittest.TestCase):
         msg = Msg()
         msg.topic = self.topic
         msg.payload = payload_str
+        msg.qos = 0
+        msg.retain = 0
 
         SUT._on_message_keyword(None, None, msg)
         mock_manager.append_data.assert_called_once_with(msg.topic, payload_dict)
@@ -229,6 +239,8 @@ class TestJsonPayload(unittest.TestCase):
         msg = Msg()
         msg.topic = self.topic
         msg.payload = payload
+        msg.qos = 0
+        msg.retain = 0
 
         SUT._on_message_json(None, None, msg)
 
@@ -251,6 +263,8 @@ class TestJsonPayload(unittest.TestCase):
         msg = Msg()
         msg.topic = self.topic
         msg.payload = payload
+        msg.qos = 0
+        msg.retain = 0
 
         SUT._on_message_json(None, None, msg)
 
@@ -274,6 +288,8 @@ class TestJsonPayload(unittest.TestCase):
         msg = Msg()
         msg.topic = self.topic
         msg.payload = payload
+        msg.qos = 0
+        msg.retain = 0
 
         SUT._on_message_json(None, None, msg)
 
@@ -324,6 +340,8 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         msg = Msg()
         msg.topic = self.topic.decode('utf-8')
         msg.payload = None
+        msg.qos = 0
+        msg.retain = 0
 
         SUT._on_message_individual(None, None, msg)
 
@@ -339,6 +357,8 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         msg.topic = self.single_topic.decode('utf-8')
         payload = round(random.uniform(1, 100), 2)
         msg.payload = str(payload)
+        msg.qos = 0
+        msg.retain = 0
 
         SUT._on_message_individual(None, None, msg)
         mock_manager.append_data.assert_called_once_with(msg.topic, {self.fieldname: payload})
@@ -353,6 +373,8 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         msg.topic = self.multi_topic.decode('utf-8')
         payload = round(random.uniform(1, 100), 2)
         msg.payload = str(payload)
+        msg.qos = 0
+        msg.retain = 0
 
         SUT._on_message_individual(None, None, msg)
         mock_manager.append_data.assert_called_once_with(msg.topic, {self.fieldname: payload})
@@ -367,6 +389,8 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         msg.topic = self.topic.decode('utf-8')
         payload = round(random.uniform(1, 100), 2)
         msg.payload = str(payload)
+        msg.qos = 0
+        msg.retain = 0
 
         SUT._on_message_individual(None, None, msg)
         mock_manager.append_data.assert_called_once_with(msg.topic, {self.fieldname: payload})
@@ -421,6 +445,8 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
         msg = Msg()
         msg.topic = self.topic.decode('utf-8')
         msg.payload = None
+        msg.qos = 0
+        msg.retain = 0
 
         SUT._on_message_individual(None, None, msg)
         mock_manager.append_data.assert_called_once_with(msg.topic, {self.topic: None})
@@ -434,6 +460,8 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
         msg.topic = self.single_topic.decode('utf-8')
         payload = round(random.uniform(1, 100), 2)
         msg.payload = str(payload)
+        msg.qos = 0
+        msg.retain = 0
 
         SUT._on_message_individual(None, None, msg)
         mock_manager.append_data.assert_called_once_with(msg.topic, {self.fieldname: payload})
@@ -451,6 +479,8 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
         msg.topic = self.multi_topic.decode('utf-8')
         payload = round(random.uniform(1, 100), 2)
         msg.payload = str(payload)
+        msg.qos = 0
+        msg.retain = 0
 
         SUT._on_message_individual(None, None, msg)
         mock_manager.append_data.assert_called_once_with(msg.topic, {self.multi_topic: payload})
@@ -468,6 +498,8 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
         msg.topic = self.topic.decode('utf-8')
         payload = round(random.uniform(1, 100), 2)
         msg.payload = str(payload)
+        msg.qos = 0
+        msg.retain = 0
 
         SUT._on_message_individual(None, None, msg)
         mock_manager.append_data.assert_called_once_with(msg.topic, {self.topic: payload})
