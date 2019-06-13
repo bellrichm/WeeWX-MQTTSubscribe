@@ -271,6 +271,32 @@ class TopicManager:
             self.logger.logdbg("MQTTSubscribe", "TopicManager Retrieved wind queue final %s %s: %s" %(topic, weeutil.weeutil.timestamp_to_string(data['dateTime']), to_sorted_string(data)))
             yield data
 
+    def get_accumulated_data(self, topic, start_ts, end_ts, units):
+        self.logger.logdbg("MQTTSubscribeService", "Processing interval: %f %f" %(start_ts, end_ts))
+        accumulator = weewx.accum.Accum(weeutil.weeutil.TimeSpan(start_ts, end_ts))
+
+        for data in self.get_data(topic, end_ts):
+            if data:
+                try:
+                    self.logger.logdbg("MQTTSubscribeService", "Data to accumulate: %s %s" % (weeutil.weeutil.timestamp_to_string(data['dateTime']), to_sorted_string(data)))
+                    accumulator.addRecord(data)
+                except weewx.accum.OutOfSpan:
+                        self.logger.loginf("MQTTSubscribeService", "Ignoring record outside of interval %f %f %f %s"
+                                 %(start_ts, end_ts, data['dateTime'], (to_sorted_string(data))))
+            else:
+                break
+
+        target_data = {}
+        if not accumulator.isEmpty:
+            aggregate_data = accumulator.getRecord()
+            self.logger.logdbg("MQTTSubscribeService", "Data prior to conversion is: %s %s" % (weeutil.weeutil.timestamp_to_string(aggregate_data['dateTime']), to_sorted_string(aggregate_data)))
+            target_data = weewx.units.to_std_system(aggregate_data, units)
+            self.logger.logdbg("MQTTSubscribeService", "Data after to conversion is: %s %s" % (weeutil.weeutil.timestamp_to_string(target_data['dateTime']), to_sorted_string(target_data)))
+        else:
+            self.logger.logdbg("MQTTSubscribeService", "Queue was empty")
+
+        return target_data
+
     def _queue_size_check(self, queue, max_queue):
         while len(queue) >= max_queue:
             element = queue.popleft()
@@ -498,6 +524,9 @@ class MQTTSubscribe():
     def get_data(self, topic, end_ts=six.MAXSIZE):
         return self.manager.get_data(topic, end_ts)
 
+    def get_accumulated_data(self, topic, start_ts, end_ts, units):
+        return self.manager.get_accumulated_data(topic, start_ts, end_ts, units)     
+
     # start subscribing to the topics
     def start(self):
         self.logger.logdbg("MQTTSubscribe", "Starting loop")
@@ -570,39 +599,13 @@ class MQTTSubscribeService(StdService):
     def shutDown(self):
         self.subscriber.disconnect()
 
-    def _process_data(self, topic, start_ts, end_ts, record):
-        self.logger.logdbg("MQTTSubscribeService", "Processing interval: %f %f" %(start_ts, end_ts))
-        accumulator = weewx.accum.Accum(weeutil.weeutil.TimeSpan(start_ts, end_ts))
-
-        for data in self.subscriber.get_data(topic, end_ts):
-            if data:
-                try:
-                    self.logger.logdbg("MQTTSubscribeService", "Data to accumulate: %s %s" % (weeutil.weeutil.timestamp_to_string(data['dateTime']), to_sorted_string(data)))
-                    accumulator.addRecord(data)
-                except weewx.accum.OutOfSpan:
-                        self.logger.loginf("MQTTSubscribeService", "Ignoring record outside of interval %f %f %f %s"
-                                 %(start_ts, end_ts, data['dateTime'], (to_sorted_string(data))))
-            else:
-                break
-
-        target_data = {}
-        if not accumulator.isEmpty:
-            aggregate_data = accumulator.getRecord()
-            self.logger.logdbg("MQTTSubscribeService", "Data prior to conversion is: %s %s" % (weeutil.weeutil.timestamp_to_string(aggregate_data['dateTime']), to_sorted_string(aggregate_data)))
-            target_data = weewx.units.to_std_system(aggregate_data, record['usUnits'])
-            self.logger.logdbg("MQTTSubscribeService", "Data after to conversion is: %s %s" % (weeutil.weeutil.timestamp_to_string(target_data['dateTime']), to_sorted_string(target_data)))
-        else:
-            self.logger.logdbg("MQTTSubscribeService", "Queue was empty")
-
-        return target_data
-
     def new_loop_packet(self, event):
         start_ts = self.end_ts - self.overlap
         self.end_ts = event.packet['dateTime']
 
         for topic in self.subscriber.Subscribed_topics: # investigate that topics might not be cached.. therefore use subscribed
             self.logger.logdbg("MQTTSubscribeService", "Packet prior to update is: %s %s" % (weeutil.weeutil.timestamp_to_string(event.packet['dateTime']), to_sorted_string(event.packet)))
-            target_data = self._process_data(topic, start_ts, self.end_ts, event.packet)
+            target_data = self.subscriber.get_accumulated_data(topic, start_ts, self.end_ts, event.packet['usUnits'])
             event.packet.update(target_data)
             self.logger.logdbg("MQTTSubscribeService", "Packet after update is: %s %s" % (weeutil.weeutil.timestamp_to_string(event.packet['dateTime']), to_sorted_string(event.packet)))
 
@@ -615,7 +618,7 @@ class MQTTSubscribeService(StdService):
 
         for topic in self.subscriber.Subscribed_topics: # investigate that topics might not be cached.. therefore use subscribed
             self.logger.logdbg("MQTTSubscribeService", "Record prior to update is: %s %s" % (weeutil.weeutil.timestamp_to_string(event.record['dateTime']), to_sorted_string(event.record)))
-            target_data = self._process_data(topic, start_ts, self.end_ts, event.record)
+            target_data = self.subscriber.get_accumulated_data(topic, start_ts, self.end_ts, event.record['usUnits'])
             event.record.update(target_data)
             self.logger.logdbg("MQTTSubscribeService", "Record after update is: %s %s" % (weeutil.weeutil.timestamp_to_string(event.record['dateTime']), to_sorted_string(event.record)))
 

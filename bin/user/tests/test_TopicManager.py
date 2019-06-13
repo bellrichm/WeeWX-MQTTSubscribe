@@ -8,6 +8,7 @@ import configobj
 import random
 import string
 import time
+import weewx
 
 from user.MQTTSubscribe import TopicManager, Logger
 
@@ -280,6 +281,80 @@ class TestGetWindQueueData(unittest.TestCase):
 
             data = next(gen, None)
             self.assertIsNone(data)
+
+class TestAccumulatedData(unittest.TestCase):
+
+    topic = 'foo/bar'
+    config_dict = {}
+    config_dict[topic] = {}
+    config = configobj.ConfigObj(config_dict)
+
+    def create_queue_data(self):
+        return {
+            'inTemp': random.uniform(1, 100),
+            'outTemp': random.uniform(1, 100),
+            'usUnits': 1,
+            'dateTime': time.time()
+        }
+
+    def test_queue_element_before_start(self):
+        mock_logger = mock.Mock(spec=Logger)
+        queue_data = self.create_queue_data()
+
+        with mock.patch('user.MQTTSubscribe.weewx.accum.Accum') as mock_Accum:
+            with mock.patch('user.MQTTSubscribe.weewx.units.to_std_system') as mock_to_std_system:
+                type(mock_Accum.return_value).addRecord = mock.Mock(side_effect=weewx.accum.OutOfSpan("Attempt to add out-of-interval record"))
+
+                SUT = TopicManager(self.config, mock_logger)
+                SUT.append_data(self.topic, queue_data)
+
+                mock_logger.reset_mock()
+                accumulated_data = SUT.get_accumulated_data(self.topic, 0, time.time(), 0)
+
+                self.assertDictEqual(accumulated_data, {})
+                mock_logger.loginf.assert_called_once()
+                mock_Accum.getRecord.assert_not_called()
+                mock_to_std_system.assert_not_called()
+
+    def test_queue_empty(self):
+        mock_logger = mock.Mock(spec=Logger)
+
+        with mock.patch('user.MQTTSubscribe.weewx.accum.Accum') as mock_Accum:
+            with mock.patch('user.MQTTSubscribe.weewx.units.to_std_system') as mock_to_std_system:
+                type(mock_Accum.return_value).isEmpty = mock.PropertyMock(return_value = True)
+
+                SUT = TopicManager(self.config, mock_logger)
+
+                accumulated_data = SUT.get_accumulated_data(self.topic, 0, time.time(), 0)
+
+                self.assertDictEqual(accumulated_data, {})
+                mock_Accum.addRecord.assert_not_called()
+                mock_Accum.getRecord.assert_not_called()
+                mock_to_std_system.assert_not_called()    
+
+    def test_queue_valid(self):
+        mock_logger = mock.Mock(spec=Logger)
+        queue_data = self.create_queue_data()
+
+        final_record_data = {
+            'inTemp': random.uniform(1, 100),
+            'outTemp': random.uniform(1, 100),
+            'usUnits': random.uniform(0, 2),
+            'interval': 5,
+            'dateTime': time.time()
+        }
+
+        with mock.patch('user.MQTTSubscribe.weewx.accum.Accum') as mock_Accum:
+            with mock.patch('user.MQTTSubscribe.weewx.units.to_std_system') as mock_to_std_system:
+                type(mock_Accum.return_value).isEmpty = mock.PropertyMock(return_value = False)
+                mock_to_std_system.return_value = final_record_data
+
+                SUT = TopicManager(self.config, mock_logger)
+                SUT.append_data(self.topic, {})
+
+                accumulated_data = SUT.get_accumulated_data(self.topic, 0, time.time(), 0)
+
+                self.assertDictEqual(accumulated_data, final_record_data)
 
 if __name__ == '__main__':
     unittest.main()
