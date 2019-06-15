@@ -246,21 +246,25 @@ class TopicManager:
             data['usUnits'] = self._get_unit_system(topic)
 
         self.logger.logdbg("MQTTSubscribe", "TopicManager Added to queue %s %s %s: %s" %(topic, self._lookup_topic(topic), weeutil.weeutil.timestamp_to_string(data['dateTime']), to_sorted_string(data)))
-        queue.append(data,)
+        payload = {}
+        payload['data'] = data
+        queue.append(payload,)
 
     def get_data(self, topic, end_ts=six.MAXSIZE):
         queue = self._get_queue(topic)
         self.logger.logdbg("MQTTSubscribe", "TopicManager queue size is: %i" % len(queue))
-        while (len(queue) > 0 and queue[0]['dateTime'] <= end_ts):
-            data = queue.popleft()
+        while (len(queue) > 0 and queue[0]['data']['dateTime'] <= end_ts):
+            payload = queue.popleft()
+            data = payload['data']
             self.logger.logdbg("MQTTSubscribe", "TopicManager Retrieved queue %s %s: %s" %(topic, weeutil.weeutil.timestamp_to_string(data['dateTime']), to_sorted_string(data)))
             yield data
 
         queue_wind = self._get_wind_queue(topic)
         self.logger.logdbg("MQTTSubscribe", "TopicManager wind queue size is: %i" % len(queue_wind))
         collector = CollectData(self.wind_fields)
-        while (len(queue_wind) > 0 and queue_wind[0]['dateTime'] <= end_ts):
-            wind_data = queue_wind.popleft()
+        while (len(queue_wind) > 0 and queue_wind[0]['data']['dateTime'] <= end_ts):
+            payload = queue_wind.popleft()
+            wind_data = payload['data']
             data = collector.add_data(wind_data)
             if data:
                 self.logger.logdbg("MQTTSubscribe", "TopicManager Retrieved wind queue %s %s: %s" %(topic, weeutil.weeutil.timestamp_to_string(data['dateTime']), to_sorted_string(data)))

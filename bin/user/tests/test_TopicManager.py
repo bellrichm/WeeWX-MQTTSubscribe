@@ -96,7 +96,8 @@ class TestAppendData(unittest.TestCase):
         self.assertEqual(len(wind_queue), 1)
         self.assertEqual(len(queue), 0)
         queue_element = wind_queue.popleft()
-        self.assertDictEqual(queue_element, queue_data)
+        data = queue_element['data']
+        self.assertDictEqual(data, queue_data)
 
     def test_append_good_data(self):
         queue_data = {
@@ -117,7 +118,8 @@ class TestAppendData(unittest.TestCase):
         self.assertEqual(len(wind_queue), 0)
         self.assertEqual(len(queue), 1)
         queue_element = queue.popleft()
-        self.assertDictEqual(queue_element, queue_data)
+        data = queue_element['data']
+        self.assertDictEqual(data, queue_data)
 
     def test_missing_datetime(self):
         queue_data = {
@@ -137,8 +139,9 @@ class TestAppendData(unittest.TestCase):
         self.assertEqual(len(wind_queue), 0)
         self.assertEqual(len(queue), 1)
         queue_element = queue.popleft()
-        self.assertDictContainsSubset(queue_data, queue_element)
-        self.assertIn('dateTime', queue_element)
+        data = queue_element['data']
+        self.assertDictContainsSubset(queue_data, data)
+        self.assertIn('dateTime', data)
 
     def test_missing_units(self):
         queue_data = {
@@ -158,8 +161,9 @@ class TestAppendData(unittest.TestCase):
         self.assertEqual(len(wind_queue), 0)
         self.assertEqual(len(queue), 1)
         queue_element = queue.popleft()
-        self.assertDictContainsSubset(queue_data, queue_element)
-        self.assertIn('usUnits', queue_element)
+        data = queue_element['data']
+        self.assertDictContainsSubset(queue_data, data)
+        self.assertIn('usUnits', data)
 
 class TestGetQueueData(unittest.TestCase):
     topic = 'foo/bar'
