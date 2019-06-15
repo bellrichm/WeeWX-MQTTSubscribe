@@ -8,6 +8,7 @@ import configobj
 import random
 import string
 import time
+import weewx
 
 from user.MQTTSubscribe import TopicManager, Logger
 
@@ -74,29 +75,6 @@ class TestAppendData(unittest.TestCase):
     config_dict[topic] = {}
     config = configobj.ConfigObj(config_dict)
 
-    def test_append_good_wind_data(self):
-        fieldname = 'windSpeed'
-        queue_data = {
-            fieldname: random.uniform(1, 100),
-            'inTemp': random.uniform(1, 100),
-            'outTemp': random.uniform(1, 100),
-            'usUnits': 1,
-            'dateTime': time.time()
-        }
-
-        mock_logger = mock.Mock(spec=Logger)
-
-        SUT = TopicManager(self.config, mock_logger)
-
-        SUT.append_data(self.topic, queue_data, fieldname=fieldname)
-        queue = SUT._get_queue(self.topic)
-        wind_queue = SUT._get_wind_queue(self.topic)
-
-        self.assertEqual(len(wind_queue), 1)
-        self.assertEqual(len(queue), 0)
-        queue_element = wind_queue.popleft()
-        self.assertDictEqual(queue_element, queue_data)
-
     def test_append_good_data(self):
         queue_data = {
             'inTemp': random.uniform(1, 100),
@@ -111,12 +89,11 @@ class TestAppendData(unittest.TestCase):
 
         SUT.append_data(self.topic, queue_data)
         queue = SUT._get_queue(self.topic)
-        wind_queue = SUT._get_wind_queue(self.topic)
 
-        self.assertEqual(len(wind_queue), 0)
         self.assertEqual(len(queue), 1)
         queue_element = queue.popleft()
-        self.assertDictEqual(queue_element, queue_data)
+        data = queue_element['data']
+        self.assertDictEqual(data, queue_data)
 
     def test_missing_datetime(self):
         queue_data = {
@@ -131,13 +108,12 @@ class TestAppendData(unittest.TestCase):
 
         SUT.append_data(self.topic, queue_data)
         queue = SUT._get_queue(self.topic)
-        wind_queue = SUT._get_wind_queue(self.topic)
 
-        self.assertEqual(len(wind_queue), 0)
         self.assertEqual(len(queue), 1)
         queue_element = queue.popleft()
-        self.assertDictContainsSubset(queue_data, queue_element)
-        self.assertIn('dateTime', queue_element)
+        data = queue_element['data']
+        self.assertDictContainsSubset(queue_data, data)
+        self.assertIn('dateTime', data)
 
     def test_missing_units(self):
         queue_data = {
@@ -152,13 +128,12 @@ class TestAppendData(unittest.TestCase):
 
         SUT.append_data(self.topic, queue_data)
         queue = SUT._get_queue(self.topic)
-        wind_queue = SUT._get_wind_queue(self.topic)
 
-        self.assertEqual(len(wind_queue), 0)
         self.assertEqual(len(queue), 1)
         queue_element = queue.popleft()
-        self.assertDictContainsSubset(queue_data, queue_element)
-        self.assertIn('usUnits', queue_element)
+        data = queue_element['data']
+        self.assertDictContainsSubset(queue_data, data)
+        self.assertIn('usUnits', data)
 
 class TestGetQueueData(unittest.TestCase):
     topic = 'foo/bar'
@@ -280,6 +255,80 @@ class TestGetWindQueueData(unittest.TestCase):
 
             data = next(gen, None)
             self.assertIsNone(data)
+
+class TestAccumulatedData(unittest.TestCase):
+
+    topic = 'foo/bar'
+    config_dict = {}
+    config_dict[topic] = {}
+    config = configobj.ConfigObj(config_dict)
+
+    def create_queue_data(self):
+        return {
+            'inTemp': random.uniform(1, 100),
+            'outTemp': random.uniform(1, 100),
+            'usUnits': 1,
+            'dateTime': time.time()
+        }
+
+    def test_queue_element_before_start(self):
+        mock_logger = mock.Mock(spec=Logger)
+        queue_data = self.create_queue_data()
+
+        with mock.patch('user.MQTTSubscribe.weewx.accum.Accum') as mock_Accum:
+            with mock.patch('user.MQTTSubscribe.weewx.units.to_std_system') as mock_to_std_system:
+                type(mock_Accum.return_value).addRecord = mock.Mock(side_effect=weewx.accum.OutOfSpan("Attempt to add out-of-interval record"))
+
+                SUT = TopicManager(self.config, mock_logger)
+                SUT.append_data(self.topic, queue_data)
+
+                mock_logger.reset_mock()
+                accumulated_data = SUT.get_accumulated_data(self.topic, 0, time.time(), 0)
+
+                self.assertDictEqual(accumulated_data, {})
+                mock_logger.loginf.assert_called_once()
+                mock_Accum.getRecord.assert_not_called()
+                mock_to_std_system.assert_not_called()
+
+    def test_queue_empty(self):
+        mock_logger = mock.Mock(spec=Logger)
+
+        with mock.patch('user.MQTTSubscribe.weewx.accum.Accum') as mock_Accum:
+            with mock.patch('user.MQTTSubscribe.weewx.units.to_std_system') as mock_to_std_system:
+                type(mock_Accum.return_value).isEmpty = mock.PropertyMock(return_value = True)
+
+                SUT = TopicManager(self.config, mock_logger)
+
+                accumulated_data = SUT.get_accumulated_data(self.topic, 0, time.time(), 0)
+
+                self.assertDictEqual(accumulated_data, {})
+                mock_Accum.addRecord.assert_not_called()
+                mock_Accum.getRecord.assert_not_called()
+                mock_to_std_system.assert_not_called()    
+
+    def test_queue_valid(self):
+        mock_logger = mock.Mock(spec=Logger)
+        queue_data = self.create_queue_data()
+
+        final_record_data = {
+            'inTemp': random.uniform(1, 100),
+            'outTemp': random.uniform(1, 100),
+            'usUnits': random.uniform(0, 2),
+            'interval': 5,
+            'dateTime': time.time()
+        }
+
+        with mock.patch('user.MQTTSubscribe.weewx.accum.Accum') as mock_Accum:
+            with mock.patch('user.MQTTSubscribe.weewx.units.to_std_system') as mock_to_std_system:
+                type(mock_Accum.return_value).isEmpty = mock.PropertyMock(return_value = False)
+                mock_to_std_system.return_value = final_record_data
+
+                SUT = TopicManager(self.config, mock_logger)
+                SUT.append_data(self.topic, {})
+
+                accumulated_data = SUT.get_accumulated_data(self.topic, 0, time.time(), 0)
+
+                self.assertDictEqual(accumulated_data, final_record_data)
 
 if __name__ == '__main__':
     unittest.main()

@@ -52,66 +52,6 @@ class Testnew_loop_packet(unittest.TestCase):
         for data in test_data:
             yield data
 
-    def test_queue_empty(self):
-        topic = 'foo/bar'
-        current_time = int(time.time() + 0.5)
-        end_period_ts = (int(current_time / 300) + 1) * 300
-        start_ts = end_period_ts - 300
-        self.setup_queue_tests(start_ts, end_period_ts, topic)
-
-        new_loop_packet_event = weewx.Event(weewx.NEW_LOOP_PACKET,
-                                                    packet=self.packet_data)
-
-        with mock.patch('user.MQTTSubscribe.MQTTSubscribe') as mock_manager:
-            with mock.patch('user.MQTTSubscribe.weewx.units.to_std_system') as mock_to_std_system:
-                with mock.patch('user.MQTTSubscribe.weewx.accum.Accum') as mock_Accum:
-                    type(mock_manager.return_value).Subscribed_topics = mock.PropertyMock(return_value = [topic])
-                    type(mock_manager.return_value).get_data = mock.Mock(return_value=self.generator([None]))                    
-                    type(mock_Accum.return_value).isEmpty = mock.PropertyMock(return_value = True)
-                    SUT = MQTTSubscribeService(self.mock_StdEngine, self.config_dict)
-                    SUT.end_ts = start_ts
-
-                    SUT.new_loop_packet(new_loop_packet_event)
-
-                    self.assertDictEqual(new_loop_packet_event.packet, self.final_packet_data)
-                    mock_Accum.addRecord.assert_not_called()
-                    mock_Accum.getRecord.assert_not_called()
-                    mock_to_std_system.assert_not_called()
-
-        SUT.shutDown()
-
-    def test_queue_element_before_start(self):
-        topic = 'foo/bar'
-        current_time = int(time.time() + 0.5)
-        end_period_ts = (int(current_time / 300) + 1) * 300
-        start_ts = end_period_ts - 300
-        self.setup_queue_tests(start_ts, end_period_ts, topic)
-
-        new_loop_packet_event = weewx.Event(weewx.NEW_LOOP_PACKET,
-                                                    packet=self.packet_data)
-
-        with mock.patch('user.MQTTSubscribe.MQTTSubscribe') as mock_manager:
-            with mock.patch('user.MQTTSubscribe.weewx.units.to_std_system') as mock_to_std_system:
-                with mock.patch('user.MQTTSubscribe.weewx.accum.Accum') as mock_Accum:
-                    with mock.patch('user.MQTTSubscribe.Logger') as mock_logger:
-                        type(mock_manager.return_value).Subscribed_topics = mock.PropertyMock(return_value = [topic])
-                        type(mock_manager.return_value).get_data = mock.Mock(return_value=self.generator([self.queue_data, None]))
-                        type(mock_Accum.return_value).isEmpty = mock.PropertyMock(return_value = True)
-                        type(mock_Accum.return_value).addRecord = mock.Mock(side_effect=weewx.accum.OutOfSpan("Attempt to add out-of-interval record"))
-
-                        SUT = MQTTSubscribeService(self.mock_StdEngine, self.config_dict)
-                        SUT.end_ts = start_ts
-
-                        mock_logger.reset_mock()
-                        SUT.new_loop_packet(new_loop_packet_event)
-
-                        self.assertDictEqual(new_loop_packet_event.packet, self.final_packet_data)
-                        mock_logger.return_value.loginf.assert_called_once()
-                        mock_Accum.getRecord.assert_not_called()
-                        mock_to_std_system.assert_not_called()
-
-        SUT.shutDown()
-
     def test_queue_valid(self):
         topic = 'foo/bar'
         current_time = int(time.time() + 0.5)
@@ -124,22 +64,17 @@ class Testnew_loop_packet(unittest.TestCase):
                                                     packet=self.packet_data)
 
         with mock.patch('user.MQTTSubscribe.MQTTSubscribe') as mock_manager:
-            with mock.patch('user.MQTTSubscribe.weewx.units.to_std_system') as mock_to_std_system:
-                with mock.patch('user.MQTTSubscribe.weewx.accum.Accum') as mock_Accum:
-                    mock_to_std_system.return_value = self.target_data
-                    type(mock_manager.return_value).Subscribed_topics = mock.PropertyMock(return_value = [topic])
-                    type(mock_manager.return_value).get_data = mock.Mock(return_value=self.generator([self.queue_data, None]))
-                    type(mock_Accum.return_value).isEmpty = mock.PropertyMock(return_value = False)
-                    type(mock_Accum.return_value).getRecord = mock.Mock(return_value=self.aggregate_data)
+            type(mock_manager.return_value).Subscribed_topics = mock.PropertyMock(return_value = [topic])
+            type(mock_manager.return_value).get_accumulated_data = mock.Mock(return_value=self.target_data)
 
-                    SUT = MQTTSubscribeService(self.mock_StdEngine, self.config_dict)
-                    SUT.end_ts = start_ts
+            SUT = MQTTSubscribeService(self.mock_StdEngine, self.config_dict)
+            SUT.end_ts = start_ts
 
-                    SUT.new_loop_packet(new_loop_packet_event)
+            SUT.new_loop_packet(new_loop_packet_event)
 
-                    self.assertDictEqual(new_loop_packet_event.packet, self.final_packet_data)
+            self.assertDictEqual(new_loop_packet_event.packet, self.final_packet_data)
 
-        SUT.shutDown()
+            SUT.shutDown()
 
 class Testnew_archive_record(unittest.TestCase):
     mock_StdEngine = mock.Mock(spec=weewx.engine.StdEngine)
@@ -180,71 +115,6 @@ class Testnew_archive_record(unittest.TestCase):
     def generator(self, test_data):
         for data in test_data:
             yield data
-
-    def test_queue_empty(self):
-        topic = 'foo/bar'
-        current_time = int(time.time() + 0.5)
-        end_period_ts = (int(current_time / 300) + 1) * 300
-        start_ts = end_period_ts - 300
-        self.setup_archive_queue_tests(start_ts, end_period_ts, topic)
-
-        new_loop_record_event = weewx.Event(weewx.NEW_ARCHIVE_RECORD,
-                                                    record=self.record_data,
-                                                    origin='hardware')
-
-        with mock.patch('user.MQTTSubscribe.MQTTSubscribe') as mock_manager:
-            with mock.patch('user.MQTTSubscribe.weewx.units.to_std_system') as mock_to_std_system:
-                with mock.patch('user.MQTTSubscribe.weewx.accum.Accum') as mock_Accum:
-                    type(mock_manager.return_value).Subscribed_topics = mock.PropertyMock(return_value = [topic])
-                    type(mock_manager.return_value).get_data = mock.Mock(return_value=self.generator([self.queue_data, None]))
-                    type(mock_Accum.return_value).isEmpty = mock.PropertyMock(return_value = True)
-                    type(mock_Accum.return_value).addRecord = mock.Mock(side_effect=weewx.accum.OutOfSpan("Attempt to add out-of-interval record"))
-
-                    SUT = MQTTSubscribeService(self.mock_StdEngine, self.config_dict)
-                    SUT.end_ts = start_ts
-
-                    SUT.new_archive_record(new_loop_record_event)
-
-                    self.assertDictEqual(new_loop_record_event.record, self.final_record_data)
-                    mock_Accum.addRecord.assert_not_called()
-                    mock_Accum.getRecord.assert_not_called()
-                    mock_to_std_system.assert_not_called()
-
-        SUT.shutDown()
-
-    def test_queue_element_before_start(self):
-        topic = 'foo/bar'
-        current_time = int(time.time() + 0.5)
-        end_period_ts = (int(current_time / 300) + 1) * 300
-        start_ts = end_period_ts - 300
-        self.setup_archive_queue_tests(start_ts, end_period_ts, topic)
-
-        new_loop_record_event = weewx.Event(weewx.NEW_ARCHIVE_RECORD,
-                                                    record=self.record_data,
-                                                    origin='hardware')
-
-        with mock.patch('user.MQTTSubscribe.MQTTSubscribe') as mock_manager:
-            with mock.patch('user.MQTTSubscribe.weewx.units.to_std_system') as mock_to_std_system:
-                with mock.patch('user.MQTTSubscribe.weewx.accum.Accum') as mock_Accum:
-                    with mock.patch('user.MQTTSubscribe.Logger') as mock_logger:
-
-                        type(mock_manager.return_value).Subscribed_topics = mock.PropertyMock(return_value = [topic])
-                        type(mock_manager.return_value).get_data = mock.Mock(return_value=self.generator([self.queue_data, None]))
-                        type(mock_Accum.return_value).isEmpty = mock.PropertyMock(return_value = True)
-                        type(mock_Accum.return_value).addRecord = mock.Mock(side_effect=weewx.accum.OutOfSpan("Attempt to add out-of-interval record"))
-
-                        SUT = MQTTSubscribeService(self.mock_StdEngine, self.config_dict)
-                        SUT.end_ts = start_ts
-
-                        mock_logger.reset_mock()
-                        SUT.new_archive_record(new_loop_record_event)
-
-                        self.assertDictEqual(new_loop_record_event.record, self.final_record_data)
-                        mock_logger.return_value.loginf.assert_called_once()
-                        mock_Accum.getRecord.assert_not_called()
-                        mock_to_std_system.assert_not_called()
-
-        SUT.shutDown()
     
     def test_queue_valid(self):
         topic = 'foo/bar'
@@ -259,20 +129,15 @@ class Testnew_archive_record(unittest.TestCase):
                                                     origin='hardware')
 
         with mock.patch('user.MQTTSubscribe.MQTTSubscribe') as mock_manager:
-            with mock.patch('user.MQTTSubscribe.weewx.units.to_std_system') as mock_to_std_system:
-                with mock.patch('user.MQTTSubscribe.weewx.accum.Accum') as mock_Accum:
-                    mock_to_std_system.return_value = self.target_data
-                    type(mock_manager.return_value).Subscribed_topics = mock.PropertyMock(return_value = [topic])
-                    type(mock_manager.return_value).get_data = mock.Mock(return_value=self.generator([self.queue_data, None]))
-                    type(mock_Accum.return_value).isEmpty = mock.PropertyMock(return_value = False)
-                    type(mock_Accum.return_value).getRecord = mock.Mock(return_value=self.aggregate_data)
+            type(mock_manager.return_value).Subscribed_topics = mock.PropertyMock(return_value = [topic])
+            type(mock_manager.return_value).get_accumulated_data = mock.Mock(return_value=self.target_data)
 
-                    SUT = MQTTSubscribeService(self.mock_StdEngine, self.config_dict)
-                    SUT.end_ts = start_ts
+            SUT = MQTTSubscribeService(self.mock_StdEngine, self.config_dict)
+            SUT.end_ts = start_ts
 
-                    SUT.new_archive_record(new_loop_record_event)
+            SUT.new_archive_record(new_loop_record_event)
 
-                    self.assertDictEqual(new_loop_record_event.record, self.final_record_data)
+            self.assertDictEqual(new_loop_record_event.record, self.final_record_data)
 
         SUT.shutDown()
 
