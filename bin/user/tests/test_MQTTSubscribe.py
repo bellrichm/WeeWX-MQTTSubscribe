@@ -188,7 +188,7 @@ class Teston_connect(unittest.TestCase):
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client) as mock_client:
             with mock.patch('user.MQTTSubscribe.MessageCallbackProvider') as mock_provider:
                 with mock.patch('user.MQTTSubscribe.TopicManager') as mock_manager:
-                    type(mock_manager.return_value).Subscribed_topics = mock.PropertyMock(return_value = subscribed_topics)
+                    type(mock_manager.return_value).subscribed_topics = mock.PropertyMock(return_value = subscribed_topics)
                     type(mock_manager.return_value).get_qos = mock.Mock(return_value=qos)
                     mock_client.subscribe.return_value = [1, 0]
 
