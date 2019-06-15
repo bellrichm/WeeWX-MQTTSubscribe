@@ -75,30 +75,6 @@ class TestAppendData(unittest.TestCase):
     config_dict[topic] = {}
     config = configobj.ConfigObj(config_dict)
 
-    def test_append_good_wind_data(self):
-        fieldname = 'windSpeed'
-        queue_data = {
-            fieldname: random.uniform(1, 100),
-            'inTemp': random.uniform(1, 100),
-            'outTemp': random.uniform(1, 100),
-            'usUnits': 1,
-            'dateTime': time.time()
-        }
-
-        mock_logger = mock.Mock(spec=Logger)
-
-        SUT = TopicManager(self.config, mock_logger)
-
-        SUT.append_data(self.topic, queue_data, fieldname=fieldname)
-        queue = SUT._get_queue(self.topic)
-        wind_queue = SUT._get_wind_queue(self.topic)
-
-        self.assertEqual(len(wind_queue), 1)
-        self.assertEqual(len(queue), 0)
-        queue_element = wind_queue.popleft()
-        data = queue_element['data']
-        self.assertDictEqual(data, queue_data)
-
     def test_append_good_data(self):
         queue_data = {
             'inTemp': random.uniform(1, 100),
@@ -113,9 +89,7 @@ class TestAppendData(unittest.TestCase):
 
         SUT.append_data(self.topic, queue_data)
         queue = SUT._get_queue(self.topic)
-        wind_queue = SUT._get_wind_queue(self.topic)
 
-        self.assertEqual(len(wind_queue), 0)
         self.assertEqual(len(queue), 1)
         queue_element = queue.popleft()
         data = queue_element['data']
@@ -134,9 +108,7 @@ class TestAppendData(unittest.TestCase):
 
         SUT.append_data(self.topic, queue_data)
         queue = SUT._get_queue(self.topic)
-        wind_queue = SUT._get_wind_queue(self.topic)
 
-        self.assertEqual(len(wind_queue), 0)
         self.assertEqual(len(queue), 1)
         queue_element = queue.popleft()
         data = queue_element['data']
@@ -156,9 +128,7 @@ class TestAppendData(unittest.TestCase):
 
         SUT.append_data(self.topic, queue_data)
         queue = SUT._get_queue(self.topic)
-        wind_queue = SUT._get_wind_queue(self.topic)
 
-        self.assertEqual(len(wind_queue), 0)
         self.assertEqual(len(queue), 1)
         queue_element = queue.popleft()
         data = queue_element['data']
