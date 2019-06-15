@@ -548,7 +548,7 @@ class MQTTSubscribe():
         # 6-255: Currently unused.
         self.logger.logdbg("MQTTSubscribe", "Connected with result code %i" % rc)
         self.logger.logdbg("MQTTSubscribe", "Connected flags %s" % str(flags))
-        for topic in self.manager.Subscribed_topics:
+        for topic in self.manager.subscribed_topics:
             (result, mid) = client.subscribe(topic, self.manager.get_qos(topic))
             self.logger.logdbg("MQTTSubscribe","Subscribe to %s has a mid %i and rc %i" %(topic, mid, result))
 
