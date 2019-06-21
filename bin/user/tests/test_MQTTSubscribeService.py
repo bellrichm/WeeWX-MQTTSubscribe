@@ -76,6 +76,31 @@ class Testnew_loop_packet(unittest.TestCase):
 
             SUT.shutDown()
 
+    def test_packet_is_in_past(self):
+        topic = 'foo/bar'
+        current_time = int(time.time() + 0.5)
+        end_period_ts = (int(current_time / 300) + 1) * 300
+        start_ts = end_period_ts - 300
+        self.setup_queue_tests(start_ts, end_period_ts, topic)
+        self.final_packet_data.update(self.target_data)
+
+        new_loop_packet_event = weewx.Event(weewx.NEW_LOOP_PACKET,
+                                                    packet=self.packet_data)
+
+        with mock.patch('user.MQTTSubscribe.MQTTSubscribe') as mock_manager:
+            with mock.patch('user.MQTTSubscribe.Logger') as mock_logger:
+                type(mock_manager.return_value).Subscribed_topics = mock.PropertyMock(return_value = [topic])
+                type(mock_manager.return_value).get_accumulated_data = mock.Mock(return_value=self.target_data)
+
+                SUT = MQTTSubscribeService(self.mock_StdEngine, self.config_dict)
+                SUT.end_ts = end_period_ts + 10
+
+                SUT.new_loop_packet(new_loop_packet_event)
+
+                SUT.logger.logerr.assert_called_once()
+
+                SUT.shutDown()
+
 class Testnew_archive_record(unittest.TestCase):
     mock_StdEngine = mock.Mock(spec=weewx.engine.StdEngine)
 

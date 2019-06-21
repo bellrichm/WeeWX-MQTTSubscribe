@@ -22,6 +22,8 @@ from six.moves import StringIO
 
 from weecfg.extension import ExtensionInstaller
 
+VERSION='1.1.3'
+
 MQTTSubscribeService_config = """
 [MQTTSubscribeService]
     # This section is for the MQTTSubscribe service.
@@ -77,7 +79,7 @@ class MQTTSubscribeServiceInstaller(ExtensionInstaller):
             install_type = ''
         
         install_dict = {
-            'version': '1.1.2',
+            'version': VERSION,
             'name': 'MQTTSubscribe',
             'description': 'Augment WeeWX records or packets with data MQTT',
             'author': "Rich Bell",

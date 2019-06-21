@@ -147,7 +147,7 @@ import weewx.drivers
 from weewx.engine import StdService
 from collections import deque
 
-VERSION='1.1.2'
+VERSION='1.1.3'
 DRIVER_NAME = 'MQTTSubscribeDriver'
 DRIVER_VERSION = VERSION
     
@@ -601,14 +601,18 @@ class MQTTSubscribeService(StdService):
         self.subscriber.disconnect()
 
     def new_loop_packet(self, event):
-        start_ts = self.end_ts - self.overlap
-        self.end_ts = event.packet['dateTime']
+        # packet has traveled back in time
+        if self.end_ts - self.overlap > event.packet['dateTime']:
+            self.logger.logerr("MQTTSubscribeService", "Ignoring packet has dateTime of %f which is prior to previous packet %f" %(event.packet['dateTime'], self.end_ts))
+        else:
+            start_ts = self.end_ts - self.overlap
+            self.end_ts = event.packet['dateTime']
 
-        for topic in self.subscriber.Subscribed_topics: # investigate that topics might not be cached.. therefore use subscribed
-            self.logger.logdbg("MQTTSubscribeService", "Packet prior to update is: %s %s" % (weeutil.weeutil.timestamp_to_string(event.packet['dateTime']), to_sorted_string(event.packet)))
-            target_data = self.subscriber.get_accumulated_data(topic, start_ts, self.end_ts, event.packet['usUnits'])
-            event.packet.update(target_data)
-            self.logger.logdbg("MQTTSubscribeService", "Packet after update is: %s %s" % (weeutil.weeutil.timestamp_to_string(event.packet['dateTime']), to_sorted_string(event.packet)))
+            for topic in self.subscriber.Subscribed_topics: # investigate that topics might not be cached.. therefore use subscribed
+                self.logger.logdbg("MQTTSubscribeService", "Packet prior to update is: %s %s" % (weeutil.weeutil.timestamp_to_string(event.packet['dateTime']), to_sorted_string(event.packet)))
+                target_data = self.subscriber.get_accumulated_data(topic, start_ts, self.end_ts, event.packet['usUnits'])
+                event.packet.update(target_data)
+                self.logger.logdbg("MQTTSubscribeService", "Packet after update is: %s %s" % (weeutil.weeutil.timestamp_to_string(event.packet['dateTime']), to_sorted_string(event.packet)))
 
     # this works for hardware generation, but software generation does not 'quality control'
     # the archive record, so this data is not 'QC' in this case.
