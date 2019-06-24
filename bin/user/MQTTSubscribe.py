@@ -147,7 +147,7 @@ import weewx.drivers
 from weewx.engine import StdService
 from collections import deque
 
-VERSION='1.1.3'
+VERSION='1.1.3-a'
 DRIVER_NAME = 'MQTTSubscribeDriver'
 DRIVER_VERSION = VERSION
     
@@ -253,23 +253,27 @@ class TopicManager:
 
     def get_data(self, topic, end_ts=six.MAXSIZE):
         queue = self._get_queue(topic)
-        self.logger.logdbg("MQTTSubscribe", "TopicManager queue size is: %i" % len(queue))
+        self.logger.logdbg("MQTTSubscribe", "TopicManager starting queue %s size is: %i" %(topic, len(queue)))
         collector = CollectData(self.wind_fields)
-        while (len(queue) > 0 and queue[0]['data']['dateTime'] <= end_ts):
+        while len(queue) > 0:
+            if queue[0]['data']['dateTime'] > end_ts:
+                self.logger.logdbg("MQTTSubscribe", "TopicManager leaving queue: %s size: %i content: %s" %(topic, len(queue), queue[0]))
+                break
             payload = queue.popleft()
             wind_data = payload['wind_data']
             if wind_data:
+                self.logger.logdbg("MQTTSubscribe", "TopicManager processing wind data.")
                 temp_data = payload['data']
                 data = collector.add_data(temp_data)
             else:
                 data = payload['data']
             if data:
-                self.logger.logdbg("MQTTSubscribe", "TopicManager Retrieved queue %s %s: %s" %(topic, weeutil.weeutil.timestamp_to_string(data['dateTime']), to_sorted_string(data)))
+                self.logger.logdbg("MQTTSubscribe", "TopicManager retrieved queue %s %s: %s" %(topic, weeutil.weeutil.timestamp_to_string(data['dateTime']), to_sorted_string(data)))
                 yield data
 
         data = collector.get_data()
         if data:
-            self.logger.logdbg("MQTTSubscribe", "TopicManager Retrieved wind queue final %s %s: %s" %(topic, weeutil.weeutil.timestamp_to_string(data['dateTime']), to_sorted_string(data)))
+            self.logger.logdbg("MQTTSubscribe", "TopicManager retrieved wind queue final %s %s: %s" %(topic, weeutil.weeutil.timestamp_to_string(data['dateTime']), to_sorted_string(data)))
             yield data
 
     def get_accumulated_data(self, topic, start_ts, end_ts, units):
