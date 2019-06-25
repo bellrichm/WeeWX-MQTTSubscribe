@@ -101,6 +101,35 @@ class Testnew_loop_packet(unittest.TestCase):
 
                 SUT.shutDown()
 
+    def test_packet_is_in_past_with_overlap(self):
+        topic = 'foo/bar'
+        current_time = int(time.time() + 0.5)
+        end_period_ts = (int(current_time / 300) + 1) * 300
+        start_ts = end_period_ts - 300
+        delta_seconds = 10
+        self.setup_queue_tests(start_ts, end_period_ts, topic)
+        self.final_packet_data.update(self.target_data)
+        config_dict = dict(self.config_dict)
+        config_dict['MQTTSubscribeService']['overlap'] = delta_seconds
+
+        new_loop_packet_event = weewx.Event(weewx.NEW_LOOP_PACKET,
+                                                    packet=self.packet_data)
+
+        with mock.patch('user.MQTTSubscribe.MQTTSubscribe') as mock_manager:
+            with mock.patch('user.MQTTSubscribe.Logger') as mock_logger:
+                type(mock_manager.return_value).Subscribed_topics = mock.PropertyMock(return_value = [topic])
+                type(mock_manager.return_value).get_accumulated_data = mock.Mock(return_value=self.target_data)
+
+                SUT = MQTTSubscribeService(self.mock_StdEngine, config_dict)
+                SUT.end_ts = end_period_ts + delta_seconds
+
+                SUT.new_loop_packet(new_loop_packet_event)
+
+                SUT.logger.logerr.assert_not_called()
+                self.assertDictEqual(new_loop_packet_event.packet, self.final_packet_data)
+
+                SUT.shutDown()
+
 class Testnew_archive_record(unittest.TestCase):
     mock_StdEngine = mock.Mock(spec=weewx.engine.StdEngine)
 
