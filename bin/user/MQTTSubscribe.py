@@ -117,6 +117,10 @@ Configuration:
         # Default is: US
         unit_system = US
 
+        # Even if the payload has a datetime, ignore it and use the server datetime
+        # Default is False
+        use_server_time = False
+
         # Todo - think about default size
         # The maximum queue size.
         # When the queue is larger than this value, the oldest element is removed.
@@ -147,7 +151,7 @@ import weewx.drivers
 from weewx.engine import StdService
 from collections import deque
 
-VERSION='1.1.3-a'
+VERSION='1.2.0-rc01'
 DRIVER_NAME = 'MQTTSubscribeDriver'
 DRIVER_VERSION = VERSION
     
@@ -201,6 +205,7 @@ class TopicManager:
         self.logger.loginf("MQTTSubscribe", "TopicManager config is %s" % config)
 
         default_qos = to_int(config.get('qos', 0))
+        default_use_server_datetime = to_bool(config.get('use_server_datetime', False))
 
         default_unit_system_name = config.get('unit_system', 'US').strip().upper()
         if default_unit_system_name not in weewx.units.unit_constants:
@@ -218,6 +223,7 @@ class TopicManager:
             topic_dict = config.get(topic, {})
 
             qos = to_int(topic_dict.get('qos', default_qos))
+            use_server_datetime = to_bool(topic_dict.get('use_server_datetime', default_use_server_datetime))
 
             unit_system_name = topic_dict.get('unit_system', default_unit_system_name).strip().upper()
             if unit_system_name not in weewx.units.unit_constants:
@@ -226,7 +232,8 @@ class TopicManager:
 
             self.subscribed_topics[topic] = {}
             self.subscribed_topics[topic]['unit_system'] = unit_system
-            self.subscribed_topics[topic]['qos'] = qos 
+            self.subscribed_topics[topic]['qos'] = qos
+            self.subscribed_topics[topic]['use_server_datetime'] = use_server_datetime
             self.subscribed_topics[topic]['max_queue'] = topic_dict.get('max_queue',max_queue)
             self.subscribed_topics[topic]['queue'] = deque()
             self.subscribed_topics[topic]['queue_wind'] = deque()
@@ -239,10 +246,11 @@ class TopicManager:
             payload['wind_data'] = True
         
         queue = self._get_queue(topic)
+        use_server_datetime = self._get_value('use_server_datetime', topic)
 
         self._queue_size_check(queue, self._get_max_queue(topic))
 
-        if 'dateTime' not in data:
+        if 'dateTime' not in data or use_server_datetime:
             data['dateTime'] = time.time()
         if 'usUnits' not in data:
             data['usUnits'] = self._get_unit_system(topic)

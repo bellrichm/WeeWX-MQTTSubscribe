@@ -5,6 +5,7 @@ import mock
 
 from collections import deque
 import configobj
+import copy
 import random
 import string
 import time
@@ -94,6 +95,32 @@ class TestAppendData(unittest.TestCase):
         queue_element = queue.popleft()
         data = queue_element['data']
         self.assertDictEqual(data, queue_data)
+
+    def test_append_good_data_use_server_datetime(self):
+        queue_data_subset = {
+            'inTemp': random.uniform(1, 100),
+            'outTemp': random.uniform(1, 100),
+            'usUnits': 1,
+        }
+        queue_data = copy.deepcopy(queue_data_subset)
+        queue_data['dateTime'] = time.time()
+
+        config = copy.deepcopy(self.config)
+        config['use_server_datetime'] = True
+
+        mock_logger = mock.Mock(spec=Logger)
+
+        SUT = TopicManager(config, mock_logger)
+
+        SUT.append_data(self.topic, queue_data)
+        queue = SUT._get_queue(self.topic)
+
+        self.assertEqual(len(queue), 1)
+        queue_element = queue.popleft()
+        data = queue_element['data']
+        self.assertDictContainsSubset(queue_data_subset, data)
+        self.assertIn('dateTime', data)
+        self.assertNotEqual(queue_data['dateTime'], data['dateTime'])
 
     def test_missing_datetime(self):
         queue_data = {
