@@ -9,6 +9,7 @@ import copy
 import random
 import string
 import time
+import weeutil
 import weewx
 
 from user.MQTTSubscribe import TopicManager, Logger
@@ -297,6 +298,67 @@ class TestAccumulatedData(unittest.TestCase):
             'usUnits': 1,
             'dateTime': time.time()
         }
+
+    def test_ignore_packet_start_set(self):
+        mock_logger = mock.Mock(spec=Logger)
+        queue_data = self.create_queue_data()
+
+        final_record_data = {
+            'inTemp': random.uniform(1, 100),
+            'outTemp': random.uniform(1, 100),
+            'usUnits': random.uniform(0, 2),
+            'interval': 5,
+            'dateTime': time.time()
+        }
+
+        start_ts = time.time()
+        end_ts = time.time()
+
+        config = copy.deepcopy(self.config)
+        config['ignore_packet_start_time'] = True
+
+        with mock.patch('user.MQTTSubscribe.weewx.accum.Accum') as mock_Accum:
+            with mock.patch('user.MQTTSubscribe.weewx.units.to_std_system') as mock_to_std_system:
+                type(mock_Accum.return_value).isEmpty = mock.PropertyMock(return_value = False)
+                mock_to_std_system.return_value = final_record_data
+
+                SUT = TopicManager(config, mock_logger)
+                SUT.append_data(self.topic, {'dateTime': start_ts})
+
+                accumulated_data = SUT.get_accumulated_data(self.topic, 0, end_ts, 0)
+
+                mock_Accum.assert_called_once_with(weeutil.weeutil.TimeSpan(start_ts, end_ts))
+                self.assertDictEqual(accumulated_data, final_record_data)
+
+    def test_ignore_packet_end_set(self):
+        mock_logger = mock.Mock(spec=Logger)
+        queue_data = self.create_queue_data()
+
+        final_record_data = {
+            'inTemp': random.uniform(1, 100),
+            'outTemp': random.uniform(1, 100),
+            'usUnits': random.uniform(0, 2),
+            'interval': 5,
+            'dateTime': time.time()
+        }
+
+        end_ts = time.time()
+
+        config = copy.deepcopy(self.config)
+        config['ignore_packet_end_time'] = True
+
+        with mock.patch('user.MQTTSubscribe.weewx.accum.Accum') as mock_Accum:
+            with mock.patch('user.MQTTSubscribe.weewx.units.to_std_system') as mock_to_std_system:
+                type(mock_Accum.return_value).isEmpty = mock.PropertyMock(return_value = False)
+                mock_to_std_system.return_value = final_record_data
+
+                SUT = TopicManager(config, mock_logger)
+                SUT.append_data(self.topic, {'dateTime': end_ts})
+
+                accumulated_data = SUT.get_accumulated_data(self.topic, 0, 0, 0)
+
+                mock_Accum.assert_called_once_with(weeutil.weeutil.TimeSpan(0, end_ts))
+                self.assertDictEqual(accumulated_data, final_record_data)
 
     def test_queue_element_before_start(self):
         mock_logger = mock.Mock(spec=Logger)

@@ -206,6 +206,8 @@ class TopicManager:
 
         default_qos = to_int(config.get('qos', 0))
         default_use_server_datetime = to_bool(config.get('use_server_datetime', False))
+        default_ignore_packet_start_time = to_bool(config.get('ignore_packet_start_time', False))
+        default_ignore_packet_end_time = to_bool(config.get('ignore_packet_end_time', False))
 
         default_unit_system_name = config.get('unit_system', 'US').strip().upper()
         if default_unit_system_name not in weewx.units.unit_constants:
@@ -224,6 +226,8 @@ class TopicManager:
 
             qos = to_int(topic_dict.get('qos', default_qos))
             use_server_datetime = to_bool(topic_dict.get('use_server_datetime', default_use_server_datetime))
+            ignore_packet_start_time = to_bool(topic_dict.get('ignore_packet_start_time', default_ignore_packet_start_time))
+            ignore_packet_end_time = to_bool(topic_dict.get('ignore_packet_end_time', default_ignore_packet_end_time))
 
             unit_system_name = topic_dict.get('unit_system', default_unit_system_name).strip().upper()
             if unit_system_name not in weewx.units.unit_constants:
@@ -234,6 +238,8 @@ class TopicManager:
             self.subscribed_topics[topic]['unit_system'] = unit_system
             self.subscribed_topics[topic]['qos'] = qos
             self.subscribed_topics[topic]['use_server_datetime'] = use_server_datetime
+            self.subscribed_topics[topic]['ignore_packet_start_time'] = ignore_packet_start_time
+            self.subscribed_topics[topic]['ignore_packet_end_time'] = ignore_packet_end_time
             self.subscribed_topics[topic]['max_queue'] = topic_dict.get('max_queue',max_queue)
             self.subscribed_topics[topic]['queue'] = deque()
             self.subscribed_topics[topic]['queue_wind'] = deque()
@@ -258,6 +264,24 @@ class TopicManager:
         self.logger.logdbg("MQTTSubscribe", "TopicManager Added to queue %s %s %s: %s" %(topic, self._lookup_topic(topic), weeutil.weeutil.timestamp_to_string(data['dateTime']), to_sorted_string(data)))
         payload['data'] = data
         queue.append(payload,)
+
+    def peek_datetime(self, topic):
+        queue = self._get_queue(topic)
+        self.logger.logdbg("MQTTSubscribe", "TopicManager queue size is: %i" % len(queue))
+        datetime = None
+        if len(queue) > 0:
+            datetime = queue[0]['data']['dateTime']
+
+        return datetime
+
+    def peek_last_datetime(self, topic):
+        queue = self._get_queue(topic)
+        self.logger.logdbg("MQTTSubscribe", "TopicManager queue size is: %i" % len(queue))
+        datetime = 0
+        if len(queue) > 0:
+            datetime = queue[-1]['data']['dateTime']
+
+        return datetime
 
     def get_data(self, topic, end_ts=six.MAXSIZE):
         queue = self._get_queue(topic)
@@ -284,7 +308,22 @@ class TopicManager:
             self.logger.logdbg("MQTTSubscribe", "TopicManager retrieved wind queue final %s %s: %s" %(topic, weeutil.weeutil.timestamp_to_string(data['dateTime']), to_sorted_string(data)))
             yield data
 
-    def get_accumulated_data(self, topic, start_ts, end_ts, units):
+    def get_accumulated_data(self, topic, start_time, end_time, units):
+        ignore_packet_start_time = self._get_value('ignore_packet_start_time', topic)
+        ignore_packet_end_time = self._get_value('ignore_packet_end_time', topic)
+
+        if ignore_packet_start_time:
+            self.logger.logdbg("MQTTSubscribeService", "Ignoring packet start time.")
+            start_ts = self.peek_datetime(topic)
+        else:
+            start_ts = start_time
+
+        if ignore_packet_end_time:
+            self.logger.logdbg("MQTTSubscribeService", "Ignoring packet end time.")
+            end_ts = self.peek_last_datetime(topic)
+        else:
+            end_ts = end_time
+
         self.logger.logdbg("MQTTSubscribeService", "Processing interval: %f %f" %(start_ts, end_ts))
         accumulator = weewx.accum.Accum(weeutil.weeutil.TimeSpan(start_ts, end_ts))
 
@@ -307,6 +346,10 @@ class TopicManager:
             self.logger.logdbg("MQTTSubscribeService", "Data after to conversion is: %s %s" % (weeutil.weeutil.timestamp_to_string(target_data['dateTime']), to_sorted_string(target_data)))
         else:
             self.logger.logdbg("MQTTSubscribeService", "Queue was empty")
+
+        # Force dateTime to packet's datetime so that the packet datetime is not updated to the MQTT datetime
+        if ignore_packet_end_time:
+            target_data['dateTime'] = end_time
 
         return target_data
 
