@@ -218,6 +218,9 @@ class TopicManager:
         default_use_server_datetime = to_bool(config.get('use_server_datetime', False))
         default_ignore_start_time = to_bool(config.get('ignore_start_time', False))
         default_ignore_end_time = to_bool(config.get('ignore_end_time', False))
+        overlap = to_float(config.get('overlap', 0)) # Backwards compatibility
+        default_overlap_start= to_float(config.get('overlap_start', overlap))
+        default_overlap_end= to_float(config.get('overlap_end', 0))
 
         default_unit_system_name = config.get('unit_system', 'US').strip().upper()
         if default_unit_system_name not in weewx.units.unit_constants:
@@ -238,6 +241,8 @@ class TopicManager:
             use_server_datetime = to_bool(topic_dict.get('use_server_datetime', default_use_server_datetime))
             ignore_start_time = to_bool(topic_dict.get('ignore_start_time', default_ignore_start_time))
             ignore_end_time = to_bool(topic_dict.get('ignore_end_time', default_ignore_end_time))
+            overlap_start= to_float(topic_dict.get('overlap_start', default_overlap_start))
+            overlap_end= to_float(topic_dict.get('overlap_start', default_overlap_end))
 
             unit_system_name = topic_dict.get('unit_system', default_unit_system_name).strip().upper()
             if unit_system_name not in weewx.units.unit_constants:
@@ -250,6 +255,8 @@ class TopicManager:
             self.subscribed_topics[topic]['use_server_datetime'] = use_server_datetime
             self.subscribed_topics[topic]['ignore_start_time'] = ignore_start_time
             self.subscribed_topics[topic]['ignore_end_time'] = ignore_end_time
+            self.subscribed_topics[topic]['overlap_start'] = overlap_start
+            self.subscribed_topics[topic]['overlap_end'] = overlap_end
             self.subscribed_topics[topic]['max_queue'] = topic_dict.get('max_queue',max_queue)
             self.subscribed_topics[topic]['queue'] = deque()
             self.subscribed_topics[topic]['queue_wind'] = deque()
@@ -321,18 +328,20 @@ class TopicManager:
     def get_accumulated_data(self, topic, start_time, end_time, units):
         ignore_start_time = self._get_value('ignore_start_time', topic)
         ignore_end_time = self._get_value('ignore_end_time', topic)
+        overlap_start = self._get_value('overlap_start', topic)
+        overlap_end = self._get_value('overlap_end', topic)
 
         if ignore_start_time:
             self.logger.logdbg("MQTTSubscribeService", "Ignoring start time.")
-            start_ts = self.peek_datetime(topic)
+            start_ts = self.peek_datetime(topic) - overlap_start
         else:
-            start_ts = start_time
+            start_ts = start_time - overlap_start
 
         if ignore_end_time:
             self.logger.logdbg("MQTTSubscribeService", "Ignoring end time.")
-            end_ts = self.peek_last_datetime(topic)
+            end_ts = self.peek_last_datetime(topic) + overlap_end
         else:
-            end_ts = end_time
+            end_ts = end_time + overlap_end
 
         self.logger.logdbg("MQTTSubscribeService", "Processing interval: %f %f" %(start_ts, end_ts))
         accumulator = weewx.accum.Accum(weeutil.weeutil.TimeSpan(start_ts, end_ts))
@@ -519,8 +528,14 @@ class MQTTSubscribe():
         if message_callback_config is None:
             raise ValueError("[[message_callback]] is required.")
 
+        # For backwards compatibility
+        overlap = to_float(service_dict.get('overlap', 0))
+        self.logger.loginf("MQTTSubscribe", "Overlap is %s" % overlap)
+        topics_dict = service_dict.get('topics', {})
+        topics_dict['overlap'] = overlap
+
         message_callback_provider_name = service_dict.get('message_callback_provider', 'user.MQTTSubscribe.MessageCallbackProvider')
-        self.manager = TopicManager(service_dict.get('topics', {}), self.logger)
+        self.manager = TopicManager(topics_dict, self.logger)
 
         clientid = service_dict.get('clientid',
                                 'MQTTSubscribe-' + str(random.randint(1000, 9999)))
@@ -640,11 +655,9 @@ class MQTTSubscribeService(StdService):
             self.logger.loginf("MQTTSubscribeService", "Service is not enabled, exiting.")
             return
 
-        self.overlap = to_float(service_dict.get('overlap', 0))
         binding = service_dict.get('binding', 'loop')
 
         self.logger.loginf("MQTTSubscribeService", "Binding is %s" % binding)
-        self.logger.loginf("MQTTSubscribeService", "Overlap is %s" % self.overlap)
 
         if 'archive_topic' in service_dict:
           raise ValueError("archive_topic, %s, is invalid when running as a service" % service_dict['archive_topic'])
@@ -667,10 +680,10 @@ class MQTTSubscribeService(StdService):
 
     def new_loop_packet(self, event):
         # packet has traveled back in time
-        if self.end_ts - self.overlap > event.packet['dateTime']:
+        if self.end_ts > event.packet['dateTime']:
             self.logger.logerr("MQTTSubscribeService", "Ignoring packet has dateTime of %f which is prior to previous packet %f" %(event.packet['dateTime'], self.end_ts))
         else:
-            start_ts = self.end_ts - self.overlap
+            start_ts = self.end_ts
             self.end_ts = event.packet['dateTime']
 
             for topic in self.subscriber.Subscribed_topics: # investigate that topics might not be cached.. therefore use subscribed
@@ -684,7 +697,7 @@ class MQTTSubscribeService(StdService):
     # If this is important, bind to the loop packet.
     def new_archive_record(self, event):
         end_ts = event.record['dateTime']
-        start_ts = end_ts - event.record['interval'] * 60 - self.overlap
+        start_ts = end_ts - event.record['interval'] * 60
 
         for topic in self.subscriber.Subscribed_topics: # investigate that topics might not be cached.. therefore use subscribed
             self.logger.logdbg("MQTTSubscribeService", "Record prior to update is: %s %s" % (weeutil.weeutil.timestamp_to_string(event.record['dateTime']), to_sorted_string(event.record)))
