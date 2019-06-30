@@ -209,8 +209,8 @@ class TopicManager:
         default_ignore_packet_start_time = to_bool(config.get('ignore_packet_start_time', False))
         default_ignore_packet_end_time = to_bool(config.get('ignore_packet_end_time', False))
         overlap = to_float(config.get('overlap', 0)) # Backwards compatibility
-        default_overlap_start= to_float(config.get('overlap_start', overlap))
-        default_overlap_end= to_float(config.get('overlap_end', 0))
+        default_adjust_start= to_float(config.get('adjust_start', overlap))
+        default_adjust_end= to_float(config.get('adjust_end', 0))
 
         default_unit_system_name = config.get('unit_system', 'US').strip().upper()
         if default_unit_system_name not in weewx.units.unit_constants:
@@ -231,8 +231,8 @@ class TopicManager:
             use_server_datetime = to_bool(topic_dict.get('use_server_datetime', default_use_server_datetime))
             ignore_packet_start_time = to_bool(topic_dict.get('ignore_packet_start_time', default_ignore_packet_start_time))
             ignore_packet_end_time = to_bool(topic_dict.get('ignore_packet_end_time', default_ignore_packet_end_time))
-            overlap_start= to_float(topic_dict.get('overlap_start', default_overlap_start))
-            overlap_end= to_float(topic_dict.get('overlap_start', default_overlap_end))
+            adjust_start= to_float(topic_dict.get('adjust_start', default_adjust_start))
+            adjust_end= to_float(topic_dict.get('adjust_end', default_adjust_end))
 
             unit_system_name = topic_dict.get('unit_system', default_unit_system_name).strip().upper()
             if unit_system_name not in weewx.units.unit_constants:
@@ -245,8 +245,8 @@ class TopicManager:
             self.subscribed_topics[topic]['use_server_datetime'] = use_server_datetime
             self.subscribed_topics[topic]['ignore_packet_start_time'] = ignore_packet_start_time
             self.subscribed_topics[topic]['ignore_packet_end_time'] = ignore_packet_end_time
-            self.subscribed_topics[topic]['overlap_start'] = overlap_start
-            self.subscribed_topics[topic]['overlap_end'] = overlap_end
+            self.subscribed_topics[topic]['adjust_start'] = adjust_start
+            self.subscribed_topics[topic]['adjust_end'] = adjust_end
             self.subscribed_topics[topic]['max_queue'] = topic_dict.get('max_queue',max_queue)
             self.subscribed_topics[topic]['queue'] = deque()
             self.subscribed_topics[topic]['queue_wind'] = deque()
@@ -318,20 +318,20 @@ class TopicManager:
     def get_accumulated_data(self, topic, start_time, end_time, units):
         ignore_packet_start_time = self._get_value('ignore_packet_start_time', topic)
         ignore_packet_end_time = self._get_value('ignore_packet_end_time', topic)
-        overlap_start = self._get_value('overlap_start', topic)
-        overlap_end = self._get_value('overlap_end', topic)
+        adjust_start = self._get_value('adjust_start', topic)
+        adjust_end = self._get_value('adjust_end', topic)
 
         if ignore_packet_start_time:
             self.logger.logdbg("MQTTSubscribeService", "Ignoring packet start time.")
-            start_ts = self.peek_datetime(topic) - overlap_start
+            start_ts = self.peek_datetime(topic) - adjust_start
         else:
-            start_ts = start_time - overlap_start
+            start_ts = start_time - adjust_start
 
         if ignore_packet_end_time:
             self.logger.logdbg("MQTTSubscribeService", "Ignoring packet end time.")
-            end_ts = self.peek_last_datetime(topic) + overlap_end
+            end_ts = self.peek_last_datetime(topic) + adjust_end
         else:
-            end_ts = end_time + overlap_end
+            end_ts = end_time + adjust_end
 
         self.logger.logdbg("MQTTSubscribeService", "Processing interval: %f %f" %(start_ts, end_ts))
         accumulator = weewx.accum.Accum(weeutil.weeutil.TimeSpan(start_ts, end_ts))
