@@ -130,12 +130,14 @@ Configuration:
         # Only used by the service.
         ignore_end_time = False
 
-        #
+        # Allow MQTT data with a datetime this many seconds prior to the previous packet's datetime
+        # to be added to the current packet.
         # Default is 0
         # Only used by the service.
         adjust_start_time = 0
 
-        #
+        # Allow MQTT data with a datetime this many seconds after the current packet's datetime
+        # to be added to the current packet.
         # Default is 0
         # Only used by the service.
         adjust_end_time = 0
