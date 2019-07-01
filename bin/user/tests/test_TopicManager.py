@@ -299,7 +299,7 @@ class TestAccumulatedData(unittest.TestCase):
             'dateTime': time.time()
         }
 
-    def test_ignore_packet_start_set(self):
+    def test_ignore_start_set(self):
         mock_logger = mock.Mock(spec=Logger)
         queue_data = self.create_queue_data()
 
@@ -315,7 +315,7 @@ class TestAccumulatedData(unittest.TestCase):
         end_ts = time.time()
 
         config = copy.deepcopy(self.config)
-        config['ignore_packet_start_time'] = True
+        config['ignore_start_time'] = True
 
         with mock.patch('user.MQTTSubscribe.weewx.accum.Accum') as mock_Accum:
             with mock.patch('user.MQTTSubscribe.weewx.units.to_std_system') as mock_to_std_system:
@@ -330,7 +330,7 @@ class TestAccumulatedData(unittest.TestCase):
                 mock_Accum.assert_called_once_with(weeutil.weeutil.TimeSpan(start_ts, end_ts))
                 self.assertDictEqual(accumulated_data, final_record_data)
 
-    def test_ignore_packet_end_set(self):
+    def test_ignore_end_set(self):
         mock_logger = mock.Mock(spec=Logger)
         queue_data = self.create_queue_data()
 
@@ -345,7 +345,7 @@ class TestAccumulatedData(unittest.TestCase):
         end_ts = time.time()
 
         config = copy.deepcopy(self.config)
-        config['ignore_packet_end_time'] = True
+        config['ignore_end_time'] = True
 
         with mock.patch('user.MQTTSubscribe.weewx.accum.Accum') as mock_Accum:
             with mock.patch('user.MQTTSubscribe.weewx.units.to_std_system') as mock_to_std_system:
