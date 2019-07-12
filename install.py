@@ -22,7 +22,7 @@ from six.moves import StringIO
 
 from weecfg.extension import ExtensionInstaller
 
-VERSION='1.1.3'
+VERSION='1.2.0-rc02'
 
 MQTTSubscribeService_config = """
 [MQTTSubscribeService]

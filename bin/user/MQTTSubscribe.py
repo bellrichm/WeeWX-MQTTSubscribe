@@ -63,10 +63,9 @@ Configuration:
     # When the time of the MQTT payload is less than the end time of the previous packet/record, 
     # the MQTT payload is ignored. When overlap is set, MQTT payloads within this number of seconds 
     # of the previous end time will be processed.
-    # It is best to keep this 0 and only set it if 'Ignoring record outside of interval' messages are seen.
-    # This option maybe removed in the future.
     # Default is: 0
     # Only used by the service.
+    # DEPRECATED  - use adjust_start_time
     overlap = 0
 
     # The binding, loop or archive.
@@ -117,7 +116,32 @@ Configuration:
         # Default is: US
         unit_system = US
 
-        # Todo - think about default size
+        # Even if the payload has a datetime, ignore it and use the server datetime
+        # Default is False
+        use_server_time = False
+
+        # When True, the MQTT datetime will be not be checked that is greater than the last packet processed.
+        # Default is False
+        # Only used by the service.
+        ignore_start_time = False
+
+        # When the True, the MQTT data will continue to be processed even if its datetime is greater than the packet's datetime.
+        # Default is False
+        # Only used by the service.
+        ignore_end_time = False
+
+        # Allow MQTT data with a datetime this many seconds prior to the previous packet's datetime
+        # to be added to the current packet.
+        # Default is 0
+        # Only used by the service.
+        adjust_start_time = 0
+
+        # Allow MQTT data with a datetime this many seconds after the current packet's datetime
+        # to be added to the current packet.
+        # Default is 0
+        # Only used by the service.
+        adjust_end_time = 0
+
         # The maximum queue size.
         # When the queue is larger than this value, the oldest element is removed.
         # In general the queue should not grow large, but it might if the time
@@ -147,7 +171,7 @@ import weewx.drivers
 from weewx.engine import StdService
 from collections import deque
 
-VERSION='1.1.3-a'
+VERSION='1.2.0-rc02'
 DRIVER_NAME = 'MQTTSubscribeDriver'
 DRIVER_VERSION = VERSION
     
@@ -201,6 +225,12 @@ class TopicManager:
         self.logger.loginf("MQTTSubscribe", "TopicManager config is %s" % config)
 
         default_qos = to_int(config.get('qos', 0))
+        default_use_server_datetime = to_bool(config.get('use_server_datetime', False))
+        default_ignore_start_time = to_bool(config.get('ignore_start_time', False))
+        default_ignore_end_time = to_bool(config.get('ignore_end_time', False))
+        overlap = to_float(config.get('overlap', 0)) # Backwards compatibility
+        default_adjust_start_time= to_float(config.get('adjust_start_time', overlap))
+        default_adjust_end_time= to_float(config.get('adjust_end_time', 0))
 
         default_unit_system_name = config.get('unit_system', 'US').strip().upper()
         if default_unit_system_name not in weewx.units.unit_constants:
@@ -218,6 +248,11 @@ class TopicManager:
             topic_dict = config.get(topic, {})
 
             qos = to_int(topic_dict.get('qos', default_qos))
+            use_server_datetime = to_bool(topic_dict.get('use_server_datetime', default_use_server_datetime))
+            ignore_start_time = to_bool(topic_dict.get('ignore_start_time', default_ignore_start_time))
+            ignore_end_time = to_bool(topic_dict.get('ignore_end_time', default_ignore_end_time))
+            adjust_start_time= to_float(topic_dict.get('adjust_start_time', default_adjust_start_time))
+            adjust_end_time= to_float(topic_dict.get('adjust_end_time', default_adjust_end_time))
 
             unit_system_name = topic_dict.get('unit_system', default_unit_system_name).strip().upper()
             if unit_system_name not in weewx.units.unit_constants:
@@ -226,7 +261,12 @@ class TopicManager:
 
             self.subscribed_topics[topic] = {}
             self.subscribed_topics[topic]['unit_system'] = unit_system
-            self.subscribed_topics[topic]['qos'] = qos 
+            self.subscribed_topics[topic]['qos'] = qos
+            self.subscribed_topics[topic]['use_server_datetime'] = use_server_datetime
+            self.subscribed_topics[topic]['ignore_start_time'] = ignore_start_time
+            self.subscribed_topics[topic]['ignore_end_time'] = ignore_end_time
+            self.subscribed_topics[topic]['adjust_start_time'] = adjust_start_time
+            self.subscribed_topics[topic]['adjust_end_time'] = adjust_end_time
             self.subscribed_topics[topic]['max_queue'] = topic_dict.get('max_queue',max_queue)
             self.subscribed_topics[topic]['queue'] = deque()
             self.subscribed_topics[topic]['queue_wind'] = deque()
@@ -239,10 +279,11 @@ class TopicManager:
             payload['wind_data'] = True
         
         queue = self._get_queue(topic)
+        use_server_datetime = self._get_value('use_server_datetime', topic)
 
         self._queue_size_check(queue, self._get_max_queue(topic))
 
-        if 'dateTime' not in data:
+        if 'dateTime' not in data or use_server_datetime:
             data['dateTime'] = time.time()
         if 'usUnits' not in data:
             data['usUnits'] = self._get_unit_system(topic)
@@ -250,6 +291,24 @@ class TopicManager:
         self.logger.logdbg("MQTTSubscribe", "TopicManager Added to queue %s %s %s: %s" %(topic, self._lookup_topic(topic), weeutil.weeutil.timestamp_to_string(data['dateTime']), to_sorted_string(data)))
         payload['data'] = data
         queue.append(payload,)
+
+    def peek_datetime(self, topic):
+        queue = self._get_queue(topic)
+        self.logger.logdbg("MQTTSubscribe", "TopicManager queue size is: %i" % len(queue))
+        datetime = None
+        if len(queue) > 0:
+            datetime = queue[0]['data']['dateTime']
+
+        return datetime
+
+    def peek_last_datetime(self, topic):
+        queue = self._get_queue(topic)
+        self.logger.logdbg("MQTTSubscribe", "TopicManager queue size is: %i" % len(queue))
+        datetime = 0
+        if len(queue) > 0:
+            datetime = queue[-1]['data']['dateTime']
+
+        return datetime
 
     def get_data(self, topic, end_ts=six.MAXSIZE):
         queue = self._get_queue(topic)
@@ -276,7 +335,24 @@ class TopicManager:
             self.logger.logdbg("MQTTSubscribe", "TopicManager retrieved wind queue final %s %s: %s" %(topic, weeutil.weeutil.timestamp_to_string(data['dateTime']), to_sorted_string(data)))
             yield data
 
-    def get_accumulated_data(self, topic, start_ts, end_ts, units):
+    def get_accumulated_data(self, topic, start_time, end_time, units):
+        ignore_start_time = self._get_value('ignore_start_time', topic)
+        ignore_end_time = self._get_value('ignore_end_time', topic)
+        adjust_start_time = self._get_value('adjust_start_time', topic)
+        adjust_end_time = self._get_value('adjust_end_time', topic)
+
+        if ignore_start_time:
+            self.logger.logdbg("MQTTSubscribeService", "Ignoring start time.")
+            start_ts = self.peek_datetime(topic) - adjust_start_time
+        else:
+            start_ts = start_time - adjust_start_time
+
+        if ignore_end_time:
+            self.logger.logdbg("MQTTSubscribeService", "Ignoring end time.")
+            end_ts = self.peek_last_datetime(topic) + adjust_end_time
+        else:
+            end_ts = end_time + adjust_end_time
+
         self.logger.logdbg("MQTTSubscribeService", "Processing interval: %f %f" %(start_ts, end_ts))
         accumulator = weewx.accum.Accum(weeutil.weeutil.TimeSpan(start_ts, end_ts))
 
@@ -299,6 +375,10 @@ class TopicManager:
             self.logger.logdbg("MQTTSubscribeService", "Data after to conversion is: %s %s" % (weeutil.weeutil.timestamp_to_string(target_data['dateTime']), to_sorted_string(target_data)))
         else:
             self.logger.logdbg("MQTTSubscribeService", "Queue was empty")
+
+        # Force dateTime to packet's datetime so that the packet datetime is not updated to the MQTT datetime
+        if ignore_end_time:
+            target_data['dateTime'] = end_time
 
         return target_data
 
@@ -458,8 +538,14 @@ class MQTTSubscribe():
         if message_callback_config is None:
             raise ValueError("[[message_callback]] is required.")
 
+        # For backwards compatibility
+        overlap = to_float(service_dict.get('overlap', 0))
+        self.logger.loginf("MQTTSubscribe", "Overlap is %s" % overlap)
+        topics_dict = service_dict.get('topics', {})
+        topics_dict['overlap'] = overlap
+
         message_callback_provider_name = service_dict.get('message_callback_provider', 'user.MQTTSubscribe.MessageCallbackProvider')
-        self.manager = TopicManager(service_dict.get('topics', {}), self.logger)
+        self.manager = TopicManager(topics_dict, self.logger)
 
         clientid = service_dict.get('clientid',
                                 'MQTTSubscribe-' + str(random.randint(1000, 9999)))
@@ -579,11 +665,9 @@ class MQTTSubscribeService(StdService):
             self.logger.loginf("MQTTSubscribeService", "Service is not enabled, exiting.")
             return
 
-        self.overlap = to_float(service_dict.get('overlap', 0))
         binding = service_dict.get('binding', 'loop')
 
         self.logger.loginf("MQTTSubscribeService", "Binding is %s" % binding)
-        self.logger.loginf("MQTTSubscribeService", "Overlap is %s" % self.overlap)
 
         if 'archive_topic' in service_dict:
           raise ValueError("archive_topic, %s, is invalid when running as a service" % service_dict['archive_topic'])
@@ -606,10 +690,10 @@ class MQTTSubscribeService(StdService):
 
     def new_loop_packet(self, event):
         # packet has traveled back in time
-        if self.end_ts - self.overlap > event.packet['dateTime']:
+        if self.end_ts > event.packet['dateTime']:
             self.logger.logerr("MQTTSubscribeService", "Ignoring packet has dateTime of %f which is prior to previous packet %f" %(event.packet['dateTime'], self.end_ts))
         else:
-            start_ts = self.end_ts - self.overlap
+            start_ts = self.end_ts
             self.end_ts = event.packet['dateTime']
 
             for topic in self.subscriber.Subscribed_topics: # investigate that topics might not be cached.. therefore use subscribed
@@ -623,7 +707,7 @@ class MQTTSubscribeService(StdService):
     # If this is important, bind to the loop packet.
     def new_archive_record(self, event):
         end_ts = event.record['dateTime']
-        start_ts = end_ts - event.record['interval'] * 60 - self.overlap
+        start_ts = end_ts - event.record['interval'] * 60
 
         for topic in self.subscriber.Subscribed_topics: # investigate that topics might not be cached.. therefore use subscribed
             self.logger.logdbg("MQTTSubscribeService", "Record prior to update is: %s %s" % (weeutil.weeutil.timestamp_to_string(event.record['dateTime']), to_sorted_string(event.record)))
