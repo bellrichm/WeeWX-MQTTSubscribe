@@ -295,6 +295,44 @@ class TestJsonPayload(unittest.TestCase):
 
         mock_manager.append_data.assert_called_once_with(msg.topic, payload_dict)
 
+    def test_payload_nested(self):
+        mock_manager = mock.Mock(spec=TopicManager)
+        mock_logger = mock.Mock(spec=Logger)
+
+        SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, mock_manager)
+
+        payload_dict = {
+            'nested01': {
+                'inTemp': round(random.uniform(1, 100), 2),
+                'outTemp': round(random.uniform(1, 100), 2)
+            }
+        }
+
+        payload_dict['dateTime'] = time.time()
+        payload_dict['usUnits'] = random.randint(1, 10)
+
+        flattened_payload_dict = {
+            'nested01_inTemp': payload_dict['nested01']['inTemp'],
+            'nested01_outTemp': payload_dict['nested01']['outTemp']
+        }
+        flattened_payload_dict['dateTime'] = payload_dict['dateTime']
+        flattened_payload_dict['usUnits'] = payload_dict['usUnits']
+
+        if six.PY2:
+            payload = json.dumps(payload_dict)
+        else:
+            payload = json.dumps(payload_dict).encode("utf-8")
+
+        msg = Msg()
+        msg.topic = self.topic
+        msg.payload = payload
+        msg.qos = 0
+        msg.retain = 0
+
+        SUT._on_message_json(None, None, msg)
+
+        mock_manager.append_data.assert_called_once_with(msg.topic, flattened_payload_dict)
+
 class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
     fieldname = b'bar'
     topic = b'foo/' + fieldname
