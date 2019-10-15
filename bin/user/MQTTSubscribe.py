@@ -820,7 +820,7 @@ class MQTTSubscribeDriverConfEditor(weewx.drivers.AbstractConfEditor): # pragma:
     def prompt_for_settings(self):
         settings = {}
         settings['message_callback'] = {}
-        settingd['topics'] = {}
+        settings['topics'] = {}
 
         print("Enter the host.")
         settings['host'] = self._prompt('host', 'localhost')
