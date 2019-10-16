@@ -171,7 +171,7 @@ import weewx.drivers
 from weewx.engine import StdService
 from collections import deque
 
-VERSION='1.2.1'
+VERSION='1.2.1-rc02'
 DRIVER_NAME = 'MQTTSubscribeDriver'
 DRIVER_VERSION = VERSION
     
@@ -421,6 +421,7 @@ class MessageCallbackProvider:
         self.topic_manager = topic_manager
         self._setup_callbacks()
         self.type = config.get('type', None)
+        self.flatten_delimiter = config.get('flatten_delimiter', '_')
         self.keyword_delimiter = config.get('keyword_delimiter', ',')
         self.keyword_separator = config.get('keyword_separator', '=')
         self.label_map = config.get('label_map', {})
@@ -455,6 +456,17 @@ class MessageCallbackProvider:
             return data2
         # if it's anything else, return it in its original form
         return data
+
+    def _flatten_dict(self, dictionary, separator):
+        def items():
+            for key, value in dictionary.items():
+                if isinstance(value, dict):
+                    for subkey, subvalue in self._flatten_dict(value, separator).items():
+                        yield key + separator + subkey, subvalue
+                else:
+                    yield key, value
+
+        return dict(items())
 
     def _log_message(self, msg):
     	self.logger.logdbg("MQTTSubscribe", "MessageCallbackProvider For %s has QOS of %i and retain of %s received: %s" %(msg.topic, msg.qos, msg.retain, msg.payload))
@@ -502,7 +514,7 @@ class MessageCallbackProvider:
             else:
                 data = json.loads(msg.payload.decode("utf-8"))
 
-            self.topic_manager.append_data(msg.topic, data)
+            self.topic_manager.append_data(msg.topic, self._flatten_dict(data, self.flatten_delimiter))
 
         except Exception as exception:
             self._log_exception(exception, msg)
