@@ -171,7 +171,7 @@ import weewx.drivers
 from weewx.engine import StdService
 from collections import deque
 
-VERSION='1.2.0'
+VERSION='1.2.1'
 DRIVER_NAME = 'MQTTSubscribeDriver'
 DRIVER_VERSION = VERSION
     
@@ -487,7 +487,7 @@ class MessageCallbackProvider:
             else:
                 self.logger.logerr("MQTTSubscribe", "MessageCallbackProvider on_message_keyword failed to find data in: topic=%s and payload=%s" % (msg.topic, msg.payload))
         
-        except Exception as exception:
+        except Exception as exception: 
             self._log_exception(exception, msg)
 
     def _on_message_json(self, client, userdata, msg):
@@ -800,11 +800,6 @@ class MQTTSubscribeDriverConfEditor(weewx.drivers.AbstractConfEditor): # pragma:
     # Default is: 60
     keepalive = 60
 
-    # Units for MQTT payloads without unit value.
-    # Valid values: US, METRIC, METRICWX
-    # Default is: US
-    unit_system = US
-
     # Configuration for the message callback.
     [[message_callback]]
         # The format of the MQTT payload.
@@ -814,6 +809,12 @@ class MQTTSubscribeDriverConfEditor(weewx.drivers.AbstractConfEditor): # pragma:
 
     # The topics to subscribe to.
     [[topics]]
+
+        # Units for MQTT payloads without unit value.
+        # Valid values: US, METRIC, METRICWX
+        # Default is: US
+        unit_system = US
+
         [[[FIRST/REPLACE_ME]]]
         [[[SECOND/REPLACE_ME]]]
 """
@@ -833,6 +834,13 @@ class MQTTSubscribeDriverConfEditor(weewx.drivers.AbstractConfEditor): # pragma:
 
         print("Enter the units for MQTT payloads without unit value: US|METRIC|METRICWX")
         settings['topics']['unit_system'] = self._prompt('unit_system', 'US', ['US', 'METRIC', 'METRICWX'])
+
+        print("Enter a topic to subscribe to. ")
+        topic = self._prompt('topic')
+        while len(topic) > 0:
+            settings['topics'][topic] = {}
+            print("Enter a topic to subscribe to. Leave blank when done.")
+            topic = self._prompt('topic')
 
         print("Enter the MQTT paylod type: individual|json|keyword")
         settings['message_callback']['type'] = self._prompt('type', 'json', ['individual', 'json', 'keyword'])

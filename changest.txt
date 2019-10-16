@@ -1,3 +1,8 @@
+V1.2.1
+Enhancements/Fixes:
+- Fixed #30.
+- Added ability to configure topic to subscribe to.
+
 V1.2.0
 Enhancements/Fixes:
 - (ignore_start_time/ignore_end_time) Support ignoring the datetime that is in the MQTT payload.
