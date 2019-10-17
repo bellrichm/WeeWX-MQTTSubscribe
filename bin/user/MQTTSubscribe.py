@@ -180,7 +180,7 @@ VERSION = '1.3.0-rc02'
 DRIVER_NAME = 'MQTTSubscribeDriver'
 DRIVER_VERSION = VERSION
 
-class Logger:
+class Logger(object):
     def __init__(self, console):
         self.console = console
 
@@ -198,7 +198,7 @@ class Logger:
     def logerr(self, prefix, msg):
         self.logmsg(syslog.LOG_ERR, prefix, msg)
 
-class CollectData:
+class CollectData(object):
     def __init__(self, fields):
         self.fields = fields
         self.data = {}
@@ -220,7 +220,7 @@ class CollectData:
     def get_data(self):
         return self.data
 
-class TopicManager:
+class TopicManager(object):
     def __init__(self, config, logger):
         self.logger = logger
 
@@ -436,7 +436,7 @@ class TopicManager:
                 self.topics[topic] = subscribed_topic
                 return subscribed_topic
 
-class MessageCallbackProvider:
+class MessageCallbackProvider(object):
     def __init__(self, config, logger, topic_manager):
         self.logger = logger
         self.topic_manager = topic_manager
@@ -569,7 +569,7 @@ class MessageCallbackProvider:
             self._log_exception(exception, msg)
 
 # Class to manage MQTT subscriptions
-class MQTTSubscribe():
+class MQTTSubscribe(object):
     def __init__(self, service_dict, logger):
         self.logger = logger
 
