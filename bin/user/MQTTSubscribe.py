@@ -97,6 +97,10 @@ Configuration:
         # Default is: False
         # Only used when type is 'individual'.
 
+        # When the json is nested, the delimiter between the hierarchies.
+        # Default is: _
+        flatten_delimiter = _
+
         # The delimiter between fieldname and value pairs. (field1=value1, field2=value2).
         # Default is: ,
         keyword_delimiter = ,
@@ -171,7 +175,7 @@ import weewx.drivers
 from weewx.engine import StdService
 from collections import deque
 
-VERSION='1.2.1-rc02'
+VERSION='1.3.0-rc02'
 DRIVER_NAME = 'MQTTSubscribeDriver'
 DRIVER_VERSION = VERSION
     
