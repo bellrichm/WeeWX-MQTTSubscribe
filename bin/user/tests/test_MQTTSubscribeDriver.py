@@ -41,7 +41,7 @@ class TestgenLoopPackets(unittest.TestCase):
 
         with mock.patch('user.MQTTSubscribe.MQTTSubscribe') as mock_manager:
             with mock.patch('user.MQTTSubscribe.time') as mock_time:
-                type(mock_manager.return_value).Subscribed_topics = mock.PropertyMock(return_value = [topic])
+                type(mock_manager.return_value).subscribed_topics = mock.PropertyMock(return_value = [topic])
                 type(mock_manager.return_value).get_data = mock.Mock(return_value=self.generator([None, self.queue_data]))
 
                 SUT = MQTTSubscribeDriver(**self.config_dict)
@@ -57,7 +57,7 @@ class TestgenLoopPackets(unittest.TestCase):
 
         with mock.patch('user.MQTTSubscribe.MQTTSubscribe') as mock_manager:
             with mock.patch('user.MQTTSubscribe.time') as mock_time:
-                type(mock_manager.return_value).Subscribed_topics = mock.PropertyMock(return_value = [topic])
+                type(mock_manager.return_value).subscribed_topics = mock.PropertyMock(return_value = [topic])
                 type(mock_manager.return_value).get_data = mock.Mock(return_value=self.generator([self.queue_data]))
 
                 SUT = MQTTSubscribeDriver(**self.config_dict)

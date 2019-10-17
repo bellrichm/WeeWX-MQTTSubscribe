@@ -305,7 +305,7 @@ class TopicManager:
         queue = self._get_queue(topic)
         self.logger.logdbg("MQTTSubscribe", "TopicManager queue size is: %i" % len(queue))
         datetime = None
-        if len(queue) > 0:
+        if queue:
             datetime = queue[0]['data']['dateTime']
 
         return datetime
@@ -314,7 +314,7 @@ class TopicManager:
         queue = self._get_queue(topic)
         self.logger.logdbg("MQTTSubscribe", "TopicManager queue size is: %i" % len(queue))
         datetime = 0
-        if len(queue) > 0:
+        if queue:
             datetime = queue[-1]['data']['dateTime']
 
         return datetime
@@ -323,7 +323,7 @@ class TopicManager:
         queue = self._get_queue(topic)
         self.logger.logdbg("MQTTSubscribe", "TopicManager starting queue %s size is: %i" %(topic, len(queue)))
         collector = CollectData(self.wind_fields)
-        while len(queue) > 0:
+        while queue:
             if queue[0]['data']['dateTime'] > end_ts:
                 self.logger.logdbg("MQTTSubscribe",
                                    "TopicManager leaving queue: %s size: %i content: %s" %(topic, len(queue), queue[0]))
@@ -548,7 +548,6 @@ class MessageCallbackProvider:
             self._log_exception(exception, msg)
 
     def _on_message_individual(self, client, userdata, msg):
-        wind_fields = ['windGust', 'windGustDir', 'windDir', 'windSpeed']
 
         # Wrap all the processing in a try, so it doesn't crash and burn on any error
         try:
@@ -632,10 +631,10 @@ class MQTTSubscribe():
         if log:
             self.client.on_log = self._on_log
 
-        MessageCallbackProvider_class = weeutil.weeutil._get_object(message_callback_provider_name)
-        message_callback_provider = MessageCallbackProvider_class(message_callback_config,
-                                                                  self.logger,
-                                                                  self.manager)
+        message_callback_provider_class = weeutil.weeutil._get_object(message_callback_provider_name)
+        message_callback_provider = message_callback_provider_class(message_callback_config,
+                                                                    self.logger,
+                                                                    self.manager)
 
         self.client.on_message = message_callback_provider.get_callback()
 
@@ -650,7 +649,7 @@ class MQTTSubscribe():
         self.client.connect(host, port, keepalive)
 
     @property
-    def Subscribed_topics(self):
+    def subscribed_topics(self):
         return self.manager.subscribed_topics
 
     def get_data(self, topic, end_ts=six.MAXSIZE):
@@ -741,7 +740,7 @@ class MQTTSubscribeService(StdService):
             start_ts = self.end_ts
             self.end_ts = event.packet['dateTime']
 
-            for topic in self.subscriber.Subscribed_topics: # topics might not be cached.. therefore use subscribed?
+            for topic in self.subscriber.subscribed_topics: # topics might not be cached.. therefore use subscribed?
                 self.logger.logdbg("MQTTSubscribeService",
                                    "Packet prior to update is: %s %s"
                                    % (weeutil.weeutil.timestamp_to_string(event.packet['dateTime']),
@@ -761,7 +760,7 @@ class MQTTSubscribeService(StdService):
         end_ts = event.record['dateTime']
         start_ts = end_ts - event.record['interval'] * 60
 
-        for topic in self.subscriber.Subscribed_topics: # topics might not be cached.. therefore use subscribed?
+        for topic in self.subscriber.subscribed_topics: # topics might not be cached.. therefore use subscribed?
             self.logger.logdbg("MQTTSubscribeService",
                                "Record prior to update is: %s %s"
                                % (weeutil.weeutil.timestamp_to_string(event.record['dateTime']),
@@ -811,7 +810,7 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice):
 
     def genLoopPackets(self):
         while True:
-            for topic in self.subscriber.Subscribed_topics: # topics might not be cached.. therefore use subscribed?
+            for topic in self.subscriber.subscribed_topics: # topics might not be cached.. therefore use subscribed?
                 if topic == self.archive_topic:
                     continue
 
@@ -895,7 +894,7 @@ class MQTTSubscribeDriverConfEditor(weewx.drivers.AbstractConfEditor): # pragma:
 
         print("Enter a topic to subscribe to. ")
         topic = self._prompt('topic')
-        while len(topic) > 0:
+        while topic:
             settings['topics'][topic] = {}
             print("Enter a topic to subscribe to. Leave blank when done.")
             topic = self._prompt('topic')
@@ -917,7 +916,7 @@ if __name__ == '__main__': # pragma: no cover
     import sys
     from weewx.engine import StdEngine
 
-    usage = """MQTTSubscribeService --help
+    USAGE = """MQTTSubscribeService --help
            wee_config CONFIG_FILE
                [--records=RECORD_COUNT]
                [--interval=INTERVAL]
@@ -930,7 +929,7 @@ if __name__ == '__main__': # pragma: no cover
     """
 
     def main():
-        parser = optparse.OptionParser(usage=usage)
+        parser = optparse.OptionParser(usage=USAGE)
         parser.add_option('--records', dest='record_count', type=int,
                           help='The number of archive records to create.',
                           default=2)

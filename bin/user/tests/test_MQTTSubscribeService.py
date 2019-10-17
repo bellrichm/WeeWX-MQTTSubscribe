@@ -64,7 +64,7 @@ class Testnew_loop_packet(unittest.TestCase):
                                                     packet=self.packet_data)
 
         with mock.patch('user.MQTTSubscribe.MQTTSubscribe') as mock_manager:
-            type(mock_manager.return_value).Subscribed_topics = mock.PropertyMock(return_value = [topic])
+            type(mock_manager.return_value).subscribed_topics = mock.PropertyMock(return_value = [topic])
             type(mock_manager.return_value).get_accumulated_data = mock.Mock(return_value=self.target_data)
 
             SUT = MQTTSubscribeService(self.mock_StdEngine, self.config_dict)
@@ -89,7 +89,7 @@ class Testnew_loop_packet(unittest.TestCase):
 
         with mock.patch('user.MQTTSubscribe.MQTTSubscribe') as mock_manager:
             with mock.patch('user.MQTTSubscribe.Logger') as mock_logger:
-                type(mock_manager.return_value).Subscribed_topics = mock.PropertyMock(return_value = [topic])
+                type(mock_manager.return_value).subscribed_topics = mock.PropertyMock(return_value = [topic])
                 type(mock_manager.return_value).get_accumulated_data = mock.Mock(return_value=self.target_data)
 
                 SUT = MQTTSubscribeService(self.mock_StdEngine, self.config_dict)
@@ -154,7 +154,7 @@ class Testnew_archive_record(unittest.TestCase):
                                                     origin='hardware')
 
         with mock.patch('user.MQTTSubscribe.MQTTSubscribe') as mock_manager:
-            type(mock_manager.return_value).Subscribed_topics = mock.PropertyMock(return_value = [topic])
+            type(mock_manager.return_value).subscribed_topics = mock.PropertyMock(return_value = [topic])
             type(mock_manager.return_value).get_accumulated_data = mock.Mock(return_value=self.target_data)
 
             SUT = MQTTSubscribeService(self.mock_StdEngine, self.config_dict)
