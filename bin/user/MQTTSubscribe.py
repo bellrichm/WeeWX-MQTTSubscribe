@@ -648,7 +648,7 @@ class MQTTSubscribe(object):
         if log:
             self.client.on_log = self._on_log
 
-        message_callback_provider_class = weeutil.weeutil._get_object(message_callback_provider_name)
+        message_callback_provider_class = weeutil.weeutil._get_object(message_callback_provider_name) # pylint: disable=protected-access
         message_callback_provider = message_callback_provider_class(message_callback_config,
                                                                     self.logger,
                                                                     self.manager)
@@ -795,7 +795,7 @@ class MQTTSubscribeService(StdService):
                                % (weeutil.weeutil.timestamp_to_string(event.record['dateTime']),
                                   to_sorted_string(event.record)))
 
-def loader(config_dict, engine):
+def loader(config_dict, engine): # (Need to match function signature) pylint: disable=unused-argument
     """ Load and return the driver. """
     config = configobj.ConfigObj(config_dict)
     return MQTTSubscribeDriver(**config[DRIVER_NAME])
