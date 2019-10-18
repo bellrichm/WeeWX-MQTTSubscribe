@@ -163,9 +163,9 @@ from __future__ import with_statement
 from __future__ import print_function
 import json
 import random
-import syslog
 import time
 from collections import deque
+import syslog
 
 import configobj
 import paho.mqtt.client as mqtt
