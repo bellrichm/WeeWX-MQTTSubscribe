@@ -1,14 +1,14 @@
+# pylint: disable=wrong-import-order
+# pylint: disable=missing-docstring
+# pylint: disable=invalid-name
+
 from __future__ import with_statement
 
 import unittest
 import mock
 
-from collections import deque
-import configobj
 import random
-import six
 import time
-import threading
 import weewx
 
 from user.MQTTSubscribe import MQTTSubscribeDriver
@@ -16,19 +16,23 @@ from user.MQTTSubscribe import MQTTSubscribeDriver
 class TestgenLoopPackets(unittest.TestCase):
     mock_StdEngine = mock.Mock(spec=weewx.engine.StdEngine)
 
+    def __init__(self, methodName):
+        super(TestgenLoopPackets, self).__init__(methodName)
+        self.queue_data = {}
+        self.config_dict = {}
+
     def setup_queue_tests(self, topic):
         current_time = int(time.time() + 0.5)
-        inTemp = random.uniform(1, 100)
-        outTemp = random.uniform(1, 100)
+        in_temp = random.uniform(1, 100)
+        out_temp = random.uniform(1, 100)
 
         self.queue_data = {
-            'inTemp': inTemp,
-            'outTemp':outTemp,
+            'inTemp': in_temp,
+            'outTemp':out_temp,
             'usUnits': 1,
             'dateTime': current_time
         }
 
-        self.config_dict = {}
         self.config_dict['topic'] = topic
 
     def generator(self, test_data):
@@ -41,12 +45,12 @@ class TestgenLoopPackets(unittest.TestCase):
 
         with mock.patch('user.MQTTSubscribe.MQTTSubscribe') as mock_manager:
             with mock.patch('user.MQTTSubscribe.time') as mock_time:
-                type(mock_manager.return_value).subscribed_topics = mock.PropertyMock(return_value = [topic])
+                type(mock_manager.return_value).subscribed_topics = mock.PropertyMock(return_value=[topic])
                 type(mock_manager.return_value).get_data = mock.Mock(return_value=self.generator([None, self.queue_data]))
 
                 SUT = MQTTSubscribeDriver(**self.config_dict)
                 gen = SUT.genLoopPackets()
-                data = next(gen, None)
+                next(gen, None)
 
                 mock_time.sleep.assert_called_once()
                 self.assertEqual(mock_manager.return_value.get_data.call_count, 2)
@@ -57,34 +61,37 @@ class TestgenLoopPackets(unittest.TestCase):
 
         with mock.patch('user.MQTTSubscribe.MQTTSubscribe') as mock_manager:
             with mock.patch('user.MQTTSubscribe.time') as mock_time:
-                type(mock_manager.return_value).subscribed_topics = mock.PropertyMock(return_value = [topic])
+                type(mock_manager.return_value).subscribed_topics = mock.PropertyMock(return_value=[topic])
                 type(mock_manager.return_value).get_data = mock.Mock(return_value=self.generator([self.queue_data]))
 
                 SUT = MQTTSubscribeDriver(**self.config_dict)
 
-                gen=SUT.genLoopPackets()
-                packet=next(gen)
+                gen = SUT.genLoopPackets()
+                packet = next(gen)
 
                 mock_time.sleep.assert_not_called()
                 self.assertDictEqual(packet, self.queue_data)
 
 class TestgenArchiveRecords(unittest.TestCase):
-
     mock_StdEngine = mock.Mock(spec=weewx.engine.StdEngine)
+
+    def __init__(self, methodName):
+        super(TestgenArchiveRecords, self).__init__(methodName)
+        self.queue_data = {}
+        self.config_dict = {}
 
     def setup_archive_queue_tests(self, archive_topic):
         current_time = int(time.time() + 0.5)
-        inTemp = random.uniform(1, 100)
-        outTemp = random.uniform(1, 100)
+        in_temp = random.uniform(1, 100)
+        out_temp = random.uniform(1, 100)
 
         self.queue_data = {
-            'inTemp': inTemp,
-            'outTemp':outTemp,
+            'inTemp': in_temp,
+            'outTemp':out_temp,
             'usUnits': 1,
             'dateTime': current_time
         }
 
-        self.config_dict = {}
         self.config_dict['archive_topic'] = archive_topic
         self.config_dict['topics'] = {}
         self.config_dict['topics']['foo/bar'] = {}
@@ -102,7 +109,7 @@ class TestgenArchiveRecords(unittest.TestCase):
             type(mock_manager.return_value).get_data = mock.Mock(return_value=self.generator([None]))
 
             SUT = MQTTSubscribeDriver(**self.config_dict)
-            gen=SUT.genArchiveRecords(0)
+            gen = SUT.genArchiveRecords(0)
             data = next(gen, None)
 
             self.assertIsNone(data)

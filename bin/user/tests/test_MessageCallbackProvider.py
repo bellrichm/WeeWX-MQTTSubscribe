@@ -1,21 +1,27 @@
+# pylint: disable=wrong-import-order
+# pylint: disable=missing-docstring
+# pylint: disable=invalid-name
+# pylint: disable=protected-access
+
 from __future__ import with_statement
 
 import unittest
 import mock
 
-import configobj
 import json
 import random
 import six
 import string
 import time
-import weewx
-from collections import deque
 
 from user.MQTTSubscribe import MessageCallbackProvider, TopicManager, Logger
 
-class Msg():
-    pass
+class Msg(object):
+    def __init__(self, topic, payload, qos, retain):
+        self.topic = topic
+        self.payload = payload
+        self.qos = qos
+        self.retain = retain
 
 class TestGetDefaultCallBacks(unittest.TestCase):
     def test_get_unknown_payload_type(self):
@@ -24,7 +30,7 @@ class TestGetDefaultCallBacks(unittest.TestCase):
         message_handler_config['type'] = payload_type
 
         with self.assertRaises(ValueError) as context:
-            SUT = MessageCallbackProvider(message_handler_config, None, None)
+            MessageCallbackProvider(message_handler_config, None, None)
 
         self.assertEqual(str(context.exception), "Invalid type configured: %s" % payload_type)
 
@@ -71,11 +77,7 @@ class TestKeywordload(unittest.TestCase):
         mock_logger = mock.Mock(spec=Logger)
         SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, None)
 
-        msg = Msg()
-        msg.topic = self.topic
-        msg.payload = ''
-        msg.qos = 0
-        msg.retain = 0
+        msg = Msg(self.topic, '', 0, 0)
 
         SUT._on_message_keyword(None, None, msg)
         self.assertEqual(mock_logger.logerr.call_count, 3)
@@ -84,9 +86,7 @@ class TestKeywordload(unittest.TestCase):
         mock_logger = mock.Mock(spec=Logger)
         SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, None)
 
-        msg = Msg()
-        msg.topic = self.topic
-        msg.payload = 'field=value'
+        msg = Msg(self.topic, 'field=value', 0, 0)
 
         SUT._on_message_keyword(None, None, msg)
         self.assertEqual(mock_logger.logerr.call_count, 2)
@@ -95,9 +95,7 @@ class TestKeywordload(unittest.TestCase):
         mock_logger = mock.Mock(spec=Logger)
         SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, None)
 
-        msg = Msg()
-        msg.topic = self.topic
-        msg.payload = 'field1=1 field2=2'
+        msg = Msg(self.topic, 'field1=1 field2=2', 0, 0)
 
         SUT._on_message_keyword(None, None, msg)
         self.assertEqual(mock_logger.logerr.call_count, 2)
@@ -106,11 +104,7 @@ class TestKeywordload(unittest.TestCase):
         mock_logger = mock.Mock(spec=Logger)
         SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, None)
 
-        msg = Msg()
-        msg.topic = self.topic
-        msg.payload = 'field1:1'
-        msg.qos = 0
-        msg.retain = 0
+        msg = Msg(self.topic, 'field1:1', 0, 0)
 
         SUT._on_message_keyword(None, None, msg)
         self.assertEqual(mock_logger.logerr.call_count, 3)
@@ -124,17 +118,13 @@ class TestKeywordload(unittest.TestCase):
         payload_dict = dict(self.payload_dict)
         payload_dict['usUnits'] = random.randint(1, 10)
 
-        payload_str=""
-        delim=""
+        payload_str = ""
+        delim = ""
         for key in payload_dict:
             payload_str = "%s%s%s=%f" %(payload_str, delim, key, payload_dict[key])
-            delim=","
+            delim = ","
 
-        msg = Msg()
-        msg.topic = self.topic
-        msg.payload = payload_str
-        msg.qos = 0
-        msg.retain = 0
+        msg = Msg(self.topic, payload_str, 0, 0)
 
         SUT._on_message_keyword(None, None, msg)
 
@@ -149,17 +139,13 @@ class TestKeywordload(unittest.TestCase):
         payload_dict = dict(self.payload_dict)
         payload_dict['dateTime'] = round(time.time(), 2)
 
-        payload_str=""
-        delim=""
+        payload_str = ""
+        delim = ""
         for key in payload_dict:
             payload_str = "%s%s%s=%f" %(payload_str, delim, key, payload_dict[key])
-            delim=","
+            delim = ","
 
-        msg = Msg()
-        msg.topic = self.topic
-        msg.payload = payload_str
-        msg.qos = 0
-        msg.retain = 0
+        msg = Msg(self.topic, payload_str, 0, 0)
 
         SUT._on_message_keyword(None, None, msg)
         mock_manager.append_data.assert_called_once_with(msg.topic, payload_dict)
@@ -174,17 +160,13 @@ class TestKeywordload(unittest.TestCase):
         payload_dict['dateTime'] = round(time.time(), 2)
         payload_dict['usUnits'] = random.randint(1, 10)
 
-        payload_str=""
-        delim=""
+        payload_str = ""
+        delim = ""
         for key in payload_dict:
             payload_str = "%s%s%s=%f" %(payload_str, delim, key, payload_dict[key])
-            delim=","
+            delim = ","
 
-        msg = Msg()
-        msg.topic = self.topic
-        msg.payload = payload_str
-        msg.qos = 0
-        msg.retain = 0
+        msg = Msg(self.topic, payload_str, 0, 0)
 
         SUT._on_message_keyword(None, None, msg)
         mock_manager.append_data.assert_called_once_with(msg.topic, payload_dict)
@@ -204,9 +186,10 @@ class TestJsonPayload(unittest.TestCase):
         mock_logger = mock.Mock(spec=Logger)
         SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, None)
 
-        msg = Msg()
-        msg.topic = self.topic
-        msg.payload = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+        msg = Msg(self.topic,
+                  ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), # pylint: disable=unused-variable
+                  0,
+                  0)
 
         SUT._on_message_json(None, None, msg)
         self.assertEqual(mock_logger.logerr.call_count, 2)
@@ -215,9 +198,7 @@ class TestJsonPayload(unittest.TestCase):
         mock_logger = mock.Mock(spec=Logger)
         SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, None)
 
-        msg = Msg()
-        msg.topic = self.topic
-        msg.payload = ''
+        msg = Msg(self.topic, '', 0, 0)
 
         SUT._on_message_json(None, None, msg)
         self.assertEqual(mock_logger.logerr.call_count, 2)
@@ -236,11 +217,7 @@ class TestJsonPayload(unittest.TestCase):
         else:
             payload = json.dumps(payload_dict).encode("utf-8")
 
-        msg = Msg()
-        msg.topic = self.topic
-        msg.payload = payload
-        msg.qos = 0
-        msg.retain = 0
+        msg = Msg(self.topic, payload, 0, 0)
 
         SUT._on_message_json(None, None, msg)
 
@@ -260,11 +237,7 @@ class TestJsonPayload(unittest.TestCase):
         else:
             payload = json.dumps(payload_dict).encode("utf-8")
 
-        msg = Msg()
-        msg.topic = self.topic
-        msg.payload = payload
-        msg.qos = 0
-        msg.retain = 0
+        msg = Msg(self.topic, payload, 0, 0)
 
         SUT._on_message_json(None, None, msg)
 
@@ -285,11 +258,7 @@ class TestJsonPayload(unittest.TestCase):
         else:
             payload = json.dumps(payload_dict).encode("utf-8")
 
-        msg = Msg()
-        msg.topic = self.topic
-        msg.payload = payload
-        msg.qos = 0
-        msg.retain = 0
+        msg = Msg(self.topic, payload, 0, 0)
 
         SUT._on_message_json(None, None, msg)
 
@@ -323,11 +292,7 @@ class TestJsonPayload(unittest.TestCase):
         else:
             payload = json.dumps(payload_dict).encode("utf-8")
 
-        msg = Msg()
-        msg.topic = self.topic
-        msg.payload = payload
-        msg.qos = 0
-        msg.retain = 0
+        msg = Msg(self.topic, payload, 0, 0)
 
         SUT._on_message_json(None, None, msg)
 
@@ -338,7 +303,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
     topic = b'foo/' + fieldname
     single_topic = fieldname
     multi_topic = b'foo1/foo2/' + fieldname
-    
+
     payload_dict = {
         'inTemp': round(random.uniform(1, 100), 2),
         'outTemp': round(random.uniform(1, 100), 2)
@@ -351,9 +316,10 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         mock_logger = mock.Mock(spec=Logger)
         SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, None)
 
-        msg = Msg()
-        msg.topic = self.topic
-        msg.payload = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+        msg = Msg(self.topic,
+                  ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), # pylint: disable=unused-variable
+                  0,
+                  0)
 
         SUT._on_message_individual(None, None, msg)
         self.assertEqual(mock_logger.logerr.call_count, 2)
@@ -362,9 +328,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         mock_logger = mock.Mock(spec=Logger)
         SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, None)
 
-        msg = Msg()
-        msg.topic = self.topic
-        msg.payload = ''
+        msg = Msg(self.topic, '', 0, 0)
 
         SUT._on_message_individual(None, None, msg)
         self.assertEqual(mock_logger.logerr.call_count, 2)
@@ -375,28 +339,21 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
 
         SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, mock_manager)
 
-        msg = Msg()
-        msg.topic = self.topic.decode('utf-8')
-        msg.payload = None
-        msg.qos = 0
-        msg.retain = 0
+        payload = None
+        msg = Msg(self.topic.decode('utf-8'), payload, 0, 0)
 
         SUT._on_message_individual(None, None, msg)
 
         mock_manager.append_data.assert_called_once_with(msg.topic, {self.fieldname: None})
 
-    def test_single_topic(self):        
+    def test_single_topic(self):
         mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
 
         SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, mock_manager)
 
-        msg = Msg()
-        msg.topic = self.single_topic.decode('utf-8')
         payload = round(random.uniform(1, 100), 2)
-        msg.payload = str(payload)
-        msg.qos = 0
-        msg.retain = 0
+        msg = Msg(self.single_topic.decode('utf-8'), str(payload), 0, 0)
 
         SUT._on_message_individual(None, None, msg)
         mock_manager.append_data.assert_called_once_with(msg.topic, {self.fieldname: payload})
@@ -407,12 +364,11 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
 
         SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, mock_manager)
 
-        msg = Msg()
-        msg.topic = self.multi_topic.decode('utf-8')
         payload = round(random.uniform(1, 100), 2)
-        msg.payload = str(payload)
-        msg.qos = 0
-        msg.retain = 0
+        msg = Msg(self.multi_topic.decode('utf-8'),
+                  str(payload),
+                  0,
+                  0)
 
         SUT._on_message_individual(None, None, msg)
         mock_manager.append_data.assert_called_once_with(msg.topic, {self.fieldname: payload})
@@ -423,12 +379,11 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
 
         SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, mock_manager)
 
-        msg = Msg()
-        msg.topic = self.topic.decode('utf-8')
         payload = round(random.uniform(1, 100), 2)
-        msg.payload = str(payload)
-        msg.qos = 0
-        msg.retain = 0
+        msg = Msg(self.topic.decode('utf-8'),
+                  str(payload),
+                  0,
+                  0)
 
         SUT._on_message_individual(None, None, msg)
         mock_manager.append_data.assert_called_once_with(msg.topic, {self.fieldname: payload})
@@ -452,9 +407,10 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
 
         SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, None)
 
-        msg = Msg()
-        msg.topic = self.topic
-        msg.payload = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+        msg = Msg(self.topic,
+                  ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), # pylint: disable=unused-variable
+                  0,
+                  0)
 
         SUT._on_message_individual(None, None, msg)
         self.assertEqual(mock_logger.logerr.call_count, 2)
@@ -464,9 +420,7 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
 
         SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, None)
 
-        msg = Msg()
-        msg.topic = self.topic
-        msg.payload = ''
+        msg = Msg(self.topic, '', 0, 0)
 
         SUT._on_message_individual(None, None, msg)
         self.assertEqual(mock_logger.logerr.call_count, 2)
@@ -480,11 +434,7 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
 
         SUT = MessageCallbackProvider(message_handler_config, mock_logger, mock_manager)
 
-        msg = Msg()
-        msg.topic = self.topic.decode('utf-8')
-        msg.payload = None
-        msg.qos = 0
-        msg.retain = 0
+        msg = Msg(self.topic.decode('utf-8'), None, 0, 0)
 
         SUT._on_message_individual(None, None, msg)
         mock_manager.append_data.assert_called_once_with(msg.topic, {self.topic: None})
@@ -494,12 +444,9 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
         mock_logger = mock.Mock(spec=Logger)
 
         SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, mock_manager)
-        msg = Msg()
-        msg.topic = self.single_topic.decode('utf-8')
+
         payload = round(random.uniform(1, 100), 2)
-        msg.payload = str(payload)
-        msg.qos = 0
-        msg.retain = 0
+        msg = Msg(self.single_topic.decode('utf-8'), str(payload), 0, 0)
 
         SUT._on_message_individual(None, None, msg)
         mock_manager.append_data.assert_called_once_with(msg.topic, {self.fieldname: payload})
@@ -513,12 +460,8 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
 
         SUT = MessageCallbackProvider(message_handler_config, mock_logger, mock_manager)
 
-        msg = Msg()
-        msg.topic = self.multi_topic.decode('utf-8')
         payload = round(random.uniform(1, 100), 2)
-        msg.payload = str(payload)
-        msg.qos = 0
-        msg.retain = 0
+        msg = Msg(self.multi_topic.decode('utf-8'), str(payload), 0, 0)
 
         SUT._on_message_individual(None, None, msg)
         mock_manager.append_data.assert_called_once_with(msg.topic, {self.multi_topic: payload})
@@ -532,12 +475,8 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
 
         SUT = MessageCallbackProvider(message_handler_config, mock_logger, mock_manager)
 
-        msg = Msg()
-        msg.topic = self.topic.decode('utf-8')
         payload = round(random.uniform(1, 100), 2)
-        msg.payload = str(payload)
-        msg.qos = 0
-        msg.retain = 0
+        msg = Msg(self.topic.decode('utf-8'), str(payload), 0, 0)
 
         SUT._on_message_individual(None, None, msg)
         mock_manager.append_data.assert_called_once_with(msg.topic, {self.topic: payload})

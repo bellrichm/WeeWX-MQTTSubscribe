@@ -1,3 +1,7 @@
+# pylint: disable=wrong-import-order
+# pylint: disable=missing-docstring
+# pylint: disable=invalid-name
+
 from __future__ import with_statement
 
 import unittest
@@ -26,14 +30,14 @@ class TestQueueSizeCheck(unittest.TestCase):
         SUT = TopicManager(self.config, mock_logger)
 
         queue = deque()
-        queue.append( ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), )
-        queue.append( ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), )
-        queue.append( ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), )
-        queue.append( ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), )
+        queue.append(''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), ) # pylint: disable=unused-variable
+        queue.append(''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), )
+        queue.append(''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), )
+        queue.append(''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), )
         orig_queue_size = len(queue)
         max_queue = 2
 
-        SUT._queue_size_check(queue, max_queue)
+        SUT._queue_size_check(queue, max_queue) # pylint: disable=protected-access
         self.assertEqual(mock_logger.logerr.call_count, orig_queue_size-max_queue+1)
         self.assertEqual(len(queue), max_queue-1)
 
@@ -43,14 +47,14 @@ class TestQueueSizeCheck(unittest.TestCase):
         SUT = TopicManager(self.config, mock_logger)
 
         queue = deque()
-        queue.append( ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), )
-        queue.append( ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), )
-        queue.append( ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), )
-        queue.append( ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), )
+        queue.append(''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), ) # pylint: disable=unused-variable
+        queue.append(''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), )
+        queue.append(''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), )
+        queue.append(''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), )
         orig_queue_size = len(queue)
         max_queue = 7
 
-        SUT._queue_size_check(queue, max_queue)
+        SUT._queue_size_check(queue, max_queue) # pylint: disable=protected-access
         self.assertEqual(mock_logger.logerr.call_count, 0)
         self.assertEqual(len(queue), orig_queue_size)
 
@@ -60,14 +64,14 @@ class TestQueueSizeCheck(unittest.TestCase):
         SUT = TopicManager(self.config, mock_logger)
 
         queue = deque()
-        queue.append( ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), )
-        queue.append( ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), )
-        queue.append( ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), )
-        queue.append( ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), )
+        queue.append(''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), ) # pylint: disable=unused-variable
+        queue.append(''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), )
+        queue.append(''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), )
+        queue.append(''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), )
         orig_queue_size = len(queue)
         max_queue = 4
 
-        SUT._queue_size_check(queue, max_queue)
+        SUT._queue_size_check(queue, max_queue) # pylint: disable=protected-access
         self.assertEqual(mock_logger.logerr.call_count, orig_queue_size-max_queue+1)
         self.assertEqual(len(queue), max_queue-1)
 
@@ -90,7 +94,7 @@ class TestAppendData(unittest.TestCase):
         SUT = TopicManager(self.config, mock_logger)
 
         SUT.append_data(self.topic, queue_data)
-        queue = SUT._get_queue(self.topic)
+        queue = SUT._get_queue(self.topic) # pylint: disable=protected-access
 
         self.assertEqual(len(queue), 1)
         queue_element = queue.popleft()
@@ -114,7 +118,7 @@ class TestAppendData(unittest.TestCase):
         SUT = TopicManager(config, mock_logger)
 
         SUT.append_data(self.topic, queue_data)
-        queue = SUT._get_queue(self.topic)
+        queue = SUT._get_queue(self.topic) # pylint: disable=protected-access
 
         self.assertEqual(len(queue), 1)
         queue_element = queue.popleft()
@@ -135,7 +139,7 @@ class TestAppendData(unittest.TestCase):
         SUT = TopicManager(self.config, mock_logger)
 
         SUT.append_data(self.topic, queue_data)
-        queue = SUT._get_queue(self.topic)
+        queue = SUT._get_queue(self.topic) # pylint: disable=protected-access
 
         self.assertEqual(len(queue), 1)
         queue_element = queue.popleft()
@@ -155,7 +159,7 @@ class TestAppendData(unittest.TestCase):
         SUT = TopicManager(self.config, mock_logger)
 
         SUT.append_data(self.topic, queue_data)
-        queue = SUT._get_queue(self.topic)
+        queue = SUT._get_queue(self.topic) # pylint: disable=protected-access
 
         self.assertEqual(len(queue), 1)
         queue_element = queue.popleft()
@@ -301,7 +305,6 @@ class TestAccumulatedData(unittest.TestCase):
 
     def test_ignore_start_set(self):
         mock_logger = mock.Mock(spec=Logger)
-        queue_data = self.create_queue_data()
 
         final_record_data = {
             'inTemp': random.uniform(1, 100),
@@ -319,7 +322,7 @@ class TestAccumulatedData(unittest.TestCase):
 
         with mock.patch('user.MQTTSubscribe.weewx.accum.Accum') as mock_Accum:
             with mock.patch('user.MQTTSubscribe.weewx.units.to_std_system') as mock_to_std_system:
-                type(mock_Accum.return_value).isEmpty = mock.PropertyMock(return_value = False)
+                type(mock_Accum.return_value).isEmpty = mock.PropertyMock(return_value=False)
                 mock_to_std_system.return_value = final_record_data
 
                 SUT = TopicManager(config, mock_logger)
@@ -332,7 +335,6 @@ class TestAccumulatedData(unittest.TestCase):
 
     def test_ignore_end_set(self):
         mock_logger = mock.Mock(spec=Logger)
-        queue_data = self.create_queue_data()
 
         final_record_data = {
             'inTemp': random.uniform(1, 100),
@@ -349,7 +351,7 @@ class TestAccumulatedData(unittest.TestCase):
 
         with mock.patch('user.MQTTSubscribe.weewx.accum.Accum') as mock_Accum:
             with mock.patch('user.MQTTSubscribe.weewx.units.to_std_system') as mock_to_std_system:
-                type(mock_Accum.return_value).isEmpty = mock.PropertyMock(return_value = False)
+                type(mock_Accum.return_value).isEmpty = mock.PropertyMock(return_value=False)
                 mock_to_std_system.return_value = final_record_data
 
                 SUT = TopicManager(config, mock_logger)
@@ -366,7 +368,8 @@ class TestAccumulatedData(unittest.TestCase):
 
         with mock.patch('user.MQTTSubscribe.weewx.accum.Accum') as mock_Accum:
             with mock.patch('user.MQTTSubscribe.weewx.units.to_std_system') as mock_to_std_system:
-                type(mock_Accum.return_value).addRecord = mock.Mock(side_effect=weewx.accum.OutOfSpan("Attempt to add out-of-interval record"))
+                type(mock_Accum.return_value).addRecord = mock.Mock(side_effect=
+                                                                    weewx.accum.OutOfSpan("Attempt to add out-of-interval record"))
 
                 SUT = TopicManager(self.config, mock_logger)
                 SUT.append_data(self.topic, queue_data)
@@ -384,7 +387,7 @@ class TestAccumulatedData(unittest.TestCase):
 
         with mock.patch('user.MQTTSubscribe.weewx.accum.Accum') as mock_Accum:
             with mock.patch('user.MQTTSubscribe.weewx.units.to_std_system') as mock_to_std_system:
-                type(mock_Accum.return_value).isEmpty = mock.PropertyMock(return_value = True)
+                type(mock_Accum.return_value).isEmpty = mock.PropertyMock(return_value=True)
 
                 SUT = TopicManager(self.config, mock_logger)
 
@@ -393,11 +396,10 @@ class TestAccumulatedData(unittest.TestCase):
                 self.assertDictEqual(accumulated_data, {})
                 mock_Accum.addRecord.assert_not_called()
                 mock_Accum.getRecord.assert_not_called()
-                mock_to_std_system.assert_not_called()    
+                mock_to_std_system.assert_not_called()
 
     def test_queue_valid(self):
         mock_logger = mock.Mock(spec=Logger)
-        queue_data = self.create_queue_data()
 
         final_record_data = {
             'inTemp': random.uniform(1, 100),
@@ -409,7 +411,7 @@ class TestAccumulatedData(unittest.TestCase):
 
         with mock.patch('user.MQTTSubscribe.weewx.accum.Accum') as mock_Accum:
             with mock.patch('user.MQTTSubscribe.weewx.units.to_std_system') as mock_to_std_system:
-                type(mock_Accum.return_value).isEmpty = mock.PropertyMock(return_value = False)
+                type(mock_Accum.return_value).isEmpty = mock.PropertyMock(return_value=False)
                 mock_to_std_system.return_value = final_record_data
 
                 SUT = TopicManager(self.config, mock_logger)

@@ -1,13 +1,15 @@
 #!/usr/bin/python
 
-import configobj
+from __future__ import print_function
 import optparse
 import os
-import paho.mqtt.client as mqtt
 import random
 
-usage = """mqtt-test --help
-       mqtt-test [CONFIG_FILE]
+import configobj
+import paho.mqtt.client as mqtt
+
+USAGE = """mqtt-test --help
+        mqtt-test [CONFIG_FILE]
            [--type=[driver|service]]
            [--host=HOST]
            [--port=PORT]
@@ -23,7 +25,8 @@ Configuration can be read from a 'weewx.conf' file or passed in.
 Command line options override any options in the file.
 """
 
-def on_log(client, userdata, level, msg):
+def on_log(client, userdata, level, msg): # (match callback signature) pylint: disable=unused-argument
+    """ MQTT logging callback. """
     log_level = {
         mqtt.MQTT_LOG_INFO: 'MQTT_LOG_INFO',
         mqtt.MQTT_LOG_NOTICE: 'MQTT_LOG_NOTICE',
@@ -34,48 +37,53 @@ def on_log(client, userdata, level, msg):
 
     print("%s: %s" % (log_level[level], msg))
 
-def on_connect(client, userdata, flags, rc):
+def on_connect(client, userdata, flags, rc): # (match callback signature) pylint: disable=unused-argument
+    """ MQTT on connect callback. """
     print("Connected with result code %i" % rc)
     for topic in userdata['topics']:
         client.subscribe(topic)
 
-def on_disconnect(client, userdata, flags, rc):
+def on_disconnect(client, userdata, flags, rc): # (match callback signature) pylint: disable=unused-argument
+    """ MQTT on disconnect callback. """
     print("Disconnected with result code %i" % rc)
 
-def on_message(client, userdata, msg):
+def on_message(client, userdata, msg): # (match callback signature) pylint: disable=unused-argument
+    """ MQTT on message callback. """
     print('%s: %s' %(msg.topic, msg.payload))
 
 def init_parser():
-    parser = optparse.OptionParser(usage=usage)
+    """ Parse the command line arguments. """
+    parser = optparse.OptionParser(usage=USAGE)
     parser.add_option("--type", choices=["driver", "service"],
-                    help="The simulation type.",
-                    default="driver")
+                      help="The simulation type.",
+                      default="driver")
     parser.add_option("--host",
-                    help="The MQTT server.")
+                      help="The MQTT server.")
     parser.add_option('--port', dest='port', type=int,
-                        help='The port to connect to.')
+                      help='The port to connect to.')
     parser.add_option('--keepalive', dest='keepalive', type=int,
-                        help='Maximum period in seconds allowed between communications with the broker.')
+                      help='Maximum period in seconds allowed between communications with the broker.')
     parser.add_option("--clientid",
-                    help="The clientid to connect with.")
+                      help="The clientid to connect with.")
     parser.add_option("--username",
-                    help="username for broker authentication.")
+                      help="username for broker authentication.")
     parser.add_option("--password",
-                    help="password for broker authentication.")
+                      help="password for broker authentication.")
     parser.add_option("--topics",
-                    help="Comma separated list of topics to subscribe to.")
+                      help="Comma separated list of topics to subscribe to.")
     parser.add_option("--quiet", action="store_true", dest="quiet",
-                    help="Turn off the MQTT logging.")
+                      help="Turn off the MQTT logging.")
 
     return parser
 
-def get_option(option, default):
+def _get_option(option, default):
     if option:
         return option
     else:
         return default
 
 def main():
+    """ The main entry point. """
     parser = init_parser()
     (options, args) = parser.parse_args()
 
@@ -90,13 +98,13 @@ def main():
         config_dict = configuration.get(config_type, {})
     else:
         config_dict = {}
-        
-    host = get_option(options.host, config_dict.get('host', 'localhost'))
-    port = get_option(options.port, int(config_dict.get('port', 1883)))
-    keepalive = get_option(options.keepalive, int(config_dict.get('keepalive', 60)))
-    clientid = get_option(options.clientid, config_dict.get('clientid', config_type + '-' + str(random.randint(1000, 9999))))
-    username = get_option(options.username, config_dict.get('username', None))
-    password = get_option(options.password, config_dict.get('password', None))
+
+    host = _get_option(options.host, config_dict.get('host', 'localhost'))
+    port = _get_option(options.port, int(config_dict.get('port', 1883)))
+    keepalive = _get_option(options.keepalive, int(config_dict.get('keepalive', 60)))
+    clientid = _get_option(options.clientid, config_dict.get('clientid', config_type + '-' + str(random.randint(1000, 9999))))
+    username = _get_option(options.username, config_dict.get('username', None))
+    password = _get_option(options.password, config_dict.get('password', None))
 
     if 'topic' in config_dict:
         topics = config_dict['topic']
@@ -105,7 +113,7 @@ def main():
         for topic in config_dict['topics']:
             default_topics.append(topic)
 
-    topics = get_option(options.topics, default_topics)
+    topics = _get_option(options.topics, default_topics)
 
     print("Host is %s" % host)
     print("Port is %s" % port)
@@ -125,14 +133,14 @@ def main():
     client = mqtt.Client(client_id=clientid, userdata=userdata)
 
     if not options.quiet:
-      client.on_log = on_log
+        client.on_log = on_log
 
     client.on_connect = on_connect
     client.on_disconnect = on_disconnect
     client.on_message = on_message
 
     if username is not None and password is not None:
-        self.client.username_pw_set(username, password)
+        client.username_pw_set(username, password)
 
     client.connect(host, port, keepalive)
 
