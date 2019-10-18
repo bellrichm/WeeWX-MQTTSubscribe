@@ -6,23 +6,23 @@ For example,
 MQTTSubscribe_install_type=SERVICE wee_extension --install=PATH-TO-FILE
 
 To install only the driver, set the environment variable MQTTSubscribe_install_type to DRIVER
-For example, 
+For example,
 MQTTSubscribe_install_type=DRIVER wee_extension --install=PATH-TO-FILE
-and then run 
+and then run
 wee_config --reconfig
 
 For all cases to uninstall run
 wee_extension --uninstall=MQTTSubscribe
 """
 
-import configobj
 import os
+import configobj
 
 from six.moves import StringIO
 
 from weecfg.extension import ExtensionInstaller
 
-VERSION='1.3.0-rc01'
+VERSION = '1.3.0-rc01'
 
 MQTTSubscribeService_config = """
 [MQTTSubscribeService]
@@ -69,15 +69,17 @@ MQTTSubscribeService_config = """
 """
 
 def loader():
+    """ Load and return the extension installer. """
     return MQTTSubscribeServiceInstaller()
 
 class MQTTSubscribeServiceInstaller(ExtensionInstaller):
+    """ The extension installer. """
     def __init__(self):
         try:
             install_type = os.environ['MQTTSubscribe_install_type'].upper()
         except KeyError:
             install_type = ''
-        
+
         install_dict = {
             'version': VERSION,
             'name': 'MQTTSubscribe',

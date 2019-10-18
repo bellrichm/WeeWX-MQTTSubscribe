@@ -2,8 +2,11 @@
     "python.linting.pylintEnabled": true,
     "python.envFile": "${workspaceFolder}/.env",
     "python.linting.pylintArgs": [
-        "--ignored-classes", "Event",
-        "--disable", "bad-indentation, mixed-indentation, bad-whitespace, trailing-whitespace, bad-continuation, line-too-long, unused-argument, missing-docstring, superfluous-parens, old-style-class, wrong-import-order, invalid-name, len-as-condition, unused-variable"
+        //"--disable", "superfluous-parens",
+        "--max-module-lines", "1500",
+        "--max-line-length", "140",
+        "--good-names", "MQTTSubscribe, i, rc",
+        "--ignored-classes", "Event"
     ],
     "python.pythonPath": "/usr/bin/python"
 }

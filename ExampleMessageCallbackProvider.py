@@ -22,7 +22,10 @@ Configuration:
             temp1 = extraTemp1
 """
 
-class MessageCallbackProvider:
+from weeutil.weeutil import to_float
+
+class MessageCallbackProvider(object):
+    """ Provide the MQTT callback. """
     def __init__(self, config, logger, topic_manager):
         self.logger = logger
         self.topic_manager = topic_manager
@@ -31,12 +34,12 @@ class MessageCallbackProvider:
         self.label_map = config.get('label_map', {})
 
     def get_callback(self):
+        """ Get the MQTT callback. """
         return self._on_message
 
-    def _on_message(self, client, userdata, msg):
+    def _on_message(self, client, userdata, msg): # (match callback signature) pylint: disable=unused-argument
         # Wrap all the processing in a try, so it doesn't crash and burn on any error
         try:
-            topic = msg.topic
             self.logger.logdbg("MQTTSubscribe", "MessageCallbackProvider For %s received: %s" %(msg.topic, msg.payload))
 
             fields = msg.payload.split(self.keyword_delimiter)
@@ -45,8 +48,10 @@ class MessageCallbackProvider:
                 eq_index = field.find(self.keyword_separator)
                 # Ignore all fields that do not have the separator
                 if eq_index == -1:
-                    self.logger.logerr("MQTTSubscribe", "MessageCallbackProvider on_message_keyword failed to find separator: %s" % self.keyword_separator)
-                    self.logger.logerr("MQTTSubscribe", "**** MessageCallbackProvider Ignoring field=%s " % field)
+                    self.logger.logerr("MQTTSubscribe",
+                                       "MessageCallbackProvider on_message_keyword failed to find separator: %s" % self.keyword_separator)
+                    self.logger.logerr("MQTTSubscribe",
+                                       "**** MessageCallbackProvider Ignoring field=%s " % field)
                     continue
 
                 name = field[:eq_index].strip()
@@ -56,8 +61,10 @@ class MessageCallbackProvider:
             if data:
                 self.topic_manager.append_data(msg.topic, data)
             else:
-                self.logger.logerr("MQTTSubscribe", "MessageCallbackProvider on_message_keyword failed to find data in: topic=%s and payload=%s" % (msg.topic, msg.payload))
-        
-        except Exception as exception:
+                self.logger.logerr("MQTTSubscribe",
+                                   "MessageCallbackProvider on_message_keyword failed to find data in: topic=%s and payload=%s"
+                                   % (msg.topic, msg.payload))
+
+        except Exception as exception: # (want to catch all) pylint: disable=broad-except
             self.logger.logerr("MQTTSubscribe", "MessageCallbackProvider on_message_keyword failed with: %s" % exception)
             self.logger.logerr("MQTTSubscribe", "**** MessageCallbackProvider Ignoring topic=%s and payload=%s" % (msg.topic, msg.payload))

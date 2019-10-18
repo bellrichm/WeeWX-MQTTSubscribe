@@ -160,6 +160,7 @@ Configuration:
 """
 
 from __future__ import with_statement
+from __future__ import print_function
 import json
 import random
 import syslog
@@ -515,7 +516,7 @@ class MessageCallbackProvider(object):
         self.logger.logerr("MQTTSubscribe",
                            "**** MessageCallbackProvider Ignoring topic=%s and payload=%s" % (msg.topic, msg.payload))
 
-    def _on_message_keyword(self, client, userdata, msg):
+    def _on_message_keyword(self, client, userdata, msg): # (match callback signature) pylint: disable=unused-argument
         # Wrap all the processing in a try, so it doesn't crash and burn on any error
         try:
             self._log_message(msg)
@@ -546,7 +547,7 @@ class MessageCallbackProvider(object):
         except Exception as exception: # (want to catch all) pylint: disable=broad-except
             self._log_exception(exception, msg)
 
-    def _on_message_json(self, client, userdata, msg):
+    def _on_message_json(self, client, userdata, msg): # (match callback signature) pylint: disable=unused-argument
         # Wrap all the processing in a try, so it doesn't crash and burn on any error
         try:
             self._log_message(msg)
@@ -563,7 +564,7 @@ class MessageCallbackProvider(object):
         except Exception as exception: # (want to catch all) pylint: disable=broad-except
             self._log_exception(exception, msg)
 
-    def _on_message_individual(self, client, userdata, msg):
+    def _on_message_individual(self, client, userdata, msg): # (match callback signature) pylint: disable=unused-argument
 
         # Wrap all the processing in a try, so it doesn't crash and burn on any error
         try:
@@ -686,7 +687,7 @@ class MQTTSubscribe(object):
         """ shut it down """
         self.client.disconnect()
 
-    def _on_connect(self, client, userdata, flags, rc):
+    def _on_connect(self, client, userdata, flags, rc): # (match callback signature) pylint: disable=unused-argument
         # https://pypi.org/project/paho-mqtt/#on-connect
         # rc:
         # 0: Connection successful
@@ -702,15 +703,15 @@ class MQTTSubscribe(object):
             (result, mid) = client.subscribe(topic, self.manager.get_qos(topic))
             self.logger.logdbg("MQTTSubscribe", "Subscribe to %s has a mid %i and rc %i" %(topic, mid, result))
 
-    def _on_disconnect(self, client, userdata, rc):
+    def _on_disconnect(self, client, userdata, rc): # (match callback signature) pylint: disable=unused-argument
         self.logger.logdbg("MQTTSubscribe", "Disconnected with result code %i" %rc)
 
-    def _on_subscribe(self, client, userdata, mid, granted_qos):
+    def _on_subscribe(self, client, userdata, mid, granted_qos): # (match callback signature) pylint: disable=unused-argument
         self.logger.logdbg("MQTTSubscribe",
                            "Subscribed to topic mid: %i is size %i has a QOS of %i"
                            %(mid, len(granted_qos), granted_qos[0]))
 
-    def _on_log(self, client, userdata, level, msg):
+    def _on_log(self, client, userdata, level, msg): # (match callback signature) pylint: disable=unused-argument
         self.mqtt_logger[level]("MQTTSubscribe/MQTT", msg)
 
 class MQTTSubscribeService(StdService):
@@ -740,9 +741,9 @@ class MQTTSubscribeService(StdService):
         self.subscriber = MQTTSubscribe(service_dict, self.logger)
         self.subscriber.start()
 
-        if (binding == 'archive'):
+        if binding == 'archive':
             self.bind(weewx.NEW_ARCHIVE_RECORD, self.new_archive_record)
-        elif (binding == 'loop'):
+        elif binding == 'loop':
             self.bind(weewx.NEW_LOOP_PACKET, self.new_loop_packet)
         else:
             raise ValueError("MQTTSubscribeService: Unknown binding: %s" % binding)
@@ -803,7 +804,7 @@ def confeditor_loader():
     """ Load and return the configuration editor. """
     return MQTTSubscribeDriverConfEditor()
 
-class MQTTSubscribeDriver(weewx.drivers.AbstractDevice):
+class MQTTSubscribeDriver(weewx.drivers.AbstractDevice): # (methods not used) pylint: disable=abstract-method
     """weewx driver that reads data from MQTT"""
 
     def __init__(self, **stn_dict):
