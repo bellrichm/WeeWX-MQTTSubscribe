@@ -9,8 +9,8 @@ import random
 import configobj
 import paho.mqtt.client as mqtt
 
-USAGE = """mqtt-test --help
-        mqtt-test [CONFIG_FILE]
+USAGE = """mqtt_test --help
+        mqtt_test [CONFIG_FILE]
            [--type=[driver|service]]
            [--host=HOST]
            [--port=PORT]
