@@ -181,29 +181,35 @@ DRIVER_NAME = 'MQTTSubscribeDriver'
 DRIVER_VERSION = VERSION
 
 class Logger(object):
+    """ The logging class. """
     def __init__(self, console):
         self.console = console
 
-    def logmsg(self, dst, prefix, msg):
+    def _logmsg(self, dst, prefix, msg):
         syslog.syslog(dst, '%s: %s' % (prefix, msg))
         if self.console:
             print('%s: %s' % (prefix, msg))
 
     def logdbg(self, prefix, msg):
-        self.logmsg(syslog.LOG_DEBUG, prefix, msg)
+        """ Log debug messages. """
+        self._logmsg(syslog.LOG_DEBUG, prefix, msg)
 
     def loginf(self, prefix, msg):
-        self.logmsg(syslog.LOG_INFO, prefix, msg)
+        """ Log informational messages. """
+        self._logmsg(syslog.LOG_INFO, prefix, msg)
 
     def logerr(self, prefix, msg):
-        self.logmsg(syslog.LOG_ERR, prefix, msg)
+        """ Log error messages. """
+        self._logmsg(syslog.LOG_ERR, prefix, msg)
 
 class CollectData(object):
+    """ Manage fields that are 'grouped together', like wind data. """
     def __init__(self, fields):
         self.fields = fields
         self.data = {}
 
     def add_data(self, in_data):
+        """ Add data to the collection and return old collection if this field is already in the collection. """
         old_data = {}
         for field in self.fields:
             # ToDo - might be a better way to determine the fieldname
@@ -218,9 +224,11 @@ class CollectData(object):
                 return old_data
 
     def get_data(self):
+        """ Return the collection. """
         return self.data
 
 class TopicManager(object):
+    """ Manage the MQTT topic subscriptions. """
     def __init__(self, config, logger):
         self.logger = logger
 
@@ -278,6 +286,7 @@ class TopicManager(object):
             self.subscribed_topics[topic]['queue_wind'] = deque()
 
     def append_data(self, topic, in_data, fieldname=None):
+        """ Add the MQTT data to the queue. """
         data = dict(in_data)
         payload = {}
         payload['wind_data'] = False
@@ -302,6 +311,7 @@ class TopicManager(object):
         queue.append(payload,)
 
     def peek_datetime(self, topic):
+        """ Return the date/time of the first element in the queue. """
         queue = self._get_queue(topic)
         self.logger.logdbg("MQTTSubscribe", "TopicManager queue size is: %i" % len(queue))
         datetime = None
@@ -311,6 +321,7 @@ class TopicManager(object):
         return datetime
 
     def peek_last_datetime(self, topic):
+        """ Return the date/time of the last element in the queue. """
         queue = self._get_queue(topic)
         self.logger.logdbg("MQTTSubscribe", "TopicManager queue size is: %i" % len(queue))
         datetime = 0
@@ -320,6 +331,7 @@ class TopicManager(object):
         return datetime
 
     def get_data(self, topic, end_ts=six.MAXSIZE):
+        """ Get data off the queue of MQTT data. """
         queue = self._get_queue(topic)
         self.logger.logdbg("MQTTSubscribe", "TopicManager starting queue %s size is: %i" %(topic, len(queue)))
         collector = CollectData(self.wind_fields)
@@ -350,6 +362,7 @@ class TopicManager(object):
             yield data
 
     def get_accumulated_data(self, topic, start_time, end_time, units):
+        """ Get the MQTT data after being accumulated. """
         ignore_start_time = self._get_value('ignore_start_time', topic)
         ignore_end_time = self._get_value('ignore_end_time', topic)
         adjust_start_time = self._get_value('adjust_start_time', topic)
@@ -409,6 +422,7 @@ class TopicManager(object):
                                "TopicManager queue limit %i reached. Removing: %s" %(max_queue, element))
 
     def get_qos(self, topic):
+        """ Get the QOS. """
         return self._get_value('qos', topic)
 
     def _get_unit_system(self, topic):
@@ -437,6 +451,7 @@ class TopicManager(object):
                 return subscribed_topic
 
 class MessageCallbackProvider(object):
+    """ Provide the MQTT callback. """
     def __init__(self, config, logger, topic_manager):
         self.logger = logger
         self.topic_manager = topic_manager
@@ -452,6 +467,7 @@ class MessageCallbackProvider(object):
             raise ValueError("Invalid type configured: %s" % self.type)
 
     def get_callback(self):
+        """ Get the MQTT callback. """
         return self.callbacks[self.type]
 
     def _setup_callbacks(self):
@@ -568,8 +584,8 @@ class MessageCallbackProvider(object):
         except Exception as exception: # (want to catch all) pylint: disable=broad-except
             self._log_exception(exception, msg)
 
-# Class to manage MQTT subscriptions
 class MQTTSubscribe(object):
+    """ Manage MQTT sunscriptions. """
     def __init__(self, service_dict, logger):
         self.logger = logger
 
@@ -650,21 +666,24 @@ class MQTTSubscribe(object):
 
     @property
     def subscribed_topics(self):
+        """ The topics subscribed to. """
         return self.manager.subscribed_topics
 
     def get_data(self, topic, end_ts=six.MAXSIZE):
+        """ Get data off the queue of MQTT data. """
         return self.manager.get_data(topic, end_ts)
 
     def get_accumulated_data(self, topic, start_ts, end_ts, units):
+        """ Get the MQTT data after being accumulated. """
         return self.manager.get_accumulated_data(topic, start_ts, end_ts, units)
 
-    # start subscribing to the topics
     def start(self):
+        """ start subscribing to the topics """
         self.logger.logdbg("MQTTSubscribe", "Starting loop")
         self.client.loop_start()
 
-    # shut it down
     def disconnect(self):
+        """ shut it down """
         self.client.disconnect()
 
     def _on_connect(self, client, userdata, flags, rc):
@@ -695,6 +714,7 @@ class MQTTSubscribe(object):
         self.mqtt_logger[level]("MQTTSubscribe/MQTT", msg)
 
 class MQTTSubscribeService(StdService):
+    """ The MQTT subscribe service. """
     def __init__(self, engine, config_dict):
         super(MQTTSubscribeService, self).__init__(engine, config_dict)
 
@@ -731,6 +751,7 @@ class MQTTSubscribeService(StdService):
         self.subscriber.disconnect()
 
     def new_loop_packet(self, event):
+        """ Handle the new loop packet event. """
         # packet has traveled back in time
         if self.end_ts > event.packet['dateTime']:
             self.logger.logerr("MQTTSubscribeService",
@@ -757,6 +778,7 @@ class MQTTSubscribeService(StdService):
     # the archive record, so this data is not 'QC' in this case.
     # If this is important, bind to the loop packet.
     def new_archive_record(self, event):
+        """ Handle the new archive record event. """
         end_ts = event.record['dateTime']
         start_ts = end_ts - event.record['interval'] * 60
 
@@ -773,10 +795,12 @@ class MQTTSubscribeService(StdService):
                                   to_sorted_string(event.record)))
 
 def loader(config_dict, engine):
+    """ Load and return the driver. """
     config = configobj.ConfigObj(config_dict)
     return MQTTSubscribeDriver(**config[DRIVER_NAME])
 
 def confeditor_loader():
+    """ Load and return the configuration editor. """
     return MQTTSubscribeDriverConfEditor()
 
 class MQTTSubscribeDriver(weewx.drivers.AbstractDevice):
@@ -836,6 +860,7 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice):
                     break
 
 class MQTTSubscribeDriverConfEditor(weewx.drivers.AbstractConfEditor): # pragma: no cover
+    """ Methods for producing and updating configuration stanzas for use in configuration file. """
     @property
     def default_stanza(self):
         return """
@@ -929,6 +954,7 @@ if __name__ == '__main__': # pragma: no cover
     """
 
     def main():
+        """ Prepare and run MQTTSubscribe in simulation mode. """
         parser = optparse.OptionParser(usage=USAGE)
         parser.add_option('--records', dest='record_count', type=int,
                           help='The number of archive records to create.',
@@ -1025,6 +1051,7 @@ if __name__ == '__main__': # pragma: no cover
                 simulate_driver_packet(driver, record_count)
 
     def simulate_driver_archive(driver, record_count, interval, delay):
+        """ Simulate running MQTTSubscribe as a driver that generates archive records. """
         i = 0
         while i < record_count:
             current_time = int(time.time() + 0.5)
@@ -1041,6 +1068,7 @@ if __name__ == '__main__': # pragma: no cover
             i += 1
 
     def simulate_driver_packet(driver, record_count):
+        """ Simulate running MQTTSubscribe as a driver that generates loop packets. """
         i = 0
         for packet in driver.genLoopPackets():
             print("Packet is: %s %s"
@@ -1051,6 +1079,7 @@ if __name__ == '__main__': # pragma: no cover
                 break
 
     def simulate_service(engine, config_dict, binding, record_count, interval, delay, units):
+        """ Simulate running MQTTSubscribe as a service. """
         service = MQTTSubscribeService(engine, config_dict)
         i = 0
         while i < record_count:
