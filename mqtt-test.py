@@ -1,4 +1,5 @@
 #!/usr/bin/python
+""" A simple utility that prints the topics and payloads. """
 
 from __future__ import print_function
 import optparse

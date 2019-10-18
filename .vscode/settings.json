@@ -5,7 +5,7 @@
         //"--disable", "superfluous-parens",
         "--max-module-lines", "1500",
         "--max-line-length", "140",
-        "--good-names", "MQTTSubscribe, i, rc",
+        "--good-names", "MQTTSubscribe, i, rc, ExampleMessageCallbackProvider",
         "--ignored-classes", "Event"
     ],
     "python.pythonPath": "/usr/bin/python"

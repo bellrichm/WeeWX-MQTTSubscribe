@@ -24,7 +24,7 @@ from weecfg.extension import ExtensionInstaller
 
 VERSION = '1.3.0-rc01'
 
-MQTTSubscribeService_config = """
+MQTTSUBSCRIBESERVICE_CONFIG = """
 [MQTTSubscribeService]
     # This section is for the MQTTSubscribe service.
 
@@ -98,7 +98,7 @@ class MQTTSubscribeServiceInstaller(ExtensionInstaller):
             else:
                 enable = 'true'
 
-            MQTTSubscribeService_dict = configobj.ConfigObj(StringIO(MQTTSubscribeService_config % enable))
+            MQTTSubscribeService_dict = configobj.ConfigObj(StringIO(MQTTSUBSCRIBESERVICE_CONFIG % enable)) # pylint: disable = invalid-name
             install_dict['config'] = MQTTSubscribeService_dict
             install_dict['data_services'] = 'user.MQTTSubscribe.MQTTSubscribeService'
 
