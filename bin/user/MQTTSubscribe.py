@@ -788,7 +788,7 @@ class MQTTSubscribeService(StdService):
                                "Record prior to update is: %s %s"
                                % (weeutil.weeutil.timestamp_to_string(event.record['dateTime']),
                                   to_sorted_string(event.record)))
-            target_data = self.subscriber.get_accumulated_data(topic, start_ts, self.end_ts, event.record['usUnits'])
+            target_data = self.subscriber.get_accumulated_data(topic, start_ts, end_ts, event.record['usUnits'])
             event.record.update(target_data)
             self.logger.logdbg("MQTTSubscribeService",
                                "Record after update is: %s %s"
