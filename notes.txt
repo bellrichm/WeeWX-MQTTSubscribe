@@ -8,3 +8,22 @@ StdConvert converts loop packets into the appropriate units. Therefore Subscribe
 SubscribeDriver essentially emits each MQTT payload as a loop packet and lets WeeWX do its "magic" to handle partial packets, units, accumulation, augmentation, etc.
 
 It seems like binding the SubscribeService to loop packets is the more natural fit. This does mean that the MQTT payload has to be accumulated for every loop packet instead of every archive record. This additional processing may put more load on the system, but each cycle of accumulating loop packet will have less data to process. So...
+
+
+Developer notes:
+Testing
+pip install mock
+pip3 install mock
+
+sudo pip install coverage
+sudo pip3 install coverage
+
+PYTHONPATH=/home/pi/weewx/bin coverage2 run  -m unittest discover bin/user/tests; coverage html --include bin/user/MQTTSubscribe.py
+
+coverage3 - for python 3
+
+PYTHONPATH=/home/pi/weewx/bin python -m unittest discover bin/user/tests
+
+PYTHONPATH=/home/pi/weewx/bin python bin/user/tests/test_MQTTSubscribe.py
+
+python3 - for python 3

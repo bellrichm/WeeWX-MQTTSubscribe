@@ -2,7 +2,7 @@
     "python.linting.pylintEnabled": true,
     "python.envFile": "${workspaceFolder}/.env",
     "python.linting.pylintArgs": [
-        //"--disable", "superfluous-parens",
+        "--disable", "locally-disabled",
         "--max-module-lines", "1500",
         "--max-line-length", "140",
         "--good-names", "MQTTSubscribe, i, rc, ExampleMessageCallbackProvider",
