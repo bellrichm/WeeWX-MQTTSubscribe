@@ -31,3 +31,9 @@ PYTHONPATH=bin:../weewx/bin python -m unittest discover bin/user/tests
 PYTHONPATH=bin:../weewx/bin python bin/user/tests/test_MQTTSubscribe.py
 
 python3 - for python 3
+
+./mqtt_test.py --type=driver weewx.loop.conf
+./mqtt_test.py --type=service weewx.loop.conf
+
+./mqtt_test.py --type=driver weewx.archive.conf
+./mqtt_test.py --type=service weewx.archive.conf
