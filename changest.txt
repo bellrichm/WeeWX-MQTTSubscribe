@@ -1,3 +1,10 @@
+V1.3.0
+Enhancements/Fixes:
+- Added support for nested/hierarchical json (#28). 
+  The delimiter between hierarchies can be chanhed with the flatten_delimiter option.
+- Cleaned up the code.
+- Cleaned up the development enviroment and added some documentation.
+
 V1.2.1
 Enhancements/Fixes:
 - Fixed #30.

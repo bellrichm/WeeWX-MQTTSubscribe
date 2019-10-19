@@ -177,7 +177,7 @@ import weewx
 import weewx.drivers
 from weewx.engine import StdService
 
-VERSION = '1.3.0-rc02'
+VERSION = '1.3.0'
 DRIVER_NAME = 'MQTTSubscribeDriver'
 DRIVER_VERSION = VERSION
 
