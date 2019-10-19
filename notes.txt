@@ -11,6 +11,10 @@ It seems like binding the SubscribeService to loop packets is the more natural f
 
 
 Developer notes:
+Assumes that a WeeWX install in weewx directory is a sibling directory to this projects root directory.
+I find it useful to symlink the weewx directory to a specific version of weewx.
+This allows easily running against different WeeWX versions.
+
 Testing
 pip install mock
 pip3 install mock
@@ -18,12 +22,12 @@ pip3 install mock
 sudo pip install coverage
 sudo pip3 install coverage
 
-PYTHONPATH=/home/pi/weewx/bin coverage2 run  -m unittest discover bin/user/tests; coverage html --include bin/user/MQTTSubscribe.py
+PYTHONPATH=bin:../weewx/bin coverage2 run  -m unittest discover bin/user/tests; coverage html --include bin/user/MQTTSubscribe.py
 
 coverage3 - for python 3
 
-PYTHONPATH=/home/pi/weewx/bin python -m unittest discover bin/user/tests
+PYTHONPATH=bin:../weewx/bin python -m unittest discover bin/user/tests
 
-PYTHONPATH=/home/pi/weewx/bin python bin/user/tests/test_MQTTSubscribe.py
+PYTHONPATH=bin:../weewx/bin python bin/user/tests/test_MQTTSubscribe.py
 
 python3 - for python 3
