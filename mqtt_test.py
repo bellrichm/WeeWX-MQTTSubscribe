@@ -12,6 +12,7 @@ import paho.mqtt.client as mqtt
 USAGE = """mqtt_test --help
         mqtt_test [CONFIG_FILE]
            [--type=[driver|service]]
+           [--records=MAX_RECORDS]
            [--host=HOST]
            [--port=PORT]
            [--keepalive=KEEPALIVE]
@@ -44,13 +45,17 @@ def on_connect(client, userdata, flags, rc): # (match callback signature) pylint
     for topic in userdata['topics']:
         client.subscribe(topic)
 
-def on_disconnect(client, userdata, flags, rc): # (match callback signature) pylint: disable=unused-argument
+def on_disconnect(client, userdata, rc): # (match callback signature) pylint: disable=unused-argument
     """ MQTT on disconnect callback. """
     print("Disconnected with result code %i" % rc)
 
 def on_message(client, userdata, msg): # (match callback signature) pylint: disable=unused-argument
     """ MQTT on message callback. """
     print('%s: %s' %(msg.topic, msg.payload))
+    if userdata.get('max_records'):
+        userdata['counter'] += 1
+        if userdata['counter'] >= userdata['max_records']:
+            client.disconnect()
 
 def init_parser():
     """ Parse the command line arguments. """
@@ -58,6 +63,8 @@ def init_parser():
     parser.add_option("--type", choices=["driver", "service"],
                       help="The simulation type.",
                       default="driver")
+    parser.add_option('--records', dest='max_records', type=int,
+                      help='The number of MQTT records to retrieve.')                
     parser.add_option("--host",
                       help="The MQTT server.")
     parser.add_option('--port', dest='port', type=int,
@@ -92,6 +99,8 @@ def main():
         config_type = 'MQTTSubscribeService'
     else:
         config_type = 'MQTTSubscribeDriver'
+
+    max_records = _get_option(options.max_records, None)
 
     if args:
         config_path = os.path.abspath(args[0])
@@ -131,6 +140,9 @@ def main():
 
     userdata = {}
     userdata['topics'] = topics
+    if max_records:
+        userdata['counter'] = 0
+        userdata['max_records'] = max_records
     client = mqtt.Client(client_id=clientid, userdata=userdata)
 
     if not options.quiet:
