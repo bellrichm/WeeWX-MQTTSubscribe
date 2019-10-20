@@ -64,7 +64,7 @@ def init_parser():
                       help="The simulation type.",
                       default="driver")
     parser.add_option('--records', dest='max_records', type=int,
-                      help='The number of MQTT records to retrieve.')                
+                      help='The number of MQTT records to retrieve.')          
     parser.add_option("--host",
                       help="The MQTT server.")
     parser.add_option('--port', dest='port', type=int,
