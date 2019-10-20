@@ -64,7 +64,7 @@ def init_parser():
                       help="The simulation type.",
                       default="driver")
     parser.add_option('--records', dest='max_records', type=int,
-                      help='The number of MQTT records to retrieve.')          
+                      help='The number of MQTT records to retrieve.')
     parser.add_option("--host",
                       help="The MQTT server.")
     parser.add_option('--port', dest='port', type=int,
@@ -116,14 +116,16 @@ def main():
     username = _get_option(options.username, config_dict.get('username', None))
     password = _get_option(options.password, config_dict.get('password', None))
 
+    topics = []
     if 'topic' in config_dict:
-        topics = config_dict['topic']
+        topics.append(config_dict['topic'])
     else:
-        default_topics = []
-        for topic in config_dict['topics']:
-            default_topics.append(topic)
+        if 'topics' in config_dict:
+            for topic in config_dict['topics']:
+                topics.append(topic)
 
-    topics = _get_option(options.topics, default_topics)
+    if options.topics:
+        topics.extend(options.topics.split(','))
 
     print("Host is %s" % host)
     print("Port is %s" % port)
