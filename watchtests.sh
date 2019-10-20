@@ -1,4 +1,4 @@
-
+WEEWX=weewx_3.9.2
 
 while inotifywait -e modify bin/user/MQTTSubscribe.py bin/user/tests
 do
