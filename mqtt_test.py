@@ -125,7 +125,7 @@ def main():
                 topics.append(topic)
 
     if options.topics:
-        topics.extend(options.topics.split(','))
+        topics = options.topics.split(',')
 
     print("Host is %s" % host)
     print("Port is %s" % port)
