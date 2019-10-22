@@ -36,7 +36,6 @@
             ],            
             "console": "integratedTerminal"
         },
-
         {
             "name": "Driver: Loop",
             "type": "python",
@@ -53,7 +52,6 @@
             ],            
             "console": "integratedTerminal"
         },
-
         {
             "name": "Driver: Archive",
             "type": "python",
@@ -70,7 +68,36 @@
             ],            
             "console": "integratedTerminal"
         },
-
+        {
+            "name": "Install: Service",
+            "type": "python",
+            "request": "launch",
+            "env": {
+                "MQTTSubscribe_install_type": "service"
+            },
+            "program": "${workspaceFolder}/../weewx/bin/wee_extension",
+            "args": [
+                "--verbosity", "3",
+                "--dry-run",
+                "--install", "."
+            ],            
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Install: Driver",
+            "type": "python",
+            "request": "launch",
+            "env": {
+                "MQTTSubscribe_install_type": "driver"
+            },
+            "program": "${workspaceFolder}/../weewx/bin/wee_extension",
+            "args": [
+                "--verbosity", "3",
+                "--dry-run",
+                "--install", "."
+            ],            
+            "console": "integratedTerminal"
+        },
         {
             "name": "Python: Remote Attach",
             "type": "python",
