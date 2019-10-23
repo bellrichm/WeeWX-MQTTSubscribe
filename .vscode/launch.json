@@ -99,6 +99,42 @@
             "console": "integratedTerminal"
         },
         {
+            // Requires MQTTSubscribe.py to be in 'weewx/bin/user' directory
+            // Because python prepends the scripts directory, 'weewx/bin' to sys.path
+            // So when weewx does an __import__('user') it uses 'weewx/bin/user'
+            "name": "MQTTSubscribeDriverConfEditor: Driver",
+            "type": "python",
+            "request": "launch",
+            "env": {
+                "MQTTSubscribe_install_type": "driver"
+            },
+            "program": "${workspaceFolder}/../weewx/bin/wee_config",
+            "args": [
+                "--output", "/tmp/output.conf,",
+                "--no-backup",
+                "--reconfigure"
+            ],            
+            "console": "externalTerminal"
+        },
+        {
+            // Requires MQTTSubscribe.py to be in 'weewx/bin/user' directory
+            // Because python prepends the scripts directory, 'weewx/bin' to sys.path
+            // So when weewx does an __import__('user') it uses 'weewx/bin/user'
+            "name": "MQTTSubscribeDriverConfEditor: Service",
+            "type": "python",
+            "request": "launch",
+            "env": {
+                "MQTTSubscribe_install_type": "service"
+            },
+            "program": "${workspaceFolder}/../weewx/bin/wee_config",
+            "args": [
+                "--output", "/tmp/output.conf,",
+                "--no-backup",
+                "--reconfigure"
+            ],            
+            "console": "externalTerminal"
+        },       
+        {
             "name": "Python: Remote Attach",
             "type": "python",
             "request": "attach",

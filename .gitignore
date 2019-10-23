@@ -2,3 +2,4 @@
 .coverage
 .vscode/.ropeproject
 htmlcov
+tmp/
