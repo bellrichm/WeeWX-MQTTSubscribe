@@ -134,10 +134,10 @@
             ],            
             "console": "externalTerminal"
         },       
+        {
             // Requires MQTTSubscribe.py to be in 'weewx/bin/user' directory
             // Because python prepends the scripts directory, 'weewx/bin' to sys.path
             // So when weewx does an __import__('user') it uses 'weewx/bin/user'
-        {
             "name": "weewxd: Service",
             "type": "python",
             "request": "launch",
@@ -149,6 +149,24 @@
                 "weewx.service.conf"
             ],            
             "console": "externalTerminal"
+        },   
+        {
+            // Requires MQTTSubscribe.py to be in 'weewx/bin/user' directory
+            // Because python prepends the scripts directory, 'weewx/bin' to sys.path
+            // So when weewx does an __import__('user') it uses 'weewx/bin/user'
+            "name": "weewxd: Device",
+            "type": "python",
+            "request": "launch",
+            "env": {
+                "LANG": "en_GB.UTF-8"
+            },
+            "program": "${workspaceFolder}/../weewx/bin/weewxd",
+            "args": [
+                "weewx.device.conf"
+            ],            
+            // Work around for timeout
+            //"console": "externalTerminal"
+            "console": "integratedTerminal"
         },        
         {
             "name": "Python: Remote Attach",
