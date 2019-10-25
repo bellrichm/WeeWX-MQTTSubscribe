@@ -35,7 +35,8 @@ def main():
     keepalive = 60
     client_id = "client_id"
     topic = "test"
-    message = "testing"
+    filename = "tmp/messages.txt"
+    prompt_to_send = True
 
     client = mqtt.Client(client_id)
     client.on_connect = on_connect
@@ -43,9 +44,19 @@ def main():
     client.on_publish = on_publish
     client.connect(host, port, keepalive)
     client.loop_start()
-    mqtt_message_info = client.publish(topic, message)
-    mqtt_message_info.wait_for_publish()
-    print("Sent: %s has return code %i" %(mqtt_message_info.mid, mqtt_message_info.rc))
+
+    with open(filename) as file_object:
+        message = file_object.readline().rstrip()
+        while message:
+            mqtt_message_info = client.publish(topic, message)
+            mqtt_message_info.wait_for_publish()
+            print("Sent: %s has return code %i" %(mqtt_message_info.mid, mqtt_message_info.rc))
+            message = file_object.readline().rstrip()
+            if message:
+                if prompt_to_send:
+                    print("press enter to send next message.")
+                    raw_input()
+
     client.disconnect()
 
 main()
