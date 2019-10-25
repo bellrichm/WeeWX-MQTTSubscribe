@@ -174,13 +174,8 @@
             "request": "launch",
             "program": "${workspaceFolder}/pubmqtt.py",
             "args": [
-                "--type", "service",
-                "--binding", "loop",
-                "--interval", "2",
-                "--delay", "0",
-                "--records", "1",
-                "--verbose",
-                "${workspaceFolder}/weewx.loop.conf",
+                "--host", "localhost",
+                "--port", "1883",
             ],            
             "console": "integratedTerminal"
         },               

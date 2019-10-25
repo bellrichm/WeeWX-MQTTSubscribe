@@ -1,9 +1,51 @@
 #!/usr/bin/python
 """ A simple utility that reads messages from a file and publishes each line to MQTT. """
 from __future__ import print_function
+import optparse
 import random
 import time
 import paho.mqtt.client as mqtt
+
+USAGE = """pubmqtt --help
+        mqtt_test
+           [--host=HOST]
+           [--port=PORT]
+           [--keepalive=KEEPALIVE]
+           [--client-id=CLIENT_ID]
+           [--topic=TOPIC]
+           [--file=FILE]
+           [--interval=INTERVAL]
+           [--min-interval=MIN_INTERVAL]
+           [--max-interval=MAX_INTERVAL]
+           [--prompt]
+
+A simple utility that reads messages from a file and publishes each line to MQTT. """
+
+def init_parser():
+    """ Parse the command line arguments. """
+    parser = optparse.OptionParser(usage=USAGE)
+    parser.add_option("--host", dest='host', default='localhost',
+                      help="The MQTT server.")
+    parser.add_option('--port', dest='port', type=int, default=1883,
+                      help='The port to connect to.')
+    parser.add_option('--keepalive', dest='keepalive', type=int, default=60,
+                      help='Maximum period in seconds allowed between communications with the broker.')
+    parser.add_option("--client-id", dest='client_id', default='clientid',
+                      help="The clientid to connect with.")
+    parser.add_option("--topic", dest='topic', default='test-topic',
+                      help="The topic to subscribe to.")
+    parser.add_option("--file", dest='file', default='tmp/messages.txt',
+                      help="The file containing the messages to publish.")
+    parser.add_option("--interval", dest='interval', type=int, default=0,
+                      help="The minimum time between publishing messages.")
+    parser.add_option("--min-interval", dest='min_interval', type=int, default=0,
+                      help="When using a random interval, the minimum time between publishing messages.")
+    parser.add_option("--max-interval", dest='max_interval', type=int, default=0,
+                      help="When using a random interval, the 'maximum' time between publishing messages.")
+    parser.add_option("--prompt", action="store_true", dest="prompt_to_send",
+                      help="Prompt to publish the next message.")
+
+    return parser
 
 def on_connect(client, userdata, flags, rc): # (match callback signature) pylint: disable=unused-argument
     """ The on_connect callback. """
@@ -32,16 +74,19 @@ def on_publish(client, userdata, mid): # (match callback signature) pylint: disa
 
 def main():
     """ The main entry point. """
-    host = "localhost"
-    port = 1883
-    keepalive = 60
-    client_id = "client_id"
-    topic = "test"
-    filename = "tmp/messages.txt"
-    prompt_to_send = False
-    interval = 0
-    min_interval = 1
-    max_interval = 3
+    parser = init_parser()
+    (options, args) = parser.parse_args()
+
+    host = options.host
+    port = options.port
+    keepalive = options.keepalive
+    client_id = options.client_id
+    topic = options.topic
+    filename = options.file
+    interval = options.interval
+    min_interval = options.min_interval
+    max_interval = options.max_interval
+    prompt_to_send = options.prompt_to_send
 
     client = mqtt.Client(client_id)
     client.on_connect = on_connect
