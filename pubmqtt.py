@@ -38,6 +38,7 @@ def main():
     topic = "test"
     filename = "tmp/messages.txt"
     prompt_to_send = False
+    interval = 0
 
     client = mqtt.Client(client_id)
     client.on_connect = on_connect
@@ -46,19 +47,29 @@ def main():
     client.connect(host, port, keepalive)
     client.loop_start()
 
+    publish_time = 0
+
     with open(filename) as file_object:
         message = file_object.readline().rstrip()
         while message:
+            current_time = int(time.time() + 0.5)
+            used_time = current_time - publish_time
+            print("%i %i %i" %(current_time, publish_time, interval))
+            if used_time < interval:
+                print("sleeping %i" %(interval - used_time))
+                time.sleep(interval - used_time)
             publish_time = int(time.time() + 0.5)
             message = message.replace("{DATETIME}", str(publish_time))
             mqtt_message_info = client.publish(topic, message)
             mqtt_message_info.wait_for_publish()
-            print("Sent: %s has return code %i" %(mqtt_message_info.mid, mqtt_message_info.rc))
+            #time.sleep(0)
+            #print("Sent: %s has return code %i" %(mqtt_message_info.mid, mqtt_message_info.rc))
             message = file_object.readline().rstrip()
             if message:
                 if prompt_to_send:
                     print("press enter to send next message.")
                     raw_input()
+
 
     client.disconnect()
 
