@@ -1,6 +1,7 @@
 #!/usr/bin/python
 """ A simple utility that reads messages from a file and publishes each line to MQTT. """
 from __future__ import print_function
+import time
 import paho.mqtt.client as mqtt
 
 def on_connect(client, userdata, flags, rc): # (match callback signature) pylint: disable=unused-argument
@@ -36,7 +37,7 @@ def main():
     client_id = "client_id"
     topic = "test"
     filename = "tmp/messages.txt"
-    prompt_to_send = True
+    prompt_to_send = False
 
     client = mqtt.Client(client_id)
     client.on_connect = on_connect
@@ -48,6 +49,8 @@ def main():
     with open(filename) as file_object:
         message = file_object.readline().rstrip()
         while message:
+            publish_time = int(time.time() + 0.5)
+            message = message.replace("{DATETIME}", str(publish_time))
             mqtt_message_info = client.publish(topic, message)
             mqtt_message_info.wait_for_publish()
             print("Sent: %s has return code %i" %(mqtt_message_info.mid, mqtt_message_info.rc))
