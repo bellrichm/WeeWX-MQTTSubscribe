@@ -58,7 +58,6 @@ Prior to making any updates/changes, always make a backup.
         ```
         $BIN_ROOT/wee_config --reconfig
         ```
-        In either case, edit the [MQTTSubscribeDriver][\[topics\]] stanza to configure the topics to subscribe to.
     
     * As a service
     
