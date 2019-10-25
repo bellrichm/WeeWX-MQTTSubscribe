@@ -167,6 +167,22 @@
             // Work around for timeout
             //"console": "externalTerminal"
             "console": "integratedTerminal"
-        }        
+        },
+        {
+            "name": "pubmqtt",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/pubmqtt.py",
+            "args": [
+                "--type", "service",
+                "--binding", "loop",
+                "--interval", "2",
+                "--delay", "0",
+                "--records", "1",
+                "--verbose",
+                "${workspaceFolder}/weewx.loop.conf",
+            ],            
+            "console": "integratedTerminal"
+        },               
     ]
 }
