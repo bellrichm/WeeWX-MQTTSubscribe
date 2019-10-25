@@ -117,14 +117,6 @@ Prior to making any updates/changes, always make a backup.
         ```
         $BIN_ROOT/wee_config --reconfig
         ```
-        Edit the [MQTTSubscribeDriver] stanza to configure the topics to subscribe to.
-        
-        ```
-        [MQTTSubscribeDriver]
-            [[topics]]
-                [[[topic1]]]
-                [[[topic2]]]
-         ```
 
     * As a service    
         Configure as required and add the service to WeeWX. 
@@ -140,4 +132,21 @@ Prior to making any updates/changes, always make a backup.
             [[Services]]
                 data_services = user.MQTTSubscribe.MQTTSubscribeService
          ```
- 
+             
+5. Restart WeeWX 
+
+    ```
+    sudo /etc/init.d/weewx restart
+    ```
+    
+    or
+    
+    ```
+    sudo sudo service restart weewx
+    ```
+    
+    or 
+    
+    ``` 
+    sudo systemctl restart weewx
+    ```
