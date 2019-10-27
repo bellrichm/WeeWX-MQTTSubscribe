@@ -422,4 +422,4 @@ class TestAccumulatedData(unittest.TestCase):
                 self.assertDictEqual(accumulated_data, final_record_data)
 
 if __name__ == '__main__':
-    unittest.main()
+    unittest.main(exit=False)

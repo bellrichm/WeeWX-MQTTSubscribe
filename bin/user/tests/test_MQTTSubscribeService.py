@@ -185,4 +185,4 @@ class Testnew_archive_record(unittest.TestCase):
         SUT.shutDown()
 
 if __name__ == '__main__':
-    unittest.main()
+    unittest.main(exit=False)

@@ -131,4 +131,4 @@ class TestgenArchiveRecords(unittest.TestCase):
             self.assertListEqual(records, queue_list)
 
 if __name__ == '__main__':
-    unittest.main()
+    unittest.main(exit=False)

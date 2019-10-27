@@ -77,4 +77,4 @@ class Test_get_data(unittest.TestCase):
         self.assertDictEqual(collected_data, self.data)
 
 if __name__ == '__main__':
-    unittest.main()
+    unittest.main(exit=False)

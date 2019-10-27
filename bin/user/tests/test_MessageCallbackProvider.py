@@ -482,4 +482,4 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
         mock_manager.append_data.assert_called_once_with(msg.topic, {self.topic: payload})
 
 if __name__ == '__main__':
-    unittest.main()
+    unittest.main(exit=False)

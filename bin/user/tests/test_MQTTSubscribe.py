@@ -203,4 +203,4 @@ class Teston_connect(unittest.TestCase):
                     mock_client.subscribe.assert_any_call(topic2, qos)
 
 if __name__ == '__main__':
-    unittest.main()
+    unittest.main(exit=False)
