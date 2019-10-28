@@ -122,7 +122,7 @@ Configuration:
 
         # Even if the payload has a datetime, ignore it and use the server datetime
         # Default is False
-        use_server_time = False
+        use_server_datetime = False
 
         # When True, the MQTT datetime will be not be checked that is greater than the last packet processed.
         # Default is False
@@ -943,7 +943,7 @@ if __name__ == '__main__': # pragma: no cover
     from weewx.engine import StdEngine
 
     USAGE = """MQTTSubscribeService --help
-           wee_config CONFIG_FILE
+               CONFIG_FILE
                [--records=RECORD_COUNT]
                [--interval=INTERVAL]
                [--delay=DELAY]
@@ -952,6 +952,8 @@ if __name__ == '__main__': # pragma: no cover
                [--type=driver|service]
                [--verbose]
                [--console]
+    
+    CONFIG_FILE = The WeeWX configuration file, typically weewx.conf.
     """
 
     def main():
