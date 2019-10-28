@@ -481,7 +481,7 @@ class MessageCallbackProvider(object):
 
     def _byteify(self, data, ignore_dicts=False):
         # if this is a unicode string, return its string representation
-        if isinstance(data, unicode):
+        if isinstance(data, unicode): # (never called under python 3) pylint: disable=undefined-variable
             return data.encode('utf-8')
         # if this is a list of values, return list of byteified values
         if isinstance(data, list):
@@ -553,7 +553,8 @@ class MessageCallbackProvider(object):
         # Wrap all the processing in a try, so it doesn't crash and burn on any error
         try:
             self._log_message(msg)
-            # ToDo - better way?
+
+            # JSON string objects are decoded into unicode in python 2 and str in python 3
             if six.PY2:
                 data = self._byteify(
                     json.loads(msg.payload, object_hook=self._byteify),
