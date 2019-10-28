@@ -181,6 +181,8 @@ VERSION = '1.4.0-rc01'
 DRIVER_NAME = 'MQTTSubscribeDriver'
 DRIVER_VERSION = VERSION
 
+# pylint: disable=fixme
+
 class Logger(object):
     """ The logging class. """
     def __init__(self, console):
@@ -496,7 +498,7 @@ class MessageCallbackProvider(object):
         return data
 
     def _flatten_dict(self, dictionary, separator):
-        def items():
+        def _items():
             for key, value in dictionary.items():
                 if isinstance(value, dict):
                     for subkey, subvalue in self._flatten_dict(value, separator).items():
@@ -504,7 +506,7 @@ class MessageCallbackProvider(object):
                 else:
                     yield key, value
 
-        return dict(items())
+        return dict(_items())
 
     def _log_message(self, msg):
         self.logger.logdbg("MQTTSubscribe",
