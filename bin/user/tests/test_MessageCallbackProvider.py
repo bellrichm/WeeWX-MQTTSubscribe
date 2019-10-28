@@ -299,10 +299,10 @@ class TestJsonPayload(unittest.TestCase):
         mock_manager.append_data.assert_called_once_with(msg.topic, flattened_payload_dict)
 
 class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
-    fieldname = b'bar'
-    topic = b'foo/' + fieldname
+    fieldname = 'bar'
+    topic = 'foo/' + fieldname
     single_topic = fieldname
-    multi_topic = b'foo1/foo2/' + fieldname
+    multi_topic = 'foo1/foo2/' + fieldname
 
     payload_dict = {
         'inTemp': round(random.uniform(1, 100), 2),
@@ -340,7 +340,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, mock_manager)
 
         payload = None
-        msg = Msg(self.topic.decode('utf-8'), payload, 0, 0)
+        msg = Msg(self.topic, payload, 0, 0)
 
         SUT._on_message_individual(None, None, msg)
 
@@ -353,7 +353,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, mock_manager)
 
         payload = round(random.uniform(1, 100), 2)
-        msg = Msg(self.single_topic.decode('utf-8'), str(payload), 0, 0)
+        msg = Msg(self.single_topic, str(payload), 0, 0)
 
         SUT._on_message_individual(None, None, msg)
         mock_manager.append_data.assert_called_once_with(msg.topic, {self.fieldname: payload})
@@ -365,7 +365,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, mock_manager)
 
         payload = round(random.uniform(1, 100), 2)
-        msg = Msg(self.multi_topic.decode('utf-8'),
+        msg = Msg(self.multi_topic,
                   str(payload),
                   0,
                   0)
@@ -380,7 +380,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, mock_manager)
 
         payload = round(random.uniform(1, 100), 2)
-        msg = Msg(self.topic.decode('utf-8'),
+        msg = Msg(self.topic,
                   str(payload),
                   0,
                   0)
@@ -389,10 +389,10 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         mock_manager.append_data.assert_called_once_with(msg.topic, {self.fieldname: payload})
 
 class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
-    fieldname = b'bar'
-    topic = b'foo/' + fieldname
+    fieldname = 'bar'
+    topic = 'foo/' + fieldname
     single_topic = fieldname
-    multi_topic = b'foo1/foo2/' + fieldname
+    multi_topic = 'foo1/foo2/' + fieldname
 
     payload_dict = {
         'inTemp': round(random.uniform(1, 100), 2),
@@ -434,7 +434,7 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
 
         SUT = MessageCallbackProvider(message_handler_config, mock_logger, mock_manager)
 
-        msg = Msg(self.topic.decode('utf-8'), None, 0, 0)
+        msg = Msg(self.topic, None, 0, 0)
 
         SUT._on_message_individual(None, None, msg)
         mock_manager.append_data.assert_called_once_with(msg.topic, {self.topic: None})
@@ -446,7 +446,7 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
         SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, mock_manager)
 
         payload = round(random.uniform(1, 100), 2)
-        msg = Msg(self.single_topic.decode('utf-8'), str(payload), 0, 0)
+        msg = Msg(self.single_topic, str(payload), 0, 0)
 
         SUT._on_message_individual(None, None, msg)
         mock_manager.append_data.assert_called_once_with(msg.topic, {self.fieldname: payload})
@@ -461,7 +461,7 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
         SUT = MessageCallbackProvider(message_handler_config, mock_logger, mock_manager)
 
         payload = round(random.uniform(1, 100), 2)
-        msg = Msg(self.multi_topic.decode('utf-8'), str(payload), 0, 0)
+        msg = Msg(self.multi_topic, str(payload), 0, 0)
 
         SUT._on_message_individual(None, None, msg)
         mock_manager.append_data.assert_called_once_with(msg.topic, {self.multi_topic: payload})
@@ -476,7 +476,7 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
         SUT = MessageCallbackProvider(message_handler_config, mock_logger, mock_manager)
 
         payload = round(random.uniform(1, 100), 2)
-        msg = Msg(self.topic.decode('utf-8'), str(payload), 0, 0)
+        msg = Msg(self.topic, str(payload), 0, 0)
 
         SUT._on_message_individual(None, None, msg)
         mock_manager.append_data.assert_called_once_with(msg.topic, {self.topic: payload})
