@@ -511,8 +511,8 @@ class MessageCallbackProvider(object):
                            "MessageCallbackProvider For %s has QOS of %i and retain of %s received: %s"
                            %(msg.topic, msg.qos, msg.retain, msg.payload))
 
-    def _log_exception(self, exception, msg):
-        self.logger.logerr("MQTTSubscribe", "MessageCallbackProvider on_message_keyword failed with: %s" % exception)
+    def _log_exception(self, method, exception, msg):
+        self.logger.logerr("MQTTSubscribe", "MessageCallbackProvider %s failed with: %s" %(method, exception))
         self.logger.logerr("MQTTSubscribe",
                            "**** MessageCallbackProvider Ignoring topic=%s and payload=%s" % (msg.topic, msg.payload))
 
@@ -545,7 +545,7 @@ class MessageCallbackProvider(object):
                                    % (msg.topic, msg.payload))
 
         except Exception as exception: # (want to catch all) pylint: disable=broad-except
-            self._log_exception(exception, msg)
+            self._log_exception('on_message_keyword', exception, msg)
 
     def _on_message_json(self, client, userdata, msg): # (match callback signature) pylint: disable=unused-argument
         # Wrap all the processing in a try, so it doesn't crash and burn on any error
@@ -562,7 +562,7 @@ class MessageCallbackProvider(object):
             self.topic_manager.append_data(msg.topic, self._flatten_dict(data, self.flatten_delimiter))
 
         except Exception as exception: # (want to catch all) pylint: disable=broad-except
-            self._log_exception(exception, msg)
+            self._log_exception('on_message_json', exception, msg)
 
     def _on_message_individual(self, client, userdata, msg): # (match callback signature) pylint: disable=unused-argument
 
@@ -583,7 +583,7 @@ class MessageCallbackProvider(object):
 
             self.topic_manager.append_data(msg.topic, data)
         except Exception as exception: # (want to catch all) pylint: disable=broad-except
-            self._log_exception(exception, msg)
+            self._log_exception('on_message_individual', exception, msg)
 
 class MQTTSubscribe(object):
     """ Manage MQTT sunscriptions. """
