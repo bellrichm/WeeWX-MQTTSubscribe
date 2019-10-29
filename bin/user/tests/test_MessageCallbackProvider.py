@@ -263,6 +263,10 @@ class TestJsonPayload(unittest.TestCase):
         SUT._on_message_json(None, None, msg)
 
         mock_manager.append_data.assert_called_once_with(msg.topic, payload_dict)
+        call_args_list = mock_manager.append_data.call_args_list
+        second_arg = call_args_list[0].args[1]
+        for key in second_arg:
+            self.assertIsInstance(key, str)
 
     def test_payload_nested(self):
         mock_manager = mock.Mock(spec=TopicManager)
@@ -358,6 +362,11 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         SUT._on_message_individual(None, None, msg)
         mock_manager.append_data.assert_called_once_with(msg.topic, {self.fieldname: payload})
 
+        call_args_list = mock_manager.append_data.call_args_list
+        second_arg = call_args_list[0].args[1]
+        for key in second_arg:
+            self.assertIsInstance(key, str)
+
     def test_multiple_topics(self):
         mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
@@ -372,6 +381,12 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
 
         SUT._on_message_individual(None, None, msg)
         mock_manager.append_data.assert_called_once_with(msg.topic, {self.fieldname: payload})
+
+        call_args_list = mock_manager.append_data.call_args_list
+        second_arg = call_args_list[0].args[1]
+
+        for key in second_arg:
+            self.assertIsInstance(key, str)
 
     def test_two_topics(self):
         mock_manager = mock.Mock(spec=TopicManager)
