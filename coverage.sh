@@ -1,3 +1,16 @@
-WEEWX=weewx_3.9.2
-COVERAGE=coverage2
+#! /bin/bash
+if [ -z "$1" ]
+then
+    WEEWX=weewx3
+else
+    WEEWX=$1
+fi
+
+if [ -z "$2" ]
+then
+    COVERAGE=coverage2
+else
+    COVERAGE=$2
+fi
+
 PYTHONPATH=bin:../$WEEWX/bin $COVERAGE run  -m unittest discover bin/user/tests; $COVERAGE html --include bin/user/MQTTSubscribe.py
