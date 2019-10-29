@@ -1027,6 +1027,8 @@ if __name__ == '__main__': # pragma: no cover
                           help="Log to console in addition to syslog.")
         parser.add_option("--topics",
                           help="Comma separated list of topics to subscribe to.")
+        parser.add_option("--callback",
+                          help="The callback type.")
 
         (options, args) = parser.parse_args()
 
@@ -1056,6 +1058,12 @@ if __name__ == '__main__': # pragma: no cover
                                              {'MQTTSubscribeService': {'topics': {topic:{}}}})
                 weeutil.weeutil.merge_config(config_dict,
                                              {'MQTTSubscribeDriver': {'topics': {topic:{}}}})
+
+        if options.callback:
+            weeutil.weeutil.merge_config(config_dict,
+                                         {'MQTTSubscribeService': {'message_callback': {'type': options.callback}}})
+            weeutil.weeutil.merge_config(config_dict,
+                                         {'MQTTSubscribeDriver': {'message_callback': {'type': options.callback}}})
 
         min_config_dict = {
             'Station': {
