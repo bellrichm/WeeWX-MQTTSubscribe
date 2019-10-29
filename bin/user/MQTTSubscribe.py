@@ -617,9 +617,6 @@ class MessageCallbackProvider(object):
             else:
                 key = msg.topic.rpartition('/')[2]
 
-            if six.PY2:
-                key = key.encode('utf-8') # ToDo - research
-
             fieldname = self.label_map.get(key, key)
 
             data = {}
