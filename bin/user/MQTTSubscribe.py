@@ -1025,6 +1025,8 @@ if __name__ == '__main__': # pragma: no cover
                           help="Log extra output (debug=1).")
         parser.add_option("--console", action="store_true", dest="console",
                           help="Log to console in addition to syslog.")
+        parser.add_option("--topics",
+                          help="Comma separated list of topics to subscribe to.")
 
         (options, args) = parser.parse_args()
 
@@ -1044,6 +1046,16 @@ if __name__ == '__main__': # pragma: no cover
         config_path = os.path.abspath(args[0])
 
         config_dict = configobj.ConfigObj(config_path, file_error=True)
+
+        if options.topics:
+            topics = options.topics.split(',')
+            config_dict['MQTTSubscribeService']['topics'] = {}
+            config_dict['MQTTSubscribeDriver']['topics'] = {}
+            for topic in topics:
+                weeutil.weeutil.merge_config(config_dict,
+                                             {'MQTTSubscribeService': {'topics': {topic:{}}}})
+                weeutil.weeutil.merge_config(config_dict,
+                                             {'MQTTSubscribeDriver': {'topics': {topic:{}}}})
 
         min_config_dict = {
             'Station': {
