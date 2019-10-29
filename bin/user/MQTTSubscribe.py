@@ -161,8 +161,10 @@ Configuration:
 
 from __future__ import with_statement
 from __future__ import print_function
+import datetime
 import json
 import random
+import re
 import time
 from collections import deque
 import syslog
@@ -247,6 +249,8 @@ class TopicManager(object):
         overlap = to_float(config.get('overlap', 0)) # Backwards compatibility
         default_adjust_start_time = to_float(config.get('adjust_start_time', overlap))
         default_adjust_end_time = to_float(config.get('adjust_end_time', 0))
+        default_datetime_format = config.get('datetime_format', None)
+        default_offset_format = config.get('offset_format', None)
 
         default_unit_system_name = config.get('unit_system', 'US').strip().upper()
         if default_unit_system_name not in weewx.units.unit_constants:
@@ -270,6 +274,8 @@ class TopicManager(object):
             ignore_end_time = to_bool(topic_dict.get('ignore_end_time', default_ignore_end_time))
             adjust_start_time = to_float(topic_dict.get('adjust_start_time', default_adjust_start_time))
             adjust_end_time = to_float(topic_dict.get('adjust_end_time', default_adjust_end_time))
+            datetime_format = topic_dict.get('datetime_format', default_datetime_format)
+            offset_format = topic_dict.get('offset_format', default_offset_format)
 
             unit_system_name = topic_dict.get('unit_system', default_unit_system_name).strip().upper()
             if unit_system_name not in weewx.units.unit_constants:
@@ -284,6 +290,8 @@ class TopicManager(object):
             self.subscribed_topics[topic]['ignore_end_time'] = ignore_end_time
             self.subscribed_topics[topic]['adjust_start_time'] = adjust_start_time
             self.subscribed_topics[topic]['adjust_end_time'] = adjust_end_time
+            self.subscribed_topics[topic]['datetime_format'] = datetime_format
+            self.subscribed_topics[topic]['offset_format'] = offset_format
             self.subscribed_topics[topic]['max_queue'] = topic_dict.get('max_queue', max_queue)
             self.subscribed_topics[topic]['queue'] = deque()
             self.subscribed_topics[topic]['queue_wind'] = deque()
@@ -306,6 +314,10 @@ class TopicManager(object):
         if 'usUnits' not in data:
             data['usUnits'] = self._get_unit_system(topic)
 
+        datetime_format = self._get_value('datetime_format', topic)
+        if datetime_format and 'dateTime' in data:
+            data['dateTime'] = self._to_epoch(data['dateTime'], datetime_format, self._get_value('offset_format', topic))
+
         self.logger.logdbg("MQTTSubscribe",
                            "TopicManager Added to queue %s %s %s: %s"
                            %(topic, self._lookup_topic(topic),
@@ -317,21 +329,21 @@ class TopicManager(object):
         """ Return the date/time of the first element in the queue. """
         queue = self._get_queue(topic)
         self.logger.logdbg("MQTTSubscribe", "TopicManager queue size is: %i" % len(queue))
-        datetime = None
+        datetime_value = None
         if queue:
-            datetime = queue[0]['data']['dateTime']
+            datetime_value = queue[0]['data']['dateTime']
 
-        return datetime
+        return datetime_value
 
     def peek_last_datetime(self, topic):
         """ Return the date/time of the last element in the queue. """
         queue = self._get_queue(topic)
         self.logger.logdbg("MQTTSubscribe", "TopicManager queue size is: %i" % len(queue))
-        datetime = 0
+        datetime_value = 0
         if queue:
-            datetime = queue[-1]['data']['dateTime']
+            datetime_value = queue[-1]['data']['dateTime']
 
-        return datetime
+        return datetime_value
 
     def get_data(self, topic, end_ts=six.MAXSIZE):
         """ Get data off the queue of MQTT data. """
@@ -452,6 +464,33 @@ class TopicManager(object):
             if mqtt.topic_matches_sub(subscribed_topic, topic):
                 self.topics[topic] = subscribed_topic
                 return subscribed_topic
+
+    def _to_epoch(self, datetime_input, datetime_format, offset_format=None):
+        self.logger.logdbg("MQTTSubscribe",
+                           "TopicManager datetime conversion datetime_input:%s datetime_format:%s offset_format:%s"
+                           %(datetime_input, datetime_format, offset_format))
+        if offset_format:
+            offset_start = len(datetime_input)-len(offset_format)
+            offset = re.sub(r"\D", "", datetime_input[offset_start:]) #remove everything but the numbers from the UTC offset
+            sign = datetime_input[offset_start-1:offset_start] # offset plus or minus
+            offset_delta = datetime.timedelta(hours=int(offset[:2]), minutes=int(offset[2:]))
+            if sign == '-':
+                offset_delta = -offset_delta
+
+            datetime_string = datetime_input[:offset_start-1].strip()
+
+            self.logger.logdbg("MQTTSubscribe",
+                               "TopicManager datetime conversion offset:%s sign:%s" %(offset, sign))
+
+        else:
+            datetime_string = datetime_input
+            offset_delta = datetime.timedelta(hours=0, minutes=0)
+
+        epoch = time.mktime((datetime.datetime.strptime(datetime_string, datetime_format) + offset_delta).timetuple())
+        self.logger.logdbg("MQTTSubscribe",
+                           "TopicManager datetime conversion datetime_string:%s epoch:%s" %(datetime_string, epoch))
+
+        return epoch
 
 class MessageCallbackProvider(object):
     """ Provide the MQTT callback. """
