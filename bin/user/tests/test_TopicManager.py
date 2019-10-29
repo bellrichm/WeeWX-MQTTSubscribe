@@ -184,7 +184,7 @@ class TestAppendData(unittest.TestCase):
         offset_minute = random.randint(1, 59)
         offset_hour_str = str(offset_hour).rjust(2, '0')
         offset_minute_str = str(offset_minute).rjust(2, '0')
-        offset_str = offset_hour_str + offset_minute_str
+        offset_str = "%s%s" %(offset_hour_str, offset_minute_str)
 
         current_datetime = datetime.datetime.fromtimestamp(current_epoch).strftime(datetime_format)
 
@@ -195,6 +195,83 @@ class TestAppendData(unittest.TestCase):
         config = copy.deepcopy(self.config)
         config['datetime_format'] = datetime_format
         config['offset_format'] = offset_format
+
+        mock_logger = mock.Mock(spec=Logger)
+
+        SUT = TopicManager(config, mock_logger)
+
+        SUT.append_data(self.topic, queue_data)
+        queue = SUT._get_queue(self.topic) # pylint: disable=protected-access
+
+        self.assertEqual(len(queue), 1)
+        queue_element = queue.popleft()
+        data = queue_element['data']
+        self.assertDictContainsSubset(queue_data_subset, data)
+        self.assertIn('dateTime', data)
+        self.assertEqual(adjusted_epoch, data['dateTime'])
+
+    def test_dateteime_format_subtract_offset(self):
+        queue_data_subset = {
+            'inTemp': random.uniform(1, 100),
+            'outTemp': random.uniform(1, 100),
+            'usUnits': 1,
+        }
+        queue_data = copy.deepcopy(queue_data_subset)
+
+        datetime_format = "%B %d %Y %H:%M:%S"
+        offset_format = "hh:mm"
+
+        current_epoch = int(time.time())
+        offset_hour = random.randint(1, 23)
+        offset_minute = random.randint(1, 59)
+        offset_hour_str = str(offset_hour).rjust(2, '0')
+        offset_minute_str = str(offset_minute).rjust(2, '0')
+        offset_str = "%s:%s" %(offset_hour_str, offset_minute_str)
+
+        current_datetime = datetime.datetime.fromtimestamp(current_epoch).strftime(datetime_format)
+
+        queue_data['dateTime'] = "%s -%s" %(current_datetime, offset_str)
+
+        adjusted_epoch = current_epoch - (offset_hour * 60 + offset_minute) * 60
+
+        config = copy.deepcopy(self.config)
+        config['datetime_format'] = datetime_format
+        config['offset_format'] = offset_format
+
+        mock_logger = mock.Mock(spec=Logger)
+
+        SUT = TopicManager(config, mock_logger)
+
+        SUT.append_data(self.topic, queue_data)
+        queue = SUT._get_queue(self.topic) # pylint: disable=protected-access
+
+        self.assertEqual(len(queue), 1)
+        queue_element = queue.popleft()
+        data = queue_element['data']
+        self.assertDictContainsSubset(queue_data_subset, data)
+        self.assertIn('dateTime', data)
+        self.assertEqual(adjusted_epoch, data['dateTime'])
+
+    def test_dateteime_format_no_offset(self):
+        queue_data_subset = {
+            'inTemp': random.uniform(1, 100),
+            'outTemp': random.uniform(1, 100),
+            'usUnits': 1,
+        }
+        queue_data = copy.deepcopy(queue_data_subset)
+
+        datetime_format = "%Y-%m-%d %H:%M:%S"
+
+        current_epoch = int(time.time())
+
+        current_datetime = datetime.datetime.fromtimestamp(current_epoch).strftime(datetime_format)
+
+        queue_data['dateTime'] = current_datetime
+
+        adjusted_epoch = current_epoch
+
+        config = copy.deepcopy(self.config)
+        config['datetime_format'] = datetime_format
 
         mock_logger = mock.Mock(spec=Logger)
 
