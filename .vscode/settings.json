@@ -8,5 +8,5 @@
         "--good-names", "MQTTSubscribe, i, rc, ExampleMessageCallbackProvider",
         "--ignored-classes", "Event"
     ],
-    "python.pythonPath": "/usr/bin/python"
+    "python.pythonPath": "/usr/bin/python3"
 }
