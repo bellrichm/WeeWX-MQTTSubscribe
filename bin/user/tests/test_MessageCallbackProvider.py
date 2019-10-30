@@ -77,7 +77,10 @@ class TestKeywordload(unittest.TestCase):
         mock_logger = mock.Mock(spec=Logger)
         SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, None)
 
-        msg = Msg(self.topic, '', 0, 0)
+        payload = ''
+        payload = payload.encode('UTF-8')
+
+        msg = Msg(self.topic, payload, 0, 0)
 
         SUT._on_message_keyword(None, None, msg)
         self.assertEqual(mock_logger.logerr.call_count, 3)
@@ -104,7 +107,10 @@ class TestKeywordload(unittest.TestCase):
         mock_logger = mock.Mock(spec=Logger)
         SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, None)
 
-        msg = Msg(self.topic, 'field1:1', 0, 0)
+        payload = ' field:1'
+        payload = payload.encode('UTF-8')
+
+        msg = Msg(self.topic, payload, 0, 0)
 
         SUT._on_message_keyword(None, None, msg)
         self.assertEqual(mock_logger.logerr.call_count, 3)
@@ -123,6 +129,8 @@ class TestKeywordload(unittest.TestCase):
         for key in payload_dict:
             payload_str = "%s%s%s=%f" %(payload_str, delim, key, payload_dict[key])
             delim = ","
+
+        payload_str = payload_str.encode('UTF-8')
 
         msg = Msg(self.topic, payload_str, 0, 0)
 
@@ -145,6 +153,8 @@ class TestKeywordload(unittest.TestCase):
             payload_str = "%s%s%s=%f" %(payload_str, delim, key, payload_dict[key])
             delim = ","
 
+        payload_str = payload_str.encode('UTF-8')
+
         msg = Msg(self.topic, payload_str, 0, 0)
 
         SUT._on_message_keyword(None, None, msg)
@@ -165,6 +175,8 @@ class TestKeywordload(unittest.TestCase):
         for key in payload_dict:
             payload_str = "%s%s%s=%f" %(payload_str, delim, key, payload_dict[key])
             delim = ","
+
+        payload_str = payload_str.encode('UTF-8')
 
         msg = Msg(self.topic, payload_str, 0, 0)
 

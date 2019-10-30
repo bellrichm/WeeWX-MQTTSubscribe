@@ -562,7 +562,12 @@ class MessageCallbackProvider(object):
         try:
             self._log_message(msg)
 
-            fields = msg.payload.split(self.keyword_delimiter)
+            if six.PY3:
+                payload_str = msg.payload.decode('utf-8')
+            else:
+                payload_str = msg.payload
+
+            fields = payload_str.split(self.keyword_delimiter)
             data = {}
             for field in fields:
                 eq_index = field.find(self.keyword_separator)
