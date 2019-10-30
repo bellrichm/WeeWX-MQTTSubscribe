@@ -628,7 +628,7 @@ class MessageCallbackProvider(object):
             fieldname = self.label_map.get(key, key)
 
             data = {}
-            data[fieldname] = to_float(msg.payload)
+            data[fieldname] = to_float(msg.payload) # ToDo - a bit lazy and dangerous, assuming all incoming is a float
 
             self.topic_manager.append_data(msg.topic, data)
         except Exception as exception: # (want to catch all) pylint: disable=broad-except
