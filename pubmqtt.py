@@ -4,6 +4,7 @@ from __future__ import print_function
 import optparse
 import random
 import time
+import six
 import paho.mqtt.client as mqtt
 
 USAGE = """pubmqtt --help
@@ -110,7 +111,10 @@ def main():
             message = message.replace("{DATETIME}", str(publish_time))
             if prompt_to_send:
                 print("press enter to send next message.")
-                raw_input()            
+                if six.PY2:
+                    raw_input()
+                else:
+                    input()
             mqtt_message_info = client.publish(topic, message)
             mqtt_message_info.wait_for_publish()
             print("Sent: %s has return code %i" %(mqtt_message_info.mid, mqtt_message_info.rc))
