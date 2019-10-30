@@ -350,6 +350,27 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
 
         mock_manager.append_data.assert_called_once_with(msg.topic, {self.fieldname: None})
 
+    def test_unicode_topic(self):
+        mock_manager = mock.Mock(spec=TopicManager)
+        mock_logger = mock.Mock(spec=Logger)
+        if six.PY2:
+            topic = unicode(self.topic) # (never called under python 3) pylint: disable=undefined-variable
+        else:
+            topic = self.topic
+
+        SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, mock_manager)
+
+        payload = round(random.uniform(1, 100), 2)
+        msg = Msg(topic, str(payload), 0, 0)
+
+        SUT._on_message_individual(None, None, msg)
+        mock_manager.append_data.assert_called_once_with(msg.topic, {self.fieldname: payload})
+
+        call_args_list = mock_manager.append_data.call_args_list
+        second_arg = call_args_list[0].args[1]
+        for key in second_arg:
+            self.assertIsInstance(key, str)
+
     def test_single_topic(self):
         mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
@@ -361,11 +382,6 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
 
         SUT._on_message_individual(None, None, msg)
         mock_manager.append_data.assert_called_once_with(msg.topic, {self.fieldname: payload})
-
-        call_args_list = mock_manager.append_data.call_args_list
-        second_arg = call_args_list[0].args[1]
-        for key in second_arg:
-            self.assertIsInstance(key, str)
 
     def test_multiple_topics(self):
         mock_manager = mock.Mock(spec=TopicManager)
@@ -381,12 +397,6 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
 
         SUT._on_message_individual(None, None, msg)
         mock_manager.append_data.assert_called_once_with(msg.topic, {self.fieldname: payload})
-
-        call_args_list = mock_manager.append_data.call_args_list
-        second_arg = call_args_list[0].args[1]
-
-        for key in second_arg:
-            self.assertIsInstance(key, str)
 
     def test_two_topics(self):
         mock_manager = mock.Mock(spec=TopicManager)
