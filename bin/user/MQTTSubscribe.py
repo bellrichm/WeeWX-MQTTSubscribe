@@ -1025,6 +1025,8 @@ if __name__ == '__main__': # pragma: no cover
                           help="Log extra output (debug=1).")
         parser.add_option("--console", action="store_true", dest="console",
                           help="Log to console in addition to syslog.")
+        parser.add_option("--host",
+                          help="The MQTT server.")
         parser.add_option("--topics",
                           help="Comma separated list of topics to subscribe to.")
         parser.add_option("--callback",
@@ -1058,6 +1060,12 @@ if __name__ == '__main__': # pragma: no cover
                                              {'MQTTSubscribeService': {'topics': {topic:{}}}})
                 weeutil.weeutil.merge_config(config_dict,
                                              {'MQTTSubscribeDriver': {'topics': {topic:{}}}})
+
+        if options.host:
+            weeutil.weeutil.merge_config(config_dict,
+                                         {'MQTTSubscribeService': {'host': options.host}})
+            weeutil.weeutil.merge_config(config_dict,
+                                         {'MQTTSubscribeDriver': {'host': options.host}})
 
         if options.callback:
             weeutil.weeutil.merge_config(config_dict,
