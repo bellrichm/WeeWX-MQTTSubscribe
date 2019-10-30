@@ -108,14 +108,13 @@ def main():
 
             publish_time = int(time.time() + 0.5)
             message = message.replace("{DATETIME}", str(publish_time))
+            if prompt_to_send:
+                print("press enter to send next message.")
+                raw_input()            
             mqtt_message_info = client.publish(topic, message)
             mqtt_message_info.wait_for_publish()
             print("Sent: %s has return code %i" %(mqtt_message_info.mid, mqtt_message_info.rc))
             message = file_object.readline().rstrip()
-            if message:
-                if prompt_to_send:
-                    print("press enter to send next message.")
-                    raw_input()
 
     client.disconnect()
 
