@@ -22,7 +22,13 @@
                 "--interval", "2",
                 "--delay", "0",
                 "--records", "1",
+                //"--host", "localhost",
+                //"--topics", "weather/rain",
+                //"--callback", "individual",
+                //"--topics", "test-topic",
+                //"--callback", "keyword",                
                 "--verbose",
+                "--console",
                 "${workspaceFolder}/weewx.loop.conf",
             ],            
             "console": "integratedTerminal"
@@ -39,6 +45,7 @@
                 "--delay", "5",
                 "--records", "1",
                 "--verbose",
+                "--console",
                 "${workspaceFolder}/weewx.archive.conf",
             ],            
             "console": "integratedTerminal"
@@ -55,6 +62,7 @@
                 "--delay", "0",
                 "--records", "1",
                 "--verbose",
+                "--console",
                 "${workspaceFolder}/weewx.loop.conf",
             ],            
             "console": "integratedTerminal"
@@ -71,6 +79,7 @@
                 "--delay", "5",
                 "--records", "1",
                 "--verbose",
+                "--console",
                 "${workspaceFolder}/weewx.archive.conf",
             ],            
             "console": "integratedTerminal"
