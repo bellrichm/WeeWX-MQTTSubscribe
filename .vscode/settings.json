@@ -1,5 +1,9 @@
 {
     "python.linting.pylintEnabled": true,
+    "python.linting.pep8Enabled": true,
+    "python.linting.pep8Args": [
+        "--max-line-length=140" 
+    ],
     "python.envFile": "${workspaceFolder}/.env",
     "python.linting.pylintArgs": [
         "--disable", "locally-disabled",
