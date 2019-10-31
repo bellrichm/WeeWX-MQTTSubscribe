@@ -13,6 +13,7 @@ import weewx
 
 from user.MQTTSubscribe import MQTTSubscribeDriver
 
+
 class TestgenLoopPackets(unittest.TestCase):
     mock_StdEngine = mock.Mock(spec=weewx.engine.StdEngine)
 
@@ -28,7 +29,7 @@ class TestgenLoopPackets(unittest.TestCase):
 
         self.queue_data = {
             'inTemp': in_temp,
-            'outTemp':out_temp,
+            'outTemp': out_temp,
             'usUnits': 1,
             'dateTime': current_time
         }
@@ -72,6 +73,7 @@ class TestgenLoopPackets(unittest.TestCase):
                 mock_time.sleep.assert_not_called()
                 self.assertDictEqual(packet, self.queue_data)
 
+
 class TestgenArchiveRecords(unittest.TestCase):
     mock_StdEngine = mock.Mock(spec=weewx.engine.StdEngine)
 
@@ -87,7 +89,7 @@ class TestgenArchiveRecords(unittest.TestCase):
 
         self.queue_data = {
             'inTemp': in_temp,
-            'outTemp':out_temp,
+            'outTemp': out_temp,
             'usUnits': 1,
             'dateTime': current_time
         }

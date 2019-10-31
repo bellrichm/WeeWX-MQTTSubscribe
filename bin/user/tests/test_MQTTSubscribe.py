@@ -14,9 +14,11 @@ import string
 import weewx
 from user.MQTTSubscribe import MQTTSubscribe, Logger
 
+
 class Msg(object):
     def __init(self):
         pass
+
 
 class TestInitialization(unittest.TestCase):
     def test_username_None(self):
@@ -32,7 +34,7 @@ class TestInitialization(unittest.TestCase):
             'keepalive': keepalive,
             'port': port,
             'username': None,
-            'password': ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), # pylint: disable=unused-variable
+            'password': ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),  # pylint: disable=unused-variable
             'archive_topic': None,
             'message_callback': {},
             'topics': {
@@ -64,7 +66,7 @@ class TestInitialization(unittest.TestCase):
             'host': host,
             'keepalive': keepalive,
             'port': port,
-            'username': ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), # pylint: disable=unused-variable
+            'username': ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),  # pylint: disable=unused-variable
             'password': None,
             'archive_topic': None,
             'message_callback': {},
@@ -122,7 +124,7 @@ class TestInitialization(unittest.TestCase):
         host = 'host'
         port = random.randint(1000, 9999)
         keepalive = random.randint(1, 10)
-        username = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+        username = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])  # pylint: disable=unused-variable
         password = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
         config_dict = {
             'console': False,
@@ -153,6 +155,7 @@ class TestInitialization(unittest.TestCase):
                 SUT.client.username_pw_set.assert_called_once_with(username, password)
                 SUT.client.connect.assert_called_once_with(host, port, keepalive)
 
+
 class Teston_connect(unittest.TestCase):
     unit_system_name = 'US'
     unit_system = weewx.units.unit_constants[unit_system_name]
@@ -170,7 +173,7 @@ class Teston_connect(unittest.TestCase):
     }
 
     def test_multiple_topics(self):
-        topic1 = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+        topic1 = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])  # pylint: disable=unused-variable
         topic2 = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
         config_dict = dict(self.config_dict)
         config_dict['unit_system'] = self.unit_system_name
@@ -196,7 +199,7 @@ class Teston_connect(unittest.TestCase):
                     SUT = MQTTSubscribe(config, mock_logger)
 
                     rc = random.randint(1, 10)
-                    SUT._on_connect(mock_client, None, None, rc,) # pylint: disable=protected-access
+                    SUT._on_connect(mock_client, None, None, rc,)   # pylint: disable=protected-access
 
                     self.assertEqual(mock_client.subscribe.call_count, 2)
                     mock_client.subscribe.assert_any_call(topic1, qos)

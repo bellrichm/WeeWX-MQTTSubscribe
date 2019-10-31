@@ -24,6 +24,7 @@ Configuration:
 
 from weeutil.weeutil import to_float
 
+
 class MessageCallbackProvider(object):
     """ Provide the MQTT callback. """
     def __init__(self, config, logger, topic_manager):
@@ -37,10 +38,10 @@ class MessageCallbackProvider(object):
         """ Get the MQTT callback. """
         return self._on_message
 
-    def _on_message(self, client, userdata, msg): # (match callback signature) pylint: disable=unused-argument
+    def _on_message(self, client, userdata, msg):  # (match callback signature) pylint: disable=unused-argument
         # Wrap all the processing in a try, so it doesn't crash and burn on any error
         try:
-            self.logger.logdbg("MQTTSubscribe", "MessageCallbackProvider For %s received: %s" %(msg.topic, msg.payload))
+            self.logger.logdbg("MQTTSubscribe", "MessageCallbackProvider For %s received: %s" % (msg.topic, msg.payload))
 
             fields = msg.payload.split(self.keyword_delimiter)
             data = {}
@@ -65,6 +66,6 @@ class MessageCallbackProvider(object):
                                    "MessageCallbackProvider on_message_keyword failed to find data in: topic=%s and payload=%s"
                                    % (msg.topic, msg.payload))
 
-        except Exception as exception: # (want to catch all) pylint: disable=broad-except
+        except Exception as exception:  # (want to catch all) pylint: disable=broad-except
             self.logger.logerr("MQTTSubscribe", "MessageCallbackProvider on_message_keyword failed with: %s" % exception)
             self.logger.logerr("MQTTSubscribe", "**** MessageCallbackProvider Ignoring topic=%s and payload=%s" % (msg.topic, msg.payload))

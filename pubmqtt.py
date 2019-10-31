@@ -4,8 +4,8 @@ from __future__ import print_function
 import optparse
 import random
 import time
-import six
 import paho.mqtt.client as mqtt
+import six
 
 USAGE = """pubmqtt --help
         mqtt_test
@@ -21,6 +21,7 @@ USAGE = """pubmqtt --help
            [--prompt]
 
 A simple utility that reads messages from a file and publishes each line to MQTT. """
+
 
 def init_parser():
     """ Parse the command line arguments. """
@@ -48,7 +49,8 @@ def init_parser():
 
     return parser
 
-def on_connect(client, userdata, flags, rc): # (match callback signature) pylint: disable=unused-argument
+
+def on_connect(client, userdata, flags, rc):  # (match callback signature) pylint: disable=unused-argument
     """ The on_connect callback. """
     # https://pypi.org/project/paho-mqtt/#on-connect
     # rc:
@@ -62,16 +64,19 @@ def on_connect(client, userdata, flags, rc): # (match callback signature) pylint
     print("Connected with result code %i" % rc)
     print("Connected flags %s" % str(flags))
 
-def on_disconnect(client, userdata, rc): # (match callback signature) pylint: disable=unused-argument
+
+def on_disconnect(client, userdata, rc):  # (match callback signature) pylint: disable=unused-argument
     """ The on_connect callback. """
     # https://pypi.org/project/paho-mqtt/#on-connect
     # rc:
     # 0: Connection successful
     print("Disconnected with result code %i" % rc)
 
-def on_publish(client, userdata, mid): # (match callback signature) pylint: disable=unused-argument
+
+def on_publish(client, userdata, mid):  # (match callback signature) pylint: disable=unused-argument
     """ The on_publish callback. """
-    print("Published: %s" %mid)
+    print("Published: %s" % mid)
+
 
 def main():
     """ The main entry point. """
@@ -117,7 +122,7 @@ def main():
                     input()
             mqtt_message_info = client.publish(topic, message)
             mqtt_message_info.wait_for_publish()
-            print("Sent: %s has return code %i" %(mqtt_message_info.mid, mqtt_message_info.rc))
+            print("Sent: %s has return code %i" % (mqtt_message_info.mid, mqtt_message_info.rc))
             message = file_object.readline().rstrip()
 
     client.disconnect()

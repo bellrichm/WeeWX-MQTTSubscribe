@@ -27,7 +27,8 @@ Configuration can be read from a 'weewx.conf' file or passed in.
 Command line options override any options in the file.
 """
 
-def on_log(client, userdata, level, msg): # (match callback signature) pylint: disable=unused-argument
+
+def on_log(client, userdata, level, msg):  # (match callback signature) pylint: disable=unused-argument
     """ MQTT logging callback. """
     log_level = {
         mqtt.MQTT_LOG_INFO: 'MQTT_LOG_INFO',
@@ -39,23 +40,27 @@ def on_log(client, userdata, level, msg): # (match callback signature) pylint: d
 
     print("%s: %s" % (log_level[level], msg))
 
+
 def on_connect(client, userdata, flags, rc): # (match callback signature) pylint: disable=unused-argument
     """ MQTT on connect callback. """
     print("Connected with result code %i" % rc)
     for topic in userdata['topics']:
         client.subscribe(topic)
 
-def on_disconnect(client, userdata, rc): # (match callback signature) pylint: disable=unused-argument
+
+def on_disconnect(client, userdata, rc):  # (match callback signature) pylint: disable=unused-argument
     """ MQTT on disconnect callback. """
     print("Disconnected with result code %i" % rc)
 
-def on_message(client, userdata, msg): # (match callback signature) pylint: disable=unused-argument
+
+def on_message(client, userdata, msg):  # (match callback signature) pylint: disable=unused-argument
     """ MQTT on message callback. """
     print('%s: %s' %(msg.topic, msg.payload))
     if userdata.get('max_records'):
         userdata['counter'] += 1
         if userdata['counter'] >= userdata['max_records']:
             client.disconnect()
+
 
 def init_parser():
     """ Parse the command line arguments. """

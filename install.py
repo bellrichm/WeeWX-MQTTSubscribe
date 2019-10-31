@@ -68,9 +68,11 @@ MQTTSUBSCRIBESERVICE_CONFIG = """
         [[[SECOND/REPLACE_ME]]]
 """
 
+
 def loader():
     """ Load and return the extension installer. """
     return MQTTSubscribeServiceInstaller()
+
 
 class MQTTSubscribeServiceInstaller(ExtensionInstaller):
     """ The extension installer. """
@@ -98,7 +100,7 @@ class MQTTSubscribeServiceInstaller(ExtensionInstaller):
             else:
                 enable = 'true'
 
-            MQTTSubscribeService_dict = configobj.ConfigObj(StringIO(MQTTSUBSCRIBESERVICE_CONFIG % enable)) # pylint: disable = invalid-name
+            MQTTSubscribeService_dict = configobj.ConfigObj(StringIO(MQTTSUBSCRIBESERVICE_CONFIG % enable))  # pylint: disable = invalid-name
             install_dict['config'] = MQTTSubscribeService_dict
             install_dict['data_services'] = 'user.MQTTSubscribe.MQTTSubscribeService'
 

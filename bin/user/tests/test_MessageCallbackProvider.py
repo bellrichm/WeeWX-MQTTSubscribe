@@ -16,12 +16,14 @@ import time
 
 from user.MQTTSubscribe import MessageCallbackProvider, TopicManager, Logger
 
+
 class Msg(object):
     def __init__(self, topic, payload, qos, retain):
         self.topic = topic
         self.payload = payload
         self.qos = qos
         self.retain = retain
+
 
 class TestGetDefaultCallBacks(unittest.TestCase):
     def test_get_unknown_payload_type(self):
@@ -33,7 +35,6 @@ class TestGetDefaultCallBacks(unittest.TestCase):
             MessageCallbackProvider(message_handler_config, None, None)
 
         self.assertEqual(str(context.exception), "Invalid type configured: %s" % payload_type)
-
 
     def test_get_individual_payload_type(self):
         message_handler_config = {}
@@ -61,6 +62,7 @@ class TestGetDefaultCallBacks(unittest.TestCase):
 
         callback = SUT.get_callback()
         self.assertEqual(callback, SUT._on_message_keyword)
+
 
 class TestKeywordload(unittest.TestCase):
     topic = 'foo/bar'
@@ -127,7 +129,7 @@ class TestKeywordload(unittest.TestCase):
         payload_str = ""
         delim = ""
         for key in payload_dict:
-            payload_str = "%s%s%s=%f" %(payload_str, delim, key, payload_dict[key])
+            payload_str = "%s%s%s=%f" % (payload_str, delim, key, payload_dict[key])
             delim = ","
 
         payload_str = payload_str.encode('UTF-8')
@@ -150,7 +152,7 @@ class TestKeywordload(unittest.TestCase):
         payload_str = ""
         delim = ""
         for key in payload_dict:
-            payload_str = "%s%s%s=%f" %(payload_str, delim, key, payload_dict[key])
+            payload_str = "%s%s%s=%f" % (payload_str, delim, key, payload_dict[key])
             delim = ","
 
         payload_str = payload_str.encode('UTF-8')
@@ -173,7 +175,7 @@ class TestKeywordload(unittest.TestCase):
         payload_str = ""
         delim = ""
         for key in payload_dict:
-            payload_str = "%s%s%s=%f" %(payload_str, delim, key, payload_dict[key])
+            payload_str = "%s%s%s=%f" % (payload_str, delim, key, payload_dict[key])
             delim = ","
 
         payload_str = payload_str.encode('UTF-8')
@@ -182,6 +184,7 @@ class TestKeywordload(unittest.TestCase):
 
         SUT._on_message_keyword(None, None, msg)
         mock_manager.append_data.assert_called_once_with(msg.topic, payload_dict)
+
 
 class TestJsonPayload(unittest.TestCase):
     topic = 'foo/bar'
@@ -199,7 +202,7 @@ class TestJsonPayload(unittest.TestCase):
         SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, None)
 
         msg = Msg(self.topic,
-                  ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), # pylint: disable=unused-variable
+                  ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),  # pylint: disable=unused-variable
                   0,
                   0)
 
@@ -314,6 +317,7 @@ class TestJsonPayload(unittest.TestCase):
 
         mock_manager.append_data.assert_called_once_with(msg.topic, flattened_payload_dict)
 
+
 class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
     fieldname = 'bar'
     topic = 'foo/' + fieldname
@@ -333,7 +337,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, None)
 
         msg = Msg(self.topic,
-                  ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), # pylint: disable=unused-variable
+                  ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),  # pylint: disable=unused-variable
                   0,
                   0)
 
@@ -366,7 +370,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
         if six.PY2:
-            topic = unicode(self.topic) # (never called under python 3) pylint: disable=undefined-variable
+            topic = unicode(self.topic)  # (never called under python 3) pylint: disable=undefined-variable
         else:
             topic = self.topic
 
@@ -425,6 +429,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         SUT._on_message_individual(None, None, msg)
         mock_manager.append_data.assert_called_once_with(msg.topic, {self.fieldname: payload})
 
+
 class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
     fieldname = 'bar'
     topic = 'foo/' + fieldname
@@ -445,7 +450,7 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
         SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, None)
 
         msg = Msg(self.topic,
-                  ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), # pylint: disable=unused-variable
+                  ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),   # pylint: disable=unused-variable
                   0,
                   0)
 

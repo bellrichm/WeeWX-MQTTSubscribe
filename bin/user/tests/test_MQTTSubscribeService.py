@@ -13,6 +13,7 @@ import weewx
 
 from user.MQTTSubscribe import MQTTSubscribeService
 
+
 class Testnew_loop_packet(unittest.TestCase):
     mock_StdEngine = mock.Mock(spec=weewx.engine.StdEngine)
 
@@ -31,7 +32,7 @@ class Testnew_loop_packet(unittest.TestCase):
 
         self.queue_data = {
             'inTemp': in_temp,
-            'outTemp':out_temp,
+            'outTemp': out_temp,
             'usUnits': 1,
             'dateTime': start_ts
         }
@@ -111,6 +112,7 @@ class Testnew_loop_packet(unittest.TestCase):
 
                 SUT.shutDown()
 
+
 class Testnew_archive_record(unittest.TestCase):
     mock_StdEngine = mock.Mock(spec=weewx.engine.StdEngine)
 
@@ -129,7 +131,7 @@ class Testnew_archive_record(unittest.TestCase):
 
         self.queue_data = {
             'inTemp': in_temp,
-            'outTemp':out_temp,
+            'outTemp': out_temp,
             'usUnits': 1,
             'dateTime': start_ts
         }

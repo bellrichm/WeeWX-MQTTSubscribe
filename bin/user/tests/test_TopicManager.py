@@ -19,6 +19,7 @@ import weewx
 
 from user.MQTTSubscribe import TopicManager, Logger
 
+
 class TestQueueSizeCheck(unittest.TestCase):
     topic = 'foo/bar'
     config_dict = {}
@@ -31,14 +32,14 @@ class TestQueueSizeCheck(unittest.TestCase):
         SUT = TopicManager(self.config, mock_logger)
 
         queue = deque()
-        queue.append(''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), ) # pylint: disable=unused-variable
+        queue.append(''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), )  # pylint: disable=unused-variable
         queue.append(''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), )
         queue.append(''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), )
         queue.append(''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), )
         orig_queue_size = len(queue)
         max_queue = 2
 
-        SUT._queue_size_check(queue, max_queue) # pylint: disable=protected-access
+        SUT._queue_size_check(queue, max_queue)  # pylint: disable=protected-access
         self.assertEqual(mock_logger.logerr.call_count, orig_queue_size-max_queue+1)
         self.assertEqual(len(queue), max_queue-1)
 
@@ -48,14 +49,14 @@ class TestQueueSizeCheck(unittest.TestCase):
         SUT = TopicManager(self.config, mock_logger)
 
         queue = deque()
-        queue.append(''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), ) # pylint: disable=unused-variable
+        queue.append(''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), )  # pylint: disable=unused-variable
         queue.append(''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), )
         queue.append(''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), )
         queue.append(''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), )
         orig_queue_size = len(queue)
         max_queue = 7
 
-        SUT._queue_size_check(queue, max_queue) # pylint: disable=protected-access
+        SUT._queue_size_check(queue, max_queue)  # pylint: disable=protected-access
         self.assertEqual(mock_logger.logerr.call_count, 0)
         self.assertEqual(len(queue), orig_queue_size)
 
@@ -65,16 +66,17 @@ class TestQueueSizeCheck(unittest.TestCase):
         SUT = TopicManager(self.config, mock_logger)
 
         queue = deque()
-        queue.append(''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), ) # pylint: disable=unused-variable
+        queue.append(''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), )  # pylint: disable=unused-variable
         queue.append(''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), )
         queue.append(''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), )
         queue.append(''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), )
         orig_queue_size = len(queue)
         max_queue = 4
 
-        SUT._queue_size_check(queue, max_queue) # pylint: disable=protected-access
+        SUT._queue_size_check(queue, max_queue)  # pylint: disable=protected-access
         self.assertEqual(mock_logger.logerr.call_count, orig_queue_size-max_queue+1)
         self.assertEqual(len(queue), max_queue-1)
+
 
 class TestAppendData(unittest.TestCase):
     topic = 'foo/bar'
@@ -95,7 +97,7 @@ class TestAppendData(unittest.TestCase):
         SUT = TopicManager(self.config, mock_logger)
 
         SUT.append_data(self.topic, queue_data)
-        queue = SUT._get_queue(self.topic) # pylint: disable=protected-access
+        queue = SUT._get_queue(self.topic)  # pylint: disable=protected-access
 
         self.assertEqual(len(queue), 1)
         queue_element = queue.popleft()
@@ -119,7 +121,7 @@ class TestAppendData(unittest.TestCase):
         SUT = TopicManager(config, mock_logger)
 
         SUT.append_data(self.topic, queue_data)
-        queue = SUT._get_queue(self.topic) # pylint: disable=protected-access
+        queue = SUT._get_queue(self.topic)  # pylint: disable=protected-access
 
         self.assertEqual(len(queue), 1)
         queue_element = queue.popleft()
@@ -140,7 +142,7 @@ class TestAppendData(unittest.TestCase):
         SUT = TopicManager(self.config, mock_logger)
 
         SUT.append_data(self.topic, queue_data)
-        queue = SUT._get_queue(self.topic) # pylint: disable=protected-access
+        queue = SUT._get_queue(self.topic)  # pylint: disable=protected-access
 
         self.assertEqual(len(queue), 1)
         queue_element = queue.popleft()
@@ -160,7 +162,7 @@ class TestAppendData(unittest.TestCase):
         SUT = TopicManager(self.config, mock_logger)
 
         SUT.append_data(self.topic, queue_data)
-        queue = SUT._get_queue(self.topic) # pylint: disable=protected-access
+        queue = SUT._get_queue(self.topic)  # pylint: disable=protected-access
 
         self.assertEqual(len(queue), 1)
         queue_element = queue.popleft()
@@ -184,11 +186,11 @@ class TestAppendData(unittest.TestCase):
         offset_minute = random.randint(1, 59)
         offset_hour_str = str(offset_hour).rjust(2, '0')
         offset_minute_str = str(offset_minute).rjust(2, '0')
-        offset_str = "%s%s" %(offset_hour_str, offset_minute_str)
+        offset_str = "%s%s" % (offset_hour_str, offset_minute_str)
 
         current_datetime = datetime.datetime.fromtimestamp(current_epoch).strftime(datetime_format)
 
-        queue_data['dateTime'] = "%s+%s" %(current_datetime, offset_str)
+        queue_data['dateTime'] = "%s+%s" % (current_datetime, offset_str)
 
         adjusted_epoch = current_epoch + (offset_hour * 60 + offset_minute) * 60
 
@@ -201,7 +203,7 @@ class TestAppendData(unittest.TestCase):
         SUT = TopicManager(config, mock_logger)
 
         SUT.append_data(self.topic, queue_data)
-        queue = SUT._get_queue(self.topic) # pylint: disable=protected-access
+        queue = SUT._get_queue(self.topic)  # pylint: disable=protected-access
 
         self.assertEqual(len(queue), 1)
         queue_element = queue.popleft()
@@ -226,11 +228,11 @@ class TestAppendData(unittest.TestCase):
         offset_minute = random.randint(1, 59)
         offset_hour_str = str(offset_hour).rjust(2, '0')
         offset_minute_str = str(offset_minute).rjust(2, '0')
-        offset_str = "%s:%s" %(offset_hour_str, offset_minute_str)
+        offset_str = "%s:%s" % (offset_hour_str, offset_minute_str)
 
         current_datetime = datetime.datetime.fromtimestamp(current_epoch).strftime(datetime_format)
 
-        queue_data['dateTime'] = "%s -%s" %(current_datetime, offset_str)
+        queue_data['dateTime'] = "%s -%s" % (current_datetime, offset_str)
 
         adjusted_epoch = current_epoch - (offset_hour * 60 + offset_minute) * 60
 
@@ -243,7 +245,7 @@ class TestAppendData(unittest.TestCase):
         SUT = TopicManager(config, mock_logger)
 
         SUT.append_data(self.topic, queue_data)
-        queue = SUT._get_queue(self.topic) # pylint: disable=protected-access
+        queue = SUT._get_queue(self.topic)  # pylint: disable=protected-access
 
         self.assertEqual(len(queue), 1)
         queue_element = queue.popleft()
@@ -278,7 +280,7 @@ class TestAppendData(unittest.TestCase):
         SUT = TopicManager(config, mock_logger)
 
         SUT.append_data(self.topic, queue_data)
-        queue = SUT._get_queue(self.topic) # pylint: disable=protected-access
+        queue = SUT._get_queue(self.topic)  # pylint: disable=protected-access
 
         self.assertEqual(len(queue), 1)
         queue_element = queue.popleft()
@@ -286,6 +288,7 @@ class TestAppendData(unittest.TestCase):
         self.assertDictContainsSubset(queue_data_subset, data)
         self.assertIn('dateTime', data)
         self.assertEqual(adjusted_epoch, data['dateTime'])
+
 
 class TestGetQueueData(unittest.TestCase):
     topic = 'foo/bar'
@@ -347,6 +350,7 @@ class TestGetQueueData(unittest.TestCase):
             self.assertDictEqual(elements[1], elem_two)
             self.assertDictEqual(elements[2], elem_three)
 
+
 class TestGetWindQueueData(unittest.TestCase):
     topic = 'foo/bar'
     config_dict = {}
@@ -407,6 +411,7 @@ class TestGetWindQueueData(unittest.TestCase):
 
             data = next(gen, None)
             self.assertIsNone(data)
+
 
 class TestAccumulatedData(unittest.TestCase):
 
@@ -488,8 +493,7 @@ class TestAccumulatedData(unittest.TestCase):
 
         with mock.patch('user.MQTTSubscribe.weewx.accum.Accum') as mock_Accum:
             with mock.patch('user.MQTTSubscribe.weewx.units.to_std_system') as mock_to_std_system:
-                type(mock_Accum.return_value).addRecord = mock.Mock(side_effect=
-                                                                    weewx.accum.OutOfSpan("Attempt to add out-of-interval record"))
+                type(mock_Accum.return_value).addRecord = mock.Mock(side_effect=weewx.accum.OutOfSpan("Attempt to add out-of-interval record"))
 
                 SUT = TopicManager(self.config, mock_logger)
                 SUT.append_data(self.topic, queue_data)

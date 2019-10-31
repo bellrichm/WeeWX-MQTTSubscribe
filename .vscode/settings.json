@@ -2,13 +2,13 @@
     "python.linting.pylintEnabled": true,
     "python.linting.pep8Enabled": true,
     "python.linting.pep8Args": [
-        "--max-line-length=140" 
+        "--max-line-length=145" 
     ],
     "python.envFile": "${workspaceFolder}/.env",
     "python.linting.pylintArgs": [
         "--disable", "locally-disabled",
         "--max-module-lines", "1500",
-        "--max-line-length", "140",
+        "--max-line-length", "145",
         "--good-names", "MQTTSubscribe, i, rc, ExampleMessageCallbackProvider",
         "--ignored-classes", "Event"
     ],

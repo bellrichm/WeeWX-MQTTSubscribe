@@ -11,6 +11,7 @@ import time
 
 from user.MQTTSubscribe import CollectData
 
+
 class Test_add_data(unittest.TestCase):
     wind_fields = ['windGust', 'windGustDir', 'windDir', 'windSpeed']
 
@@ -58,6 +59,7 @@ class Test_add_data(unittest.TestCase):
 
         self.assertDictEqual(added_data, first_data)
         self.assertDictEqual(SUT.data, second_data)
+
 
 class Test_get_data(unittest.TestCase):
     wind_fields = ['windGust', 'windGustDir', 'windDir', 'windSpeed']
