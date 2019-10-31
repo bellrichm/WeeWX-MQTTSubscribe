@@ -120,6 +120,15 @@ Configuration:
         # Default is: US
         unit_system = US
 
+        # Format used to parse the custom date/time string.
+        # With the exception of %z and %Z, see http://strftime.org for valid values.
+        # Default is None
+        datetime_format =
+
+        # Format used to parse the timezone offset of the custom string.
+        # Default is None
+        offset_format = hhmm | hhmm
+
         # Even if the payload has a datetime, ignore it and use the server datetime
         # Default is False
         use_server_datetime = False

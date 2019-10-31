@@ -1,3 +1,18 @@
+V1.4.0
+Enhancements/Fixes
+- Added support for custom date/time formats in the MQTT payload (#29).
+- Fixed the log message when a callback throws an exception to include the callback name.
+- Improved python 3 support.
+- Additional documentation and comments.
+
+Updates to make development and debugging easier.
+- Fixed lint errors, resulting in more consistent formatted code.
+- Improved support for developing with different versions of weewx and python.
+- Cleanup when running/debugging in vs code.
+- Created pubmqtt.py, a utility to publish test data.
+- When running standalone, add host, topics, and callback method parameters to override the configuration file.
+- Update mqtt_test.py to run without a configuration file and for a limited number of records.
+
 V1.3.0
 Enhancements/Fixes:
 - Added support for nested/hierarchical json (#28). 
