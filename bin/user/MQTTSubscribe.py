@@ -173,11 +173,18 @@ import configobj
 import paho.mqtt.client as mqtt
 import six
 
-import weeutil
-from weeutil.weeutil import to_bool, to_float, to_int, to_sorted_string
 import weewx
 import weewx.drivers
 from weewx.engine import StdService
+import weeutil
+from weeutil.weeutil import to_bool, to_float, to_int, to_sorted_string
+
+try:
+    import weeutil.logger
+    import logging
+    LOG = logging.getLogger(__name__)
+except ImportError:
+    LOG = None
 
 VERSION = '1.4.0-rc01'
 DRIVER_NAME = 'MQTTSubscribeDriver'
@@ -197,15 +204,24 @@ class Logger(object):
 
     def logdbg(self, prefix, msg):
         """ Log debug messages. """
-        self._logmsg(syslog.LOG_DEBUG, prefix, msg)
+        if LOG:
+            LOG.debug('%s: %s', prefix, msg)
+        else:
+            self._logmsg(syslog.LOG_DEBUG, prefix, msg)
 
     def loginf(self, prefix, msg):
         """ Log informational messages. """
-        self._logmsg(syslog.LOG_INFO, prefix, msg)
+        if LOG:
+            LOG.info('%s: %s', prefix, msg)
+        else:
+            self._logmsg(syslog.LOG_INFO, prefix, msg)
 
     def logerr(self, prefix, msg):
         """ Log error messages. """
-        self._logmsg(syslog.LOG_ERR, prefix, msg)
+        if LOG:
+            LOG.error('%s: %s', prefix, msg)
+        else:
+            self._logmsg(syslog.LOG_ERR, prefix, msg)
 
 class CollectData(object):
     """ Manage fields that are 'grouped together', like wind data. """
@@ -237,7 +253,7 @@ class TopicManager(object):
     def __init__(self, config, logger):
         self.logger = logger
 
-        if len(config.sections) < 1:
+        if not config.sections:
             raise ValueError("At least one topic must be configured.")
 
         self.logger.loginf("MQTTSubscribe", "TopicManager config is %s" % config)
@@ -662,7 +678,7 @@ class MQTTSubscribe(object):
         port = to_int(service_dict.get('port', 1883))
         username = service_dict.get('username', None)
         password = service_dict.get('password', None)
-        log = to_bool(service_dict.get('log', False))
+        log_mqtt = to_bool(service_dict.get('log', False))
 
         self.archive_topic = service_dict.get('archive_topic', None)
 
@@ -694,7 +710,7 @@ class MQTTSubscribe(object):
 
         self.client = mqtt.Client(client_id=clientid, clean_session=clean_session)
 
-        if log:
+        if log_mqtt:
             self.client.on_log = self._on_log
 
         message_callback_provider_class = weeutil.weeutil._get_object(message_callback_provider_name) # pylint: disable=protected-access
@@ -989,7 +1005,7 @@ if __name__ == '__main__': # pragma: no cover
     import optparse
     import os
     import sys
-    from weewx.engine import StdEngine
+    from weewx.engine import StdEngine # pylint: disable=ungrouped-imports
 
     USAGE = """MQTTSubscribeService --help
                CONFIG_FILE
@@ -1001,7 +1017,7 @@ if __name__ == '__main__': # pragma: no cover
                [--type=driver|service]
                [--verbose]
                [--console]
-    
+
     CONFIG_FILE = The WeeWX configuration file, typically weewx.conf.
     """
 
@@ -1061,22 +1077,22 @@ if __name__ == '__main__': # pragma: no cover
             config_dict['MQTTSubscribeService']['topics'] = {}
             config_dict['MQTTSubscribeDriver']['topics'] = {}
             for topic in topics:
-                weeutil.weeutil.merge_config(config_dict,
-                                             {'MQTTSubscribeService': {'topics': {topic:{}}}})
-                weeutil.weeutil.merge_config(config_dict,
-                                             {'MQTTSubscribeDriver': {'topics': {topic:{}}}})
+                weeutil.config.merge_config(config_dict,
+                                            {'MQTTSubscribeService': {'topics': {topic:{}}}})
+                weeutil.config.merge_config(config_dict,
+                                            {'MQTTSubscribeDriver': {'topics': {topic:{}}}})
 
         if options.host:
-            weeutil.weeutil.merge_config(config_dict,
-                                         {'MQTTSubscribeService': {'host': options.host}})
-            weeutil.weeutil.merge_config(config_dict,
-                                         {'MQTTSubscribeDriver': {'host': options.host}})
+            weeutil.config.merge_config(config_dict,
+                                        {'MQTTSubscribeService': {'host': options.host}})
+            weeutil.config.merge_config(config_dict,
+                                        {'MQTTSubscribeDriver': {'host': options.host}})
 
         if options.callback:
-            weeutil.weeutil.merge_config(config_dict,
-                                         {'MQTTSubscribeService': {'message_callback': {'type': options.callback}}})
-            weeutil.weeutil.merge_config(config_dict,
-                                         {'MQTTSubscribeDriver': {'message_callback': {'type': options.callback}}})
+            weeutil.config.merge_config(config_dict,
+                                        {'MQTTSubscribeService': {'message_callback': {'type': options.callback}}})
+            weeutil.config.merge_config(config_dict,
+                                        {'MQTTSubscribeDriver': {'message_callback': {'type': options.callback}}})
 
         min_config_dict = {
             'Station': {
@@ -1103,15 +1119,15 @@ if __name__ == '__main__': # pragma: no cover
         weewx.accum.initialize(config_dict)
 
         # override the configured binding with the parameter value
-        weeutil.weeutil.merge_config(config_dict,
-                                     {'MQTTSubscribeService': {'binding': binding}})
+        weeutil.config.merge_config(config_dict,
+                                    {'MQTTSubscribeService': {'binding': binding}})
 
         # if specified, override the console logging
         if options.console:
-            weeutil.weeutil.merge_config(config_dict,
-                                         {'MQTTSubscribeService': {'console': True}})
-            weeutil.weeutil.merge_config(config_dict,
-                                         {'MQTTSubscribeDriver': {'console': True}})
+            weeutil.config.merge_config(config_dict,
+                                        {'MQTTSubscribeService': {'console': True}})
+            weeutil.config.merge_config(config_dict,
+                                        {'MQTTSubscribeDriver': {'console': True}})
 
         if simulation_type == "service":
             simulate_service(engine, config_dict, binding, record_count, interval, delay, units)
