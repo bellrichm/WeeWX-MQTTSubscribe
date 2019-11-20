@@ -167,7 +167,6 @@ import random
 import re
 import time
 from collections import deque
-import syslog
 
 import configobj
 import paho.mqtt.client as mqtt
@@ -182,9 +181,10 @@ from weeutil.weeutil import to_bool, to_float, to_int, to_sorted_string
 try:
     import weeutil.logger
     import logging
-    LOG = logging.getLogger(__name__)
+    LOGGING = 'WeeWX'
 except ImportError:
-    LOG = None
+    import syslog
+    LOGGING = 'syslog'
 
 VERSION = '1.4.0-rc01'
 DRIVER_NAME = 'MQTTSubscribeDriver'
@@ -196,6 +196,10 @@ class Logger(object):
     """ The logging class. """
     def __init__(self, console):
         self.console = console
+        if LOGGING == 'syslog':
+            self.logmsg = self._logmsg
+        else:
+            self.logmsg = logging.getLogger(__name__)
 
     def _logmsg(self, dst, prefix, msg):
         syslog.syslog(dst, '%s: %s' % (prefix, msg))
@@ -204,24 +208,24 @@ class Logger(object):
 
     def debug(self, prefix, msg):
         """ Log debug messages. """
-        if LOG:
-            LOG.debug('%s: %s', prefix, msg)
+        if LOGGING == 'syslog':
+            self.logmsg(syslog.LOG_DEBUG, prefix, msg)
         else:
-            self._logmsg(syslog.LOG_DEBUG, prefix, msg)
+            self.logmsg.debug(msg)
 
     def info(self, prefix, msg):
         """ Log informational messages. """
-        if LOG:
-            LOG.info('%s: %s', prefix, msg)
+        if LOGGING == 'syslog':
+            self.logmsg(syslog.LOG_INFO, prefix, msg)
         else:
-            self._logmsg(syslog.LOG_INFO, prefix, msg)
+            self.logmsg.info(msg)
 
     def error(self, prefix, msg):
         """ Log error messages. """
-        if LOG:
-            LOG.error('%s: %s', prefix, msg)
+        if LOGGING == 'syslog':
+            self.logmsg(syslog.LOG_ERR, prefix, msg)
         else:
-            self._logmsg(syslog.LOG_ERR, prefix, msg)
+            self.logmsg.error(msg)
 
 class CollectData(object):
     """ Manage fields that are 'grouped together', like wind data. """
