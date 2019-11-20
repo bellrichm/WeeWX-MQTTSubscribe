@@ -49,9 +49,9 @@ class MessageCallbackProvider(object):
                 # Ignore all fields that do not have the separator
                 if eq_index == -1:
                     self.logger.error("MQTTSubscribe",
-                                       "MessageCallbackProvider on_message_keyword failed to find separator: %s" % self.keyword_separator)
+                                      "MessageCallbackProvider on_message_keyword failed to find separator: %s" % self.keyword_separator)
                     self.logger.error("MQTTSubscribe",
-                                       "**** MessageCallbackProvider Ignoring field=%s " % field)
+                                      "**** MessageCallbackProvider Ignoring field=%s " % field)
                     continue
 
                 name = field[:eq_index].strip()
@@ -62,8 +62,8 @@ class MessageCallbackProvider(object):
                 self.topic_manager.append_data(msg.topic, data)
             else:
                 self.logger.error("MQTTSubscribe",
-                                   "MessageCallbackProvider on_message_keyword failed to find data in: topic=%s and payload=%s"
-                                   % (msg.topic, msg.payload))
+                                  "MessageCallbackProvider on_message_keyword failed to find data in: topic=%s and payload=%s"
+                                  % (msg.topic, msg.payload))
 
         except Exception as exception: # (want to catch all) pylint: disable=broad-except
             self.logger.error("MQTTSubscribe", "MessageCallbackProvider on_message_keyword failed with: %s" % exception)
