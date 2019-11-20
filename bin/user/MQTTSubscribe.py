@@ -181,51 +181,52 @@ from weeutil.weeutil import to_bool, to_float, to_int, to_sorted_string
 try:
     import weeutil.logger
     import logging
-    LOGGING = 'WeeWX'
+    class Logger(object):
+        """ The logging class. """
+        def __init__(self, console=None):
+            self.console = console
+            self._logmsg = logging.getLogger(__name__)
+
+        def debug(self, msg):
+            """ Log debug messages. """
+            self._logmsg.debug(msg)
+
+        def info(self, msg):
+            """ Log informational messages. """
+            self._logmsg.info(msg)
+
+        def error(self, msg):
+            """ Log error messages. """
+            self._logmsg.error(msg)
 except ImportError:
     import syslog
-    LOGGING = 'syslog'
+    class Logger(object):
+        """ The logging class. """
+        def __init__(self, console=None):
+            self.console = console
+
+        def debug(self, msg):
+            """ Log debug messages. """
+            self._logmsg(syslog.LOG_DEBUG, msg)
+
+        def info(self, msg):
+            """ Log informational messages. """
+            self._logmsg(syslog.LOG_INFO, msg)
+
+        def error(self, msg):
+            """ Log error messages. """
+            self._logmsg(syslog.LOG_ERR, msg)
+
+        def _logmsg(self, dst, msg):
+            syslog.syslog(dst, '%s: %s' % (__name__, msg))
+            if self.console:
+                print('%s: %s' % (__name__, msg))
 
 VERSION = '1.4.0-rc01'
 DRIVER_NAME = 'MQTTSubscribeDriver'
 DRIVER_VERSION = VERSION
 
 # pylint: disable=fixme
-
-class Logger(object):
-    """ The logging class. """
-    def __init__(self, console):
-        self.console = console
-        if LOGGING == 'syslog':
-            self.logmsg = self._logmsg
-        else:
-            self.logmsg = logging.getLogger(__name__)
-
-    def _logmsg(self, dst, msg):
-        syslog.syslog(dst, '%s: %s' % (__name__, msg))
-        if self.console:
-            print('%s: %s' % (__name__, msg))
-
-    def debug(self, msg):
-        """ Log debug messages. """
-        if LOGGING == 'syslog':
-            self.logmsg(syslog.LOG_DEBUG, msg)
-        else:
-            self.logmsg.debug(msg)
-
-    def info(self, msg):
-        """ Log informational messages. """
-        if LOGGING == 'syslog':
-            self.logmsg(syslog.LOG_INFO, msg)
-        else:
-            self.logmsg.info(msg)
-
-    def error(self, msg):
-        """ Log error messages. """
-        if LOGGING == 'syslog':
-            self.logmsg(syslog.LOG_ERR, msg)
-        else:
-            self.logmsg.error(msg)
 
 class CollectData(object):
     """ Manage fields that are 'grouped together', like wind data. """
