@@ -39,7 +39,7 @@ class TestQueueSizeCheck(unittest.TestCase):
         max_queue = 2
 
         SUT._queue_size_check(queue, max_queue) # pylint: disable=protected-access
-        self.assertEqual(mock_logger.logerr.call_count, orig_queue_size-max_queue+1)
+        self.assertEqual(mock_logger.error.call_count, orig_queue_size-max_queue+1)
         self.assertEqual(len(queue), max_queue-1)
 
     def test_queue_max_not_reached(self):
@@ -56,7 +56,7 @@ class TestQueueSizeCheck(unittest.TestCase):
         max_queue = 7
 
         SUT._queue_size_check(queue, max_queue) # pylint: disable=protected-access
-        self.assertEqual(mock_logger.logerr.call_count, 0)
+        self.assertEqual(mock_logger.error.call_count, 0)
         self.assertEqual(len(queue), orig_queue_size)
 
     def test_queue_max_equal(self):
@@ -73,7 +73,7 @@ class TestQueueSizeCheck(unittest.TestCase):
         max_queue = 4
 
         SUT._queue_size_check(queue, max_queue) # pylint: disable=protected-access
-        self.assertEqual(mock_logger.logerr.call_count, orig_queue_size-max_queue+1)
+        self.assertEqual(mock_logger.error.call_count, orig_queue_size-max_queue+1)
         self.assertEqual(len(queue), max_queue-1)
 
 class TestAppendData(unittest.TestCase):
@@ -498,7 +498,7 @@ class TestAccumulatedData(unittest.TestCase):
                 accumulated_data = SUT.get_accumulated_data(self.topic, 0, time.time(), 0)
 
                 self.assertDictEqual(accumulated_data, {})
-                mock_logger.loginf.assert_called_once()
+                mock_logger.info.assert_called_once()
                 mock_Accum.getRecord.assert_not_called()
                 mock_to_std_system.assert_not_called()
 
