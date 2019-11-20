@@ -989,6 +989,7 @@ if __name__ == '__main__': # pragma: no cover
     import optparse
     import os
     import sys
+    import syslog
     from weewx.engine import StdEngine # pylint: disable=ungrouped-imports
 
     USAGE = """MQTTSubscribeService --help
