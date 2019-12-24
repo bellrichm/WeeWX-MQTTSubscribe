@@ -41,7 +41,7 @@ class MessageCallbackProvider(object):
     def _on_message(self, client, userdata, msg):  # (match callback signature) pylint: disable=unused-argument
         # Wrap all the processing in a try, so it doesn't crash and burn on any error
         try:
-            self.logger.logdbg("MQTTSubscribe", "MessageCallbackProvider For %s received: %s" % (msg.topic, msg.payload))
+            self.logger.debug("MessageCallbackProvider For %s received: %s" %(msg.topic, msg.payload))
 
             fields = msg.payload.split(self.keyword_delimiter)
             data = {}
@@ -49,10 +49,8 @@ class MessageCallbackProvider(object):
                 eq_index = field.find(self.keyword_separator)
                 # Ignore all fields that do not have the separator
                 if eq_index == -1:
-                    self.logger.logerr("MQTTSubscribe",
-                                       "MessageCallbackProvider on_message_keyword failed to find separator: %s" % self.keyword_separator)
-                    self.logger.logerr("MQTTSubscribe",
-                                       "**** MessageCallbackProvider Ignoring field=%s " % field)
+                    self.logger.error("MessageCallbackProvider on_message_keyword failed to find separator: %s" % self.keyword_separator)
+                    self.logger.error("**** MessageCallbackProvider Ignoring field=%s " % field)
                     continue
 
                 name = field[:eq_index].strip()
@@ -62,10 +60,9 @@ class MessageCallbackProvider(object):
             if data:
                 self.topic_manager.append_data(msg.topic, data)
             else:
-                self.logger.logerr("MQTTSubscribe",
-                                   "MessageCallbackProvider on_message_keyword failed to find data in: topic=%s and payload=%s"
-                                   % (msg.topic, msg.payload))
+                self.logger.error("MessageCallbackProvider on_message_keyword failed to find data in: topic=%s and payload=%s"
+                                  % (msg.topic, msg.payload))
 
-        except Exception as exception:  # (want to catch all) pylint: disable=broad-except
-            self.logger.logerr("MQTTSubscribe", "MessageCallbackProvider on_message_keyword failed with: %s" % exception)
-            self.logger.logerr("MQTTSubscribe", "**** MessageCallbackProvider Ignoring topic=%s and payload=%s" % (msg.topic, msg.payload))
+        except Exception as exception: # (want to catch all) pylint: disable=broad-except
+            self.logger.error("MessageCallbackProvider on_message_keyword failed with: %s" % exception)
+            self.logger.error("**** MessageCallbackProvider Ignoring topic=%s and payload=%s" % (msg.topic, msg.payload))

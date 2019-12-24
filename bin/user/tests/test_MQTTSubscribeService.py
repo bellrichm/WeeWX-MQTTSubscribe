@@ -108,7 +108,7 @@ class Testnew_loop_packet(unittest.TestCase):
 
                 SUT.new_loop_packet(new_loop_packet_event)
 
-                SUT.logger.logerr.assert_called_once()
+                SUT.logger.error.assert_called_once()
 
                 SUT.shutDown()
 
