@@ -29,7 +29,7 @@
                 //"--callback", "keyword",                
                 "--verbose",
                 "--console",
-                "${workspaceFolder}/weewx.loop.conf",
+                "${workspaceFolder}/weewx.loop.conf"
             ],            
             "console": "integratedTerminal"
         },
@@ -46,7 +46,7 @@
                 "--records", "1",
                 "--verbose",
                 "--console",
-                "${workspaceFolder}/weewx.archive.conf",
+                "${workspaceFolder}/weewx.archive.conf"
             ],            
             "console": "integratedTerminal"
         },
@@ -63,7 +63,7 @@
                 "--records", "1",
                 "--verbose",
                 "--console",
-                "${workspaceFolder}/weewx.loop.conf",
+                "${workspaceFolder}/weewx.loop.conf"
             ],            
             "console": "integratedTerminal"
         },
@@ -80,7 +80,7 @@
                 "--records", "1",
                 "--verbose",
                 "--console",
-                "${workspaceFolder}/weewx.archive.conf",
+                "${workspaceFolder}/weewx.archive.conf"
             ],            
             "console": "integratedTerminal"
         },
@@ -182,6 +182,21 @@
             ],            
             // Work around for timeout
             //"console": "externalTerminal"
+            "console": "integratedTerminal"
+        },
+        {
+	        // This won't work in this project.
+	        // Added for documentation purposes.
+            "name": "weewxd: Full install",
+            "type": "python",
+            "request": "launch",
+            "env": {
+                "LANG": "en_GB.UTF-8"
+            },            
+            "program": "${workspaceFolder}/bin/weewxd",
+            "args": [
+                "weewx.conf"
+            ],            
             "console": "integratedTerminal"
         },
         {

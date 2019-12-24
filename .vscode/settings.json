@@ -1,7 +1,7 @@
 {
     "python.linting.pylintEnabled": true,
-    "python.linting.pep8Enabled": true,
-    "python.linting.pep8Args": [
+    "python.linting.pycodestyleEnabled": false,
+    "python.linting.pycodestyleArgs": [
         "--max-line-length=145" 
     ],
     "python.envFile": "${workspaceFolder}/.env",
@@ -12,5 +12,6 @@
         "--good-names", "MQTTSubscribe, i, rc, ExampleMessageCallbackProvider",
         "--ignored-classes", "Event"
     ],
-    "python.pythonPath": "/usr/bin/python3"
+    "python.pythonPath": "/usr/bin/python3",
+    "python.linting.enabled": true
 }
