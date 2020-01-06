@@ -10,12 +10,14 @@ import mock
 
 import json
 import random
-import six
 import string
+import sys
 import time
 
 from user.MQTTSubscribe import MessageCallbackProvider, TopicManager, Logger
 
+# Stole from six module. Added to eliminate dependency on six when running under WeeWX 3.x
+PY2 = sys.version_info[0] == 2
 
 class Msg(object):
     def __init__(self, topic, payload, qos, retain):
@@ -227,7 +229,7 @@ class TestJsonPayload(unittest.TestCase):
         payload_dict = dict(self.payload_dict)
         payload_dict['usUnits'] = random.randint(1, 10)
 
-        if six.PY2:
+        if PY2:
             payload = json.dumps(payload_dict)
         else:
             payload = json.dumps(payload_dict).encode("utf-8")
@@ -247,7 +249,7 @@ class TestJsonPayload(unittest.TestCase):
         payload_dict = dict(self.payload_dict)
         payload_dict['dateTime'] = time.time()
 
-        if six.PY2:
+        if PY2:
             payload = json.dumps(payload_dict)
         else:
             payload = json.dumps(payload_dict).encode("utf-8")
@@ -268,7 +270,7 @@ class TestJsonPayload(unittest.TestCase):
         payload_dict['dateTime'] = time.time()
         payload_dict['usUnits'] = random.randint(1, 10)
 
-        if six.PY2:
+        if PY2:
             payload = json.dumps(payload_dict)
         else:
             payload = json.dumps(payload_dict).encode("utf-8")
@@ -306,7 +308,7 @@ class TestJsonPayload(unittest.TestCase):
         flattened_payload_dict['dateTime'] = payload_dict['dateTime']
         flattened_payload_dict['usUnits'] = payload_dict['usUnits']
 
-        if six.PY2:
+        if PY2:
             payload = json.dumps(payload_dict)
         else:
             payload = json.dumps(payload_dict).encode("utf-8")
@@ -369,7 +371,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
     def test_unicode_topic(self):
         mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
-        if six.PY2:
+        if PY2:
             topic = unicode(self.topic)  # (never called under python 3) pylint: disable=undefined-variable
         else:
             topic = self.topic

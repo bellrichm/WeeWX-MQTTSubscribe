@@ -152,8 +152,8 @@ Configuration:
         # between the driver creating packets is large and the MQTT broker publishes frequently.
         # Or if subscribing to 'individual' payloads with wildcards. This results in many topic
         # in a single queue.
-        # Default is: six.MAXSIZE
-        max_queue = six.MAXSIZE
+        # Default is: sys.maxsize for python 3 and sys.maxint for python 2
+        max_queue = MAXSIZE
 
         [[[first/topic]]]
         [[[second/one]]]
@@ -165,18 +165,25 @@ import datetime
 import json
 import random
 import re
+import sys
 import time
 from collections import deque
 
 import configobj
 import paho.mqtt.client as mqtt
-import six
 
 import weewx
 import weewx.drivers
 from weewx.engine import StdService
 import weeutil
 from weeutil.weeutil import to_bool, to_float, to_int, to_sorted_string
+
+# Stole from six module. Added to eliminate dependency on six when running under WeeWX 3.x
+PY2 = sys.version_info[0] == 2
+if PY2:
+    MAXSIZE = sys.maxint
+else:
+    MAXSIZE = sys.maxsize
 
 try:
     import weeutil.logger
@@ -278,7 +285,7 @@ class TopicManager(object):
             raise ValueError("MQTTSubscribe: Unknown unit system: %s" % default_unit_system_name)
         unit_system = weewx.units.unit_constants[default_unit_system_name]
 
-        max_queue = config.get('max_queue', six.MAXSIZE)
+        max_queue = config.get('max_queue', MAXSIZE)
 
         self.wind_fields = ['windGust', 'windGustDir', 'windDir', 'windSpeed']
 
@@ -365,7 +372,7 @@ class TopicManager(object):
 
         return datetime_value
 
-    def get_data(self, topic, end_ts=six.MAXSIZE):
+    def get_data(self, topic, end_ts=MAXSIZE):
         """ Get data off the queue of MQTT data. """
         queue = self._get_queue(topic)
         self.logger.debug("TopicManager starting queue %s size is: %i" %(topic, len(queue)))
@@ -570,7 +577,7 @@ class MessageCallbackProvider(object):
         try:
             self._log_message(msg)
 
-            if six.PY2:
+            if PY2:
                 payload_str = msg.payload
             else:
                 payload_str = msg.payload.decode('utf-8')
@@ -605,7 +612,7 @@ class MessageCallbackProvider(object):
             self._log_message(msg)
 
             # JSON string objects are decoded into unicode in python 2 and str in python 3
-            if six.PY2:
+            if PY2:
                 data = self._byteify(
                     json.loads(msg.payload, object_hook=self._byteify),
                     ignore_dicts=True)
@@ -628,7 +635,7 @@ class MessageCallbackProvider(object):
             else:
                 key = msg.topic.rpartition('/')[2]
 
-            if six.PY2:
+            if PY2:
                 key = key.encode('utf-8')
 
             fieldname = self.label_map.get(key, key)
@@ -725,7 +732,7 @@ class MQTTSubscribe(object):
         """ The topics subscribed to. """
         return self.manager.subscribed_topics
 
-    def get_data(self, topic, end_ts=six.MAXSIZE):
+    def get_data(self, topic, end_ts=MAXSIZE):
         """ Get data off the queue of MQTT data. """
         return self.manager.get_data(topic, end_ts)
 
@@ -988,7 +995,6 @@ class MQTTSubscribeDriverConfEditor(weewx.drivers.AbstractConfEditor): # pragma:
 if __name__ == '__main__': # pragma: no cover
     import optparse
     import os
-    import sys
     import syslog
     from weewx.engine import StdEngine # pylint: disable=ungrouped-imports
 

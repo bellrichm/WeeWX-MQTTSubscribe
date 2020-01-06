@@ -3,9 +3,12 @@
 from __future__ import print_function
 import optparse
 import random
+import sys
 import time
 import paho.mqtt.client as mqtt
-import six
+
+# Stole from six module. Added to eliminate dependency on six when running under WeeWX 3.x
+PY2 = sys.version_info[0] == 2
 
 USAGE = """pubmqtt --help
         mqtt_test
@@ -116,7 +119,7 @@ def main():
             message = message.replace("{DATETIME}", str(publish_time))
             if prompt_to_send:
                 print("press enter to send next message.")
-                if six.PY2:
+                if PY2:
                     raw_input()
                 else:
                     input()

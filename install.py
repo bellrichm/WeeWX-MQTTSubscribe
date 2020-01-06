@@ -16,11 +16,17 @@ wee_extension --uninstall=MQTTSubscribe
 """
 
 import os
+import sys
 import configobj
 
-from six.moves import StringIO
-
 from weecfg.extension import ExtensionInstaller
+
+# Stole from six module. Added to eliminate dependency on six when running under WeeWX 3.x
+PY2 = sys.version_info[0] == 2
+if PY2:
+    from StringIO import StringIO
+else:
+    from io import StringIO
 
 VERSION = '1.4.0'
 
