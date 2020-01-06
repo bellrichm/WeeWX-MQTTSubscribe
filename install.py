@@ -24,7 +24,7 @@ from weecfg.extension import ExtensionInstaller
 # Stole from six module. Added to eliminate dependency on six when running under WeeWX 3.x
 PY2 = sys.version_info[0] == 2
 if PY2:
-    from StringIO import StringIO
+    from StringIO import StringIO # (only a python 3 error) pylint: disable=import-error
 else:
     from io import StringIO
 

@@ -181,7 +181,7 @@ from weeutil.weeutil import to_bool, to_float, to_int, to_sorted_string
 # Stole from six module. Added to eliminate dependency on six when running under WeeWX 3.x
 PY2 = sys.version_info[0] == 2
 if PY2:
-    MAXSIZE = sys.maxint
+    MAXSIZE = sys.maxint # (only a python 3 error) pylint: disable=no-member
 else:
     MAXSIZE = sys.maxsize
 
@@ -995,7 +995,7 @@ class MQTTSubscribeDriverConfEditor(weewx.drivers.AbstractConfEditor): # pragma:
 if __name__ == '__main__': # pragma: no cover
     import optparse
     import os
-    import syslog
+    import syslog #pylint: disable=ungrouped-imports
     from weewx.engine import StdEngine # pylint: disable=ungrouped-imports
 
     USAGE = """MQTTSubscribeService --help

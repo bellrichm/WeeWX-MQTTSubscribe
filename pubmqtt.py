@@ -84,7 +84,7 @@ def on_publish(client, userdata, mid):  # (match callback signature) pylint: dis
 def main():
     """ The main entry point. """
     parser = init_parser()
-    (options, args) = parser.parse_args()
+    (options, args) = parser.parse_args() # (match callback signature) pylint: disable=unused-variable
 
     host = options.host
     port = options.port
@@ -120,7 +120,7 @@ def main():
             if prompt_to_send:
                 print("press enter to send next message.")
                 if PY2:
-                    raw_input()
+                    raw_input() # (only a python 3 error) pylint: disable=undefined-variable
                 else:
                     input()
             mqtt_message_info = client.publish(topic, message)
