@@ -1059,8 +1059,10 @@ if __name__ == '__main__': # pragma: no cover
 
         if options.topics:
             topics = options.topics.split(',')
-            config_dict['MQTTSubscribeService']['topics'] = {}
-            config_dict['MQTTSubscribeDriver']['topics'] = {}
+            if 'MQTTSubscribeService' in config_dict and 'topics' in config_dict['MQTTSubscribeService']:
+                config_dict['MQTTSubscribeService']['topics'] = {}
+            if 'MQTTSubscribeDriver' in config_dict and 'topics' in config_dict['MQTTSubscribeDriver']:
+                config_dict['MQTTSubscribeDriver']['topics'] = {}
             for topic in topics:
                 weeutil.config.merge_config(config_dict,
                                             {'MQTTSubscribeService': {'topics': {topic:{}}}})
