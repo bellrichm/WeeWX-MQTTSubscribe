@@ -163,6 +163,8 @@ from __future__ import with_statement
 from __future__ import print_function
 import datetime
 import json
+import locale
+import platform
 import random
 import re
 import sys
@@ -188,6 +190,19 @@ else:
 try:
     import weeutil.logger
     import logging
+    def setup_logging(logging_level):
+        if logging_level:
+            weewx.debug = logging_level
+
+        weeutil.logger.setup('wee_MQTTSS', {})
+
+        log = logging.getLogger(__name__)
+
+        log.info("Initializing weewx version %s", weewx.__version__)
+        log.info("Using Python %s", sys.version)
+        log.info("Platform %s", platform.platform())
+        log.info("Locale is '%s'", locale.setlocale(locale.LC_ALL))
+
     class Logger(object):
         """ The logging class. """
         def __init__(self, console=None):
@@ -207,6 +222,18 @@ try:
             self._logmsg.error(msg)
 except ImportError:
     import syslog
+    def setup_logging(logging_level):
+        syslog.openlog('wee_MQTTSS', syslog.LOG_PID | syslog.LOG_CONS)
+        if logging_level:
+            syslog.setlogmask(syslog.LOG_UPTO(syslog.LOG_DEBUG))
+        else:
+            syslog.setlogmask(syslog.LOG_UPTO(syslog.LOG_INFO))
+
+        syslog.syslog(syslog.LOG_INFO, "wee_MQTTSS: Initializing weewx version %s" % weewx.__version__)
+        syslog.syslog(syslog.LOG_INFO, "wee_MQTTSS: Using Python %s" % sys.version)
+        syslog.syslog(syslog.LOG_INFO, "wee_MQTTSS: Platform %s" % platform.platform())
+        syslog.syslog(syslog.LOG_INFO, "wee_MQTTSS: Locale is '%s'" % locale.setlocale(locale.LC_ALL))
+
     class Logger(object):
         """ The logging class. """
         def __init__(self, console=None):
@@ -229,7 +256,7 @@ except ImportError:
             if self.console:
                 print('%s: %s' % (__name__, msg))
 
-VERSION = '1.4.0'
+VERSION = '1.4.1-rc01'
 DRIVER_NAME = 'MQTTSubscribeDriver'
 DRIVER_VERSION = VERSION
 
@@ -995,7 +1022,6 @@ class MQTTSubscribeDriverConfEditor(weewx.drivers.AbstractConfEditor): # pragma:
 if __name__ == '__main__': # pragma: no cover
     import optparse
     import os
-    import syslog #pylint: disable=ungrouped-imports
     from weewx.engine import StdEngine # pylint: disable=ungrouped-imports
 
     USAGE = """MQTTSubscribeService --help
@@ -1053,11 +1079,7 @@ if __name__ == '__main__': # pragma: no cover
         delay = options.delay
         units = weewx.units.unit_constants[options.units]
 
-        syslog.openlog('wee_MQTTSS', syslog.LOG_PID | syslog.LOG_CONS)
-        if options.verbose:
-            syslog.setlogmask(syslog.LOG_UPTO(syslog.LOG_DEBUG))
-        else:
-            syslog.setlogmask(syslog.LOG_UPTO(syslog.LOG_INFO))
+        setup_logging(options.verbose)
 
         config_path = os.path.abspath(args[0])
 
