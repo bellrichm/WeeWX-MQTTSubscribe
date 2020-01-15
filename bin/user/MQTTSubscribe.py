@@ -109,6 +109,10 @@ Configuration:
         # Default is: =
         keyword_separator = =
 
+        # List of fields that are cumulative values
+        # Default is: [] (empty list)
+        contains_total =
+
         # Mapping to WeeWX names.
         [[[label_map]]]
             temp1 = extraTemp1
@@ -178,7 +182,7 @@ import weewx
 import weewx.drivers
 from weewx.engine import StdService
 import weeutil
-from weeutil.weeutil import to_bool, to_float, to_int, to_sorted_string
+from weeutil.weeutil import option_as_list, to_bool, to_float, to_int, to_sorted_string
 
 # Stole from six module. Added to eliminate dependency on six when running under WeeWX 3.x
 PY2 = sys.version_info[0] == 2
@@ -546,11 +550,14 @@ class MessageCallbackProvider(object):
         self.flatten_delimiter = config.get('flatten_delimiter', '_')
         self.keyword_delimiter = config.get('keyword_delimiter', ',')
         self.keyword_separator = config.get('keyword_separator', '=')
+        self.contains_total = option_as_list(config.get('contains_total', []))
         self.label_map = config.get('label_map', {})
         self.full_topic_fieldname = to_bool(config.get('full_topic_fieldname', False))
 
         if self.type not in self.callbacks:
             raise ValueError("Invalid type configured: %s" % self.type)
+
+        self.previous_values = {}
 
     def get_callback(self):
         """ Get the MQTT callback. """
@@ -591,6 +598,16 @@ class MessageCallbackProvider(object):
 
         return dict(_items())
 
+    def _calc_increment(self, observation, current_total, previous_total):
+        if current_total is not None and previous_total is not None:
+            if current_total >= previous_total:
+                return current_total - previous_total
+            else:
+                self.logger.error("MessageCallbackProvider _calc_increment skipping calculating increment " \
+                                  "for %s with current: %f and previous %f values."
+                                  % (observation, current_total, previous_total))
+                return None
+
     def _log_message(self, msg):
         self.logger.debug("MessageCallbackProvider For %s has QOS of %i and retain of %s received: %s"
                           %(msg.topic, msg.qos, msg.retain, msg.payload))
@@ -621,8 +638,15 @@ class MessageCallbackProvider(object):
                     continue
 
                 name = field[:eq_index].strip()
-                value = field[eq_index + 1:].strip()
-                data[self.label_map.get(name, name)] = to_float(value)
+                value = to_float(field[eq_index + 1:].strip())
+
+                # TODO: do something here to calculate increment (issue 40)
+                if name in self.contains_total:
+                    current_value = value
+                    value = self._calc_increment(name, current_value, self.previous_values.get(name))
+                    self.previous_values = current_value
+
+                data[self.label_map.get(name, name)] = value
 
             if data:
                 self.topic_manager.append_data(msg.topic, data)
@@ -646,6 +670,8 @@ class MessageCallbackProvider(object):
             else:
                 data = json.loads(msg.payload.decode("utf-8"))
 
+            # TODO: do something here, (possibly in _byteify - to avoid looping) to calculate increment (issue 40)
+
             self.topic_manager.append_data(msg.topic, self._flatten_dict(data, self.flatten_delimiter))
 
         except Exception as exception: # (want to catch all) pylint: disable=broad-except
@@ -665,6 +691,7 @@ class MessageCallbackProvider(object):
             if PY2:
                 key = key.encode('utf-8')
 
+            # TODO: do something here to calculate increment (issue 40)
             fieldname = self.label_map.get(key, key)
 
             data = {}

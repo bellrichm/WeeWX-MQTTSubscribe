@@ -187,6 +187,35 @@ class TestKeywordload(unittest.TestCase):
         SUT._on_message_keyword(None, None, msg)
         mock_manager.append_data.assert_called_once_with(msg.topic, payload_dict)
 
+    # Issue 40 placeholder
+    def test_payload_good2(self):
+        mock_manager = mock.Mock(spec=TopicManager)
+        mock_logger = mock.Mock(spec=Logger)
+
+        message_handler_config = {}
+        message_handler_config['type'] = 'keyword'
+        #message_handler_config['contains_total'] = 'inTemp'
+
+        SUT = MessageCallbackProvider(message_handler_config, mock_logger, mock_manager)
+        #SUT.previous_values['inTemp'] = 999.01
+        SUT.previous_values['inTemp'] = 5
+
+        payload_dict = dict(self.payload_dict)
+        payload_dict['dateTime'] = round(time.time(), 2)
+        payload_dict['usUnits'] = random.randint(1, 10)
+
+        payload_str = ""
+        delim = ""
+        for key in payload_dict:
+            payload_str = "%s%s%s=%f" % (payload_str, delim, key, payload_dict[key])
+            delim = ","
+
+        payload_str = payload_str.encode('UTF-8')
+
+        msg = Msg(self.topic, payload_str, 0, 0)
+
+        SUT._on_message_keyword(None, None, msg)
+        mock_manager.append_data.assert_called_once_with(msg.topic, payload_dict)
 
 class TestJsonPayload(unittest.TestCase):
     topic = 'foo/bar'
