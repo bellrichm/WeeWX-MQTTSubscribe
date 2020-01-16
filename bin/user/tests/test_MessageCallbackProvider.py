@@ -291,7 +291,7 @@ class TestJsonPayload(unittest.TestCase):
     topic = 'foo/bar'
 
     payload_dict = {
-        'inTemp': round(random.uniform(1, 100), 2),
+        'inTemp': round(random.uniform(10, 100), 2),
         'outTemp': round(random.uniform(1, 100), 2)
     }
 
@@ -379,6 +379,106 @@ class TestJsonPayload(unittest.TestCase):
         SUT._on_message_json(None, None, msg)
 
         mock_manager.append_data.assert_called_once_with(msg.topic, payload_dict)
+        call_args_list = mock_manager.append_data.call_args_list
+        second_arg = call_args_list[0].args[1]
+        for key in second_arg:
+            self.assertIsInstance(key, str)
+
+    def test_payload_no_previous_value(self):
+        mock_manager = mock.Mock(spec=TopicManager)
+        mock_logger = mock.Mock(spec=Logger)
+
+        message_handler_config = copy.deepcopy(self.message_handler_config)
+        message_handler_config['contains_total'] = 'inTemp'
+
+        SUT = MessageCallbackProvider(message_handler_config, mock_logger, mock_manager)
+
+        payload_dict = dict(self.payload_dict)
+        payload_dict['dateTime'] = time.time()
+        payload_dict['usUnits'] = random.randint(1, 10)
+
+        if PY2:
+            payload = json.dumps(payload_dict)
+        else:
+            payload = json.dumps(payload_dict).encode("utf-8")
+
+        result_dict = copy.deepcopy(payload_dict)
+        result_dict['inTemp'] = None
+
+        msg = Msg(self.topic, payload, 0, 0)
+
+        SUT._on_message_json(None, None, msg)
+
+        mock_manager.append_data.assert_called_once_with(msg.topic, result_dict)
+        self.assertEqual(SUT.previous_values['inTemp'], payload_dict['inTemp'])
+        call_args_list = mock_manager.append_data.call_args_list
+        second_arg = call_args_list[0].args[1]
+        for key in second_arg:
+            self.assertIsInstance(key, str)
+
+    def test_payload_larger_previous_value(self):
+        mock_manager = mock.Mock(spec=TopicManager)
+        mock_logger = mock.Mock(spec=Logger)
+
+        message_handler_config = copy.deepcopy(self.message_handler_config)
+        message_handler_config['contains_total'] = 'inTemp'
+        prev_temp = round(random.uniform(101, 200), 2)
+
+        SUT = MessageCallbackProvider(message_handler_config, mock_logger, mock_manager)
+        SUT.previous_values['inTemp'] = prev_temp
+
+        payload_dict = dict(self.payload_dict)
+        payload_dict['dateTime'] = time.time()
+        payload_dict['usUnits'] = random.randint(1, 10)
+
+        if PY2:
+            payload = json.dumps(payload_dict)
+        else:
+            payload = json.dumps(payload_dict).encode("utf-8")
+
+        result_dict = copy.deepcopy(payload_dict)
+        result_dict['inTemp'] = None
+
+        msg = Msg(self.topic, payload, 0, 0)
+
+        SUT._on_message_json(None, None, msg)
+
+        mock_manager.append_data.assert_called_once_with(msg.topic, result_dict)
+        self.assertEqual(SUT.previous_values['inTemp'], payload_dict['inTemp'])
+        call_args_list = mock_manager.append_data.call_args_list
+        second_arg = call_args_list[0].args[1]
+        for key in second_arg:
+            self.assertIsInstance(key, str)
+
+    def test_payload_good_previous_value(self):
+        mock_manager = mock.Mock(spec=TopicManager)
+        mock_logger = mock.Mock(spec=Logger)
+
+        message_handler_config = copy.deepcopy(self.message_handler_config)
+        message_handler_config['contains_total'] = 'inTemp'
+        prev_temp = round(random.uniform(1, 9), 2)
+
+        SUT = MessageCallbackProvider(message_handler_config, mock_logger, mock_manager)
+        SUT.previous_values['inTemp'] = prev_temp
+
+        payload_dict = dict(self.payload_dict)
+        payload_dict['dateTime'] = time.time()
+        payload_dict['usUnits'] = random.randint(1, 10)
+
+        if PY2:
+            payload = json.dumps(payload_dict)
+        else:
+            payload = json.dumps(payload_dict).encode("utf-8")
+
+        result_dict = copy.deepcopy(payload_dict)
+        result_dict['inTemp'] = payload_dict['inTemp'] - prev_temp
+
+        msg = Msg(self.topic, payload, 0, 0)
+
+        SUT._on_message_json(None, None, msg)
+
+        mock_manager.append_data.assert_called_once_with(msg.topic, result_dict)
+        self.assertEqual(SUT.previous_values['inTemp'], payload_dict['inTemp'])
         call_args_list = mock_manager.append_data.call_args_list
         second_arg = call_args_list[0].args[1]
         for key in second_arg:

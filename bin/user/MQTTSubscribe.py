@@ -584,6 +584,11 @@ class MessageCallbackProvider(object):
             for key, value in data.items():
                 key2 = self._byteify(key, ignore_dicts=True)
                 value2 = self._byteify(value, ignore_dicts=True)
+                if key2 in self.contains_total:
+                    current_value = value2
+                    value2 = self._calc_increment(key2, current_value, self.previous_values.get(key2))
+                    self.previous_values[key2] = current_value
+
                 data2[self.label_map.get(key2, key2)] = value2
             return data2
         # if it's anything else, return it in its original form
