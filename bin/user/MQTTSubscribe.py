@@ -644,7 +644,7 @@ class MessageCallbackProvider(object):
                 if name in self.contains_total:
                     current_value = value
                     value = self._calc_increment(name, current_value, self.previous_values.get(name))
-                    self.previous_values = current_value
+                    self.previous_values[name] = current_value
 
                 data[self.label_map.get(name, name)] = value
 

@@ -8,6 +8,7 @@ from __future__ import with_statement
 import unittest
 import mock
 
+import copy
 import json
 import random
 import string
@@ -70,7 +71,7 @@ class TestKeywordload(unittest.TestCase):
     topic = 'foo/bar'
 
     payload_dict = {
-        'inTemp': round(random.uniform(1, 100), 2),
+        'inTemp': round(random.uniform(10, 100), 2),
         'outTemp': round(random.uniform(1, 100), 2)
     }
 
@@ -187,22 +188,90 @@ class TestKeywordload(unittest.TestCase):
         SUT._on_message_keyword(None, None, msg)
         mock_manager.append_data.assert_called_once_with(msg.topic, payload_dict)
 
-    # Issue 40 placeholder
-    def test_payload_good2(self):
+    def test_payload_no_previous_value(self):
         mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
 
         message_handler_config = {}
         message_handler_config['type'] = 'keyword'
-        #message_handler_config['contains_total'] = 'inTemp'
+        message_handler_config['contains_total'] = 'inTemp'
 
         SUT = MessageCallbackProvider(message_handler_config, mock_logger, mock_manager)
-        #SUT.previous_values['inTemp'] = 999.01
-        SUT.previous_values['inTemp'] = 5
 
         payload_dict = dict(self.payload_dict)
         payload_dict['dateTime'] = round(time.time(), 2)
         payload_dict['usUnits'] = random.randint(1, 10)
+
+        result_dict = copy.deepcopy(payload_dict)
+        result_dict['inTemp'] = None
+
+        payload_str = ""
+        delim = ""
+        for key in payload_dict:
+            payload_str = "%s%s%s=%f" % (payload_str, delim, key, payload_dict[key])
+
+            delim = ","
+
+        payload_str = payload_str.encode('UTF-8')
+
+        msg = Msg(self.topic, payload_str, 0, 0)
+
+        SUT._on_message_keyword(None, None, msg)
+        mock_manager.append_data.assert_called_once_with(msg.topic, result_dict)
+        self.assertEqual(SUT.previous_values['inTemp'], payload_dict['inTemp'])
+
+    def test_payload_larger_previous_value(self):
+        mock_manager = mock.Mock(spec=TopicManager)
+        mock_logger = mock.Mock(spec=Logger)
+
+        message_handler_config = {}
+        message_handler_config['type'] = 'keyword'
+        message_handler_config['contains_total'] = 'inTemp'
+
+        SUT = MessageCallbackProvider(message_handler_config, mock_logger, mock_manager)
+        prev_temp = round(random.uniform(101, 200), 2)
+        SUT.previous_values['inTemp'] = prev_temp
+
+        payload_dict = dict(self.payload_dict)
+        payload_dict['dateTime'] = round(time.time(), 2)
+        payload_dict['usUnits'] = random.randint(1, 10)
+
+        result_dict = copy.deepcopy(payload_dict)
+        result_dict['inTemp'] = None
+
+        payload_str = ""
+        delim = ""
+        for key in payload_dict:
+            payload_str = "%s%s%s=%f" % (payload_str, delim, key, payload_dict[key])
+
+            delim = ","
+
+        payload_str = payload_str.encode('UTF-8')
+
+        msg = Msg(self.topic, payload_str, 0, 0)
+
+        SUT._on_message_keyword(None, None, msg)
+        mock_manager.append_data.assert_called_once_with(msg.topic, result_dict)
+        self.assertEqual(SUT.previous_values['inTemp'], payload_dict['inTemp'])
+
+    def test_payload_good_previous_value(self):
+        mock_manager = mock.Mock(spec=TopicManager)
+        mock_logger = mock.Mock(spec=Logger)
+
+        message_handler_config = {}
+        message_handler_config['type'] = 'keyword'
+        message_handler_config['contains_total'] = 'inTemp'
+        prev_temp = round(random.uniform(1, 9), 2)
+
+        SUT = MessageCallbackProvider(message_handler_config, mock_logger, mock_manager)
+        SUT.previous_values['inTemp'] = prev_temp
+
+        payload_dict = dict(self.payload_dict)
+        payload_dict['dateTime'] = round(time.time(), 2)
+        payload_dict['usUnits'] = random.randint(1, 10)
+
+        result_dict = copy.deepcopy(payload_dict)
+        result_dict['inTemp'] = payload_dict['inTemp'] - prev_temp
 
         payload_str = ""
         delim = ""
@@ -215,7 +284,8 @@ class TestKeywordload(unittest.TestCase):
         msg = Msg(self.topic, payload_str, 0, 0)
 
         SUT._on_message_keyword(None, None, msg)
-        mock_manager.append_data.assert_called_once_with(msg.topic, payload_dict)
+        mock_manager.append_data.assert_called_once_with(msg.topic, result_dict)
+        self.assertEqual(SUT.previous_values['inTemp'], payload_dict['inTemp'])
 
 class TestJsonPayload(unittest.TestCase):
     topic = 'foo/bar'
