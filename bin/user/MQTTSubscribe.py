@@ -570,9 +570,10 @@ class MessageCallbackProvider(object):
         self.callbacks['keyword'] = self._on_message_keyword
 
     def _byteify(self, data, ignore_dicts=False):
-        # if this is a unicode string, return its string representation
-        if isinstance(data, unicode): # (never called under python 3) pylint: disable=undefined-variable
-            return data.encode('utf-8')
+        if PY2:
+            # if this is a unicode string, return its string representation
+            if isinstance(data, unicode): # (never called under python 3) pylint: disable=undefined-variable
+                return data.encode('utf-8')
         # if this is a list of values, return list of byteified values
         if isinstance(data, list):
             return [self._byteify(item, ignore_dicts=True) for item in data]
@@ -582,7 +583,8 @@ class MessageCallbackProvider(object):
             data2 = {}
             for key, value in data.items():
                 key2 = self._byteify(key, ignore_dicts=True)
-                data2[self.label_map.get(key2, key2)] = self._byteify(value, ignore_dicts=True)
+                value2 = self._byteify(value, ignore_dicts=True)
+                data2[self.label_map.get(key2, key2)] = value2
             return data2
         # if it's anything else, return it in its original form
         return data
@@ -599,13 +601,14 @@ class MessageCallbackProvider(object):
         return dict(_items())
 
     def _calc_increment(self, observation, current_total, previous_total):
+        # ToDo - log debug
         if current_total is not None and previous_total is not None:
             if current_total >= previous_total:
                 return current_total - previous_total
             else:
-                self.logger.error("MessageCallbackProvider _calc_increment skipping calculating increment " \
-                                  "for %s with current: %f and previous %f values."
-                                  % (observation, current_total, previous_total))
+                self.logger.info("MessageCallbackProvider _calc_increment skipping calculating increment " \
+                                 "for %s with current: %f and previous %f values."
+                                 % (observation, current_total, previous_total))
                 return None
 
     def _log_message(self, msg):
@@ -662,16 +665,8 @@ class MessageCallbackProvider(object):
         try:
             self._log_message(msg)
 
-            # JSON string objects are decoded into unicode in python 2 and str in python 3
-            if PY2:
-                data = self._byteify(
-                    json.loads(msg.payload, object_hook=self._byteify),
-                    ignore_dicts=True)
-            else:
-                data = json.loads(msg.payload.decode("utf-8"))
-
+            data = self._byteify(json.loads(msg.payload, object_hook=self._byteify), ignore_dicts=True)
             # TODO: do something here, (possibly in _byteify - to avoid looping) to calculate increment (issue 40)
-
             self.topic_manager.append_data(msg.topic, self._flatten_dict(data, self.flatten_delimiter))
 
         except Exception as exception: # (want to catch all) pylint: disable=broad-except
