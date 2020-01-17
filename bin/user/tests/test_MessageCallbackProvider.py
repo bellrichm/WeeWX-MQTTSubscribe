@@ -604,7 +604,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         SUT._on_message_individual(None, None, msg)
         mock_manager.append_data.assert_called_once_with(msg.topic, {topic: None})
         self.assertEqual(SUT.previous_values['inTemp'], payload)
-            
+
     def test_payload_larger_previous_value(self):
         mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
