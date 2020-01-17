@@ -691,12 +691,18 @@ class MessageCallbackProvider(object):
             if PY2:
                 key = key.encode('utf-8')
 
+            value = to_float(msg.payload) # ToDo - a bit lazy and dangerous, assuming all incoming is a float
+
             # TODO: do something here to calculate increment (issue 40)
+            if key in self.contains_total:
+                current_value = value
+                value = self._calc_increment(key, current_value, self.previous_values.get(key))
+                self.previous_values[key] = current_value
+
             fieldname = self.label_map.get(key, key)
 
             data = {}
-            data[fieldname] = to_float(msg.payload) # ToDo - a bit lazy and dangerous, assuming all incoming is a float
-
+            data[fieldname] = value
             self.topic_manager.append_data(msg.topic, data)
         except Exception as exception: # (want to catch all) pylint: disable=broad-except
             self._log_exception('on_message_individual', exception, msg)

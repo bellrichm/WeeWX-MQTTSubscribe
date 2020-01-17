@@ -588,6 +588,61 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         for key in second_arg:
             self.assertIsInstance(key, str)
 
+    def test_payload_no_previous_value(self):
+        mock_manager = mock.Mock(spec=TopicManager)
+        mock_logger = mock.Mock(spec=Logger)
+
+        topic = 'inTemp'
+        message_handler_config = copy.deepcopy(self.message_handler_config)
+        message_handler_config['contains_total'] = topic
+
+        SUT = MessageCallbackProvider(message_handler_config, mock_logger, mock_manager)
+
+        payload = round(random.uniform(1, 100), 2)
+        msg = Msg(topic, str(payload), 0, 0)
+
+        SUT._on_message_individual(None, None, msg)
+        mock_manager.append_data.assert_called_once_with(msg.topic, {topic: None})
+        self.assertEqual(SUT.previous_values['inTemp'], payload)
+            
+    def test_payload_larger_previous_value(self):
+        mock_manager = mock.Mock(spec=TopicManager)
+        mock_logger = mock.Mock(spec=Logger)
+
+        topic = 'inTemp'
+        message_handler_config = copy.deepcopy(self.message_handler_config)
+        message_handler_config['contains_total'] = topic
+        prev_temp = round(random.uniform(101, 200), 2)
+
+        SUT = MessageCallbackProvider(message_handler_config, mock_logger, mock_manager)
+        SUT.previous_values['inTemp'] = prev_temp
+
+        payload = round(random.uniform(1, 100), 2)
+        msg = Msg(topic, str(payload), 0, 0)
+
+        SUT._on_message_individual(None, None, msg)
+        mock_manager.append_data.assert_called_once_with(msg.topic, {topic: None})
+        self.assertEqual(SUT.previous_values['inTemp'], payload)
+
+    def test_payload_good_previous_value(self):
+        mock_manager = mock.Mock(spec=TopicManager)
+        mock_logger = mock.Mock(spec=Logger)
+
+        topic = 'inTemp'
+        message_handler_config = copy.deepcopy(self.message_handler_config)
+        message_handler_config['contains_total'] = topic
+        prev_temp = round(random.uniform(1, 9), 2)
+
+        SUT = MessageCallbackProvider(message_handler_config, mock_logger, mock_manager)
+        SUT.previous_values['inTemp'] = prev_temp
+
+        payload = round(random.uniform(1, 100), 2)
+        msg = Msg(topic, str(payload), 0, 0)
+
+        SUT._on_message_individual(None, None, msg)
+        mock_manager.append_data.assert_called_once_with(msg.topic, {topic: payload - prev_temp})
+        self.assertEqual(SUT.previous_values['inTemp'], payload)
+
     def test_single_topic(self):
         mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
