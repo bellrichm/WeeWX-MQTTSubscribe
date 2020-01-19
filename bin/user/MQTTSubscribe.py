@@ -551,8 +551,16 @@ class MessageCallbackProvider(object):
         self.keyword_delimiter = config.get('keyword_delimiter', ',')
         self.keyword_separator = config.get('keyword_separator', '=')
         self.contains_total = option_as_list(config.get('contains_total', []))
-        self.label_map = config.get('label_map', {})
+        label_map = config.get('label_map', {})
         self.full_topic_fieldname = to_bool(config.get('full_topic_fieldname', False))
+
+        self.inputs = config.get('inputs', {})
+        # backwards compatible, add the label map
+        for key in label_map:
+            if not key in self.inputs:
+                value = {}
+                value['name'] = label_map[key]
+                self.inputs[key] = value
 
         if self.type not in self.callbacks:
             raise ValueError("Invalid type configured: %s" % self.type)
@@ -589,7 +597,7 @@ class MessageCallbackProvider(object):
                     value2 = self._calc_increment(key2, current_value, self.previous_values.get(key2))
                     self.previous_values[key2] = current_value
 
-                data2[self.label_map.get(key2, key2)] = value2
+                data2[self.inputs.get(key2, {}).get('name', key2)] = value2
             return data2
         # if it's anything else, return it in its original form
         return data
@@ -656,7 +664,7 @@ class MessageCallbackProvider(object):
                     value = self._calc_increment(name, current_value, self.previous_values.get(name))
                     self.previous_values[name] = current_value
 
-                data[self.label_map.get(name, name)] = value
+                data[self.inputs.get(name, {}).get('name', name)] = value
 
             if data:
                 self.topic_manager.append_data(msg.topic, data)
@@ -699,7 +707,7 @@ class MessageCallbackProvider(object):
                 value = self._calc_increment(key, current_value, self.previous_values.get(key))
                 self.previous_values[key] = current_value
 
-            fieldname = self.label_map.get(key, key)
+            fieldname = self.inputs.get(key, {}).get('name', key)
 
             data = {}
             data[fieldname] = value
