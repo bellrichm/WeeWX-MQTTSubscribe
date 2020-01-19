@@ -606,7 +606,10 @@ class MessageCallbackProvider(object):
         return dict(_items())
 
     def _calc_increment(self, observation, current_total, previous_total):
-        # ToDo - log debug
+        self.logger.info("MessageCallbackProvider _calc_increment calculating increment " \
+                         "for %s with current: %f and previous %f values."
+                         % (observation, current_total, previous_total))
+
         if current_total is not None and previous_total is not None:
             if current_total >= previous_total:
                 return current_total - previous_total
@@ -646,9 +649,8 @@ class MessageCallbackProvider(object):
                     continue
 
                 name = field[:eq_index].strip()
-                value = to_float(field[eq_index + 1:].strip())
+                value = to_float(field[eq_index + 1:].strip()) # ToDo - a bit lazy and dangerous, assuming all incoming is a float
 
-                # TODO: do something here to calculate increment (issue 40)
                 if name in self.contains_total:
                     current_value = value
                     value = self._calc_increment(name, current_value, self.previous_values.get(name))
@@ -671,7 +673,6 @@ class MessageCallbackProvider(object):
             self._log_message(msg)
 
             data = self._byteify(json.loads(msg.payload, object_hook=self._byteify), ignore_dicts=True)
-            # TODO: do something here, (possibly in _byteify - to avoid looping) to calculate increment (issue 40)
             self.topic_manager.append_data(msg.topic, self._flatten_dict(data, self.flatten_delimiter))
 
         except Exception as exception: # (want to catch all) pylint: disable=broad-except
@@ -693,7 +694,6 @@ class MessageCallbackProvider(object):
 
             value = to_float(msg.payload) # ToDo - a bit lazy and dangerous, assuming all incoming is a float
 
-            # TODO: do something here to calculate increment (issue 40)
             if key in self.contains_total:
                 current_value = value
                 value = self._calc_increment(key, current_value, self.previous_values.get(key))
