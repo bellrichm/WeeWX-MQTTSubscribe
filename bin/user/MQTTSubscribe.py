@@ -607,8 +607,8 @@ class MessageCallbackProvider(object):
 
     def _calc_increment(self, observation, current_total, previous_total):
         self.logger.info("MessageCallbackProvider _calc_increment calculating increment " \
-                         "for %s with current: %f and previous %f values."
-                         % (observation, current_total, previous_total))
+                         "for %s with current: %f and previous %s values."
+                         % (observation, current_total, (previous_total is None and 'None' or str(previous_total))))
 
         if current_total is not None and previous_total is not None:
             if current_total >= previous_total:
