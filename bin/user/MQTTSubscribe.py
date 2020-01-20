@@ -550,17 +550,29 @@ class MessageCallbackProvider(object):
         self.flatten_delimiter = config.get('flatten_delimiter', '_')
         self.keyword_delimiter = config.get('keyword_delimiter', ',')
         self.keyword_separator = config.get('keyword_separator', '=')
-        self.contains_total = option_as_list(config.get('contains_total', []))
+        contains_total = option_as_list(config.get('contains_total', []))
         label_map = config.get('label_map', {})
         self.full_topic_fieldname = to_bool(config.get('full_topic_fieldname', False))
 
         self.inputs = config.get('inputs', {})
+        orig_inputs = config.get('inputs', {})
         # backwards compatible, add the label map
         for key in label_map:
-            if not key in self.inputs:
+            if not key in orig_inputs:
                 value = {}
                 value['name'] = label_map[key]
                 self.inputs[key] = value
+
+        # backwards compatible, add the cumulative fields
+        for field in contains_total:
+            if not field in orig_inputs:
+                value = {}
+                value['contains_total'] = True
+                self.inputs[field] = value
+
+        for key in self.inputs:
+            if  'contains_total' in self.inputs[key]:
+                self.inputs[key]['contains_total'] = to_bool(self.inputs[key]['contains_total'])
 
         if self.type not in self.callbacks:
             raise ValueError("Invalid type configured: %s" % self.type)
@@ -592,7 +604,7 @@ class MessageCallbackProvider(object):
             for key, value in data.items():
                 key2 = self._byteify(key, ignore_dicts=True)
                 value2 = self._byteify(value, ignore_dicts=True)
-                if key2 in self.contains_total:
+                if self.inputs.get(key2, {}).get('contains_total', False):
                     current_value = value2
                     value2 = self._calc_increment(key2, current_value, self.previous_values.get(key2))
                     self.previous_values[key2] = current_value
@@ -659,7 +671,7 @@ class MessageCallbackProvider(object):
                 name = field[:eq_index].strip()
                 value = to_float(field[eq_index + 1:].strip()) # ToDo - a bit lazy and dangerous, assuming all incoming is a float
 
-                if name in self.contains_total:
+                if self.inputs.get(name, {}).get('contains_total', False):
                     current_value = value
                     value = self._calc_increment(name, current_value, self.previous_values.get(name))
                     self.previous_values[name] = current_value
@@ -702,7 +714,7 @@ class MessageCallbackProvider(object):
 
             value = to_float(msg.payload) # ToDo - a bit lazy and dangerous, assuming all incoming is a float
 
-            if key in self.contains_total:
+            if self.inputs.get(key, {}).get('contains_total', False):
                 current_value = value
                 value = self._calc_increment(key, current_value, self.previous_values.get(key))
                 self.previous_values[key] = current_value
