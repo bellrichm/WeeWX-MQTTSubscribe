@@ -589,6 +589,9 @@ class MessageCallbackProvider(object):
         self.callbacks['json'] = self._on_message_json
         self.callbacks['keyword'] = self._on_message_keyword
 
+    def _convert_value(self, value):
+        return to_float(value)
+
     def _byteify(self, data, ignore_dicts=False):
         if PY2:
             # if this is a unicode string, return its string representation
@@ -605,7 +608,7 @@ class MessageCallbackProvider(object):
                 key2 = self._byteify(key, ignore_dicts=True)
                 value2 = self._byteify(value, ignore_dicts=True)
                 if self.inputs.get(key2, {}).get('contains_total', False):
-                    current_value = value2
+                    current_value = self._convert_value(value2)
                     value2 = self._calc_increment(key2, current_value, self.previous_values.get(key2))
                     self.previous_values[key2] = current_value
 
@@ -669,7 +672,7 @@ class MessageCallbackProvider(object):
                     continue
 
                 name = field[:eq_index].strip()
-                value = to_float(field[eq_index + 1:].strip()) # ToDo - a bit lazy and dangerous, assuming all incoming is a float
+                value = self._convert_value(field[eq_index + 1:].strip())
 
                 if self.inputs.get(name, {}).get('contains_total', False):
                     current_value = value
@@ -712,7 +715,7 @@ class MessageCallbackProvider(object):
             if PY2:
                 key = key.encode('utf-8')
 
-            value = to_float(msg.payload) # ToDo - a bit lazy and dangerous, assuming all incoming is a float
+            value = self._convert_value(msg.payload)
 
             if self.inputs.get(key, {}).get('contains_total', False):
                 current_value = value
