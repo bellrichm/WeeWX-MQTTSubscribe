@@ -589,8 +589,16 @@ class MessageCallbackProvider(object):
         self.callbacks['json'] = self._on_message_json
         self.callbacks['keyword'] = self._on_message_keyword
 
-    def _convert_value(self, value):
-        return to_float(value)
+    def _convert_value(self, field, value):
+        field_type = self.inputs.get(field, {}).get('type', 'float')
+        if field_type == 'bool':
+            return to_bool(value)
+        elif field_type == 'float':
+            return to_float(value)
+        elif field_type == 'int':
+            return to_int(value)
+        else:
+            return value
 
     def _byteify(self, data, ignore_dicts=False):
         if PY2:
@@ -607,10 +615,12 @@ class MessageCallbackProvider(object):
             for key, value in data.items():
                 key2 = self._byteify(key, ignore_dicts=True)
                 value2 = self._byteify(value, ignore_dicts=True)
-                if self.inputs.get(key2, {}).get('contains_total', False):
-                    current_value = self._convert_value(value2)
-                    value2 = self._calc_increment(key2, current_value, self.previous_values.get(key2))
-                    self.previous_values[key2] = current_value
+                if not isinstance(value2, dict):
+                    value2 = self._convert_value(key2, value2)
+                    if self.inputs.get(key2, {}).get('contains_total', False):
+                        current_value = value2
+                        value2 = self._calc_increment(key2, current_value, self.previous_values.get(key2))
+                        self.previous_values[key2] = current_value
 
                 data2[self.inputs.get(key2, {}).get('name', key2)] = value2
             return data2
@@ -672,7 +682,7 @@ class MessageCallbackProvider(object):
                     continue
 
                 name = field[:eq_index].strip()
-                value = self._convert_value(field[eq_index + 1:].strip())
+                value = self._convert_value(name, field[eq_index + 1:].strip())
 
                 if self.inputs.get(name, {}).get('contains_total', False):
                     current_value = value
@@ -715,7 +725,7 @@ class MessageCallbackProvider(object):
             if PY2:
                 key = key.encode('utf-8')
 
-            value = self._convert_value(msg.payload)
+            value = self._convert_value(key, msg.payload)
 
             if self.inputs.get(key, {}).get('contains_total', False):
                 current_value = value
