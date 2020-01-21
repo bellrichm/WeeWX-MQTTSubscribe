@@ -111,11 +111,31 @@ Configuration:
 
         # List of fields that are cumulative values
         # Default is: [] (empty list)
+        # DEPRECATED - use [[[fields]]] contains_total setting.
         contains_total =
 
         # Mapping to WeeWX names.
+        # DEPRECATED - use [[[fields]]] name setting
         [[[label_map]]]
             temp1 = extraTemp1
+
+        # Information to map the MQTT data to WeeWX.
+        [[[fields]]]
+            # The incoming field name from MQTT.
+            [[[[temp1]]]
+                # The WeeWX name.
+                # Default is the name from MQTT.
+                name = extraTemp1
+
+                # The conversion type necessary for WeeWX compatibility
+                # Valid values: bool, float, int, none
+                # Default is float
+                conversion_type = float
+
+                # True if the incoming data is cumulative.
+                # Valid values: True, False
+                # Default is False
+                contains_total = False
 
     # The topics to subscribe to.
     [[topics]
