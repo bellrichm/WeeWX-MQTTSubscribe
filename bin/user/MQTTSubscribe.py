@@ -593,12 +593,12 @@ class MessageCallbackProvider(object):
         self.callbacks['keyword'] = self._on_message_keyword
 
     def _convert_value(self, field, value):
-        field_type = self.inputs.get(field, {}).get('type', 'float')
-        if field_type == 'bool':
+        conversion_type = self.inputs.get(field, {}).get('conversion_type', 'float')
+        if conversion_type == 'bool':
             return to_bool(value)
-        elif field_type == 'float':
+        elif conversion_type == 'float':
             return to_float(value)
-        elif field_type == 'int':
+        elif conversion_type == 'int':
             return to_int(value)
         else:
             return value
