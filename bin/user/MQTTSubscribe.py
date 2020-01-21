@@ -554,28 +554,28 @@ class MessageCallbackProvider(object):
         label_map = config.get('label_map', {})
         self.full_topic_fieldname = to_bool(config.get('full_topic_fieldname', False))
 
-        self.inputs = config.get('inputs', {})
-        orig_inputs = config.get('inputs', {})
+        self.fields = config.get('fields', {})
+        orig_fields = config.get('fields', {})
         # backwards compatible, add the label map
         for key in label_map:
-            if not key in orig_inputs:
+            if not key in orig_fields:
                 value = {}
                 value['name'] = label_map[key]
-                self.inputs[key] = value
+                self.fields[key] = value
 
         # backwards compatible, add the cumulative fields
         for field in contains_total:
-            if not field in orig_inputs:
-                if not field in self.inputs:
+            if not field in orig_fields:
+                if not field in self.fields:
                     value = {}
                     value['contains_total'] = True
-                    self.inputs[field] = value
+                    self.fields[field] = value
                 else:
-                    self.inputs[field]['contains_total'] = True
+                    self.fields[field]['contains_total'] = True
 
-        for key in self.inputs:
-            if  'contains_total' in self.inputs[key]:
-                self.inputs[key]['contains_total'] = to_bool(self.inputs[key]['contains_total'])
+        for key in self.fields:
+            if  'contains_total' in self.fields[key]:
+                self.fields[key]['contains_total'] = to_bool(self.fields[key]['contains_total'])
 
         if self.type not in self.callbacks:
             raise ValueError("Invalid type configured: %s" % self.type)
@@ -593,7 +593,7 @@ class MessageCallbackProvider(object):
         self.callbacks['keyword'] = self._on_message_keyword
 
     def _convert_value(self, field, value):
-        conversion_type = self.inputs.get(field, {}).get('conversion_type', 'float')
+        conversion_type = self.fields.get(field, {}).get('conversion_type', 'float')
         if conversion_type == 'bool':
             return to_bool(value)
         elif conversion_type == 'float':
@@ -620,12 +620,12 @@ class MessageCallbackProvider(object):
                 value2 = self._byteify(value, ignore_dicts=True)
                 if not isinstance(value2, dict):
                     value2 = self._convert_value(key2, value2)
-                    if self.inputs.get(key2, {}).get('contains_total', False):
+                    if self.fields.get(key2, {}).get('contains_total', False):
                         current_value = value2
                         value2 = self._calc_increment(key2, current_value, self.previous_values.get(key2))
                         self.previous_values[key2] = current_value
 
-                data2[self.inputs.get(key2, {}).get('name', key2)] = value2
+                data2[self.fields.get(key2, {}).get('name', key2)] = value2
             return data2
         # if it's anything else, return it in its original form
         return data
@@ -687,12 +687,12 @@ class MessageCallbackProvider(object):
                 name = field[:eq_index].strip()
                 value = self._convert_value(name, field[eq_index + 1:].strip())
 
-                if self.inputs.get(name, {}).get('contains_total', False):
+                if self.fields.get(name, {}).get('contains_total', False):
                     current_value = value
                     value = self._calc_increment(name, current_value, self.previous_values.get(name))
                     self.previous_values[name] = current_value
 
-                data[self.inputs.get(name, {}).get('name', name)] = value
+                data[self.fields.get(name, {}).get('name', name)] = value
 
             if data:
                 self.topic_manager.append_data(msg.topic, data)
@@ -730,12 +730,12 @@ class MessageCallbackProvider(object):
 
             value = self._convert_value(key, msg.payload)
 
-            if self.inputs.get(key, {}).get('contains_total', False):
+            if self.fields.get(key, {}).get('contains_total', False):
                 current_value = value
                 value = self._calc_increment(key, current_value, self.previous_values.get(key))
                 self.previous_values[key] = current_value
 
-            fieldname = self.inputs.get(key, {}).get('name', key)
+            fieldname = self.fields.get(key, {}).get('name', key)
 
             data = {}
             data[fieldname] = value

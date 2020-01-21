@@ -27,7 +27,7 @@ class Msg(object):
         self.qos = qos
         self.retain = retain
 
-class TestInputsConfiguration(unittest.TestCase):
+class TestFieldsConfiguration(unittest.TestCase):
     def test_field_in_label_map(self):
         message_handler_config = {}
         message_handler_config['type'] = 'individual'
@@ -41,11 +41,11 @@ class TestInputsConfiguration(unittest.TestCase):
 
         SUT = MessageCallbackProvider(message_handler_config, None, None)
 
-        self.assertIn(input_name, SUT.inputs)
-        self.assertIn('name', SUT.inputs[input_name])
-        self.assertEqual(SUT.inputs[input_name]['name'], output_name)
+        self.assertIn(input_name, SUT.fields)
+        self.assertIn('name', SUT.fields[input_name])
+        self.assertEqual(SUT.fields[input_name]['name'], output_name)
 
-    def test_field_in_label_map_and_inputs(self):
+    def test_field_in_label_map_and_fields(self):
         message_handler_config = {}
         message_handler_config['type'] = 'individual'
 
@@ -57,19 +57,19 @@ class TestInputsConfiguration(unittest.TestCase):
         label_map[input_name] = label_name
         message_handler_config['label_map'] = label_map
 
-        inputs = {}
+        fields = {}
         field = {}
         field['name'] = output_name
-        inputs[input_name] = field
-        message_handler_config['inputs'] = inputs
+        fields[input_name] = field
+        message_handler_config['fields'] = fields
 
         SUT = MessageCallbackProvider(message_handler_config, None, None)
 
-        self.assertIn(input_name, SUT.inputs)
-        self.assertIn('name', SUT.inputs[input_name])
-        self.assertEqual(SUT.inputs[input_name]['name'], output_name)
+        self.assertIn(input_name, SUT.fields)
+        self.assertIn('name', SUT.fields[input_name])
+        self.assertEqual(SUT.fields[input_name]['name'], output_name)
 
-    def test_field_in_label_map_and_inputs_and_contains_total(self):
+    def test_field_in_label_map_and_fields_and_contains_total(self):
         message_handler_config = {}
         message_handler_config['type'] = 'individual'
 
@@ -81,22 +81,22 @@ class TestInputsConfiguration(unittest.TestCase):
         label_map[input_name] = label_name
         message_handler_config['label_map'] = label_map
 
-        inputs = {}
+        fields = {}
         field = {}
         field['name'] = output_name
         field['contains_total'] = False
-        inputs[input_name] = field
-        message_handler_config['inputs'] = inputs
+        fields[input_name] = field
+        message_handler_config['fields'] = fields
 
         contains_total = [input_name]
         message_handler_config['contains_total'] = contains_total
 
         SUT = MessageCallbackProvider(message_handler_config, None, None)
 
-        self.assertIn(input_name, SUT.inputs)
-        self.assertIn('name', SUT.inputs[input_name])
-        self.assertEqual(SUT.inputs[input_name]['name'], output_name)
-        self.assertFalse(SUT.inputs[input_name]['contains_total'])
+        self.assertIn(input_name, SUT.fields)
+        self.assertIn('name', SUT.fields[input_name])
+        self.assertEqual(SUT.fields[input_name]['name'], output_name)
+        self.assertFalse(SUT.fields[input_name]['contains_total'])
 
     def test_field_in_label_map_and_contains_total(self):
         message_handler_config = {}
@@ -114,55 +114,55 @@ class TestInputsConfiguration(unittest.TestCase):
 
         SUT = MessageCallbackProvider(message_handler_config, None, None)
 
-        self.assertIn(input_name, SUT.inputs)
-        self.assertIn('name', SUT.inputs[input_name])
-        self.assertEqual(SUT.inputs[input_name]['name'], label_name)
-        self.assertTrue(SUT.inputs[input_name]['contains_total'])
+        self.assertIn(input_name, SUT.fields)
+        self.assertIn('name', SUT.fields[input_name])
+        self.assertEqual(SUT.fields[input_name]['name'], label_name)
+        self.assertTrue(SUT.fields[input_name]['contains_total'])
 
-    def test_field_in_inputs(self):
+    def test_field_in_fields(self):
         message_handler_config = {}
         message_handler_config['type'] = 'individual'
 
         input_name = 'input_name'
         output_name = 'output_name'
 
-        inputs = {}
+        fields = {}
         field = {}
         field['name'] = output_name
         field['contains_total'] = False
-        inputs[input_name] = field
-        message_handler_config['inputs'] = inputs
+        fields[input_name] = field
+        message_handler_config['fields'] = fields
 
         SUT = MessageCallbackProvider(message_handler_config, None, None)
 
-        self.assertIn(input_name, SUT.inputs)
-        self.assertIn('name', SUT.inputs[input_name])
-        self.assertEqual(SUT.inputs[input_name]['name'], output_name)
-        self.assertFalse(SUT.inputs[input_name]['contains_total'])
+        self.assertIn(input_name, SUT.fields)
+        self.assertIn('name', SUT.fields[input_name])
+        self.assertEqual(SUT.fields[input_name]['name'], output_name)
+        self.assertFalse(SUT.fields[input_name]['contains_total'])
 
-    def test_field_in_inputs_and_contains_total(self):
+    def test_field_in_fields_and_contains_total(self):
         message_handler_config = {}
         message_handler_config['type'] = 'individual'
 
         input_name = 'input_name'
         output_name = 'output_name'
 
-        inputs = {}
+        fields = {}
         field = {}
         field['name'] = output_name
         field['contains_total'] = False
-        inputs[input_name] = field
-        message_handler_config['inputs'] = inputs
+        fields[input_name] = field
+        message_handler_config['fields'] = fields
 
         contains_total = [input_name]
         message_handler_config['contains_total'] = contains_total
 
         SUT = MessageCallbackProvider(message_handler_config, None, None)
 
-        self.assertIn(input_name, SUT.inputs)
-        self.assertIn('name', SUT.inputs[input_name])
-        self.assertEqual(SUT.inputs[input_name]['name'], output_name)
-        self.assertFalse(SUT.inputs[input_name]['contains_total'])
+        self.assertIn(input_name, SUT.fields)
+        self.assertIn('name', SUT.fields[input_name])
+        self.assertEqual(SUT.fields[input_name]['name'], output_name)
+        self.assertFalse(SUT.fields[input_name]['contains_total'])
 
     def test_field_in_contains_total(self):
         message_handler_config = {}
@@ -174,9 +174,9 @@ class TestInputsConfiguration(unittest.TestCase):
         message_handler_config['contains_total'] = contains_total
 
         SUT = MessageCallbackProvider(message_handler_config, None, None)
-    
-        self.assertNotIn('name', SUT.inputs[input_name])
-        self.assertTrue(SUT.inputs[input_name]['contains_total'])
+
+        self.assertNotIn('name', SUT.fields[input_name])
+        self.assertTrue(SUT.fields[input_name]['contains_total'])
 
     def test_contains_total_is_bool(self):
         self.assertEqual(0, 0)
