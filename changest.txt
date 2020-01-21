@@ -1,3 +1,10 @@
+V1.5.0
+Enhancements/Fixes
+- Support fields that have cumulative values (#40)
+- Support converting data to types other than float (#41)
+- Remove dependency on six.
+- Improved logging when running standalone.
+
 V1.4.0
 Enhancements/Fixes
 - Added support for custom date/time formats in the MQTT payload (#29).
