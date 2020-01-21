@@ -557,11 +557,11 @@ class MessageCallbackProvider(object):
         self.fields = config.get('fields', {})
         orig_fields = config.get('fields', {})
         # backwards compatible, add the label map
-        for key in label_map:
-            if not key in orig_fields:
+        for field in label_map:
+            if not field in orig_fields:
                 value = {}
-                value['name'] = label_map[key]
-                self.fields[key] = value
+                value['name'] = label_map[field]
+                self.fields[field] = value
 
         # backwards compatible, add the cumulative fields
         for field in contains_total:
@@ -573,11 +573,11 @@ class MessageCallbackProvider(object):
                 else:
                     self.fields[field]['contains_total'] = True
 
-        for key in self.fields:
-            if  'contains_total' in self.fields[key]:
-                self.fields[key]['contains_total'] = to_bool(self.fields[key]['contains_total'])
-            if 'conversion_type' in self.fields[key]:
-                self.fields[key]['conversion_type'] = self.fields[key]['conversion_type'].lower()
+        for field in self.fields:
+            if  'contains_total' in self.fields[field]:
+                self.fields[field]['contains_total'] = to_bool(self.fields[field]['contains_total'])
+            if 'conversion_type' in self.fields[field]:
+                self.fields[field]['conversion_type'] = self.fields[field]['conversion_type'].lower()
 
         if self.type not in self.callbacks:
             raise ValueError("Invalid type configured: %s" % self.type)
