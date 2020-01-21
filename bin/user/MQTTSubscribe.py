@@ -111,11 +111,31 @@ Configuration:
 
         # List of fields that are cumulative values
         # Default is: [] (empty list)
+        # DEPRECATED - use [[[fields]]] contains_total setting.
         contains_total =
 
         # Mapping to WeeWX names.
+        # DEPRECATED - use [[[fields]]] name setting
         [[[label_map]]]
             temp1 = extraTemp1
+
+        # Information to map the MQTT data to WeeWX.
+        [[[fields]]]
+            # The incoming field name from MQTT.
+            [[[[temp1]]]
+                # The WeeWX name.
+                # Default is the name from MQTT.
+                name = extraTemp1
+
+                # The conversion type necessary for WeeWX compatibility
+                # Valid values: bool, float, int, none
+                # Default is float
+                conversion_type = float
+
+                # True if the incoming data is cumulative.
+                # Valid values: True, False
+                # Default is False
+                contains_total = False
 
     # The topics to subscribe to.
     [[topics]
@@ -191,7 +211,7 @@ if PY2:
 else:
     MAXSIZE = sys.maxsize
 
-try:
+try: # pragma: no cover
     import weeutil.logger
     import logging
     def setup_logging(logging_level):
@@ -224,7 +244,7 @@ try:
         def error(self, msg):
             """ Log error messages. """
             self._logmsg.error(msg)
-except ImportError:
+except ImportError: # pragma: no cover
     import syslog
     def setup_logging(logging_level):
         syslog.openlog('wee_MQTTSS', syslog.LOG_PID | syslog.LOG_CONS)
@@ -550,9 +570,34 @@ class MessageCallbackProvider(object):
         self.flatten_delimiter = config.get('flatten_delimiter', '_')
         self.keyword_delimiter = config.get('keyword_delimiter', ',')
         self.keyword_separator = config.get('keyword_separator', '=')
-        self.contains_total = option_as_list(config.get('contains_total', []))
-        self.label_map = config.get('label_map', {})
+        contains_total = option_as_list(config.get('contains_total', []))
+        label_map = config.get('label_map', {})
         self.full_topic_fieldname = to_bool(config.get('full_topic_fieldname', False))
+
+        self.fields = config.get('fields', {})
+        orig_fields = config.get('fields', {})
+        # backwards compatible, add the label map
+        for field in label_map:
+            if not field in orig_fields:
+                value = {}
+                value['name'] = label_map[field]
+                self.fields[field] = value
+
+        # backwards compatible, add the cumulative fields
+        for field in contains_total:
+            if not field in orig_fields:
+                if not field in self.fields:
+                    value = {}
+                    value['contains_total'] = True
+                    self.fields[field] = value
+                else:
+                    self.fields[field]['contains_total'] = True
+
+        for field in self.fields:
+            if  'contains_total' in self.fields[field]:
+                self.fields[field]['contains_total'] = to_bool(self.fields[field]['contains_total'])
+            if 'conversion_type' in self.fields[field]:
+                self.fields[field]['conversion_type'] = self.fields[field]['conversion_type'].lower()
 
         if self.type not in self.callbacks:
             raise ValueError("Invalid type configured: %s" % self.type)
@@ -569,6 +614,17 @@ class MessageCallbackProvider(object):
         self.callbacks['json'] = self._on_message_json
         self.callbacks['keyword'] = self._on_message_keyword
 
+    def _convert_value(self, field, value):
+        conversion_type = self.fields.get(field, {}).get('conversion_type', 'float')
+        if conversion_type == 'bool':
+            return to_bool(value)
+        elif conversion_type == 'float':
+            return to_float(value)
+        elif conversion_type == 'int':
+            return to_int(value)
+        else:
+            return value
+
     def _byteify(self, data, ignore_dicts=False):
         if PY2:
             # if this is a unicode string, return its string representation
@@ -584,12 +640,14 @@ class MessageCallbackProvider(object):
             for key, value in data.items():
                 key2 = self._byteify(key, ignore_dicts=True)
                 value2 = self._byteify(value, ignore_dicts=True)
-                if key2 in self.contains_total:
-                    current_value = value2
-                    value2 = self._calc_increment(key2, current_value, self.previous_values.get(key2))
-                    self.previous_values[key2] = current_value
+                if not isinstance(value2, dict):
+                    value2 = self._convert_value(key2, value2)
+                    if self.fields.get(key2, {}).get('contains_total', False):
+                        current_value = value2
+                        value2 = self._calc_increment(key2, current_value, self.previous_values.get(key2))
+                        self.previous_values[key2] = current_value
 
-                data2[self.label_map.get(key2, key2)] = value2
+                data2[self.fields.get(key2, {}).get('name', key2)] = value2
             return data2
         # if it's anything else, return it in its original form
         return data
@@ -649,14 +707,14 @@ class MessageCallbackProvider(object):
                     continue
 
                 name = field[:eq_index].strip()
-                value = to_float(field[eq_index + 1:].strip()) # ToDo - a bit lazy and dangerous, assuming all incoming is a float
+                value = self._convert_value(name, field[eq_index + 1:].strip())
 
-                if name in self.contains_total:
+                if self.fields.get(name, {}).get('contains_total', False):
                     current_value = value
                     value = self._calc_increment(name, current_value, self.previous_values.get(name))
                     self.previous_values[name] = current_value
 
-                data[self.label_map.get(name, name)] = value
+                data[self.fields.get(name, {}).get('name', name)] = value
 
             if data:
                 self.topic_manager.append_data(msg.topic, data)
@@ -692,14 +750,14 @@ class MessageCallbackProvider(object):
             if PY2:
                 key = key.encode('utf-8')
 
-            value = to_float(msg.payload) # ToDo - a bit lazy and dangerous, assuming all incoming is a float
+            value = self._convert_value(key, msg.payload)
 
-            if key in self.contains_total:
+            if self.fields.get(key, {}).get('contains_total', False):
                 current_value = value
                 value = self._calc_increment(key, current_value, self.previous_values.get(key))
                 self.previous_values[key] = current_value
 
-            fieldname = self.label_map.get(key, key)
+            fieldname = self.fields.get(key, {}).get('name', key)
 
             data = {}
             data[fieldname] = value
@@ -1263,4 +1321,3 @@ if __name__ == '__main__': # pragma: no cover
         service.shutDown()
 
     main()
-    

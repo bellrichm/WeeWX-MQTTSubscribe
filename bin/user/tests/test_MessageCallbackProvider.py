@@ -27,6 +27,192 @@ class Msg(object):
         self.qos = qos
         self.retain = retain
 
+class TestFieldsConfiguration(unittest.TestCase):
+    def test_field_in_label_map(self):
+        message_handler_config = {}
+        message_handler_config['type'] = 'individual'
+
+        input_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),  # pylint: disable=unused-variable
+        output_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),  # pylint: disable=unused-variable
+
+        label_map = {}
+        label_map[input_name] = output_name
+        message_handler_config['label_map'] = label_map
+
+        SUT = MessageCallbackProvider(message_handler_config, None, None)
+
+        self.assertIn(input_name, SUT.fields)
+        self.assertIn('name', SUT.fields[input_name])
+        self.assertEqual(SUT.fields[input_name]['name'], output_name)
+
+    def test_field_in_label_map_and_fields(self):
+        message_handler_config = {}
+        message_handler_config['type'] = 'individual'
+
+        input_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),  # pylint: disable=unused-variable
+        output_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),  # pylint: disable=unused-variable
+        label_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),  # pylint: disable=unused-variable
+
+        label_map = {}
+        label_map[input_name] = label_name
+        message_handler_config['label_map'] = label_map
+
+        fields = {}
+        field = {}
+        field['name'] = output_name
+        fields[input_name] = field
+        message_handler_config['fields'] = fields
+
+        SUT = MessageCallbackProvider(message_handler_config, None, None)
+
+        self.assertIn(input_name, SUT.fields)
+        self.assertIn('name', SUT.fields[input_name])
+        self.assertEqual(SUT.fields[input_name]['name'], output_name)
+
+    def test_field_in_label_map_and_fields_and_contains_total(self):
+        message_handler_config = {}
+        message_handler_config['type'] = 'individual'
+
+        input_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),  # pylint: disable=unused-variable
+        output_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),  # pylint: disable=unused-variable
+        label_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),  # pylint: disable=unused-variable
+
+        label_map = {}
+        label_map[input_name] = label_name
+        message_handler_config['label_map'] = label_map
+
+        fields = {}
+        field = {}
+        field['name'] = output_name
+        field['contains_total'] = False
+        fields[input_name] = field
+        message_handler_config['fields'] = fields
+
+        contains_total = [input_name]
+        message_handler_config['contains_total'] = contains_total
+
+        SUT = MessageCallbackProvider(message_handler_config, None, None)
+
+        self.assertIn(input_name, SUT.fields)
+        self.assertIn('name', SUT.fields[input_name])
+        self.assertEqual(SUT.fields[input_name]['name'], output_name)
+        self.assertFalse(SUT.fields[input_name]['contains_total'])
+
+    def test_field_in_label_map_and_contains_total(self):
+        message_handler_config = {}
+        message_handler_config['type'] = 'individual'
+
+        input_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),  # pylint: disable=unused-variable
+        label_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),  # pylint: disable=unused-variable
+        label_map = {}
+        label_map[input_name] = label_name
+        message_handler_config['label_map'] = label_map
+
+        contains_total = [input_name]
+        message_handler_config['contains_total'] = contains_total
+
+        SUT = MessageCallbackProvider(message_handler_config, None, None)
+
+        self.assertIn(input_name, SUT.fields)
+        self.assertIn('name', SUT.fields[input_name])
+        self.assertEqual(SUT.fields[input_name]['name'], label_name)
+        self.assertTrue(SUT.fields[input_name]['contains_total'])
+
+    def test_field_in_fields(self):
+        message_handler_config = {}
+        message_handler_config['type'] = 'individual'
+
+        input_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),  # pylint: disable=unused-variable
+        output_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),  # pylint: disable=unused-variable
+
+        fields = {}
+        field = {}
+        field['name'] = output_name
+        field['contains_total'] = False
+        fields[input_name] = field
+        message_handler_config['fields'] = fields
+
+        SUT = MessageCallbackProvider(message_handler_config, None, None)
+
+        self.assertIn(input_name, SUT.fields)
+        self.assertIn('name', SUT.fields[input_name])
+        self.assertEqual(SUT.fields[input_name]['name'], output_name)
+        self.assertFalse(SUT.fields[input_name]['contains_total'])
+
+    def test_field_in_fields_and_contains_total(self):
+        message_handler_config = {}
+        message_handler_config['type'] = 'individual'
+
+        input_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),  # pylint: disable=unused-variable
+        output_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),  # pylint: disable=unused-variable
+
+        fields = {}
+        field = {}
+        field['name'] = output_name
+        field['contains_total'] = False
+        fields[input_name] = field
+        message_handler_config['fields'] = fields
+
+        contains_total = [input_name]
+        message_handler_config['contains_total'] = contains_total
+
+        SUT = MessageCallbackProvider(message_handler_config, None, None)
+
+        self.assertIn(input_name, SUT.fields)
+        self.assertIn('name', SUT.fields[input_name])
+        self.assertEqual(SUT.fields[input_name]['name'], output_name)
+        self.assertFalse(SUT.fields[input_name]['contains_total'])
+
+    def test_field_in_contains_total(self):
+        message_handler_config = {}
+        message_handler_config['type'] = 'individual'
+
+        input_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),  # pylint: disable=unused-variable
+
+        contains_total = [input_name]
+        message_handler_config['contains_total'] = contains_total
+
+        SUT = MessageCallbackProvider(message_handler_config, None, None)
+
+        self.assertNotIn('name', SUT.fields[input_name])
+        self.assertTrue(SUT.fields[input_name]['contains_total'])
+
+    def test_contains_total_is_bool(self):
+        message_handler_config = {}
+        message_handler_config['type'] = 'individual'
+
+        input_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),  # pylint: disable=unused-variable
+
+        fields = {}
+        field = {}
+        field['contains_total'] = 'false'
+        fields[input_name] = field
+        message_handler_config['fields'] = fields
+
+        SUT = MessageCallbackProvider(message_handler_config, None, None)
+
+        self.assertIn(input_name, SUT.fields)
+        self.assertIn('contains_total', SUT.fields[input_name])
+        self.assertIsInstance(SUT.fields[input_name]['contains_total'], bool)
+
+    def test_type_is_lowercase(self):
+        message_handler_config = {}
+        message_handler_config['type'] = 'individual'
+
+        input_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),  # pylint: disable=unused-variable
+        conversion_type = 'INT'
+
+        fields = {}
+        field = {}
+        field['conversion_type'] = conversion_type
+        fields[input_name] = field
+        message_handler_config['fields'] = fields
+
+        SUT = MessageCallbackProvider(message_handler_config, None, None)
+
+        self.assertIn(input_name, SUT.fields)
+        self.assertIn('conversion_type', SUT.fields[input_name])
+        self.assertEqual(SUT.fields[input_name]['conversion_type'], conversion_type.lower())
 
 class TestGetDefaultCallBacks(unittest.TestCase):
     def test_get_unknown_payload_type(self):
@@ -66,6 +252,112 @@ class TestGetDefaultCallBacks(unittest.TestCase):
         callback = SUT.get_callback()
         self.assertEqual(callback, SUT._on_message_keyword)
 
+class TestConversionType(unittest.TestCase):
+    def test_bool_conversion(self):
+        message_handler_config = {}
+        message_handler_config['type'] = 'individual'
+
+        input_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),  # pylint: disable=unused-variable
+        conversion_type = 'bool'
+        value = 'false'
+
+        fields = {}
+        field = {}
+        field['conversion_type'] = conversion_type
+        fields[input_name] = field
+        message_handler_config['fields'] = fields
+
+        SUT = MessageCallbackProvider(message_handler_config, None, None)
+
+        new_value = SUT._convert_value(input_name, value)
+
+        self.assertIsInstance(new_value, bool)
+        self.assertFalse(new_value)
+
+    def test_float_conversion(self):
+        message_handler_config = {}
+        message_handler_config['type'] = 'individual'
+
+        input_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),  # pylint: disable=unused-variable
+        conversion_type = 'float'
+        value_float = round(random.uniform(10, 100), 2)
+        value = str(value_float)
+
+        fields = {}
+        field = {}
+        field['conversion_type'] = conversion_type
+        fields[input_name] = field
+        message_handler_config['fields'] = fields
+
+        SUT = MessageCallbackProvider(message_handler_config, None, None)
+
+        new_value = SUT._convert_value(input_name, value)
+
+        self.assertIsInstance(new_value, float)
+        self.assertEqual(new_value, value_float)
+
+    def test_int_conversion(self):
+        message_handler_config = {}
+        message_handler_config['type'] = 'individual'
+
+        input_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),  # pylint: disable=unused-variable
+        conversion_type = 'int'
+        value_int = random.randint(1, 10)
+        value = str(value_int)
+
+        fields = {}
+        field = {}
+        field['conversion_type'] = conversion_type
+        fields[input_name] = field
+        message_handler_config['fields'] = fields
+
+        SUT = MessageCallbackProvider(message_handler_config, None, None)
+
+        new_value = SUT._convert_value(input_name, value)
+
+        self.assertIsInstance(new_value, int)
+        self.assertEqual(new_value, value_int)
+
+    def test_default_conversion(self):
+        message_handler_config = {}
+        message_handler_config['type'] = 'individual'
+
+        input_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),  # pylint: disable=unused-variable
+        value_float = round(random.uniform(10, 100), 2)
+        value = str(value_float)
+
+        fields = {}
+        field = {}
+        fields[input_name] = field
+        message_handler_config['fields'] = fields
+
+        SUT = MessageCallbackProvider(message_handler_config, None, None)
+
+        new_value = SUT._convert_value(input_name, value)
+
+        self.assertIsInstance(new_value, float)
+        self.assertEqual(new_value, value_float)
+
+    def test_no_conversion(self):
+        message_handler_config = {}
+        message_handler_config['type'] = 'individual'
+
+        input_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),  # pylint: disable=unused-variable
+        conversion_type = 'None'
+        value = str(round(random.uniform(10, 100), 2))
+
+        fields = {}
+        field = {}
+        field['conversion_type'] = conversion_type
+        fields[input_name] = field
+        message_handler_config['fields'] = fields
+
+        SUT = MessageCallbackProvider(message_handler_config, None, None)
+
+        new_value = SUT._convert_value(input_name, value)
+
+        self.assertIsInstance(new_value, str)
+        self.assertEqual(new_value, value)
 
 class TestKeywordload(unittest.TestCase):
     topic = 'foo/bar'
