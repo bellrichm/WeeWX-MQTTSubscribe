@@ -576,6 +576,8 @@ class MessageCallbackProvider(object):
         for key in self.fields:
             if  'contains_total' in self.fields[key]:
                 self.fields[key]['contains_total'] = to_bool(self.fields[key]['contains_total'])
+            if 'conversion_type' in self.fields[key]:
+                self.fields[key]['conversion_type'] = self.fields[key]['conversion_type'].lower()
 
         if self.type not in self.callbacks:
             raise ValueError("Invalid type configured: %s" % self.type)

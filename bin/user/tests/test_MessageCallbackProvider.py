@@ -179,10 +179,41 @@ class TestFieldsConfiguration(unittest.TestCase):
         self.assertTrue(SUT.fields[input_name]['contains_total'])
 
     def test_contains_total_is_bool(self):
-        self.assertEqual(0, 0)
+        message_handler_config = {}
+        message_handler_config['type'] = 'individual'
+
+        input_name = 'input_name'
+
+        fields = {}
+        field = {}
+        field['contains_total'] = 'false'
+        fields[input_name] = field
+        message_handler_config['fields'] = fields
+
+        SUT = MessageCallbackProvider(message_handler_config, None, None)
+
+        self.assertIn(input_name, SUT.fields)
+        self.assertIn('contains_total', SUT.fields[input_name])
+        self.assertIsInstance(SUT.fields[input_name]['contains_total'], bool)
 
     def test_type_is_lowercase(self):
-        self.assertEqual(0, 0)
+        message_handler_config = {}
+        message_handler_config['type'] = 'individual'
+
+        input_name = 'input_name'
+        conversion_type = 'INT'
+
+        fields = {}
+        field = {}
+        field['conversion_type'] = conversion_type
+        fields[input_name] = field
+        message_handler_config['fields'] = fields
+
+        SUT = MessageCallbackProvider(message_handler_config, None, None)
+    
+        self.assertIn(input_name, SUT.fields)
+        self.assertIn('conversion_type', SUT.fields[input_name])
+        self.assertEqual(SUT.fields[input_name]['conversion_type'], conversion_type.lower())
 
 class TestGetDefaultCallBacks(unittest.TestCase):
     def test_get_unknown_payload_type(self):
