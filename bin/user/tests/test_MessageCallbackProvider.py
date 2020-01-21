@@ -27,6 +27,162 @@ class Msg(object):
         self.qos = qos
         self.retain = retain
 
+class TestInputsConfiguration(unittest.TestCase):
+    def test_field_in_label_map(self):
+        message_handler_config = {}
+        message_handler_config['type'] = 'individual'
+
+        input_name = 'input_name'
+        output_name = 'output_name'
+
+        label_map = {}
+        label_map[input_name] = output_name
+        message_handler_config['label_map'] = label_map
+
+        SUT = MessageCallbackProvider(message_handler_config, None, None)
+
+        self.assertIn(input_name, SUT.inputs)
+        self.assertIn('name', SUT.inputs[input_name])
+        self.assertEqual(SUT.inputs[input_name]['name'], output_name)
+
+    def test_field_in_label_map_and_inputs(self):
+        message_handler_config = {}
+        message_handler_config['type'] = 'individual'
+
+        input_name = 'input_name'
+        output_name = 'output_name'
+        label_name = 'label_name'
+
+        label_map = {}
+        label_map[input_name] = label_name
+        message_handler_config['label_map'] = label_map
+
+        inputs = {}
+        field = {}
+        field['name'] = output_name
+        inputs[input_name] = field
+        message_handler_config['inputs'] = inputs
+
+        SUT = MessageCallbackProvider(message_handler_config, None, None)
+
+        self.assertIn(input_name, SUT.inputs)
+        self.assertIn('name', SUT.inputs[input_name])
+        self.assertEqual(SUT.inputs[input_name]['name'], output_name)
+
+    def test_field_in_label_map_and_inputs_and_contains_total(self):
+        message_handler_config = {}
+        message_handler_config['type'] = 'individual'
+
+        input_name = 'input_name'
+        output_name = 'output_name'
+        label_name = 'label_name'
+
+        label_map = {}
+        label_map[input_name] = label_name
+        message_handler_config['label_map'] = label_map
+
+        inputs = {}
+        field = {}
+        field['name'] = output_name
+        field['contains_total'] = False
+        inputs[input_name] = field
+        message_handler_config['inputs'] = inputs
+
+        contains_total = [input_name]
+        message_handler_config['contains_total'] = contains_total
+
+        SUT = MessageCallbackProvider(message_handler_config, None, None)
+
+        self.assertIn(input_name, SUT.inputs)
+        self.assertIn('name', SUT.inputs[input_name])
+        self.assertEqual(SUT.inputs[input_name]['name'], output_name)
+        self.assertFalse(SUT.inputs[input_name]['contains_total'])
+
+    def test_field_in_label_map_and_contains_total(self):
+        message_handler_config = {}
+        message_handler_config['type'] = 'individual'
+
+        input_name = 'input_name'
+        label_name = 'label_name'
+
+        label_map = {}
+        label_map[input_name] = label_name
+        message_handler_config['label_map'] = label_map
+
+        contains_total = [input_name]
+        message_handler_config['contains_total'] = contains_total
+
+        SUT = MessageCallbackProvider(message_handler_config, None, None)
+
+        self.assertIn(input_name, SUT.inputs)
+        self.assertIn('name', SUT.inputs[input_name])
+        self.assertEqual(SUT.inputs[input_name]['name'], label_name)
+        self.assertTrue(SUT.inputs[input_name]['contains_total'])
+
+    def test_field_in_inputs(self):
+        message_handler_config = {}
+        message_handler_config['type'] = 'individual'
+
+        input_name = 'input_name'
+        output_name = 'output_name'
+
+        inputs = {}
+        field = {}
+        field['name'] = output_name
+        field['contains_total'] = False
+        inputs[input_name] = field
+        message_handler_config['inputs'] = inputs
+
+        SUT = MessageCallbackProvider(message_handler_config, None, None)
+
+        self.assertIn(input_name, SUT.inputs)
+        self.assertIn('name', SUT.inputs[input_name])
+        self.assertEqual(SUT.inputs[input_name]['name'], output_name)
+        self.assertFalse(SUT.inputs[input_name]['contains_total'])
+
+    def test_field_in_inputs_and_contains_total(self):
+        message_handler_config = {}
+        message_handler_config['type'] = 'individual'
+
+        input_name = 'input_name'
+        output_name = 'output_name'
+
+        inputs = {}
+        field = {}
+        field['name'] = output_name
+        field['contains_total'] = False
+        inputs[input_name] = field
+        message_handler_config['inputs'] = inputs
+
+        contains_total = [input_name]
+        message_handler_config['contains_total'] = contains_total
+
+        SUT = MessageCallbackProvider(message_handler_config, None, None)
+
+        self.assertIn(input_name, SUT.inputs)
+        self.assertIn('name', SUT.inputs[input_name])
+        self.assertEqual(SUT.inputs[input_name]['name'], output_name)
+        self.assertFalse(SUT.inputs[input_name]['contains_total'])
+
+    def test_field_in_contains_total(self):
+        message_handler_config = {}
+        message_handler_config['type'] = 'individual'
+
+        input_name = 'input_name'
+
+        contains_total = [input_name]
+        message_handler_config['contains_total'] = contains_total
+
+        SUT = MessageCallbackProvider(message_handler_config, None, None)
+    
+        self.assertNotIn('name', SUT.inputs[input_name])
+        self.assertTrue(SUT.inputs[input_name]['contains_total'])
+
+    def test_contains_total_is_bool(self):
+        self.assertEqual(0, 0)
+
+    def test_type_is_lowercase(self):
+        self.assertEqual(0, 0)
 
 class TestGetDefaultCallBacks(unittest.TestCase):
     def test_get_unknown_payload_type(self):
