@@ -210,7 +210,7 @@ class TestFieldsConfiguration(unittest.TestCase):
         message_handler_config['fields'] = fields
 
         SUT = MessageCallbackProvider(message_handler_config, None, None)
-    
+
         self.assertIn(input_name, SUT.fields)
         self.assertIn('conversion_type', SUT.fields[input_name])
         self.assertEqual(SUT.fields[input_name]['conversion_type'], conversion_type.lower())
@@ -253,6 +253,112 @@ class TestGetDefaultCallBacks(unittest.TestCase):
         callback = SUT.get_callback()
         self.assertEqual(callback, SUT._on_message_keyword)
 
+class TestConversionType(unittest.TestCase):
+    def test_bool_conversion(self):
+        message_handler_config = {}
+        message_handler_config['type'] = 'individual'
+
+        input_name = 'input_name'
+        conversion_type = 'bool'
+        value = 'false'
+
+        fields = {}
+        field = {}
+        field['conversion_type'] = conversion_type
+        fields[input_name] = field
+        message_handler_config['fields'] = fields
+
+        SUT = MessageCallbackProvider(message_handler_config, None, None)
+
+        new_value = SUT._convert_value(input_name, value)
+
+        self.assertIsInstance(new_value, bool)
+        self.assertFalse(new_value)
+
+    def test_float_conversion(self):
+        message_handler_config = {}
+        message_handler_config['type'] = 'individual'
+
+        input_name = 'input_name'
+        conversion_type = 'float'
+        value_float = 3.5
+        value = str(value_float)
+
+        fields = {}
+        field = {}
+        field['conversion_type'] = conversion_type
+        fields[input_name] = field
+        message_handler_config['fields'] = fields
+
+        SUT = MessageCallbackProvider(message_handler_config, None, None)
+
+        new_value = SUT._convert_value(input_name, value)
+
+        self.assertIsInstance(new_value, float)
+        self.assertEqual(new_value, value_float)
+
+    def test_int_conversion(self):
+        message_handler_config = {}
+        message_handler_config['type'] = 'individual'
+
+        input_name = 'input_name'
+        conversion_type = 'int'
+        value_int = 3
+        value = str(value_int)
+
+        fields = {}
+        field = {}
+        field['conversion_type'] = conversion_type
+        fields[input_name] = field
+        message_handler_config['fields'] = fields
+
+        SUT = MessageCallbackProvider(message_handler_config, None, None)
+
+        new_value = SUT._convert_value(input_name, value)
+
+        self.assertIsInstance(new_value, int)
+        self.assertEqual(new_value, value_int)
+
+    def test_default_conversion(self):
+        message_handler_config = {}
+        message_handler_config['type'] = 'individual'
+
+        input_name = 'input_name'
+        value_float = 3.5
+        value = str(value_float)
+
+        fields = {}
+        field = {}
+        fields[input_name] = field
+        message_handler_config['fields'] = fields
+
+        SUT = MessageCallbackProvider(message_handler_config, None, None)
+
+        new_value = SUT._convert_value(input_name, value)
+
+        self.assertIsInstance(new_value, float)
+        self.assertEqual(new_value, value_float)
+
+    def test_no_conversion(self):
+        message_handler_config = {}
+        message_handler_config['type'] = 'individual'
+
+        input_name = 'input_name'
+        conversion_type = 'None'
+        value = '3.5'
+
+        fields = {}
+        field = {}
+        field['conversion_type'] = conversion_type
+        fields[input_name] = field
+        message_handler_config['fields'] = fields
+
+        SUT = MessageCallbackProvider(message_handler_config, None, None)
+
+        new_value = SUT._convert_value(input_name, value)
+
+        self.assertIsInstance(new_value, str)
+        self.assertEqual(new_value, value)
 
 class TestKeywordload(unittest.TestCase):
     topic = 'foo/bar'
