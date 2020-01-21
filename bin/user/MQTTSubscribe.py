@@ -191,7 +191,7 @@ if PY2:
 else:
     MAXSIZE = sys.maxsize
 
-try:
+try: # pragma: no cover
     import weeutil.logger
     import logging
     def setup_logging(logging_level):
@@ -224,7 +224,7 @@ try:
         def error(self, msg):
             """ Log error messages. """
             self._logmsg.error(msg)
-except ImportError:
+except ImportError: # pragma: no cover
     import syslog
     def setup_logging(logging_level):
         syslog.openlog('wee_MQTTSS', syslog.LOG_PID | syslog.LOG_CONS)
@@ -566,9 +566,12 @@ class MessageCallbackProvider(object):
         # backwards compatible, add the cumulative fields
         for field in contains_total:
             if not field in orig_inputs:
-                value = {}
-                value['contains_total'] = True
-                self.inputs[field] = value
+                if not field in self.inputs:
+                    value = {}
+                    value['contains_total'] = True
+                    self.inputs[field] = value
+                else:
+                    self.inputs[field]['contains_total'] = True
 
         for key in self.inputs:
             if  'contains_total' in self.inputs[key]:
@@ -1296,4 +1299,3 @@ if __name__ == '__main__': # pragma: no cover
         service.shutDown()
 
     main()
-    
