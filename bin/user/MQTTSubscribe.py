@@ -215,6 +215,7 @@ try: # pragma: no cover
     import weeutil.logger
     import logging
     def setup_logging(logging_level):
+        """ Setup logging for running in standalone mode."""
         if logging_level:
             weewx.debug = logging_level
 
@@ -247,6 +248,7 @@ try: # pragma: no cover
 except ImportError: # pragma: no cover
     import syslog
     def setup_logging(logging_level):
+        """ Setup logging for running in standalone mode."""
         syslog.openlog('wee_MQTTSS', syslog.LOG_PID | syslog.LOG_CONS)
         if logging_level:
             syslog.setlogmask(syslog.LOG_UPTO(syslog.LOG_DEBUG))
@@ -280,7 +282,7 @@ except ImportError: # pragma: no cover
             if self.console:
                 print('%s: %s' % (__name__, msg))
 
-VERSION = '1.5.0-rc01'
+VERSION = '1.5.0-rc02'
 DRIVER_NAME = 'MQTTSubscribeDriver'
 DRIVER_VERSION = VERSION
 
@@ -379,8 +381,8 @@ class TopicManager(object):
         payload = {}
         payload['wind_data'] = False
         if fieldname in self.wind_fields:
-            self.logger.debug("TopicManager Adding wind data %s: %s"     
-                              % (fieldname, to_sorted_string(data)))          
+            self.logger.debug("TopicManager Adding wind data %s: %s"
+                              % (fieldname, to_sorted_string(data)))
             payload['wind_data'] = fieldname
 
         queue = self._get_queue(topic)
