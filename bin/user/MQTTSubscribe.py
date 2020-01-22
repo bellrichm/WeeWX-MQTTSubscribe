@@ -379,7 +379,9 @@ class TopicManager(object):
         payload = {}
         payload['wind_data'] = False
         if fieldname in self.wind_fields:
-            payload['wind_data'] = fieldname # ToDo debug logging
+            self.logger.debug("TopicManager Adding wind data %s: %s"     
+                              % (fieldname, to_sorted_string(data)))          
+            payload['wind_data'] = fieldname
 
         queue = self._get_queue(topic)
         use_server_datetime = self._get_value('use_server_datetime', topic)
@@ -433,7 +435,7 @@ class TopicManager(object):
             payload = queue.popleft()
             wind_field = payload['wind_data']
             if wind_field:
-                self.logger.debug("TopicManager processing wind data.") # ToDo - beef up
+                self.logger.debug("TopicManager processing wind data %s: %s." %(wind_field, to_sorted_string(payload)))
                 data = collector.add_data(wind_field, payload['data'])
             else:
                 data = payload['data']
