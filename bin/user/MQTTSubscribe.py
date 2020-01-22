@@ -770,6 +770,15 @@ class MQTTSubscribe(object):
     def __init__(self, service_dict, logger):
         self.logger = logger
 
+        if 'topic' in service_dict:
+            self.logger.info("'topic' is deprecated, use '[[topics]]'")
+        if 'overlap' in service_dict:
+            self.logger.info("'overlap' is deprecated, use 'adjust_start_time'")
+        if 'contains_total' in service_dict['message_callback']:
+            self.logger.info("'contains_total' is deprecated use [[[fields]]] contains_total setting.")
+        if 'label_map' in service_dict['message_callback']:
+            self.logger.info("'label_map' is deprecated use [[[fields]]] name setting.")
+
         message_callback_config = service_dict.get('message_callback', None)
         if message_callback_config is None:
             raise ValueError("[[message_callback]] is required.")
