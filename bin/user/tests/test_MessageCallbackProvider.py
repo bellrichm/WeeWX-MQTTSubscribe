@@ -812,10 +812,10 @@ class TestJsonPayload(unittest.TestCase):
 
 
 class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
-    fieldname = 'bar'
-    topic = 'foo/' + fieldname
-    single_topic = fieldname
-    multi_topic = 'foo1/foo2/' + fieldname
+    topic_end = 'bar'
+    topic = 'foo/' + topic_end
+    single_topic = topic_end
+    multi_topic = 'foo1/foo2/' + topic_end
 
     payload_dict = {
         'inTemp': round(random.uniform(1, 100), 2),
@@ -857,7 +857,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
 
         SUT._on_message_individual(None, None, msg)
 
-        mock_manager.append_data.assert_called_once_with(msg.topic, {self.fieldname: None})
+        mock_manager.append_data.assert_called_once_with(msg.topic, {self.topic_end: None}, self.topic_end)
 
     def test_unicode_topic(self):
         mock_manager = mock.Mock(spec=TopicManager)
@@ -873,7 +873,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         msg = Msg(topic, str(payload), 0, 0)
 
         SUT._on_message_individual(None, None, msg)
-        mock_manager.append_data.assert_called_once_with(msg.topic, {self.fieldname: payload})
+        mock_manager.append_data.assert_called_once_with(msg.topic, {self.topic_end: payload}, self.topic_end)
 
         call_args_list = mock_manager.append_data.call_args_list
         second_arg = call_args_list[0].args[1]
@@ -894,7 +894,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         msg = Msg(topic, str(payload), 0, 0)
 
         SUT._on_message_individual(None, None, msg)
-        mock_manager.append_data.assert_called_once_with(msg.topic, {topic: None})
+        mock_manager.append_data.assert_called_once_with(msg.topic, {msg.topic: None}, msg.topic)
         self.assertEqual(SUT.previous_values['inTemp'], payload)
 
     def test_payload_larger_previous_value(self):
@@ -913,7 +913,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         msg = Msg(topic, str(payload), 0, 0)
 
         SUT._on_message_individual(None, None, msg)
-        mock_manager.append_data.assert_called_once_with(msg.topic, {topic: None})
+        mock_manager.append_data.assert_called_once_with(msg.topic, {msg.topic: None}, msg.topic)
         self.assertEqual(SUT.previous_values['inTemp'], payload)
 
     def test_payload_good_previous_value(self):
@@ -932,7 +932,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         msg = Msg(topic, str(payload), 0, 0)
 
         SUT._on_message_individual(None, None, msg)
-        mock_manager.append_data.assert_called_once_with(msg.topic, {topic: payload - prev_temp})
+        mock_manager.append_data.assert_called_once_with(msg.topic, {msg.topic: payload - prev_temp}, msg.topic)
         self.assertEqual(SUT.previous_values['inTemp'], payload)
 
     def test_single_topic(self):
@@ -945,7 +945,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         msg = Msg(self.single_topic, str(payload), 0, 0)
 
         SUT._on_message_individual(None, None, msg)
-        mock_manager.append_data.assert_called_once_with(msg.topic, {self.fieldname: payload})
+        mock_manager.append_data.assert_called_once_with(msg.topic, {self.topic_end: payload}, self.topic_end)
 
     def test_multiple_topics(self):
         mock_manager = mock.Mock(spec=TopicManager)
@@ -960,7 +960,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
                   0)
 
         SUT._on_message_individual(None, None, msg)
-        mock_manager.append_data.assert_called_once_with(msg.topic, {self.fieldname: payload})
+        mock_manager.append_data.assert_called_once_with(msg.topic, {self.topic_end: payload}, self.topic_end)
 
     def test_two_topics(self):
         mock_manager = mock.Mock(spec=TopicManager)
@@ -975,14 +975,14 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
                   0)
 
         SUT._on_message_individual(None, None, msg)
-        mock_manager.append_data.assert_called_once_with(msg.topic, {self.fieldname: payload})
+        mock_manager.append_data.assert_called_once_with(msg.topic, {self.topic_end: payload}, self.topic_end)
 
 
 class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
-    fieldname = 'bar'
-    topic = 'foo/' + fieldname
-    single_topic = fieldname
-    multi_topic = 'foo1/foo2/' + fieldname
+    topic_end = 'bar'
+    topic = 'foo/' + topic_end
+    single_topic = topic_end
+    multi_topic = 'foo1/foo2/' + topic_end
 
     payload_dict = {
         'inTemp': round(random.uniform(1, 100), 2),
@@ -1027,7 +1027,7 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
         msg = Msg(self.topic, None, 0, 0)
 
         SUT._on_message_individual(None, None, msg)
-        mock_manager.append_data.assert_called_once_with(msg.topic, {self.topic: None})
+        mock_manager.append_data.assert_called_once_with(msg.topic, {msg.topic: None}, msg.topic)
 
     def test_single_topic(self):
         mock_manager = mock.Mock(spec=TopicManager)
@@ -1039,7 +1039,7 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
         msg = Msg(self.single_topic, str(payload), 0, 0)
 
         SUT._on_message_individual(None, None, msg)
-        mock_manager.append_data.assert_called_once_with(msg.topic, {self.fieldname: payload})
+        mock_manager.append_data.assert_called_once_with(msg.topic, {self.topic_end: payload}, self.topic_end)
 
     def test_multiple_topics(self):
         mock_manager = mock.Mock(spec=TopicManager)
@@ -1054,7 +1054,7 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
         msg = Msg(self.multi_topic, str(payload), 0, 0)
 
         SUT._on_message_individual(None, None, msg)
-        mock_manager.append_data.assert_called_once_with(msg.topic, {self.multi_topic: payload})
+        mock_manager.append_data.assert_called_once_with(msg.topic, {msg.topic: payload}, msg.topic)
 
     def test_two_topics(self):
         mock_manager = mock.Mock(spec=TopicManager)
@@ -1069,7 +1069,7 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
         msg = Msg(self.topic, str(payload), 0, 0)
 
         SUT._on_message_individual(None, None, msg)
-        mock_manager.append_data.assert_called_once_with(msg.topic, {self.topic: payload})
+        mock_manager.append_data.assert_called_once_with(msg.topic, {msg.topic: payload}, msg.topic)
 
 if __name__ == '__main__':
     unittest.main(exit=False)

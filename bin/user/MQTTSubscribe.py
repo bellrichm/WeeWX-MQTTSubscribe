@@ -761,7 +761,7 @@ class MessageCallbackProvider(object):
 
             data = {}
             data[fieldname] = value
-            self.topic_manager.append_data(msg.topic, data)
+            self.topic_manager.append_data(msg.topic, data, fieldname)
         except Exception as exception: # (want to catch all) pylint: disable=broad-except
             self._log_exception('on_message_individual', exception, msg)
 
