@@ -2,6 +2,7 @@ V1.5.0
 Enhancements/Fixes
 - Support fields that have cumulative values (#40)
 - Support converting data to types other than float (#41)
+- Fixed handling of wind data in 'individual' payloads (#44)
 - Remove dependency on six.
 - Improved logging when running standalone.
 
