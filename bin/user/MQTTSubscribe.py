@@ -292,20 +292,18 @@ class CollectData(object):
         self.fields = fields
         self.data = {}
 
-    def add_data(self, in_data):
+    def add_data(self, field, in_data):
         """ Add data to the collection and return old collection if this field is already in the collection. """
         old_data = {}
-        for field in self.fields:
-            # ToDo - might be a better way to determine the fieldname
-            if field in in_data:
-                if field in self.data:
-                    old_data = dict(self.data)
-                    self.data = {}
+        if field in self.data:
+            old_data = dict(self.data)
+            self.data = {}
 
-                self.data[field] = in_data[field]
-                self.data['usUnits'] = in_data['usUnits']
-                self.data['dateTime'] = in_data['dateTime']
-                return old_data
+        self.data[field] = self.data[field] = in_data[field]
+        self.data['usUnits'] = in_data['usUnits']
+        self.data['dateTime'] = in_data['dateTime']
+
+        return old_data
 
     def get_data(self):
         """ Return the collection. """
@@ -381,7 +379,7 @@ class TopicManager(object):
         payload = {}
         payload['wind_data'] = False
         if fieldname in self.wind_fields:
-            payload['wind_data'] = True
+            payload['wind_data'] = fieldname # ToDo debug logging
 
         queue = self._get_queue(topic)
         use_server_datetime = self._get_value('use_server_datetime', topic)
@@ -433,11 +431,10 @@ class TopicManager(object):
                 self.logger.debug("TopicManager leaving queue: %s size: %i content: %s" %(topic, len(queue), queue[0]))
                 break
             payload = queue.popleft()
-            wind_data = payload['wind_data']
-            if wind_data:
-                self.logger.debug("TopicManager processing wind data.")
-                temp_data = payload['data']
-                data = collector.add_data(temp_data)
+            wind_field = payload['wind_data']
+            if wind_field:
+                self.logger.debug("TopicManager processing wind data.") # ToDo - beef up
+                data = collector.add_data(wind_field, payload['data'])
             else:
                 data = payload['data']
             if data:
