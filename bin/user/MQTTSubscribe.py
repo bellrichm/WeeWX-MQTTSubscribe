@@ -1001,7 +1001,7 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice): # (methods not used) py
 
         self.logger.info("Driver wait before retry is %i" % self.wait_before_retry)
 
-        self.wind_fields = ['windGust', 'windGustDir', 'windDir', 'windSpeed']
+        self.wind_fields = ['windGust', 'windGustDir', 'windDir', 'windSpeed'] # Todo - delete
 
         self.subscriber = MQTTSubscribe(stn_dict, self.logger)
         self.subscriber.start()
@@ -1025,6 +1025,7 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice): # (methods not used) py
 
                 for data in self.subscriber.get_data(topic):
                     if data:
+                        self.logger.debug("Packet is: %s" % to_sorted_string(data))
                         yield data
                     else:
                         break
@@ -1040,6 +1041,7 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice): # (methods not used) py
         else:
             for data in self.subscriber.get_data(self.archive_topic, lastgood_ts):
                 if data:
+                    self.logger.debug("Record is: %s" % to_sorted_string(data))
                     yield data
                 else:
                     break
