@@ -7,6 +7,7 @@ from __future__ import with_statement
 import unittest
 
 import configobj
+import time
 
 import weeutil
 
@@ -98,7 +99,54 @@ class TestIndividualPayload(unittest.TestCase):
         self.assertEqual(records[0]['windSpeed'], 1)
 
     def test_get_accumulated_data(self):
-        self.assertEqual(0, 0)
+        config_text = self.default_config().splitlines()
+        config_dict = configobj.ConfigObj(config_text)['MQTTSubscribe']
+
+        topics_dict = config_dict.get('topics', {})
+
+        logger = Logger()
+
+        message_callback_config = config_dict.get('message_callback', None)
+        if message_callback_config is None:
+            raise ValueError("[[message_callback]] is required.")
+
+        message_callback_provider_name = config_dict.get('message_callback_provider',
+                                                         'user.MQTTSubscribe.MessageCallbackProvider')
+
+        manager = TopicManager(topics_dict, logger)
+
+        message_callback_provider_class = weeutil.weeutil._get_object(message_callback_provider_name) # pylint: disable=protected-access
+        message_callback_provider = message_callback_provider_class(message_callback_config,
+                                                                    logger,
+                                                                    manager)
+
+        on_message = message_callback_provider.get_callback()
+
+        start_ts = time.time()
+        on_message(None, None, Msg("weewx/windDir", "0", 0, 0))
+        on_message(None, None, Msg("weewx/windSpeed", "1", 0, 0))
+        end_ts = time.time()
+
+        records = {}
+        for topic in manager.subscribed_topics:
+            data = manager.get_accumulated_data(topic, start_ts, end_ts, 17)
+            records[topic] = data
+            print(data)
+
+        for topic in records:
+            print("%s: %s" %(topic, records[topic]))
+
+
+        topic = 'weewx/#'
+        self.assertEqual(len(records), 1)
+        self.assertIn('dateTime', records[topic])
+        self.assertIn('usUnits', records[topic])
+        self.assertEqual(records[topic]['usUnits'], 17)
+
+        self.assertIn('windDir', records[topic])
+        self.assertEqual(records[topic]['windDir'], 0)
+        self.assertIn('windSpeed', records[topic])
+        self.assertEqual(records[topic]['windSpeed'], 1)
 
 
 if __name__ == '__main__':
