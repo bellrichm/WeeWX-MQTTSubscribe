@@ -580,9 +580,9 @@ class MessageCallbackProvider(object):
         # backwards compatible, add the label map
         for field in label_map:
             if not field in orig_fields:
-                value = {}
-                value['name'] = label_map[field]
-                self.fields[field] = value
+                self.fields[field] = {}
+            if not 'name' in self.fields[field]:
+                self.fields[field]['name'] = label_map[field]
 
         # backwards compatible, add the cumulative fields
         for field in contains_total:

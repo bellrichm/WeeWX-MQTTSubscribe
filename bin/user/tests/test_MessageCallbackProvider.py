@@ -45,7 +45,7 @@ class TestFieldsConfiguration(unittest.TestCase):
         self.assertIn('name', SUT.fields[input_name])
         self.assertEqual(SUT.fields[input_name]['name'], output_name)
 
-    def test_field_in_label_map_and_fields(self):
+    def test_field_in_label_map_and_fields_with_name(self):
         message_handler_config = {}
         message_handler_config['type'] = 'individual'
 
@@ -68,6 +68,30 @@ class TestFieldsConfiguration(unittest.TestCase):
         self.assertIn(input_name, SUT.fields)
         self.assertIn('name', SUT.fields[input_name])
         self.assertEqual(SUT.fields[input_name]['name'], output_name)
+
+    def test_field_in_label_map_and_fields_without_name(self):
+        message_handler_config = {}
+        message_handler_config['type'] = 'individual'
+
+        input_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),  # pylint: disable=unused-variable
+        #output_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),  # pylint: disable=unused-variable
+        label_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),  # pylint: disable=unused-variable
+
+        label_map = {}
+        label_map[input_name] = label_name
+        message_handler_config['label_map'] = label_map
+
+        fields = {}
+        field = {}
+        fields[input_name] = field
+        message_handler_config['fields'] = fields
+
+        SUT = MessageCallbackProvider(message_handler_config, None, None)
+
+        self.assertIn(input_name, SUT.fields)
+        self.assertIn('name', SUT.fields[input_name])
+        self.assertEqual(SUT.fields[input_name]['name'], label_name)
+
 
     def test_field_in_label_map_and_fields_and_contains_total(self):
         message_handler_config = {}
