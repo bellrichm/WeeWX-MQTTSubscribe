@@ -952,7 +952,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         SUT = MessageCallbackProvider(message_handler_config, mock_logger, mock_manager)
         SUT.previous_values['inTemp'] = prev_temp
 
-        payload = round(random.uniform(1, 100), 2)
+        payload = round(random.uniform(10, 100), 2)
         msg = Msg(topic, str(payload), 0, 0)
 
         SUT._on_message_individual(None, None, msg)
