@@ -126,7 +126,7 @@ class TestAppendData(unittest.TestCase):
         self.assertEqual(len(queue), 1)
         queue_element = queue.popleft()
         data = queue_element['data']
-        self.assertDictContainsSubset(queue_data_subset, data)
+        self.assertGreaterEqual(data.items(), queue_data_subset.items())
         self.assertIn('dateTime', data)
         self.assertNotEqual(queue_data['dateTime'], data['dateTime'])
 
@@ -147,7 +147,7 @@ class TestAppendData(unittest.TestCase):
         self.assertEqual(len(queue), 1)
         queue_element = queue.popleft()
         data = queue_element['data']
-        self.assertDictContainsSubset(queue_data, data)
+        self.assertGreaterEqual(data.items(), queue_data.items())
         self.assertIn('dateTime', data)
 
     def test_missing_units(self):
@@ -167,7 +167,7 @@ class TestAppendData(unittest.TestCase):
         self.assertEqual(len(queue), 1)
         queue_element = queue.popleft()
         data = queue_element['data']
-        self.assertDictContainsSubset(queue_data, data)
+        self.assertGreaterEqual(data.items(), queue_data.items())
         self.assertIn('usUnits', data)
 
     def test_dateteime_format_add_offset(self):
@@ -208,7 +208,7 @@ class TestAppendData(unittest.TestCase):
         self.assertEqual(len(queue), 1)
         queue_element = queue.popleft()
         data = queue_element['data']
-        self.assertDictContainsSubset(queue_data_subset, data)
+        self.assertGreaterEqual(data.items(), queue_data_subset.items())
         self.assertIn('dateTime', data)
         self.assertEqual(adjusted_epoch, data['dateTime'])
 
@@ -250,7 +250,7 @@ class TestAppendData(unittest.TestCase):
         self.assertEqual(len(queue), 1)
         queue_element = queue.popleft()
         data = queue_element['data']
-        self.assertDictContainsSubset(queue_data_subset, data)
+        self.assertGreaterEqual(data.items(), queue_data_subset.items())
         self.assertIn('dateTime', data)
         self.assertEqual(adjusted_epoch, data['dateTime'])
 
@@ -285,7 +285,7 @@ class TestAppendData(unittest.TestCase):
         self.assertEqual(len(queue), 1)
         queue_element = queue.popleft()
         data = queue_element['data']
-        self.assertDictContainsSubset(queue_data_subset, data)
+        self.assertGreaterEqual(data.items(), queue_data_subset.items())
         self.assertIn('dateTime', data)
         self.assertEqual(adjusted_epoch, data['dateTime'])
 
