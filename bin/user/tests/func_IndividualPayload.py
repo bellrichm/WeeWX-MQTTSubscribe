@@ -8,6 +8,7 @@ import unittest
 
 import configobj
 import json
+import os
 import time
 
 import weeutil
@@ -53,8 +54,9 @@ class TestIndividualPayload(unittest.TestCase):
 
 """
     def test_get_data(self):
-        config_text = self.default_config().splitlines()
-        config_dict = configobj.ConfigObj(config_text)['MQTTSubscribe']
+        config_path = os.path.abspath("bin/user/tests/data/first.conf")
+
+        config_dict = configobj.ConfigObj(config_path, file_error=True)['MQTTSubscribe']
 
         topics_dict = config_dict.get('topics', {})
 
