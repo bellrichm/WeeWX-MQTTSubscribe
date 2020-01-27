@@ -460,28 +460,28 @@ class TopicManager(object):
         adjust_end_time = self._get_value('adjust_end_time', topic)
 
         if ignore_start_time:
-            self.logger.debug("Service ignoring start time.")
+            self.logger.debug("TopicManager ignoring start time.")
             start_ts = self.peek_datetime(topic) - adjust_start_time
         else:
             start_ts = start_time - adjust_start_time
 
         if ignore_end_time:
-            self.logger.debug("Service ignoring end time.")
+            self.logger.debug("TopicManager ignoring end time.")
             end_ts = self.peek_last_datetime(topic) + adjust_end_time
         else:
             end_ts = end_time + adjust_end_time
 
-        self.logger.debug("Service processing interval: %f %f" %(start_ts, end_ts))
+        self.logger.debug("TopicManager processing interval: %f %f" %(start_ts, end_ts))
         accumulator = weewx.accum.Accum(weeutil.weeutil.TimeSpan(start_ts, end_ts))
 
         for data in self.get_data(topic, end_ts):
             if data:
                 try:
-                    self.logger.debug("Service data to accumulate: %s %s"
+                    self.logger.debug("TopicManager data to accumulate: %s %s"
                                       % (weeutil.weeutil.timestamp_to_string(data['dateTime']), to_sorted_string(data)))
                     accumulator.addRecord(data)
                 except weewx.accum.OutOfSpan:
-                    self.logger.info("Service ignoring record outside of interval %f %f %f %s"
+                    self.logger.info("TopicManager ignoring record outside of interval %f %f %f %s"
                                      %(start_ts, end_ts, data['dateTime'], (to_sorted_string(data))))
             else:
                 break
@@ -489,13 +489,13 @@ class TopicManager(object):
         target_data = {}
         if not accumulator.isEmpty:
             aggregate_data = accumulator.getRecord()
-            self.logger.debug("Service data prior to conversion is: %s %s"
+            self.logger.debug("TopicManager data prior to conversion is: %s %s"
                               % (weeutil.weeutil.timestamp_to_string(aggregate_data['dateTime']), to_sorted_string(aggregate_data)))
             target_data = weewx.units.to_std_system(aggregate_data, units)
-            self.logger.debug("Service data after to conversion is: %s %s"
+            self.logger.debug("TopicManager data after to conversion is: %s %s"
                               % (weeutil.weeutil.timestamp_to_string(target_data['dateTime']), to_sorted_string(target_data)))
         else:
-            self.logger.debug("Dervice queue was empty")
+            self.logger.debug("TopicManager accumulator was empty")
 
         # Force dateTime to packet's datetime so that the packet datetime is not updated to the MQTT datetime
         if ignore_end_time:
@@ -772,13 +772,13 @@ class MQTTSubscribe(object):
         self.logger = logger
 
         if 'topic' in service_dict:
-            self.logger.info("'topic' is deprecated, use '[[topics]]'")
+            self.logger.info("MQTTSubscribe 'topic' is deprecated, use '[[topics]]'")
         if 'overlap' in service_dict:
-            self.logger.info("'overlap' is deprecated, use 'adjust_start_time'")
+            self.logger.info("MQTTSubscribe 'overlap' is deprecated, use 'adjust_start_time'")
         if 'contains_total' in service_dict['message_callback']:
-            self.logger.info("'contains_total' is deprecated use [[[fields]]] contains_total setting.")
+            self.logger.info("MQTTSubscribe 'contains_total' is deprecated use [[[fields]]] contains_total setting.")
         if 'label_map' in service_dict['message_callback']:
-            self.logger.info("'label_map' is deprecated use [[[fields]]] name setting.")
+            self.logger.info("MQTTSubscribe 'label_map' is deprecated use [[[fields]]] name setting.")
 
         message_callback_config = service_dict.get('message_callback', None)
         if message_callback_config is None:
@@ -786,7 +786,7 @@ class MQTTSubscribe(object):
 
         # For backwards compatibility
         overlap = to_float(service_dict.get('overlap', 0))
-        self.logger.info("Overlap is %s" % overlap)
+        self.logger.info("MQTTSubscribe overlap is %s" % overlap)
         topics_dict = service_dict.get('topics', {})
         topics_dict['overlap'] = overlap
 
@@ -810,19 +810,19 @@ class MQTTSubscribe(object):
         if self.archive_topic and self.archive_topic not in service_dict['topics']:
             raise ValueError("Archive topic %s must be in [[topics]]" % self.archive_topic)
 
-        self.logger.info("Message callback config is %s" % message_callback_config)
-        self.logger.info("Message callback provider is %s" % message_callback_provider_name)
-        self.logger.info("Client id is %s" % clientid)
-        self.logger.info("Clean session is %s" % clean_session)
+        self.logger.info("MQTTSubscribe message callback config is %s" % message_callback_config)
+        self.logger.info("MQTTSubscribe message callback provider is %s" % message_callback_provider_name)
+        self.logger.info("MQTTSubscribe client id is %s" % clientid)
+        self.logger.info("MQTTSubscribe client session is %s" % clean_session)
         self.logger.info("MQTTSubscribe version is %s" % VERSION)
-        self.logger.info("Host is %s" % host)
-        self.logger.info("Port is %s" % port)
-        self.logger.info("Keep alive is %s" % keepalive)
-        self.logger.info("Username is %s" % username)
+        self.logger.info("MQTTSubscribe host is %s" % host)
+        self.logger.info("MQTTSubscribe port is %s" % port)
+        self.logger.info("MQTTSubscribe keep alive is %s" % keepalive)
+        self.logger.info("MQTTSubscribe username is %s" % username)
         if password is not None:
-            self.logger.info("Password is set")
+            self.logger.info("MQTTSubscribe password is set")
         else:
-            self.logger.info("Password is not set")
+            self.logger.info("MQTTSubscribe password is not set")
         self.logger.info("Archive topic is %s" % self.archive_topic)
 
         self.mqtt_logger = {
@@ -870,7 +870,7 @@ class MQTTSubscribe(object):
 
     def start(self):
         """ start subscribing to the topics """
-        self.logger.debug("Starting loop")
+        self.logger.debug("MQTTSubscribe starting loop")
         self.client.loop_start()
 
     def disconnect(self):
@@ -887,21 +887,21 @@ class MQTTSubscribe(object):
         # 4: Connection refused - bad username or password
         # 5: Connection refused - not authorised
         # 6-255: Currently unused.
-        self.logger.debug("Connected with result code %i" % rc)
-        self.logger.debug("Connected flags %s" % str(flags))
+        self.logger.debug("MQTTSubscribe connected with result code %i" % rc)
+        self.logger.debug("MQTTSubscribe connected flags %s" % str(flags))
         for topic in self.manager.subscribed_topics:
             (result, mid) = client.subscribe(topic, self.manager.get_qos(topic))
-            self.logger.debug("Subscribe to %s has a mid %i and rc %i" %(topic, mid, result))
+            self.logger.debug("MQTTSubscribe subscribe to %s has a mid %i and rc %i" %(topic, mid, result))
 
     def _on_disconnect(self, client, userdata, rc): # (match callback signature) pylint: disable=unused-argument
-        self.logger.debug("Disconnected with result code %i" %rc)
+        self.logger.debug("MQTTSubscribe disconnected with result code %i" %rc)
 
     def _on_subscribe(self, client, userdata, mid, granted_qos): # (match callback signature) pylint: disable=unused-argument
-        self.logger.debug("Subscribed to topic mid: %i is size %i has a QOS of %i"
+        self.logger.debug("MQTTSubscribe subscribed to topic mid: %i is size %i has a QOS of %i"
                           %(mid, len(granted_qos), granted_qos[0]))
 
     def _on_log(self, client, userdata, level, msg): # (match callback signature) pylint: disable=unused-argument
-        self.mqtt_logger[level]("MQTTSubscribe/MQTT", msg)
+        self.mqtt_logger[level]("MQTTSubscribe MQTT msg:", msg)
 
 class MQTTSubscribeService(StdService):
     """ The MQTT subscribe service. """
@@ -914,12 +914,12 @@ class MQTTSubscribeService(StdService):
 
         self.enable = to_bool(service_dict.get('enable', True))
         if not self.enable:
-            self.logger.info("Service is not enabled, exiting.")
+            self.logger.info("MQTTSubscribeService is not enabled, exiting.")
             return
 
         binding = service_dict.get('binding', 'loop')
 
-        self.logger.info("Service binding is %s" % binding)
+        self.logger.info("MQTTSubscribeService binding is %s" % binding)
 
         if 'archive_topic' in service_dict:
             raise ValueError("archive_topic, %s, is invalid when running as a service" % service_dict['archive_topic'])
@@ -944,20 +944,20 @@ class MQTTSubscribeService(StdService):
         """ Handle the new loop packet event. """
         # packet has traveled back in time
         if self.end_ts > event.packet['dateTime']:
-            self.logger.error("Service ignoring packet has dateTime of %f which is prior to previous packet %f"
+            self.logger.error("MQTTSubscribeService ignoring packet has dateTime of %f which is prior to previous packet %f"
                               %(event.packet['dateTime'], self.end_ts))
         else:
             start_ts = self.end_ts
             self.end_ts = event.packet['dateTime']
 
             for topic in self.subscriber.subscribed_topics: # topics might not be cached.. therefore use subscribed?
-                self.logger.debug("Service packet prior to update is: %s %s"
+                self.logger.debug("MQTTSubscribeService packet prior to update is: %s %s"
                                   % (weeutil.weeutil.timestamp_to_string(event.packet['dateTime']),
                                      to_sorted_string(event.packet)))
                 target_data = self.subscriber.get_accumulated_data(topic,
                                                                    start_ts, self.end_ts, event.packet['usUnits'])
                 event.packet.update(target_data)
-                self.logger.debug("Service packet after update is: %s %s"
+                self.logger.debug("MQTTSubscribeService packet after update is: %s %s"
                                   % (weeutil.weeutil.timestamp_to_string(event.packet['dateTime']),
                                      to_sorted_string(event.packet)))
 
@@ -970,12 +970,12 @@ class MQTTSubscribeService(StdService):
         start_ts = end_ts - event.record['interval'] * 60
 
         for topic in self.subscriber.subscribed_topics: # topics might not be cached.. therefore use subscribed?
-            self.logger.debug("Service record prior to update is: %s %s"
+            self.logger.debug("MQTTSubscribeService record prior to update is: %s %s"
                               % (weeutil.weeutil.timestamp_to_string(event.record['dateTime']),
                                  to_sorted_string(event.record)))
             target_data = self.subscriber.get_accumulated_data(topic, start_ts, end_ts, event.record['usUnits'])
             event.record.update(target_data)
-            self.logger.debug("Service record after update is: %s %s"
+            self.logger.debug("MQTTSubscribeService record after update is: %s %s"
                               % (weeutil.weeutil.timestamp_to_string(event.record['dateTime']),
                                  to_sorted_string(event.record)))
 
@@ -999,7 +999,7 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice): # (methods not used) py
         self._archive_interval = to_int(stn_dict.get('archive_interval', 300))
         self.archive_topic = stn_dict.get('archive_topic', None)
 
-        self.logger.info("Driver wait before retry is %i" % self.wait_before_retry)
+        self.logger.info("MQTTSubscribeDriver wait before retry is %i" % self.wait_before_retry)
 
         self.wind_fields = ['windGust', 'windGustDir', 'windDir', 'windSpeed'] # Todo - delete
 
@@ -1025,23 +1025,23 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice): # (methods not used) py
 
                 for data in self.subscriber.get_data(topic):
                     if data:
-                        self.logger.debug("Packet is: %s" % to_sorted_string(data))
+                        self.logger.debug("MQTTSubscribeDriver packet is: %s" % to_sorted_string(data))
                         yield data
                     else:
                         break
 
-            self.logger.debug("Driver queues are empty.")
+            self.logger.debug("MQTTSubscribeDriver queues are empty.")
 
             time.sleep(self.wait_before_retry)
 
     def genArchiveRecords(self, lastgood_ts):
         if not self.archive_topic:
-            self.logger.debug("Driver no archive topic configured.")
+            self.logger.debug("MQTTSubscribeDriver no archive topic configured.")
             raise NotImplementedError
         else:
             for data in self.subscriber.get_data(self.archive_topic, lastgood_ts):
                 if data:
-                    self.logger.debug("Record is: %s" % to_sorted_string(data))
+                    self.logger.debug("MQTTSubscribeDriver record is: %s" % to_sorted_string(data))
                     yield data
                 else:
                     break
