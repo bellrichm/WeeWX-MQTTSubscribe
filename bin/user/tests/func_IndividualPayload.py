@@ -7,6 +7,7 @@ from __future__ import with_statement
 import unittest
 
 import configobj
+import json
 import time
 
 import weeutil
@@ -26,8 +27,6 @@ class TestIndividualPayload(unittest.TestCase):
 [MQTTSubscribe]
     # Configuration for the message callback.
     [[message_callback]]
-       type = individual
-
        [[[label_map]]]
           baro_mb = barometer
           windRaw = windSpeed
@@ -65,6 +64,8 @@ class TestIndividualPayload(unittest.TestCase):
         if message_callback_config is None:
             raise ValueError("[[message_callback]] is required.")
 
+        message_callback_config['type'] = 'individual'
+
         message_callback_provider_name = config_dict.get('message_callback_provider',
                                                          'user.MQTTSubscribe.MessageCallbackProvider')
 
@@ -77,8 +78,18 @@ class TestIndividualPayload(unittest.TestCase):
 
         on_message = message_callback_provider.get_callback()
 
-        on_message(None, None, Msg("weewx/windDir", "0", 0, 0))
-        on_message(None, None, Msg("weewx/windSpeed", "1", 0, 0))
+        with open("bin/user/tests/data/first.json") as fp:
+            t = json.load(fp)
+            for record in t:
+                for payload in t[record]:
+                    for topic in t[record][payload]:
+                        topic_info = t[record][payload][topic]
+                        if 'separator' in topic_info:
+                            print("      %s" % topic_info['separator'])
+                        if 'delimiter' in topic_info:
+                            print("      %s" % topic_info['delimiter'])
+                        for field in topic_info['data']:
+                            on_message(None, None, Msg("%s/%s" % (topic, field), topic_info['data'][field], 0, 0))
 
         records = []
         for topic in manager.subscribed_topics:
@@ -112,6 +123,8 @@ class TestIndividualPayload(unittest.TestCase):
 
         message_callback_provider_name = config_dict.get('message_callback_provider',
                                                          'user.MQTTSubscribe.MessageCallbackProvider')
+
+        message_callback_config['type'] = 'individual'
 
         manager = TopicManager(topics_dict, logger)
 
