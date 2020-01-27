@@ -379,21 +379,22 @@ class TopicManager(object):
         """ Add the MQTT data to the queue. """
         data = dict(in_data)
         payload = {}
+
+        queue = self._get_queue(topic)
+        use_server_datetime = self._get_value('use_server_datetime', topic)
+
+        if 'dateTime' not in data or use_server_datetime:
+            data['dateTime'] = time.time()
+        if 'usUnits' not in data:
+            data['usUnits'] = self._get_unit_system(topic)
+
         payload['wind_data'] = False
         if fieldname in self.wind_fields:
             self.logger.debug("TopicManager Adding wind data %s %s: %s"
                               % (fieldname, weeutil.weeutil.timestamp_to_string(data['dateTime']), to_sorted_string(data)))
             payload['wind_data'] = fieldname
 
-        queue = self._get_queue(topic)
-        use_server_datetime = self._get_value('use_server_datetime', topic)
-
         self._queue_size_check(queue, self._get_max_queue(topic))
-
-        if 'dateTime' not in data or use_server_datetime:
-            data['dateTime'] = time.time()
-        if 'usUnits' not in data:
-            data['usUnits'] = self._get_unit_system(topic)
 
         datetime_format = self._get_value('datetime_format', topic)
         if datetime_format and 'dateTime' in data:
