@@ -4,6 +4,7 @@
 
 from __future__ import with_statement
 
+import utils
 import unittest
 
 import configobj
@@ -15,47 +16,9 @@ import weeutil
 
 from user.MQTTSubscribe import TopicManager, Logger
 
-class Msg(object):
-    def __init__(self, topic, payload, qos, retain):
-        self.topic = topic
-        self.payload = payload
-        self.qos = qos
-        self.retain = retain
-
 class TestIndividualPayload(unittest.TestCase):
-    def default_config(self):
-        return """
-[MQTTSubscribe]
-    # Configuration for the message callback.
-    [[message_callback]]
-       [[[label_map]]]
-          baro_mb = barometer
-          windRaw = windSpeed
-
-        [[[fields]]]
-            # The incoming field name from MQTT
-            [[[[windRaw]]]]
-              # The WeeWX name.
-              # Default is the name from MQTT.
-                name = windSpeed
-              # The conversion type necessary for WeeWX compatibility
-              # Valid values: bool, float, int, none
-              # Default is float
-                conversion_type = float
-              # True if the incoming data is cumulative.
-              # Valid values: True, False
-              # Default is False
-                contains_total = False
-
-    # The topics to subscribe to.
-    [[topics]]
-        unit_system = METRICWX
-        [[[weewx/#]]]
-
-"""
     def test_get_data(self):
         config_path = os.path.abspath("bin/user/tests/data/first.conf")
-
         config_dict = configobj.ConfigObj(config_path, file_error=True)['MQTTSubscribe']
 
         topics_dict = config_dict.get('topics', {})
@@ -81,17 +44,10 @@ class TestIndividualPayload(unittest.TestCase):
         on_message = message_callback_provider.get_callback()
 
         with open("bin/user/tests/data/first.json") as fp:
-            t = json.load(fp)
-            for record in t:
-                for payload in t[record]:
-                    for topic in t[record][payload]:
-                        topic_info = t[record][payload][topic]
-                        if 'separator' in topic_info:
-                            print("      %s" % topic_info['separator'])
-                        if 'delimiter' in topic_info:
-                            print("      %s" % topic_info['delimiter'])
-                        for field in topic_info['data']:
-                            on_message(None, None, Msg("%s/%s" % (topic, field), topic_info['data'][field], 0, 0))
+            test_data = json.load(fp)
+            for record in test_data:
+                for payload in test_data[record]:
+                    utils.send_individual_msgs(on_message, test_data[record][payload])
 
         records = []
         for topic in manager.subscribed_topics:
@@ -112,8 +68,8 @@ class TestIndividualPayload(unittest.TestCase):
         self.assertEqual(records[0]['windSpeed'], 1)
 
     def test_get_accumulated_data(self):
-        config_text = self.default_config().splitlines()
-        config_dict = configobj.ConfigObj(config_text)['MQTTSubscribe']
+        config_path = os.path.abspath("bin/user/tests/data/first.conf")
+        config_dict = configobj.ConfigObj(config_path, file_error=True)['MQTTSubscribe']
 
         topics_dict = config_dict.get('topics', {})
 
@@ -138,19 +94,17 @@ class TestIndividualPayload(unittest.TestCase):
         on_message = message_callback_provider.get_callback()
 
         start_ts = time.time()
-        on_message(None, None, Msg("weewx/windDir", "0", 0, 0))
-        on_message(None, None, Msg("weewx/windSpeed", "1", 0, 0))
+        with open("bin/user/tests/data/first.json") as fp:
+            test_data = json.load(fp)
+            for record in test_data:
+                for payload in test_data[record]:
+                    utils.send_individual_msgs(on_message, test_data[record][payload])
         end_ts = time.time()
 
         records = {}
         for topic in manager.subscribed_topics:
             data = manager.get_accumulated_data(topic, start_ts, end_ts, 17)
             records[topic] = data
-            print(data)
-
-        for topic in records:
-            print("%s: %s" %(topic, records[topic]))
-
 
         topic = 'weewx/#'
         self.assertEqual(len(records), 1)
