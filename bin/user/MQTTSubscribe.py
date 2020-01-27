@@ -381,8 +381,8 @@ class TopicManager(object):
         payload = {}
         payload['wind_data'] = False
         if fieldname in self.wind_fields:
-            self.logger.debug("TopicManager Adding wind data %s: %s"
-                              % (fieldname, to_sorted_string(data)))
+            self.logger.debug("TopicManager Adding wind data %s %s: %s"
+                              % (fieldname, weeutil.weeutil.timestamp_to_string(data['dateTime']), to_sorted_string(data)))
             payload['wind_data'] = fieldname
 
         queue = self._get_queue(topic)
@@ -437,7 +437,8 @@ class TopicManager(object):
             payload = queue.popleft()
             wind_field = payload['wind_data']
             if wind_field:
-                self.logger.debug("TopicManager processing wind data %s: %s." %(wind_field, to_sorted_string(payload)))
+                self.logger.debug("TopicManager processing wind data %s %s: %s."
+                                  %(wind_field, weeutil.weeutil.timestamp_to_string(payload['data']['dateTime']), to_sorted_string(payload)))
                 data = collector.add_data(wind_field, payload['data'])
             else:
                 data = payload['data']
@@ -1025,7 +1026,8 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice): # (methods not used) py
 
                 for data in self.subscriber.get_data(topic):
                     if data:
-                        self.logger.debug("MQTTSubscribeDriver packet is: %s" % to_sorted_string(data))
+                        self.logger.debug("MQTTSubscribeDriver packet is %s: %s"
+                                          % (weeutil.weeutil.timestamp_to_string(data['dateTime']), to_sorted_string(data)))
                         yield data
                     else:
                         break
@@ -1041,7 +1043,8 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice): # (methods not used) py
         else:
             for data in self.subscriber.get_data(self.archive_topic, lastgood_ts):
                 if data:
-                    self.logger.debug("MQTTSubscribeDriver record is: %s" % to_sorted_string(data))
+                    self.logger.debug("MQTTSubscribeDriver record is %s: %s"
+                                      % (weeutil.weeutil.timestamp_to_string(data['dateTime']), to_sorted_string(data)))
                     yield data
                 else:
                     break
