@@ -1144,6 +1144,8 @@ if __name__ == '__main__': # pragma: no cover
     def main():
         """ Prepare and run MQTTSubscribe in simulation mode. """
         parser = optparse.OptionParser(usage=USAGE)
+        parser.add_option("--version", action="store_true", dest="version",
+                          help="Log extra output (debug=1).")
         parser.add_option('--records', dest='record_count', type=int,
                           help='The number of archive records to create.',
                           default=2)
@@ -1174,6 +1176,10 @@ if __name__ == '__main__': # pragma: no cover
                           help="The callback type.")
 
         (options, args) = parser.parse_args()
+
+        if options.version:
+            print("Print MQTTSubscribe version is %s" % VERSION)
+            exit()
 
         simulation_type = options.type
         binding = options.binding
