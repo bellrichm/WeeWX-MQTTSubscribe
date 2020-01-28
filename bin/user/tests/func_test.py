@@ -29,7 +29,8 @@ class TestJsonPayload(unittest.TestCase):
         config_path = os.path.abspath("bin/user/tests/data/second.conf")
         config_dict = configobj.ConfigObj(config_path, file_error=True)['MQTTSubscribe']
         message_callback_config = config_dict.get('message_callback', None)
-        message_callback_config['type'] = 'json'
+        #message_callback_config['type'] = 'json'
+        message_callback_config['type'] = 'individual'
         #setup_logging(True)
         logger = Logger()
         setup_logging(True)
@@ -52,22 +53,25 @@ class TestJsonPayload(unittest.TestCase):
                     topics = test_data[record][payload]
                     for topic in topics:
                         topic_info = topics[topic]
-                        payload = json.dumps(topic_info['data'])
-                        mqtt_message_info = client.publish(topic, payload)
-                        mqtt_message_info.wait_for_publish()
+                        #individual
+                        for field in topic_info['data']:
+                            mqtt_message_info = client.publish("%s/%s" % (topic, field), topic_info['data'][field])
+                            mqtt_message_info.wait_for_publish()                        
+                        #json
+                        #payload = json.dumps(topic_info['data'])
+                        #mqtt_message_info = client.publish(topic, payload)
+                        #mqtt_message_info.wait_for_publish()
 
         time.sleep(sleep)
         with open("bin/user/tests/data/second.json") as file_pointer:
             test_data = json.load(file_pointer)
-            for record in test_data:
-                for payload in test_data[record]:
-                    topics = test_data[record][payload]
-                    for topic in topics:
-                        for data in subscriber.get_data(topic):
-                            if data:
-                                records.append(data)
-                            else:
-                                break
+            topics = config_dict.get('topics').sections
+            for topic in topics:
+                for data in subscriber.get_data(topic):
+                    if data:
+                        records.append(data)
+                    else:
+                        break
 
         thread.start()
         thread.join()
