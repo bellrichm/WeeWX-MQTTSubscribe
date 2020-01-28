@@ -238,19 +238,19 @@ try: # pragma: no cover
             """ Log debug messages. """
             self._logmsg.debug(msg)
             if self.console:
-                print(msg)            
+                print(msg)
 
         def info(self, msg):
             """ Log informational messages. """
             self._logmsg.info(msg)
             if self.console:
-                print(msg)            
+                print(msg)
 
         def error(self, msg):
             """ Log error messages. """
             self._logmsg.error(msg)
             if self.console:
-                print(msg)            
+                print(msg)
 except ImportError: # pragma: no cover
     import syslog
     def setup_logging(logging_level):
