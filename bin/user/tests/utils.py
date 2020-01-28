@@ -35,3 +35,18 @@ class Msg(object):
         self.payload = payload
         self.qos = qos
         self.retain = retain
+
+INDIVIDUAL_PAYLOAD = {
+    'payload_type': 'individual',
+    'on_message': send_individual_msgs
+}
+
+JSON_PAYLOAD = {
+    'payload_type': 'json',
+    'on_message': send_json_msgs
+}
+
+KEYWORD_PAYLOAD = {
+    'payload_type': 'keyword',
+    'on_message': send_keyword_msgs
+}
