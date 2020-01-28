@@ -4,6 +4,7 @@
 # pylint: disable=missing-docstring
 
 import configobj
+import json
 import os
 import threading
 import time
@@ -34,9 +35,9 @@ class MyThread(threading.Thread):
         print("test")
 
     def run(self):
-        print("Starting " + self.name)
-        print_time(self.name, 5, self.delay)
-        print("Exiting " + self.name)
+        #print("Starting " + self.name)
+        #print_time(self.name, 5, self.delay)
+        #print("Exiting " + self.name)
         #records = []
         for data in self.subscriber.get_data('weather/loop'):
             if data:
@@ -101,12 +102,27 @@ client.loop_start()
 
 topic = 'weather/loop'
 message = 'test'
-mqtt_message_info = client.publish(topic, message)
-mqtt_message_info.wait_for_publish()
-print("Sent: %s has return code %i" % (mqtt_message_info.mid, mqtt_message_info.rc))
+#mqtt_message_info = client.publish(topic, message)
+#mqtt_message_info.wait_for_publish()
+#print("Sent: %s has return code %i" % (mqtt_message_info.mid, mqtt_message_info.rc))
 
-#THREAD1.join()
+with open("bin/user/tests/data/second.json") as fp:
+    test_data = json.load(fp)
+    for record in test_data:
+        for payload in test_data[record]:
+            topics = test_data[record][payload]
+            for topic in topics:
+                topic_info = topics[topic]
+                payload = json.dumps(topic_info['data'])
+                mqtt_message_info = client.publish(topic, payload)
+                mqtt_message_info.wait_for_publish()
+                print("Sent: %s has return code %i" % (mqtt_message_info.mid, mqtt_message_info.rc))
+
+time.sleep(1)
+THREAD1.start()  
+THREAD1.join()
 #THREAD2.start()
 
+print("records")
 print(records)
 print("Exiting Main Thread")
