@@ -99,6 +99,12 @@ client.on_publish = on_publish
 client.connect(host, port, keepalive)
 client.loop_start()
 
+topic = 'weather/loop'
+message = 'test'
+mqtt_message_info = client.publish(topic, message)
+mqtt_message_info.wait_for_publish()
+print("Sent: %s has return code %i" % (mqtt_message_info.mid, mqtt_message_info.rc))
+
 #THREAD1.join()
 #THREAD2.start()
 
