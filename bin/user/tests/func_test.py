@@ -14,9 +14,17 @@ import paho.mqtt.client as mqtt
 from user.MQTTSubscribe import MQTTSubscribe, Logger, setup_logging
 
 class MyThread(threading.Thread):
-    def __init__(self, records):
+    def __init__(self, subscriber):
         threading.Thread.__init__(self)
-        self.records = records
+        subscriber.start()
+
+    def run(self):
+        pass
+
+class TestJsonPayload(unittest.TestCase):
+    def test_get_data_test(self):
+        sleep = 1
+        records = []
 
         config_path = os.path.abspath("bin/user/tests/data/second.conf")
         config_dict = configobj.ConfigObj(config_path, file_error=True)['MQTTSubscribe']
@@ -25,21 +33,8 @@ class MyThread(threading.Thread):
         #setup_logging(True)
         logger = Logger()
         setup_logging(True)
-        self.subscriber = MQTTSubscribe(config_dict, logger)
-        self.subscriber.start()
-
-    def run(self):
-        for data in self.subscriber.get_data('weather/loop'):
-            if data:
-                self.records.append(data)
-            else:
-                break
-
-class TestIndividualPayload(unittest.TestCase):
-    def test_get_data_test(self):
-        sleep = 1
-        records = []
-        thread = MyThread(records)
+        subscriber = MQTTSubscribe(config_dict, logger)
+        thread = MyThread(subscriber)
 
         client_id = 'clientid'
         host = 'localhost'
@@ -50,8 +45,8 @@ class TestIndividualPayload(unittest.TestCase):
         client.connect(host, port, keepalive)
         client.loop_start()
 
-        with open("bin/user/tests/data/second.json") as fp:
-            test_data = json.load(fp)
+        with open("bin/user/tests/data/second.json") as file_pointer:
+            test_data = json.load(file_pointer)
             for record in test_data:
                 for payload in test_data[record]:
                     topics = test_data[record][payload]
@@ -61,7 +56,19 @@ class TestIndividualPayload(unittest.TestCase):
                         mqtt_message_info = client.publish(topic, payload)
                         mqtt_message_info.wait_for_publish()
 
-        time.sleep(sleep) # ToDo 
+        time.sleep(sleep)
+        with open("bin/user/tests/data/second.json") as file_pointer:
+            test_data = json.load(file_pointer)
+            for record in test_data:
+                for payload in test_data[record]:
+                    topics = test_data[record][payload]
+                    for topic in topics:
+                        for data in subscriber.get_data(topic):
+                            if data:
+                                records.append(data)
+                            else:
+                                break
+
         thread.start()
         thread.join()
 
