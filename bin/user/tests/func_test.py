@@ -29,8 +29,9 @@ class TestJsonPayload(unittest.TestCase):
         config_path = os.path.abspath("bin/user/tests/data/second.conf")
         config_dict = configobj.ConfigObj(config_path, file_error=True)['MQTTSubscribe']
         message_callback_config = config_dict.get('message_callback', None)
+        #message_callback_config['type'] = 'individual'
         #message_callback_config['type'] = 'json'
-        message_callback_config['type'] = 'individual'
+        message_callback_config['type'] = 'keyword'
         #setup_logging(True)
         logger = Logger()
         setup_logging(True)
@@ -54,13 +55,22 @@ class TestJsonPayload(unittest.TestCase):
                     for topic in topics:
                         topic_info = topics[topic]
                         #individual
-                        for field in topic_info['data']:
-                            mqtt_message_info = client.publish("%s/%s" % (topic, field), topic_info['data'][field])
-                            mqtt_message_info.wait_for_publish()                        
+                        #for field in topic_info['data']:
+                            #mqtt_message_info = client.publish("%s/%s" % (topic, field), topic_info['data'][field])
+                            #mqtt_message_info.wait_for_publish()
                         #json
                         #payload = json.dumps(topic_info['data'])
                         #mqtt_message_info = client.publish(topic, payload)
                         #mqtt_message_info.wait_for_publish()
+                        #keyword
+                        msg = ''
+                        data = topic_info['data']
+                        for field in data:
+                            msg = "%s%s%s%s%s" % (msg, field, topic_info['delimiter'], data[field], topic_info['separator'])
+                        msg = msg[:-1]
+                        msg = msg.encode("utf-8")
+                        mqtt_message_info = client.publish(topic, msg)
+                        mqtt_message_info.wait_for_publish()
 
         time.sleep(sleep)
         with open("bin/user/tests/data/second.json") as file_pointer:
