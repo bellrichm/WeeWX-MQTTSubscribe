@@ -26,9 +26,7 @@ def send_keyword_msgs(on_message, topics):
             payload = "%s%s%s%s%s" % (payload, field, topic_info['delimiter'], data[field], topic_info['separator'])
 
         payload = payload[:-1]
-        if not PY2:
-            payload = payload.encode("utf-8")
-        #print(payload)
+        payload = payload.encode("utf-8")
         on_message(None, None, Msg(topic, payload, 0, 0))
 
 class Msg(object):
