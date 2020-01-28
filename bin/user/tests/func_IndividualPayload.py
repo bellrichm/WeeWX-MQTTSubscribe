@@ -17,7 +17,7 @@ import weeutil
 from user.MQTTSubscribe import TopicManager, Logger
 
 class TestIndividualPayload(unittest.TestCase):
-    def test_get_data(self):
+    def get_data_test(self, msg_type, send_msgs):
         config_path = os.path.abspath("bin/user/tests/data/first.conf")
         config_dict = configobj.ConfigObj(config_path, file_error=True)['MQTTSubscribe']
 
@@ -29,7 +29,7 @@ class TestIndividualPayload(unittest.TestCase):
         if message_callback_config is None:
             raise ValueError("[[message_callback]] is required.")
 
-        message_callback_config['type'] = 'individual'
+        message_callback_config['type'] = msg_type
 
         message_callback_provider_name = config_dict.get('message_callback_provider',
                                                          'user.MQTTSubscribe.MessageCallbackProvider')
@@ -47,7 +47,7 @@ class TestIndividualPayload(unittest.TestCase):
             test_data = json.load(fp)
             for record in test_data:
                 for payload in test_data[record]:
-                    utils.send_individual_msgs(on_message, test_data[record][payload])
+                    send_msgs(on_message, test_data[record][payload])
 
         records = []
         for topic in manager.subscribed_topics:
@@ -117,6 +117,14 @@ class TestIndividualPayload(unittest.TestCase):
         self.assertIn('windSpeed', records[topic])
         self.assertEqual(records[topic]['windSpeed'], 1)
 
+    def test_get_data_individual(self):
+        self.get_data_test('individual', utils.send_individual_msgs)
+
+    def test_get_data_json(self):
+        self.get_data_test('json', utils.send_json_msgs)
+
+    def test_get_data_keyword(self):
+        self.get_data_test('keyword', utils.send_keyword_msgs)
 
 if __name__ == '__main__':
     unittest.main(exit=False)

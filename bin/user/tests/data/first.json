@@ -3,7 +3,7 @@
       "payload_001": {
         "weewx": {
           "separator": ",",
-          "delimiter": ":",
+          "delimiter": "=",
           "data": {
             "windDir": 0,
             "windSpeed": 1  
