@@ -1,3 +1,8 @@
+"""
+An example/prototype of functional test.
+Tests 'everything' needed for calls to get_data and get_accumulated_data of the TopicManager class.
+Calls the on_message callback directly, so no dependency on MQTT.
+"""
 # pylint: disable=wrong-import-order
 # pylint: disable=missing-docstring
 # pylint: disable=invalid-name

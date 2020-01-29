@@ -1,3 +1,9 @@
+"""
+An example/prototype of functional test.
+Tests 'everything' needed for calls to get_data and get_accumulated_data of the MQTTSubscriber class.
+These calls just wrap the TopicManager calls.
+Uses MQTT, so has added complexity, but more of an end to end test.
+"""
 # pylint: disable=wrong-import-order
 # pylint: disable=missing-docstring
 
@@ -6,20 +12,11 @@ import unittest
 import configobj
 import json
 import os
-import threading
 import time
 
 import paho.mqtt.client as mqtt
 
 from user.MQTTSubscribe import MQTTSubscribe, Logger, setup_logging
-
-class MyThread(threading.Thread):
-    def __init__(self, subscriber):
-        threading.Thread.__init__(self)
-        subscriber.start()
-
-    def run(self):
-        pass
 
 class TestJsonPayload(unittest.TestCase):
     def send_msg(self, msg_type, client, topic, topic_info):
@@ -53,7 +50,7 @@ class TestJsonPayload(unittest.TestCase):
         logger = Logger()
         setup_logging(True)
         subscriber = MQTTSubscribe(config_dict, logger)
-        thread = MyThread(subscriber)
+        subscriber.start()
 
         client_id = 'clientid'
         host = 'localhost'
@@ -83,9 +80,6 @@ class TestJsonPayload(unittest.TestCase):
                 else:
                     break
 
-        thread.start()
-        thread.join()
-
         self.assertEqual(len(records), 1)
         self.assertIn('dateTime', records[0])
         self.assertIn('usUnits', records[0])
@@ -108,7 +102,7 @@ class TestJsonPayload(unittest.TestCase):
         logger = Logger()
         setup_logging(True)
         subscriber = MQTTSubscribe(config_dict, logger)
-        thread = MyThread(subscriber)
+        subscriber.start()
 
         client_id = 'clientid'
         host = 'localhost'
@@ -136,9 +130,6 @@ class TestJsonPayload(unittest.TestCase):
         for topic in subscriber.manager.subscribed_topics:
             data = subscriber.get_accumulated_data(topic, start_ts, end_ts, 1)
             records[topic] = data
-
-        thread.start()
-        thread.join()
 
         topic = 'weather/loop/#'
         self.assertEqual(len(records), 1)
