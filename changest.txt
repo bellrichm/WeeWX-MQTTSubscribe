@@ -1,10 +1,16 @@
 V1.5.0
 Enhancements/Fixes
-- Support fields that have cumulative values (#40)
-- Support converting data to types other than float (#41)
-- Fixed handling of wind data in 'individual' payloads (#44)
+- Support fields that have cumulative values (#40).
+- Support converting data to types other than float (#41).
+- Fixed handling of wind data in 'individual' payloads (#44).
+- When running standalone, an option to print the verdion (#46).
+
+Internal Improvements
 - Remove dependency on six.
 - Improved logging when running standalone.
+- More consistent logging messages.
+- Remove use of assertDictContainsSubset (it has been deprecated).
+- Prototype functional testing.
 
 V1.4.0
 Enhancements/Fixes
