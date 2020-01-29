@@ -42,7 +42,7 @@ class TestJsonPayload(unittest.TestCase):
             mqtt_message_info.wait_for_publish()
 
     def get_data_test(self, msg_type):
-        sleep = 1
+        sleep = 2
         records = []
 
         config_path = os.path.abspath("bin/user/tests/data/second.conf")
@@ -74,15 +74,14 @@ class TestJsonPayload(unittest.TestCase):
                         self.send_msg(msg_type, client, topic, topic_info)
 
         time.sleep(sleep)
-        with open("bin/user/tests/data/second.json") as file_pointer:
-            test_data = json.load(file_pointer)
-            topics = config_dict.get('topics').sections
-            for topic in topics:
-                for data in subscriber.get_data(topic):
-                    if data:
-                        records.append(data)
-                    else:
-                        break
+
+        topics = config_dict.get('topics').sections
+        for topic in topics:
+            for data in subscriber.get_data(topic):
+                if data:
+                    records.append(data)
+                else:
+                    break
 
         thread.start()
         thread.join()
@@ -97,6 +96,61 @@ class TestJsonPayload(unittest.TestCase):
         self.assertIn('windSpeed', records[0])
         self.assertEqual(records[0]['windSpeed'], 1)
 
+    def get_accumulated_data_test(self, msg_type):
+        sleep = 2
+        records = []
+
+        config_path = os.path.abspath("bin/user/tests/data/second.conf")
+        config_dict = configobj.ConfigObj(config_path, file_error=True)['MQTTSubscribe']
+        message_callback_config = config_dict.get('message_callback', None)
+        message_callback_config['type'] = msg_type
+        #setup_logging(True)
+        logger = Logger()
+        setup_logging(True)
+        subscriber = MQTTSubscribe(config_dict, logger)
+        thread = MyThread(subscriber)
+
+        client_id = 'clientid'
+        host = 'localhost'
+        port = 1883
+        keepalive = 60
+
+        client = mqtt.Client(client_id)
+        client.connect(host, port, keepalive)
+        client.loop_start()
+
+        start_ts = time.time() - 1
+        with open("bin/user/tests/data/second.json") as file_pointer:
+            test_data = json.load(file_pointer)
+            for record in test_data:
+                for payload in test_data[record]:
+                    topics = test_data[record][payload]
+                    for topic in topics:
+                        topic_info = topics[topic]
+                        self.send_msg(msg_type, client, topic, topic_info)
+        end_ts = time.time() + 1
+
+        time.sleep(sleep)
+
+        records = {}
+        for topic in subscriber.manager.subscribed_topics:
+            data = subscriber.get_accumulated_data(topic, start_ts, end_ts, 1)
+            records[topic] = data
+
+        thread.start()
+        thread.join()
+
+        topic = 'weather/loop/#'
+        self.assertEqual(len(records), 1)
+        self.assertIn('dateTime', records[topic])
+        self.assertIn('usUnits', records[topic])
+        self.assertEqual(records[topic]['usUnits'], 1)
+
+        self.assertIn('windDir', records[topic])
+        self.assertEqual(records[topic]['windDir'], 0)
+        self.assertIn('windSpeed', records[topic])
+        self.assertEqual(records[topic]['windSpeed'], 1)
+
     def test_get_data_individual(self):
         self.get_data_test('individual')
 
@@ -105,6 +159,15 @@ class TestJsonPayload(unittest.TestCase):
 
     def test_get_data_keyword(self):
         self.get_data_test('keyword')
+
+    def test_get_accumulated_data_individual(self):
+        self.get_accumulated_data_test('individual')
+
+    def test_get_accumulated_data_json(self):
+        self.get_accumulated_data_test('json')
+
+    def test_get_accumulated_data_keyword(self):
+        self.get_accumulated_data_test('keyword')
 
 if __name__ == '__main__':
     unittest.main(exit=False)
