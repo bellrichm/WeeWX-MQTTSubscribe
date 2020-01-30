@@ -1133,7 +1133,7 @@ class MQTTSubscribeDriverConfEditor(weewx.drivers.AbstractConfEditor): # pragma:
 # rpm or deb package install:
 # PYTHONPATH=/usr/share/weewx python /usr/share/weewx/user/MQTTSubscribe.py
 if __name__ == '__main__': # pragma: no cover
-    import optparse
+    import argparse
     import os
     from weewx.engine import StdEngine # pylint: disable=ungrouped-imports
 
@@ -1153,43 +1153,39 @@ if __name__ == '__main__': # pragma: no cover
 
     def main():
         """ Prepare and run MQTTSubscribe in simulation mode. """
-        parser = optparse.OptionParser(usage=USAGE)
-        parser.add_option("--version", action="store_true", dest="version",
-                          help="Log extra output (debug=1).")
-        parser.add_option('--records', dest='record_count', type=int,
-                          help='The number of archive records to create.',
-                          default=2)
-        parser.add_option('--interval', dest='interval', type=int,
-                          help='The archive interval in seconds.',
-                          default=300)
-        parser.add_option('--delay', dest='delay', type=int,
-                          help='The archive delay in seconds.',
-                          default=15)
-        parser.add_option("--units", choices=["US", "METRIC", "METRICWX"],
-                          help="The default units if not in MQTT payload.",
-                          default="US")
-        parser.add_option("--binding", choices=["archive", "loop"],
-                          help="The type of binding.",
-                          default="archive")
-        parser.add_option("--type", choices=["driver", "service"],
-                          help="The simulation type.",
-                          default="driver")
-        parser.add_option("--verbose", action="store_true", dest="verbose",
-                          help="Log extra output (debug=1).")
-        parser.add_option("--console", action="store_true", dest="console",
-                          help="Log to console in addition to syslog.")
-        parser.add_option("--host",
-                          help="The MQTT server.")
-        parser.add_option("--topics",
-                          help="Comma separated list of topics to subscribe to.")
-        parser.add_option("--callback",
-                          help="The callback type.")
+        parser = argparse.ArgumentParser(usage=USAGE)
+        parser.add_argument('--version', action='version', version="MQTTSubscribe version is %s" % VERSION)
+        parser.add_argument('--records', dest='record_count', type=int,
+                            help='The number of archive records to create.',
+                            default=2)
+        parser.add_argument('--interval', dest='interval', type=int,
+                            help='The archive interval in seconds.',
+                            default=300)
+        parser.add_argument('--delay', dest='delay', type=int,
+                            help='The archive delay in seconds.',
+                            default=15)
+        parser.add_argument("--units", choices=["US", "METRIC", "METRICWX"],
+                            help="The default units if not in MQTT payload.",
+                            default="US")
+        parser.add_argument("--binding", choices=["archive", "loop"],
+                            help="The type of binding.",
+                            default="archive")
+        parser.add_argument("--type", choices=["driver", "service"],
+                            help="The simulation type.",
+                            default="driver")
+        parser.add_argument("--verbose", action="store_true", dest="verbose",
+                            help="Log extra output (debug=1).")
+        parser.add_argument("--console", action="store_true", dest="console",
+                            help="Log to console in addition to syslog.")
+        parser.add_argument("--host",
+                            help="The MQTT server.")
+        parser.add_argument("--topics",
+                            help="Comma separated list of topics to subscribe to.")
+        parser.add_argument("--callback",
+                            help="The callback type.")
+        parser.add_argument("config_file")
 
-        (options, args) = parser.parse_args()
-
-        if options.version:
-            print("Print MQTTSubscribe version is %s" % VERSION)
-            exit()
+        options = parser.parse_args()
 
         simulation_type = options.type
         binding = options.binding
@@ -1200,7 +1196,7 @@ if __name__ == '__main__': # pragma: no cover
 
         setup_logging(options.verbose)
 
-        config_path = os.path.abspath(args[0])
+        config_path = os.path.abspath(options.config_file)
 
         config_dict = configobj.ConfigObj(config_path, file_error=True)
 
