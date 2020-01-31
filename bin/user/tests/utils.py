@@ -8,7 +8,7 @@ PY2 = sys.version_info[0] == 2
 def send_individual_msgs(on_message, topics):
     for topic in topics:
         topic_info = topics[topic]
-        for field in topic_info['data']:
+        for field in sorted(topic_info['data']): # a bit of a hack, but need a determined order
             on_message(None, None, Msg("%s/%s" % (topic, field), topic_info['data'][field], 0, 0))
 
 def send_json_msgs(on_message, topics):

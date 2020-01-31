@@ -61,6 +61,15 @@ class TestIndividualPayload(unittest.TestCase):
                 else:
                     break
 
+        self.assertEqual(len(records), len(test['records']))
+        i = 0
+        for recordx in test['records']:
+            for field in recordx:
+                self.assertIn(field, records[i])
+                if recordx[field]:
+                    self.assertEqual(records[i][field], recordx[field])
+            i = +1
+
     def get_accumulated_data_test(self, test, config_dict, record):
         if test['type'] == 'individual':
             msg_def = utils.INDIVIDUAL_PAYLOAD
@@ -107,10 +116,10 @@ class TestIndividualPayload(unittest.TestCase):
                 self.assertIn(field, records[i])
                 if recordx[field]:
                     self.assertEqual(records[i][field], recordx[field])
-        i = +1
+            i = +1
 
     def test_get_data_individual(self):
-        with open("bin/user/tests/data/first.json") as fp:
+        with open("bin/user/tests/data/firstx.json") as fp:
             testx_data = json.load(fp)
             config_dict = configobj.ConfigObj(testx_data['config'])['MQTTSubscribe']
             test_data = testx_data['data']['payload']
@@ -118,7 +127,7 @@ class TestIndividualPayload(unittest.TestCase):
                 self.get_data_test(test, config_dict, test_data)
 
     def test_get_accumulated_data_individual(self):
-        with open("bin/user/tests/data/first.json") as fp:
+        with open("bin/user/tests/data/firsty.json") as fp:
             testx_data = json.load(fp)
             config_dict = configobj.ConfigObj(testx_data['config'])['MQTTSubscribe']
             test_data = testx_data['data']['payload']
