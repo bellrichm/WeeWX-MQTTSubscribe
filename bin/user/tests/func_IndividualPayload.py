@@ -24,33 +24,34 @@ class TestIndividualPayload(unittest.TestCase):
     def get_data_test(self, test, config_dict, record):
         if test['type'] == 'individual':
             msg_def = utils.INDIVIDUAL_PAYLOAD
+        elif test['type'] == 'json':
+            msg_def = utils.JSON_PAYLOAD
+        elif test['type'] == 'keyword':
+            msg_def = utils.KEYWORD_PAYLOAD
         logger = Logger()
 
-        with open("bin/user/tests/data/first.json") as fp:
-            #test_data = json.load(fp)
-            #config_dict = configobj.ConfigObj(test_data['config'])['MQTTSubscribe']
-            topics_dict = config_dict.get('topics', {})
+        topics_dict = config_dict.get('topics', {})
 
-            message_callback_config = config_dict.get('message_callback', None)
-            if message_callback_config is None:
-                raise ValueError("[[message_callback]] is required.")
+        message_callback_config = config_dict.get('message_callback', None)
+        if message_callback_config is None:
+            raise ValueError("[[message_callback]] is required.")
 
-            message_callback_config['type'] = msg_def['payload_type']
+        message_callback_config['type'] = msg_def['payload_type']
 
-            message_callback_provider_name = config_dict.get('message_callback_provider',
-                                                             'user.MQTTSubscribe.MessageCallbackProvider')
+        message_callback_provider_name = config_dict.get('message_callback_provider',
+                                                         'user.MQTTSubscribe.MessageCallbackProvider')
 
-            manager = TopicManager(topics_dict, logger)
+        manager = TopicManager(topics_dict, logger)
 
-            message_callback_provider_class = weeutil.weeutil._get_object(message_callback_provider_name) # pylint: disable=protected-access
-            message_callback_provider = message_callback_provider_class(message_callback_config,
-                                                                        logger,
-                                                                        manager)
+        message_callback_provider_class = weeutil.weeutil._get_object(message_callback_provider_name) # pylint: disable=protected-access
+        message_callback_provider = message_callback_provider_class(message_callback_config,
+                                                                    logger,
+                                                                    manager)
 
-            on_message = message_callback_provider.get_callback()
+        on_message = message_callback_provider.get_callback()
 
-            for topics in record:
-                msg_def['on_message'](on_message, topics)
+        for topics in record:
+            msg_def['on_message'](on_message, topics)
 
         records = []
         for topic in manager.subscribed_topics:
@@ -60,15 +61,14 @@ class TestIndividualPayload(unittest.TestCase):
                 else:
                     break
 
-        self.assertEqual(len(records), 1)
-        self.assertIn('dateTime', records[0])
-        self.assertIn('usUnits', records[0])
-        self.assertEqual(records[0]['usUnits'], 17)
-
-        self.assertIn('windDir', records[0])
-        self.assertEqual(records[0]['windDir'], 0)
-        self.assertIn('windSpeed', records[0])
-        self.assertEqual(records[0]['windSpeed'], 1)
+        self.assertEqual(len(records), len(test['records']))
+        i = 0
+        for recordx in test['records']:
+            for field in recordx:
+                self.assertIn(field, records[i])
+                if recordx[field]:
+                    self.assertEqual(records[i][field], recordx[field])
+        i = +1
 
     def get_accumulated_data_test(self, msg_def, test, config_dict, record):
         logger = Logger()
@@ -126,8 +126,6 @@ class TestIndividualPayload(unittest.TestCase):
             test_data = testx_data['data']['payload']
             for test in testx_data['data']['results']:
                 self.get_data_test(test, config_dict, test_data)
-
-    
 
     #def test_get_data_json(self):
         #self.get_data_test(utils.JSON_PAYLOAD)

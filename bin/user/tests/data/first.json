@@ -52,7 +52,29 @@
               "windSpeed": 1 
             }
           ]
-        }
+        },
+        {
+          "type": "json",
+          "records": [
+            {
+              "dateTime": null,
+              "usUnits": 17,
+              "windDir": 0,
+              "windSpeed": 1 
+            }
+          ]
+        },
+        {
+          "type": "keyword",
+          "records": [
+            {
+              "dateTime": null,
+              "usUnits": 17,
+              "windDir": 0,
+              "windSpeed": 1 
+            }
+          ]
+        }          
       ]
     }
   
