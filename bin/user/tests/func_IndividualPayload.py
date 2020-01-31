@@ -23,36 +23,35 @@ from user.MQTTSubscribe import TopicManager, Logger
 
 class TestIndividualPayload(unittest.TestCase):
     def get_data_test(self, msg_def):
-        config_path = os.path.abspath("bin/user/tests/data/first.conf")
-        config_dict = configobj.ConfigObj(config_path, file_error=True)['MQTTSubscribe']
-
-        topics_dict = config_dict.get('topics', {})
-
         logger = Logger()
-
-        message_callback_config = config_dict.get('message_callback', None)
-        if message_callback_config is None:
-            raise ValueError("[[message_callback]] is required.")
-
-        message_callback_config['type'] = msg_def['payload_type']
-
-        message_callback_provider_name = config_dict.get('message_callback_provider',
-                                                         'user.MQTTSubscribe.MessageCallbackProvider')
-
-        manager = TopicManager(topics_dict, logger)
-
-        message_callback_provider_class = weeutil.weeutil._get_object(message_callback_provider_name) # pylint: disable=protected-access
-        message_callback_provider = message_callback_provider_class(message_callback_config,
-                                                                    logger,
-                                                                    manager)
-
-        on_message = message_callback_provider.get_callback()
 
         with open("bin/user/tests/data/first.json") as fp:
             test_data = json.load(fp)
-            for record in test_data:
-                for payload in test_data[record]:
-                    msg_def['on_message'](on_message, test_data[record][payload])
+            config_dict = configobj.ConfigObj(test_data['config'])['MQTTSubscribe']
+            topics_dict = config_dict.get('topics', {})
+            
+            message_callback_config = config_dict.get('message_callback', None)
+            if message_callback_config is None:
+                raise ValueError("[[message_callback]] is required.")
+
+            message_callback_config['type'] = msg_def['payload_type']
+
+            message_callback_provider_name = config_dict.get('message_callback_provider',
+                                                             'user.MQTTSubscribe.MessageCallbackProvider')
+
+            manager = TopicManager(topics_dict, logger)
+                
+            message_callback_provider_class = weeutil.weeutil._get_object(message_callback_provider_name) # pylint: disable=protected-access
+            message_callback_provider = message_callback_provider_class(message_callback_config,
+                                                                        logger,
+                                                                        manager)
+
+            on_message = message_callback_provider.get_callback()
+            
+            for record in test_data['data']:
+                for payload in record:
+                    for topics in record[payload]:
+                        msg_def['on_message'](on_message, topics)
 
         records = []
         for topic in manager.subscribed_topics:
@@ -73,37 +72,36 @@ class TestIndividualPayload(unittest.TestCase):
         self.assertEqual(records[0]['windSpeed'], 1)
 
     def get_accumulated_data_test(self, msg_def):
-        config_path = os.path.abspath("bin/user/tests/data/first.conf")
-        config_dict = configobj.ConfigObj(config_path, file_error=True)['MQTTSubscribe']
-
-        topics_dict = config_dict.get('topics', {})
-
         logger = Logger()
-
-        message_callback_config = config_dict.get('message_callback', None)
-        if message_callback_config is None:
-            raise ValueError("[[message_callback]] is required.")
-
-        message_callback_provider_name = config_dict.get('message_callback_provider',
-                                                         'user.MQTTSubscribe.MessageCallbackProvider')
-
-        message_callback_config['type'] = msg_def['payload_type']
-
-        manager = TopicManager(topics_dict, logger)
-
-        message_callback_provider_class = weeutil.weeutil._get_object(message_callback_provider_name) # pylint: disable=protected-access
-        message_callback_provider = message_callback_provider_class(message_callback_config,
-                                                                    logger,
-                                                                    manager)
-
-        on_message = message_callback_provider.get_callback()
 
         start_ts = time.time()
         with open("bin/user/tests/data/first.json") as fp:
             test_data = json.load(fp)
-            for record in test_data:
-                for payload in test_data[record]:
-                    msg_def['on_message'](on_message, test_data[record][payload])
+            config_dict = configobj.ConfigObj(test_data['config'])['MQTTSubscribe']
+            topics_dict = config_dict.get('topics', {})
+            
+            message_callback_config = config_dict.get('message_callback', None)
+            if message_callback_config is None:
+                raise ValueError("[[message_callback]] is required.")
+
+            message_callback_config['type'] = msg_def['payload_type']
+
+            message_callback_provider_name = config_dict.get('message_callback_provider',
+                                                             'user.MQTTSubscribe.MessageCallbackProvider')
+
+            manager = TopicManager(topics_dict, logger)
+                
+            message_callback_provider_class = weeutil.weeutil._get_object(message_callback_provider_name) # pylint: disable=protected-access
+            message_callback_provider = message_callback_provider_class(message_callback_config,
+                                                                        logger,
+                                                                        manager)
+
+            on_message = message_callback_provider.get_callback()
+            
+            for record in test_data['data']:
+                for payload in record:
+                    for topics in record[payload]:
+                        msg_def['on_message'](on_message, topics)
         end_ts = time.time()
 
         records = {}
