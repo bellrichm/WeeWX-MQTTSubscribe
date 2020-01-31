@@ -2,7 +2,7 @@
 """ A simple utility that prints the topics and payloads. """
 
 from __future__ import print_function
-import optparse
+import argparse
 import os
 import random
 
@@ -64,28 +64,29 @@ def on_message(client, userdata, msg):  # (match callback signature) pylint: dis
 
 def init_parser():
     """ Parse the command line arguments. """
-    parser = optparse.OptionParser(usage=USAGE)
-    parser.add_option("--type", choices=["driver", "service"],
-                      help="The simulation type.",
-                      default="driver")
-    parser.add_option('--records', dest='max_records', type=int,
-                      help='The number of MQTT records to retrieve.')
-    parser.add_option("--host",
-                      help="The MQTT server.")
-    parser.add_option('--port', dest='port', type=int,
-                      help='The port to connect to.')
-    parser.add_option('--keepalive', dest='keepalive', type=int,
-                      help='Maximum period in seconds allowed between communications with the broker.')
-    parser.add_option("--clientid",
-                      help="The clientid to connect with.")
-    parser.add_option("--username",
-                      help="username for broker authentication.")
-    parser.add_option("--password",
-                      help="password for broker authentication.")
-    parser.add_option("--topics",
-                      help="Comma separated list of topics to subscribe to.")
-    parser.add_option("--quiet", action="store_true", dest="quiet",
-                      help="Turn off the MQTT logging.")
+    parser = argparse.ArgumentParser(usage=USAGE)
+    parser.add_argument("--type", choices=["driver", "service"],
+                        help="The simulation type.",
+                        default="driver")
+    parser.add_argument('--records', dest='max_records', type=int,
+                        help='The number of MQTT records to retrieve.')
+    parser.add_argument("--host",
+                        help="The MQTT server.")
+    parser.add_argument('--port', dest='port', type=int,
+                        help='The port to connect to.')
+    parser.add_argument('--keepalive', dest='keepalive', type=int,
+                        help='Maximum period in seconds allowed between communications with the broker.')
+    parser.add_argument("--clientid",
+                        help="The clientid to connect with.")
+    parser.add_argument("--username",
+                        help="username for broker authentication.")
+    parser.add_argument("--password",
+                        help="password for broker authentication.")
+    parser.add_argument("--topics",
+                        help="Comma separated list of topics to subscribe to.")
+    parser.add_argument("--quiet", action="store_true", dest="quiet",
+                        help="Turn off the MQTT logging.")
+    parser.add_argument("config_file")
 
     return parser
 
@@ -98,7 +99,7 @@ def _get_option(option, default):
 def main():
     """ The main entry point. """
     parser = init_parser()
-    (options, args) = parser.parse_args()
+    options = parser.parse_args()
 
     if options.type == 'service':
         config_type = 'MQTTSubscribeService'
@@ -107,8 +108,8 @@ def main():
 
     max_records = _get_option(options.max_records, None)
 
-    if args:
-        config_path = os.path.abspath(args[0])
+    if options.config_file:
+        config_path = os.path.abspath(options.config_file)
         configuration = configobj.ConfigObj(config_path, file_error=True)
         config_dict = configuration.get(config_type, {})
     else:
