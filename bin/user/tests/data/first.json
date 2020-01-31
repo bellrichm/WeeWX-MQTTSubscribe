@@ -44,6 +44,7 @@
       "results": [
         {
           "type": "individual",
+          "units": 17,          
           "records": [
             {
               "dateTime": null,
@@ -55,6 +56,7 @@
         },
         {
           "type": "json",
+          "units": 17,          
           "records": [
             {
               "dateTime": null,
@@ -66,6 +68,7 @@
         },
         {
           "type": "keyword",
+          "units": 17,
           "records": [
             {
               "dateTime": null,
