@@ -27,7 +27,7 @@
     "        unit_system = METRICWX",
     "        [[[weewx/#]]]"
   ],
-  "data": [
+  "data": 
     {
       "payload": [
         {
@@ -40,9 +40,22 @@
           }    
           }
         }
+      ],
+      "results": [
+        {
+          "type": "individual",
+          "records": [
+            {
+              "dateTime": null,
+              "usUnits": 17,
+              "windDir": 0,
+              "windSpeed": 1 
+            }
+          ]
+        }
       ]
     }
-  ]
+  
 }
     
 

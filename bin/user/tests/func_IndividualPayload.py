@@ -14,7 +14,6 @@ import unittest
 
 import configobj
 import json
-import os
 import time
 
 import weeutil
@@ -22,14 +21,16 @@ import weeutil
 from user.MQTTSubscribe import TopicManager, Logger
 
 class TestIndividualPayload(unittest.TestCase):
-    def get_data_test(self, msg_def):
+    def get_data_test(self, test, config_dict, record):
+        if test['type'] == 'individual':
+            msg_def = utils.INDIVIDUAL_PAYLOAD
         logger = Logger()
 
         with open("bin/user/tests/data/first.json") as fp:
-            test_data = json.load(fp)
-            config_dict = configobj.ConfigObj(test_data['config'])['MQTTSubscribe']
+            #test_data = json.load(fp)
+            #config_dict = configobj.ConfigObj(test_data['config'])['MQTTSubscribe']
             topics_dict = config_dict.get('topics', {})
-            
+
             message_callback_config = config_dict.get('message_callback', None)
             if message_callback_config is None:
                 raise ValueError("[[message_callback]] is required.")
@@ -40,18 +41,16 @@ class TestIndividualPayload(unittest.TestCase):
                                                              'user.MQTTSubscribe.MessageCallbackProvider')
 
             manager = TopicManager(topics_dict, logger)
-                
+
             message_callback_provider_class = weeutil.weeutil._get_object(message_callback_provider_name) # pylint: disable=protected-access
             message_callback_provider = message_callback_provider_class(message_callback_config,
                                                                         logger,
                                                                         manager)
 
             on_message = message_callback_provider.get_callback()
-            
-            for record in test_data['data']:
-                for payload in record:
-                    for topics in record[payload]:
-                        msg_def['on_message'](on_message, topics)
+
+            for topics in record:
+                msg_def['on_message'](on_message, topics)
 
         records = []
         for topic in manager.subscribed_topics:
@@ -71,7 +70,7 @@ class TestIndividualPayload(unittest.TestCase):
         self.assertIn('windSpeed', records[0])
         self.assertEqual(records[0]['windSpeed'], 1)
 
-    def get_accumulated_data_test(self, msg_def):
+    def get_accumulated_data_test(self, msg_def, test, config_dict, record):
         logger = Logger()
 
         start_ts = time.time()
@@ -79,7 +78,7 @@ class TestIndividualPayload(unittest.TestCase):
             test_data = json.load(fp)
             config_dict = configobj.ConfigObj(test_data['config'])['MQTTSubscribe']
             topics_dict = config_dict.get('topics', {})
-            
+
             message_callback_config = config_dict.get('message_callback', None)
             if message_callback_config is None:
                 raise ValueError("[[message_callback]] is required.")
@@ -90,14 +89,14 @@ class TestIndividualPayload(unittest.TestCase):
                                                              'user.MQTTSubscribe.MessageCallbackProvider')
 
             manager = TopicManager(topics_dict, logger)
-                
+
             message_callback_provider_class = weeutil.weeutil._get_object(message_callback_provider_name) # pylint: disable=protected-access
             message_callback_provider = message_callback_provider_class(message_callback_config,
                                                                         logger,
                                                                         manager)
 
             on_message = message_callback_provider.get_callback()
-            
+
             for record in test_data['data']:
                 for payload in record:
                     for topics in record[payload]:
@@ -121,22 +120,29 @@ class TestIndividualPayload(unittest.TestCase):
         self.assertEqual(records[topic]['windSpeed'], 1)
 
     def test_get_data_individual(self):
-        self.get_data_test(utils.INDIVIDUAL_PAYLOAD)
+        with open("bin/user/tests/data/first.json") as fp:
+            testx_data = json.load(fp)
+            config_dict = configobj.ConfigObj(testx_data['config'])['MQTTSubscribe']
+            test_data = testx_data['data']['payload']
+            for test in testx_data['data']['results']:
+                self.get_data_test(test, config_dict, test_data)
 
-    def test_get_data_json(self):
-        self.get_data_test(utils.JSON_PAYLOAD)
+    
 
-    def test_get_data_keyword(self):
-        self.get_data_test(utils.KEYWORD_PAYLOAD)
+    #def test_get_data_json(self):
+        #self.get_data_test(utils.JSON_PAYLOAD)
 
-    def test_get_accumulated_data_individual(self):
-        self.get_accumulated_data_test(utils.INDIVIDUAL_PAYLOAD)
+    #def test_get_data_keyword(self):
+        #self.get_data_test(utils.KEYWORD_PAYLOAD)
 
-    def test_get_accumulated_data_json(self):
-        self.get_accumulated_data_test(utils.JSON_PAYLOAD)
+    #def test_get_accumulated_data_individual(self):
+        #self.get_accumulated_data_test(utils.INDIVIDUAL_PAYLOAD)
 
-    def test_get_accumulated_data_keyword(self):
-        self.get_accumulated_data_test(utils.KEYWORD_PAYLOAD)
+    #def test_get_accumulated_data_json(self):
+        #self.get_accumulated_data_test(utils.JSON_PAYLOAD)
+
+    #def test_get_accumulated_data_keyword(self):
+        #self.get_accumulated_data_test(utils.KEYWORD_PAYLOAD)
 
 if __name__ == '__main__':
     unittest.main(exit=False)
