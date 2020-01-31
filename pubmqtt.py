@@ -1,7 +1,7 @@
 #!/usr/bin/python
 """ A simple utility that reads messages from a file and publishes each line to MQTT. """
 from __future__ import print_function
-import optparse
+import argparse
 import random
 import sys
 import time
@@ -28,27 +28,27 @@ A simple utility that reads messages from a file and publishes each line to MQTT
 
 def init_parser():
     """ Parse the command line arguments. """
-    parser = optparse.OptionParser(usage=USAGE)
-    parser.add_option("--host", dest='host', default='localhost',
-                      help="The MQTT server.")
-    parser.add_option('--port', dest='port', type=int, default=1883,
-                      help='The port to connect to.')
-    parser.add_option('--keepalive', dest='keepalive', type=int, default=60,
-                      help='Maximum period in seconds allowed between communications with the broker.')
-    parser.add_option("--client-id", dest='client_id', default='clientid',
-                      help="The clientid to connect with.")
-    parser.add_option("--topic", dest='topic', default='test-topic',
-                      help="The topic to subscribe to.")
-    parser.add_option("--file", dest='file', default='tmp/messages.txt',
-                      help="The file containing the messages to publish.")
-    parser.add_option("--interval", dest='interval', type=int, default=0,
-                      help="The minimum time between publishing messages.")
-    parser.add_option("--min-interval", dest='min_interval', type=int, default=0,
-                      help="When using a random interval, the minimum time between publishing messages.")
-    parser.add_option("--max-interval", dest='max_interval', type=int, default=0,
-                      help="When using a random interval, the 'maximum' time between publishing messages.")
-    parser.add_option("--prompt", action="store_true", dest="prompt_to_send",
-                      help="Prompt to publish the next message.")
+    parser = argparse.ArgumentParser(usage=USAGE)
+    parser.add_argument("--host", dest='host', default='localhost',
+                        help="The MQTT server.")
+    parser.add_argument('--port', dest='port', type=int, default=1883,
+                        help='The port to connect to.')
+    parser.add_argument('--keepalive', dest='keepalive', type=int, default=60,
+                        help='Maximum period in seconds allowed between communications with the broker.')
+    parser.add_argument("--client-id", dest='client_id', default='clientid',
+                        help="The clientid to connect with.")
+    parser.add_argument("--topic", dest='topic', default='test-topic',
+                        help="The topic to subscribe to.")
+    parser.add_argument("--file", dest='file', default='tmp/messages.txt',
+                        help="The file containing the messages to publish.")
+    parser.add_argument("--interval", dest='interval', type=int, default=0,
+                        help="The minimum time between publishing messages.")
+    parser.add_argument("--min-interval", dest='min_interval', type=int, default=0,
+                        help="When using a random interval, the minimum time between publishing messages.")
+    parser.add_argument("--max-interval", dest='max_interval', type=int, default=0,
+                        help="When using a random interval, the 'maximum' time between publishing messages.")
+    parser.add_argument("--prompt", action="store_true", dest="prompt_to_send",
+                        help="Prompt to publish the next message.")
 
     return parser
 
@@ -84,7 +84,7 @@ def on_publish(client, userdata, mid):  # (match callback signature) pylint: dis
 def main():
     """ The main entry point. """
     parser = init_parser()
-    (options, args) = parser.parse_args() # (match callback signature) pylint: disable=unused-variable
+    options = parser.parse_args()
 
     host = options.host
     port = options.port
