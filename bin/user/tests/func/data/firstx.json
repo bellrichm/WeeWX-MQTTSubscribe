@@ -1,6 +1,6 @@
 {
   "config": [
-    "[MQTTSubscribe]",
+    "[MQTTSubscribeService]",
     "    # Configuration for the message callback.",
     "    [[message_callback]]",
     "       [[[label_map]]]",

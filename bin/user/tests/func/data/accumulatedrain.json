@@ -1,6 +1,6 @@
 {
   "config": [
-    "[MQTTSubscribe]",
+    "[MQTTSubscribeService]",
     "    # Configuration for the message callback.",
     "    [[message_callback]]",
     "        [[[fields]]]",
@@ -17,6 +17,10 @@
     "    # The topics to subscribe to.",
     "    [[topics]]",
     "        unit_system = METRICWX",
+    "        ignore_start_time = True", 
+    "        ignore_end_time = True",   
+    "        adjust_start_time = 1",
+    "        adjust_end_time = 1",
     "        [[[weewx/#]]]"
   ],
   "data": 
@@ -58,7 +62,7 @@
             {
               "dateTime": null,
               "usUnits": 17,
-              "rain": "None"
+              "rain": 0
             },
             {
               "dateTime": null,
@@ -80,7 +84,7 @@
             {
               "dateTime": null,
               "usUnits": 17,
-              "rain": "None"
+              "rain": 0
             },
             {
               "dateTime": null,
@@ -102,7 +106,7 @@
             {
               "dateTime": null,
               "usUnits": 17,
-              "rain": "None"
+              "rain": 0
             },
             {
               "dateTime": null,
