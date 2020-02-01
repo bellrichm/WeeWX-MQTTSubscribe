@@ -126,6 +126,65 @@ class TestJsonPayload(unittest.TestCase):
         self.assertIn('windSpeed', record)
         self.assertEqual(record['windSpeed'], 1)
 
+    def service_test(self, test, config_dict, record):
+        sleep = 2
+
+        cdict = config_dict['MQTTSubscribeService']
+        message_callback_config = cdict.get('message_callback', None)
+        message_callback_config['type'] = test['type']
+
+        min_config_dict = {
+            'Station': {
+                'altitude': [0, 'foot'],
+                'latitude': 0,
+                'station_type': 'Simulator',
+                'longitude': 0
+            },
+            'Simulator': {
+                'driver': 'weewx.drivers.simulator',
+            },
+            'Engine': {
+                'Services': {}
+            }
+        }
+
+        engine = StdEngine(min_config_dict)
+
+        service = MQTTSubscribeService(engine, config_dict)
+
+        client_id = 'clientid'
+        host = 'localhost'
+        port = 1883
+        keepalive = 60
+
+        client = mqtt.Client(client_id)
+        client.connect(host, port, keepalive)
+        client.loop_start()
+
+        for topics in record:
+            for topic in topics:
+                topic_info = topics[topic]
+                self.send_msg(test['type'], client, topic, topic_info)
+
+        time.sleep(sleep)
+
+        record = {}
+        units = 17
+        interval = 300
+        current_time = int(time.time() + 0.5)
+        end_period_ts = (int(current_time / interval) + 1) * interval
+
+        record['dateTime'] = end_period_ts
+        record['usUnits'] = units
+        new_loop_packet_event = weewx.Event(weewx.NEW_LOOP_PACKET, packet=record)
+        service.new_loop_packet(new_loop_packet_event)
+
+        service.shutDown()
+
+        records = [record]
+        utils.check(self, records, test)
+        print(records)
+
     def service_test0(self, msg_type):
         sleep = 2
 
@@ -200,11 +259,11 @@ class TestJsonPayload(unittest.TestCase):
     def test_get_data_individual1(self):
         with open("bin/user/tests/data/first.json") as fp:
             testx_data = json.load(fp, object_hook=utils.byteify)
-            config_dict = configobj.ConfigObj(testx_data['config'])['MQTTSubscribe']
+            config_dict = configobj.ConfigObj(testx_data['config'])
             test_data = testx_data['data']['payload']
             for test in testx_data['data']['results']:
                 # print(test)
-                self.driver_test(test, config_dict, test_data)
+                self.service_test(test, config_dict, test_data)
 
     #def test_get_data_individual(self):
         #self.driver_test('individual')
