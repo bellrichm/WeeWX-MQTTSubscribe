@@ -7,6 +7,24 @@ import weeutil
 
 PY2 = sys.version_info[0] == 2
 
+def _byteify(data, ignore_dicts = False):
+    if PY2:
+        # if this is a unicode string, return its string representation
+        if isinstance(data, unicode):
+            return data.encode('utf-8')
+    # if this is a list of values, return list of byteified values
+    if isinstance(data, list):
+        return [ _byteify(item, ignore_dicts=True) for item in data ]
+    # if this is a dictionary, return dictionary of byteified keys and values
+    # but only if we haven't already byteified it
+    if isinstance(data, dict) and not ignore_dicts:
+        return {
+            _byteify(key, ignore_dicts=True): _byteify(value, ignore_dicts=True)
+            for key, value in data.items()
+        }
+    # if it's anything else, return it in its original form
+    return data
+
 def send_individual_msgs(on_message, topics):
     for topic in topics:
         topic_info = topics[topic]
@@ -63,10 +81,15 @@ def check(self, records, test):
     i = 0
     for recordx in test['records']:
         for field in recordx:
+            msg = "for payload of %s in record %i" % (test['type'], i+1)
             self.assertIn(field, records[i], msg)
             if recordx[field]:
-                self.assertEqual(records[i][field], recordx[field], msg)
-        i = +1
+                msg = "for payload of %s and field %s in record %i" % (test['type'], field, i+1)
+                if recordx[field] == "None": # ToDo - cleanup
+                    self.assertIsNone(records[i][field], msg)
+                else:
+                    self.assertEqual(records[i][field], recordx[field], msg)
+        i += 1
 
 class Msg(object):
     def __init__(self, topic, payload, qos, retain):
