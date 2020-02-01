@@ -15,6 +15,8 @@ import time
 
 import paho.mqtt.client as mqtt
 
+import utils
+
 import weewx
 from weewx.engine import StdEngine
 from user.MQTTSubscribe import MQTTSubscribeService, MQTTSubscribeDriver
@@ -39,7 +41,46 @@ class TestJsonPayload(unittest.TestCase):
             mqtt_message_info = client.publish(topic, msg)
             mqtt_message_info.wait_for_publish()
 
-    def driver_test(self, msg_type):
+    def driver_test(self, test, cdict, record):
+        sleep = 2
+
+        #cdict = config_dict['MQTTSubscribe']
+        message_callback_config = cdict.get('message_callback', None)
+        message_callback_config['type'] = test['type']
+
+        driver = MQTTSubscribeDriver(**cdict)
+
+        client_id = 'clientid'
+        host = 'localhost'
+        port = 1883
+        keepalive = 60
+
+        client = mqtt.Client(client_id)
+        client.connect(host, port, keepalive)
+        client.loop_start()
+
+        for topics in record:
+            for topic in topics:
+                topic_info = topics[topic]
+                self.send_msg(test['type'], client, topic, topic_info)
+
+        time.sleep(sleep)
+
+        records = []
+        gen = driver.genLoopPackets()
+
+        i = 0
+        while i < len(test['records']): # not great, but no way to know if more records
+            data = next(gen, None)
+            records.append(data)
+            i += 1
+
+        driver.closePort()
+
+        utils.check(self, records, test)
+        return
+
+    def driver_test0(self, msg_type):
         sleep = 2
 
         config_path = os.path.abspath("bin/user/tests/data/fourth.conf")
@@ -85,7 +126,7 @@ class TestJsonPayload(unittest.TestCase):
         self.assertIn('windSpeed', record)
         self.assertEqual(record['windSpeed'], 1)
 
-    def service_test(self, msg_type):
+    def service_test0(self, msg_type):
         sleep = 2
 
         config_path = os.path.abspath("bin/user/tests/data/third.conf")
@@ -156,23 +197,32 @@ class TestJsonPayload(unittest.TestCase):
         self.assertIn('windSpeed', record)
         self.assertEqual(record['windSpeed'], 1)
 
-    def test_get_data_individual(self):
-        self.driver_test('individual')
+    def test_get_data_individual1(self):
+        with open("bin/user/tests/data/first.json") as fp:
+            testx_data = json.load(fp, object_hook=utils.byteify)
+            config_dict = configobj.ConfigObj(testx_data['config'])['MQTTSubscribe']
+            test_data = testx_data['data']['payload']
+            for test in testx_data['data']['results']:
+                # print(test)
+                self.driver_test(test, config_dict, test_data)
 
-    def test_get_data_json(self):
-        self.driver_test('json')
+    #def test_get_data_individual(self):
+        #self.driver_test('individual')
 
-    def test_get_data_keyword(self):
-        self.driver_test('keyword')
+    #def test_get_data_json(self):
+        #self.driver_test('json')
 
-    def test_get_accumulated_data_individual(self):
-        self.service_test('individual')
+    #def test_get_data_keyword(self):
+        #self.driver_test('keyword')
 
-    def test_get_accumulated_data_json(self):
-        self.service_test('json')
+    #def test_get_accumulated_data_individual(self):
+        #self.service_test('individual')
 
-    def test_get_accumulated_data_keyword(self):
-        self.service_test('keyword')
+    #def test_get_accumulated_data_json(self):
+        #self.service_test('json')
+
+    #def test_get_accumulated_data_keyword(self):
+        #self.service_test('keyword')
 
 if __name__ == '__main__':
     unittest.main(exit=False)
