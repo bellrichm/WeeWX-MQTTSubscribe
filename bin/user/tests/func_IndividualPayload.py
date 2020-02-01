@@ -57,44 +57,43 @@ class TestIndividualPayload(unittest.TestCase):
 
     def test_get_data_individual0(self):
         with open("bin/user/tests/data/accumulatedrain.json") as fp:
-            testx_data = json.load(fp, object_hook=utils._byteify)
+            testx_data = json.load(fp, object_hook=utils.byteify)
             config_dict = configobj.ConfigObj(testx_data['config'])['MQTTSubscribe']
             test_data = testx_data['data']['payload']
             for test in testx_data['data']['results']:
                 self.get_data_test(test, config_dict, test_data)
-                
+
     #unittest.skip("")
     def test_get_data_individual1(self):
         with open("bin/user/tests/data/first.json") as fp:
-            testx_data = json.load(fp, object_hook=utils._byteify)
+            testx_data = json.load(fp, object_hook=utils.byteify)
             config_dict = configobj.ConfigObj(testx_data['config'])['MQTTSubscribe']
             test_data = testx_data['data']['payload']
             for test in testx_data['data']['results']:
-                self.get_data_test(test, config_dict, test_data)                
+                self.get_data_test(test, config_dict, test_data)
 
     #unittest.skip("")
     def test_get_accumulated_data_individual1(self):
         with open("bin/user/tests/data/first.json") as fp:
-            testx_data = json.load(fp, object_hook=utils._byteify)
+            testx_data = json.load(fp, object_hook=utils.byteify)
             config_dict = configobj.ConfigObj(testx_data['config'])['MQTTSubscribe']
             test_data = testx_data['data']['payload']
             for test in testx_data['data']['results']:
                 self.get_accumulated_data_test(test, config_dict, test_data)
-               
 
     @unittest.skip("")
     def test_get_data_individual(self):
         with open("bin/user/tests/data/firstx.json") as fp:
-            testx_data = json.load(fp, object_hook=utils._byteify)
+            testx_data = json.load(fp, object_hook=utils.byteify)
             config_dict = configobj.ConfigObj(testx_data['config'])['MQTTSubscribe']
             test_data = testx_data['data']['payload']
             for test in testx_data['data']['results']:
-                self.get_data_test(test, config_dict, test_data)                
+                self.get_data_test(test, config_dict, test_data)
 
     @unittest.skip("")
     def test_get_accumulated_data_individual(self):
         with open("bin/user/tests/data/firsty.json") as fp:
-            testx_data = json.load(fp, object_hook=utils._byteify)
+            testx_data = json.load(fp, object_hook=utils.byteify)
             config_dict = configobj.ConfigObj(testx_data['config'])['MQTTSubscribe']
             test_data = testx_data['data']['payload']
             for test in testx_data['data']['results']:
