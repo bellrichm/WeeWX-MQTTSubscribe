@@ -188,7 +188,7 @@ class TestJsonPayload(unittest.TestCase):
         #print(records)
 
     def servicex_test(self, test, config_dict, record):
-        sleep = 3
+        sleep = 2
 
         cdict = config_dict['MQTTSubscribeService']
         message_callback_config = cdict.get('message_callback', None)
