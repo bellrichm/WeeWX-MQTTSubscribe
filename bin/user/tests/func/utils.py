@@ -29,6 +29,7 @@ def byteify(data, ignore_dicts=False):
 def send_individual_msgs(on_message, topics):
     for topic in topics:
         topic_info = topics[topic]
+        topic = "%s/#" % topic
         for field in sorted(topic_info['data']): # a bit of a hack, but need a determined order
             on_message(None, None, Msg("%s/%s" % (topic, field), topic_info['data'][field], 0, 0))
 
@@ -50,13 +51,7 @@ def send_keyword_msgs(on_message, topics):
         payload = payload.encode("utf-8")
         on_message(None, None, Msg(topic, payload, 0, 0))
 
-def setup(test, config_dict, record, manager, logger):
-    if test['type'] == 'individual':
-        msg_def = INDIVIDUAL_PAYLOAD
-    elif test['type'] == 'json':
-        msg_def = JSON_PAYLOAD
-    elif test['type'] == 'keyword':
-        msg_def = KEYWORD_PAYLOAD
+def setup(msg_def, config_dict, manager, logger):
 
     message_callback_config = config_dict.get('message_callback', None)
     if message_callback_config is None:
@@ -72,9 +67,7 @@ def setup(test, config_dict, record, manager, logger):
                                                                 logger,
                                                                 manager)
 
-    on_message = message_callback_provider.get_callback()
-    for topics in record:
-        msg_def['on_message'](on_message, topics)
+    return message_callback_provider.get_callback()
 
 def check(self, records, test):
     msg = "for payload of %s" % test['type']
