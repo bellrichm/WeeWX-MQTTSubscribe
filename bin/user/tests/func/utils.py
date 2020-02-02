@@ -78,11 +78,13 @@ def setup(test, config_dict, record, manager, logger):
 
 def check(self, records, test):
     msg = "for payload of %s" % test['type']
+    #print(records)
+    #print(test)
     self.assertEqual(len(records), len(test['records']), msg)
     i = 0
     for recordx in test['records']:
         for field in recordx:
-            msg = "for payload of %s in record %i" % (test['type'], i+1)
+            msg = "for payload of %s and field %s in record %i" % (test['type'], field, i+1)
             self.assertIn(field, records[i], msg)
             if recordx[field]:
                 msg = "for payload of %s and field %s in record %i" % (test['type'], field, i+1)
