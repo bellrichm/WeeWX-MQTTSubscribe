@@ -41,91 +41,6 @@ class TestJsonPayload(unittest.TestCase):
             mqtt_message_info = client.publish(topic, msg)
             mqtt_message_info.wait_for_publish()
 
-    def driver_test(self, test, cdict, record):
-        sleep = 2
-
-        #cdict = config_dict['MQTTSubscribe']
-        message_callback_config = cdict.get('message_callback', None)
-        message_callback_config['type'] = test['type']
-
-        driver = MQTTSubscribeDriver(**cdict)
-
-        client_id = 'clientid'
-        host = 'localhost'
-        port = 1883
-        keepalive = 60
-
-        client = mqtt.Client(client_id)
-        client.connect(host, port, keepalive)
-        client.loop_start()
-
-        for topics in record:
-            for topic in topics:
-                topic_info = topics[topic]
-                self.send_msg(test['type'], client, topic, topic_info)
-
-        time.sleep(sleep)
-
-        records = []
-        gen = driver.genLoopPackets()
-
-        i = 0
-        while i < len(test['records']): # not great, but no way to know if more records
-            data = next(gen, None)
-            records.append(data)
-            i += 1
-
-        driver.closePort()
-
-        utils.check(self, records, test)
-        return
-
-    def driver_test0(self, msg_type):
-        sleep = 2
-
-        config_path = os.path.abspath("bin/user/tests/data/fourth.conf")
-        config_dict = configobj.ConfigObj(config_path, file_error=True)
-        cdict = config_dict['MQTTSubscribeDriver']
-        message_callback_config = cdict.get('message_callback', None)
-        message_callback_config['type'] = msg_type
-
-        driver = MQTTSubscribeDriver(**cdict)
-
-        client_id = 'clientid'
-        host = 'localhost'
-        port = 1883
-        keepalive = 60
-
-        client = mqtt.Client(client_id)
-        client.connect(host, port, keepalive)
-        client.loop_start()
-
-        with open("bin/user/tests/data/second.json") as file_pointer:
-            test_data = json.load(file_pointer)
-            for record in test_data:
-                for payload in test_data[record]:
-                    topics = test_data[record][payload]
-                    for topic in topics:
-                        topic_info = topics[topic]
-                        self.send_msg(msg_type, client, topic, topic_info)
-
-        time.sleep(sleep)
-
-        for data in driver.genLoopPackets():
-            record = data
-            break
-
-        driver.closePort()
-
-        self.assertIn('dateTime', record)
-        self.assertIn('usUnits', record)
-        self.assertEqual(record['usUnits'], 1)
-
-        self.assertIn('windDir', record)
-        self.assertEqual(record['windDir'], 0)
-        self.assertIn('windSpeed', record)
-        self.assertEqual(record['windSpeed'], 1)
-
     def service_test(self, test, config_dict, record):
         sleep = 3
 
@@ -152,12 +67,11 @@ class TestJsonPayload(unittest.TestCase):
 
         service = MQTTSubscribeService(engine, config_dict)
 
-        client_id = 'clientid'
         host = 'localhost'
         port = 1883
         keepalive = 60
 
-        client = mqtt.Client(client_id)
+        client = mqtt.Client()
         client.connect(host, port, keepalive)
         client.loop_start()
 
@@ -213,12 +127,11 @@ class TestJsonPayload(unittest.TestCase):
 
         service = MQTTSubscribeService(engine, config_dict)
 
-        client_id = 'clientid'
         host = 'localhost'
         port = 1883
         keepalive = 60
 
-        client = mqtt.Client(client_id)
+        client = mqtt.Client()
         client.connect(host, port, keepalive)
         client.loop_start()
 
