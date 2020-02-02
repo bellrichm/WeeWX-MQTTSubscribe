@@ -62,10 +62,10 @@ class TestIndividualPayload(unittest.TestCase):
         for topics in record:
             msg_def['on_message'](on_message, topics)
             end_ts = time.time()
-            topicx = list(topics.keys())[0] # ToDo - support multipe topics
-            topic = "%s/#" % topicx
-            data = manager.get_accumulated_data(topic, start_ts, end_ts, test['units'])
-            records.append(data)
+            for topic in topics_dict.sections:
+                data = manager.get_accumulated_data(topic, start_ts, end_ts, test['units'])
+                if data:
+                    records.append(data)
 
         utils.check(self, records, test)
 
