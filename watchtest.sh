@@ -6,7 +6,7 @@ else
     TEST=$1
 fi
 
-while inotifywait -e modify watchtest.sh bin/user/MQTTSubscribe.py bin/user/tests/func/utils.py bin/user/tests/$TEST
+while inotifywait -e modify watchtest.sh bin/user/MQTTSubscribe.py bin/user/tests/func/utils.py bin/user/tests/func/data bin/user/tests/$TEST
 do
 PYTHONPATH=bin:../weewx3/bin python2 bin/user/tests/$TEST
 PYTHONPATH=bin:../weewx4/bin python2 bin/user/tests/$TEST
