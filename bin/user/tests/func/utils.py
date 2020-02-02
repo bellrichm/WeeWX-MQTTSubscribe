@@ -83,6 +83,7 @@ def check(self, records, test):
     self.assertEqual(len(records), len(test['records']), msg)
     i = 0
     for recordx in test['records']:
+        print("testing %s %s" % (test['type'], recordx))
         for field in recordx:
             msg = "for payload of %s and field %s in record %i" % (test['type'], field, i+1)
             self.assertIn(field, records[i], msg)
