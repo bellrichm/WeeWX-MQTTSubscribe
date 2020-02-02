@@ -10,7 +10,6 @@ import unittest
 
 import configobj
 import json
-import os
 import time
 
 import paho.mqtt.client as mqtt
@@ -19,7 +18,7 @@ import utils
 
 import weewx
 from weewx.engine import StdEngine
-from user.MQTTSubscribe import MQTTSubscribeService, MQTTSubscribeDriver
+from user.MQTTSubscribe import MQTTSubscribeService
 
 class TestJsonPayload(unittest.TestCase):
     def send_msg(self, msg_type, client, topic, topic_info):
