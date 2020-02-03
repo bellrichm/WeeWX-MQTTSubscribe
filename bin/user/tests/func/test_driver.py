@@ -10,16 +10,13 @@ import unittest
 
 import configobj
 import json
-import os
 import time
 
 import paho.mqtt.client as mqtt
 
 import utils
 
-import weewx
-from weewx.engine import StdEngine
-from user.MQTTSubscribe import MQTTSubscribeService, MQTTSubscribeDriver
+from user.MQTTSubscribe import MQTTSubscribeDriver
 
 class TestJsonPayload(unittest.TestCase):
     def send_msg(self, msg_type, client, topic, topic_info):
@@ -41,12 +38,12 @@ class TestJsonPayload(unittest.TestCase):
             mqtt_message_info = client.publish(topic, msg)
             mqtt_message_info.wait_for_publish()
 
-    def driver_test(self, test, config_dict, record):
+    def driver_test(self, testtype, testruns, config_dict):
         sleep = 2
 
         cdict = config_dict['MQTTSubscribeService']
         message_callback_config = cdict.get('message_callback', None)
-        message_callback_config['type'] = test['type']
+        message_callback_config['type'] = testtype
 
         driver = MQTTSubscribeDriver(**cdict)
 
@@ -60,27 +57,29 @@ class TestJsonPayload(unittest.TestCase):
         client.connect(host, port, keepalive)
         client.loop_start()
 
-        for topics in record:
-            for topic in topics:
-                topic_info = topics[topic]
-                self.send_msg(test['type'], client, topic, topic_info)
+        for testrun in testruns:
+            for topics in testrun['payload']:
+                for topic in topics:
+                    topic_info = topics[topic]
+                    self.send_msg(testtype, client, topic, topic_info)
 
-        time.sleep(sleep)
+            time.sleep(sleep)
 
-        records = []
-        gen = driver.genLoopPackets()
+            records = []
+            gen = driver.genLoopPackets()
 
-        i = 0
-        while i < len(test['records']): # not great, but no way to know if more records
-            data = next(gen, None)
-            #print(data)
-            records.append(data)
-            i += 1
+            i = 0
+            while i < len(testrun['results']['records']): # not great, but no way to know if more records
+                data = next(gen, None)
+                #print(data)
+                records.append(data)
+                i += 1
+
+            utils.check(self, testtype, records, testrun['results']['records'])
 
         driver.closePort()
         client.disconnect()
 
-        utils.check(self, records, test)
         return
 
     #@unittest.skip("")
@@ -88,31 +87,36 @@ class TestJsonPayload(unittest.TestCase):
         with open("bin/user/tests/func/data/first.json") as file_pointer:
             testx_data = json.load(file_pointer, object_hook=utils.byteify)
             config_dict = configobj.ConfigObj(testx_data['config'])
-            test_data = testx_data['data']['payload']
-            for test in testx_data['data']['results']:
-                #print(test)
-                self.driver_test(test, config_dict, test_data)
+            # TODO Skip
+            for testtype in testx_data['types']:
+                self.driver_test(testtype, testx_data['data'], config_dict)
 
+    #@unittest.skip("")
     def test_get_data_individual2(self):
         with open("bin/user/tests/func/data/firstx.json") as file_pointer:
             testx_data = json.load(file_pointer, object_hook=utils.byteify)
             config_dict = configobj.ConfigObj(testx_data['config'])
-            test_data = testx_data['data']['payload']
-            for test in testx_data['data']['results']:
-                #print(test)
-                self.driver_test(test, config_dict, test_data)
+            # TODO Skip
+            for testtype in testx_data['types']:
+                self.driver_test(testtype, testx_data['data'], config_dict)
+
+    #@unittest.skip("")
+    def test_get_data_individual2b(self):
+        with open("bin/user/tests/func/data/firstxi.json") as file_pointer:
+            testx_data = json.load(file_pointer, object_hook=utils.byteify)
+            config_dict = configobj.ConfigObj(testx_data['config'])
+            # TODO Skip
+            for testtype in testx_data['types']:
+                self.driver_test(testtype, testx_data['data'], config_dict)
 
     #@unittest.skip("")
     def test_get_data_individual3(self):
         with open("bin/user/tests/func/data/accumulatedrain.json") as file_pointer:
             testx_data = json.load(file_pointer, object_hook=utils.byteify)
             config_dict = configobj.ConfigObj(testx_data['config'])
-            test_data = testx_data['data']['payload']
-            for test in testx_data['data']['results']:
-                #print(test)
-                self.driver_test(test, config_dict, test_data)
-
-
+            # TODO Skip
+            for testtype in testx_data['types']:
+                self.driver_test(testtype, testx_data['data'], config_dict)
 
     #def test_get_data_individual(self):
         #self.driver_test('individual')
