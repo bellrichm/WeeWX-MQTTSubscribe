@@ -469,6 +469,7 @@ class TopicManager(object):
 
         if ignore_start_time:
             self.logger.debug("TopicManager ignoring start time.")
+            # Todo - queue might be empty?
             start_ts = self.peek_datetime(topic) - adjust_start_time
         else:
             start_ts = start_time - adjust_start_time
