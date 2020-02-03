@@ -19,24 +19,15 @@ from user.MQTTSubscribe import TopicManager, Logger
 
 class TestIndividualPayload(unittest.TestCase):
     def get_data_test(self, testtype, testruns, config_dict):
-        #if skip
-        #    return
-
-        if testtype == 'individual':
-            msg_def = utils.INDIVIDUAL_PAYLOAD
-        elif testtype == 'json':
-            msg_def = utils.JSON_PAYLOAD
-        elif testtype == 'keyword':
-            msg_def = utils.KEYWORD_PAYLOAD
         logger = Logger()
         topics_dict = config_dict.get('topics', {})
         manager = TopicManager(topics_dict, logger)
 
-        on_message = utils.setup(msg_def, config_dict, manager, logger)
+        on_message = utils.setup(testtype, config_dict, manager, logger)
 
         for testrun in testruns:
             for topics in testrun['payload']:
-                msg_def['on_message'](on_message, topics)
+                utils.send_msg(testtype, on_message, topics)
 
             records = []
             for topic in manager.subscribed_topics:
@@ -53,7 +44,6 @@ class TestIndividualPayload(unittest.TestCase):
         with open("bin/user/tests/func/data/first.json") as fp:
             testx_data = json.load(fp, object_hook=utils.byteify)
             config_dict = configobj.ConfigObj(testx_data['config'])['MQTTSubscribeService']
-            # TODO Skip
             for testtype in testx_data['types']:
                 self.get_data_test(testtype, testx_data['data'], config_dict)
 
@@ -62,7 +52,6 @@ class TestIndividualPayload(unittest.TestCase):
         with open("bin/user/tests/func/data/firstxi.json") as fp:
             testx_data = json.load(fp, object_hook=utils.byteify)
             config_dict = configobj.ConfigObj(testx_data['config'])['MQTTSubscribeService']
-            # TODO Skip
             for testtype in testx_data['types']:
                 self.get_data_test(testtype, testx_data['data'], config_dict)
 
@@ -71,7 +60,6 @@ class TestIndividualPayload(unittest.TestCase):
         with open("bin/user/tests/func/data/firstx.json") as fp:
             testx_data = json.load(fp, object_hook=utils.byteify)
             config_dict = configobj.ConfigObj(testx_data['config'])['MQTTSubscribeService']
-            # TODO Skip
             for testtype in testx_data['types']:
                 self.get_data_test(testtype, testx_data['data'], config_dict)
 
@@ -81,7 +69,6 @@ class TestIndividualPayload(unittest.TestCase):
         with open("bin/user/tests/func/data/accumulatedrain.json") as fp:
             testx_data = json.load(fp, object_hook=utils.byteify)
             config_dict = configobj.ConfigObj(testx_data['config'])['MQTTSubscribeService']
-            # TODO Skip
             for testtype in testx_data['types']:
                 self.get_data_test(testtype, testx_data['data'], config_dict)
 

@@ -26,38 +26,37 @@ def byteify(data, ignore_dicts=False):
     # if it's anything else, return it in its original form
     return data
 
-def send_individual_msgs(on_message, topics):
-    for topic in topics:
-        topic_info = topics[topic]
-        topic = "%s/#" % topic
-        for field in sorted(topic_info['data']): # a bit of a hack, but need a determined order
-            on_message(None, None, Msg("%s/%s" % (topic, field), topic_info['data'][field], 0, 0))
+def send_msg(msgtype, on_message, topics):
+    if msgtype == 'individual':
+        for topic in topics:
+            topic_info = topics[topic]
+            topic = "%s/#" % topic
+            for field in sorted(topic_info['data']): # a bit of a hack, but need a determined order
+                on_message(None, None, Msg("%s/%s" % (topic, field), topic_info['data'][field], 0, 0))
+    elif msgtype == 'json':
+        for topic in topics:
+            topic_info = topics[topic]
+            payload = json.dumps(topic_info['data'])
+            on_message(None, None, Msg(topic, payload, 0, 0))
+    elif msgtype == 'keyword':
+        for topic in topics:
+            topic_info = topics[topic]
+            payload = ''
+            data = topic_info['data']
+            for field in data:
+                payload = "%s%s%s%s%s" % (payload, field, topic_info['delimiter'], data[field], topic_info['separator'])
 
-def send_json_msgs(on_message, topics):
-    for topic in topics:
-        topic_info = topics[topic]
-        payload = json.dumps(topic_info['data'])
-        on_message(None, None, Msg(topic, payload, 0, 0))
+            payload = payload[:-1]
+            payload = payload.encode("utf-8")
+            on_message(None, None, Msg(topic, payload, 0, 0))
 
-def send_keyword_msgs(on_message, topics):
-    for topic in topics:
-        topic_info = topics[topic]
-        payload = ''
-        data = topic_info['data']
-        for field in data:
-            payload = "%s%s%s%s%s" % (payload, field, topic_info['delimiter'], data[field], topic_info['separator'])
-
-        payload = payload[:-1]
-        payload = payload.encode("utf-8")
-        on_message(None, None, Msg(topic, payload, 0, 0))
-
-def setup(msg_def, config_dict, manager, logger):
+def setup(payload_type, config_dict, manager, logger):
 
     message_callback_config = config_dict.get('message_callback', None)
     if message_callback_config is None:
         raise ValueError("[[message_callback]] is required.")
 
-    message_callback_config['type'] = msg_def['payload_type']
+    message_callback_config['type'] = payload_type
 
     message_callback_provider_name = config_dict.get('message_callback_provider',
                                                      'user.MQTTSubscribe.MessageCallbackProvider')
@@ -94,18 +93,3 @@ class Msg(object):
         self.payload = payload
         self.qos = qos
         self.retain = retain
-
-INDIVIDUAL_PAYLOAD = {
-    'payload_type': 'individual',
-    'on_message': send_individual_msgs
-}
-
-JSON_PAYLOAD = {
-    'payload_type': 'json',
-    'on_message': send_json_msgs
-}
-
-KEYWORD_PAYLOAD = {
-    'payload_type': 'keyword',
-    'on_message': send_keyword_msgs
-}
