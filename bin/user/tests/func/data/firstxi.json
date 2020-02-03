@@ -1,5 +1,5 @@
 {
-  "types": ["individual", "json", "keyword"],
+  "types": ["individual"],
   "config": [
     "[MQTTSubscribeService]",
     "    # Configuration for the message callback.",
@@ -36,8 +36,8 @@
           "separator": ",",
           "delimiter": "=",
           "data": {
-            "windDir": 0,
-            "windSpeed": 1  
+            "inTemp": 0,
+            "outTemp": 1  
           }    
           }
         }
@@ -49,9 +49,13 @@
             {
               "dateTime": null,
               "usUnits": 17,
-              "windDir": 0,
-              "windSpeed": 1 
-            }
+              "inTemp": 0
+            },
+            {
+              "dateTime": null,
+              "usUnits": 17,
+              "outTemp": 1
+            }            
           ]
         }    
     }

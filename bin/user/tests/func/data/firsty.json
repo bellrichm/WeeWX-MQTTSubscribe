@@ -1,4 +1,5 @@
 {
+  "types": ["individual", "json", "keyword"],
   "config": [
     "[MQTTSubscribeService]",
     "    # Configuration for the message callback.",
@@ -27,7 +28,7 @@
     "        unit_system = METRICWX",
     "        [[[weewx/#]]]"
   ],
-  "data": 
+  "data": [
     {
       "payload": [
         {
@@ -41,9 +42,8 @@
           }
         }
       ],
-      "results": [
+      "results": 
         {
-          "type": "individual",
           "units": 17,          
           "records": [
             {
@@ -51,36 +51,11 @@
               "usUnits": 17,
               "inTemp": 0,
               "outTemp": 1
-            }    
+            }     
           ]
-        },
-        {
-          "type": "json",
-          "units": 17,          
-          "records": [
-            {
-              "dateTime": null,
-              "usUnits": 17,
-              "inTemp": 0,
-              "outTemp": 1
-            }  
-          ]
-        },
-        {
-          "type": "keyword",
-          "units": 17,
-          "records": [
-            {
-              "dateTime": null,
-              "usUnits": 17,
-              "inTemp": 0,
-              "outTemp": 1
-            }   
-          ]
-        }          
-      ]
+        }    
     }
-  
+  ]
 }
     
 
