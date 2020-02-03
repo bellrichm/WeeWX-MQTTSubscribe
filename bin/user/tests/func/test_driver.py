@@ -19,15 +19,42 @@ import utils
 from user.MQTTSubscribe import MQTTSubscribeDriver
 
 class TestJsonPayload(unittest.TestCase):
-    def send_msg(self, msg_type, client, topic, topic_info):
+    def on_connect2(self, client, userdata, flags, rc): # (match callback signature) pylint: disable=unused-argument
+        # https://pypi.org/project/paho-mqtt/#on-connect
+        # rc:
+        # 0: Connection successful
+        # 1: Connection refused - incorrect protocol version
+        # 2: Connection refused - invalid client identifier
+        # 3: Connection refused - server unavailable
+        # 4: Connection refused - bad username or password
+        # 5: Connection refused - not authorised
+        # 6-255: Currently unused.
+        for topic in userdata['topics']:
+            (result, mid) = client.subscribe(topic) # (match callback signature) pylint: disable=unused-variable
+            userdata['connected_flag'] = True
+
+    def on_message2(self, client, userdata, msg): # (match callback signature) pylint: disable=unused-argument
+        userdata['msg'] = True
+        #print(msg.topic)
+        #print(msg.payload)
+
+    def send_msg(self, msg_type, client, topic, topic_info, userdata):
         if msg_type == 'individual':
             for field in sorted(topic_info['data']): # a bit of a hack, but need a determined order
+                userdata['msg'] = False
                 mqtt_message_info = client.publish("%s/%s" % (topic, field), topic_info['data'][field])
                 mqtt_message_info.wait_for_publish()
+                while not userdata['msg']:
+                    #print("sleeping")
+                    time.sleep(1)
         elif msg_type == 'json':
             payload = json.dumps(topic_info['data'])
+            userdata['msg'] = False
             mqtt_message_info = client.publish(topic, payload)
             mqtt_message_info.wait_for_publish()
+            while not userdata['msg']:
+                #print("sleeping")
+                time.sleep(1)
         elif msg_type == 'keyword':
             msg = ''
             data = topic_info['data']
@@ -35,11 +62,15 @@ class TestJsonPayload(unittest.TestCase):
                 msg = "%s%s%s%s%s" % (msg, field, topic_info['delimiter'], data[field], topic_info['separator'])
             msg = msg[:-1]
             msg = msg.encode("utf-8")
+            userdata['msg'] = False
             mqtt_message_info = client.publish(topic, msg)
             mqtt_message_info.wait_for_publish()
+            while not userdata['msg']:
+                #print("sleeping")
+                time.sleep(1)
 
     def driver_test(self, testtype, testruns, config_dict):
-        sleep = 2
+        #sleep = 2
 
         cdict = config_dict['MQTTSubscribeService']
         message_callback_config = cdict.get('message_callback', None)
@@ -57,13 +88,28 @@ class TestJsonPayload(unittest.TestCase):
         client.connect(host, port, keepalive)
         client.loop_start()
 
+        userdata = {
+            'topics': cdict['topics'].sections,
+            'connected_flag': False,
+            'msg': False
+        }
+        client2 = mqtt.Client(userdata=userdata)
+        client2.on_connect = self.on_connect2
+        client2.on_message = self.on_message2
+        client2.connect(host, port, keepalive)
+        client2.loop_start()
+        client2.connected_flag = False
+        while not userdata['connected_flag']: #wait in loop
+            #print("waiting to connect")
+            time.sleep(1)
+
         for testrun in testruns:
             for topics in testrun['payload']:
                 for topic in topics:
                     topic_info = topics[topic]
-                    self.send_msg(testtype, client, topic, topic_info)
+                    self.send_msg(testtype, client, topic, topic_info, userdata)
 
-            time.sleep(sleep)
+            #time.sleep(1) # more fudge to allow it to get to the service
 
             records = []
             gen = driver.genLoopPackets()
@@ -79,6 +125,7 @@ class TestJsonPayload(unittest.TestCase):
 
         driver.closePort()
         client.disconnect()
+        client2.disconnect()
 
         return
 

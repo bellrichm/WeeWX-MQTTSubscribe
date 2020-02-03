@@ -21,15 +21,23 @@ from weewx.engine import StdEngine
 from user.MQTTSubscribe import MQTTSubscribeService
 
 class TestJsonPayload(unittest.TestCase):
-    def send_msg(self, msg_type, client, topic, topic_info):
+    def send_msg(self, msg_type, client, topic, topic_info, userdata):
         if msg_type == 'individual':
             for field in topic_info['data']:
+                userdata['msg'] = False
                 mqtt_message_info = client.publish("%s/%s" % (topic, field), topic_info['data'][field])
                 mqtt_message_info.wait_for_publish()
+                while not userdata['msg']:
+                    #print("sleeping")
+                    time.sleep(1)
         elif msg_type == 'json':
             payload = json.dumps(topic_info['data'])
+            userdata['msg'] = False
             mqtt_message_info = client.publish(topic, payload)
             mqtt_message_info.wait_for_publish()
+            while not userdata['msg']:
+                #print("sleeping")
+                time.sleep(1)
         elif msg_type == 'keyword':
             msg = ''
             data = topic_info['data']
@@ -37,11 +45,34 @@ class TestJsonPayload(unittest.TestCase):
                 msg = "%s%s%s%s%s" % (msg, field, topic_info['delimiter'], data[field], topic_info['separator'])
             msg = msg[:-1]
             msg = msg.encode("utf-8")
+            userdata['msg'] = False
             mqtt_message_info = client.publish(topic, msg)
             mqtt_message_info.wait_for_publish()
+            while not userdata['msg']:
+                #print("sleeping")
+                time.sleep(1)
+
+    def on_connect2(self, client, userdata, flags, rc): # (match callback signature) pylint: disable=unused-argument
+        # https://pypi.org/project/paho-mqtt/#on-connect
+        # rc:
+        # 0: Connection successful
+        # 1: Connection refused - incorrect protocol version
+        # 2: Connection refused - invalid client identifier
+        # 3: Connection refused - server unavailable
+        # 4: Connection refused - bad username or password
+        # 5: Connection refused - not authorised
+        # 6-255: Currently unused.
+        for topic in userdata['topics']:
+            (result, mid) = client.subscribe(topic) # (match callback signature) pylint: disable=unused-variable
+            userdata['connected_flag'] = True
+
+    def on_message2(self, client, userdata, msg): # (match callback signature) pylint: disable=unused-argument
+        userdata['msg'] = True
+        #print(msg.topic)
+        #print(msg.payload)
 
     def service_test(self, testtype, testruns, config_dict):
-        sleep = 4
+        #sleep = 1
 
         cdict = config_dict['MQTTSubscribeService']
         message_callback_config = cdict.get('message_callback', None)
@@ -74,13 +105,30 @@ class TestJsonPayload(unittest.TestCase):
         client.connect(host, port, keepalive)
         client.loop_start()
 
+        userdata = {
+            'topics': cdict['topics'].sections,
+            'connected_flag': False,
+            'msg': False
+        }
+        client2 = mqtt.Client(userdata=userdata)
+        client2.on_connect = self.on_connect2
+        client2.on_message = self.on_message2
+        client2.connect(host, port, keepalive)
+        client2.loop_start()
+        client2.connected_flag = False
+        while not userdata['connected_flag']: #wait in loop
+            #print("waiting to connect")
+            time.sleep(1)
+
         for testrun in testruns:
             for topics in testrun['payload']:
                 for topic in topics:
                     topic_info = topics[topic]
-                    self.send_msg(testtype, client, topic, topic_info)
+                    #print(topic_info)
+                    self.send_msg(testtype, client, topic, topic_info, userdata)
 
-            time.sleep(sleep)
+            time.sleep(1) # more fudge to allow it to get to the service
+            #time.sleep(sleep)
 
             record = {}
             units = testrun['results']['units']
@@ -100,13 +148,13 @@ class TestJsonPayload(unittest.TestCase):
         #print(records)
         service.shutDown()
         client.disconnect()
+        client2.disconnect()
 
     #@unittest.skip("")
     def test_get_data_individual1(self):
         with open("bin/user/tests/func/data/first.json") as file_pointer:
             testx_data = json.load(file_pointer, object_hook=utils.byteify)
             config_dict = configobj.ConfigObj(testx_data['config'])
-            # TODO Skip
             for testtype in testx_data['types']:
                 self.service_test(testtype, testx_data['data'], config_dict)
 
@@ -115,7 +163,6 @@ class TestJsonPayload(unittest.TestCase):
         with open("bin/user/tests/func/data/firsty.json") as file_pointer:
             testx_data = json.load(file_pointer, object_hook=utils.byteify)
             config_dict = configobj.ConfigObj(testx_data['config'])
-            # TODO Skip
             for testtype in testx_data['types']:
                 self.service_test(testtype, testx_data['data'], config_dict)
 
@@ -124,7 +171,6 @@ class TestJsonPayload(unittest.TestCase):
         with open("bin/user/tests/func/data/accumulatedraina.json") as file_pointer:
             testx_data = json.load(file_pointer, object_hook=utils.byteify)
             config_dict = configobj.ConfigObj(testx_data['config'])
-            # TODO Skip
             for testtype in testx_data['types']:
                 self.service_test(testtype, testx_data['data'], config_dict)
 
