@@ -96,7 +96,7 @@ class TestJsonPayload(unittest.TestCase):
 
             records = [record]
             utils.check(self, testtype, records, testrun['results']['records'])
-        
+
         #print(records)
         service.shutDown()
         client.disconnect()
