@@ -19,39 +19,7 @@ import utils
 import weewx
 from weewx.engine import StdEngine
 from user.MQTTSubscribe import MQTTSubscribeService
-
 class TestJsonPayload(unittest.TestCase):
-    def send_msg(self, msg_type, client, topic, topic_info, userdata):
-        if msg_type == 'individual':
-            for field in topic_info['data']:
-                userdata['msg'] = False
-                mqtt_message_info = client.publish("%s/%s" % (topic, field), topic_info['data'][field])
-                mqtt_message_info.wait_for_publish()
-                while not userdata['msg']:
-                    #print("sleeping")
-                    time.sleep(1)
-        elif msg_type == 'json':
-            payload = json.dumps(topic_info['data'])
-            userdata['msg'] = False
-            mqtt_message_info = client.publish(topic, payload)
-            mqtt_message_info.wait_for_publish()
-            while not userdata['msg']:
-                #print("sleeping")
-                time.sleep(1)
-        elif msg_type == 'keyword':
-            msg = ''
-            data = topic_info['data']
-            for field in data:
-                msg = "%s%s%s%s%s" % (msg, field, topic_info['delimiter'], data[field], topic_info['separator'])
-            msg = msg[:-1]
-            msg = msg.encode("utf-8")
-            userdata['msg'] = False
-            mqtt_message_info = client.publish(topic, msg)
-            mqtt_message_info.wait_for_publish()
-            while not userdata['msg']:
-                #print("sleeping")
-                time.sleep(1)
-
     def on_connect2(self, client, userdata, flags, rc): # (match callback signature) pylint: disable=unused-argument
         # https://pypi.org/project/paho-mqtt/#on-connect
         # rc:
@@ -125,7 +93,7 @@ class TestJsonPayload(unittest.TestCase):
                 for topic in topics:
                     topic_info = topics[topic]
                     #print(topic_info)
-                    self.send_msg(testtype, client, topic, topic_info, userdata)
+                    utils.send_msg2(testtype, client, topic, topic_info, userdata)
 
             time.sleep(1) # more fudge to allow it to get to the service
             #time.sleep(sleep)

@@ -38,37 +38,6 @@ class TestJsonPayload(unittest.TestCase):
         #print(msg.topic)
         #print(msg.payload)
 
-    def send_msg(self, msg_type, client, topic, topic_info, userdata):
-        if msg_type == 'individual':
-            for field in sorted(topic_info['data']): # a bit of a hack, but need a determined order
-                userdata['msg'] = False
-                mqtt_message_info = client.publish("%s/%s" % (topic, field), topic_info['data'][field])
-                mqtt_message_info.wait_for_publish()
-                while not userdata['msg']:
-                    #print("sleeping")
-                    time.sleep(1)
-        elif msg_type == 'json':
-            payload = json.dumps(topic_info['data'])
-            userdata['msg'] = False
-            mqtt_message_info = client.publish(topic, payload)
-            mqtt_message_info.wait_for_publish()
-            while not userdata['msg']:
-                #print("sleeping")
-                time.sleep(1)
-        elif msg_type == 'keyword':
-            msg = ''
-            data = topic_info['data']
-            for field in data:
-                msg = "%s%s%s%s%s" % (msg, field, topic_info['delimiter'], data[field], topic_info['separator'])
-            msg = msg[:-1]
-            msg = msg.encode("utf-8")
-            userdata['msg'] = False
-            mqtt_message_info = client.publish(topic, msg)
-            mqtt_message_info.wait_for_publish()
-            while not userdata['msg']:
-                #print("sleeping")
-                time.sleep(1)
-
     def driver_test(self, testtype, testruns, config_dict):
         #sleep = 2
 
@@ -107,7 +76,7 @@ class TestJsonPayload(unittest.TestCase):
             for topics in testrun['payload']:
                 for topic in topics:
                     topic_info = topics[topic]
-                    self.send_msg(testtype, client, topic, topic_info, userdata)
+                    utils.send_msg2(testtype, client, topic, topic_info, userdata)
 
             #time.sleep(1) # more fudge to allow it to get to the service
 
@@ -134,7 +103,6 @@ class TestJsonPayload(unittest.TestCase):
         with open("bin/user/tests/func/data/first.json") as file_pointer:
             testx_data = json.load(file_pointer, object_hook=utils.byteify)
             config_dict = configobj.ConfigObj(testx_data['config'])
-            # TODO Skip
             for testtype in testx_data['types']:
                 self.driver_test(testtype, testx_data['data'], config_dict)
 
@@ -143,7 +111,6 @@ class TestJsonPayload(unittest.TestCase):
         with open("bin/user/tests/func/data/firstx.json") as file_pointer:
             testx_data = json.load(file_pointer, object_hook=utils.byteify)
             config_dict = configobj.ConfigObj(testx_data['config'])
-            # TODO Skip
             for testtype in testx_data['types']:
                 self.driver_test(testtype, testx_data['data'], config_dict)
 
@@ -152,7 +119,6 @@ class TestJsonPayload(unittest.TestCase):
         with open("bin/user/tests/func/data/firstxi.json") as file_pointer:
             testx_data = json.load(file_pointer, object_hook=utils.byteify)
             config_dict = configobj.ConfigObj(testx_data['config'])
-            # TODO Skip
             for testtype in testx_data['types']:
                 self.driver_test(testtype, testx_data['data'], config_dict)
 
@@ -161,7 +127,6 @@ class TestJsonPayload(unittest.TestCase):
         with open("bin/user/tests/func/data/accumulatedrain.json") as file_pointer:
             testx_data = json.load(file_pointer, object_hook=utils.byteify)
             config_dict = configobj.ConfigObj(testx_data['config'])
-            # TODO Skip
             for testtype in testx_data['types']:
                 self.driver_test(testtype, testx_data['data'], config_dict)
 

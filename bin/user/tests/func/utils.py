@@ -3,6 +3,7 @@
 
 import json
 import sys
+import time
 
 import weeutil
 
@@ -49,6 +50,37 @@ def send_msg(msgtype, on_message, topics):
             payload = payload[:-1]
             payload = payload.encode("utf-8")
             on_message(None, None, Msg(topic, payload, 0, 0))
+
+def send_msg2(msg_type, client, topic, topic_info, userdata):
+    if msg_type == 'individual':
+        for field in sorted(topic_info['data']): # a bit of a hack, but need a determined order
+            userdata['msg'] = False
+            mqtt_message_info = client.publish("%s/%s" % (topic, field), topic_info['data'][field])
+            mqtt_message_info.wait_for_publish()
+            while not userdata['msg']:
+                #print("sleeping")
+                time.sleep(1)
+    elif msg_type == 'json':
+        payload = json.dumps(topic_info['data'])
+        userdata['msg'] = False
+        mqtt_message_info = client.publish(topic, payload)
+        mqtt_message_info.wait_for_publish()
+        while not userdata['msg']:
+            #print("sleeping")
+            time.sleep(1)
+    elif msg_type == 'keyword':
+        msg = ''
+        data = topic_info['data']
+        for field in data:
+            msg = "%s%s%s%s%s" % (msg, field, topic_info['delimiter'], data[field], topic_info['separator'])
+        msg = msg[:-1]
+        msg = msg.encode("utf-8")
+        userdata['msg'] = False
+        mqtt_message_info = client.publish(topic, msg)
+        mqtt_message_info.wait_for_publish()
+        while not userdata['msg']:
+            #print("sleeping")
+            time.sleep(1)
 
 def setup(payload_type, config_dict, manager, logger):
 
