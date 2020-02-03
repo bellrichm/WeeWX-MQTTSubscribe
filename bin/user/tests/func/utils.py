@@ -69,19 +69,19 @@ def setup(msg_def, config_dict, manager, logger):
 
     return message_callback_provider.get_callback()
 
-def check(self, records, test):
-    msg = "for payload of %s" % test['type']
+def check(self, test_type, records, test):
+    msg = "for payload of %s" % test_type
     #print(records)
-    #print(test)
-    self.assertEqual(len(records), len(test['records']), msg)
+    #print(test['records'])
+    self.assertEqual(len(records), len(test), msg)
     i = 0
-    for recordx in test['records']:
-        print("testing %s %s" % (test['type'], recordx))
+    for recordx in test:
+        print("testing %s %s" % (test_type, recordx))
         for field in recordx:
-            msg = "for payload of %s and field %s in record %i" % (test['type'], field, i+1)
+            msg = "for payload of %s and field %s in record %i" % (test_type, field, i+1)
             self.assertIn(field, records[i], msg)
-            if recordx[field]:
-                msg = "for payload of %s and field %s in record %i" % (test['type'], field, i+1)
+            if recordx[field] is not None:
+                msg = "for payload of %s and field %s in record %i" % (test_type, field, i+1)
                 if recordx[field] == "None": # ToDo - cleanup
                     self.assertIsNone(records[i][field], msg)
                 else:
