@@ -27,47 +27,26 @@ def byteify(data, ignore_dicts=False):
     # if it's anything else, return it in its original form
     return data
 
-def send_msg(msgtype, on_message, topics):
-    if msgtype == 'individual':
-        for topic in topics:
-            topic_info = topics[topic]
-            topic = "%s/#" % topic
-            for field in sorted(topic_info['data']): # a bit of a hack, but need a determined order
-                on_message(None, None, Msg("%s/%s" % (topic, field), topic_info['data'][field], 0, 0))
-    elif msgtype == 'json':
-        for topic in topics:
-            topic_info = topics[topic]
-            payload = json.dumps(topic_info['data'])
-            on_message(None, None, Msg(topic, payload, 0, 0))
-    elif msgtype == 'keyword':
-        for topic in topics:
-            topic_info = topics[topic]
-            payload = ''
-            data = topic_info['data']
-            for field in data:
-                payload = "%s%s%s%s%s" % (payload, field, topic_info['delimiter'], data[field], topic_info['separator'])
+def send_mqtt_msg(publisher, topic, payload, userdata):
+    userdata['msg'] = False
+    mqtt_message_info = publisher(topic, payload)
+    mqtt_message_info.wait_for_publish()
+    while not userdata['msg']:
+        #print("sleeping")
+        time.sleep(1)
 
-            payload = payload[:-1]
-            payload = payload.encode("utf-8")
-            on_message(None, None, Msg(topic, payload, 0, 0))
+def send_direct_msg(publisher, topic, payload, userdata=None):
+    publisher(None, None, Msg(topic, payload, 0, 0))
 
-def send_msg2(msg_type, client, topic, topic_info, userdata):
+def send_msg(sender, msg_type, publisher, topic, topic_info, userdata=None):
     if msg_type == 'individual':
         for field in sorted(topic_info['data']): # a bit of a hack, but need a determined order
-            userdata['msg'] = False
-            mqtt_message_info = client.publish("%s/%s" % (topic, field), topic_info['data'][field])
-            mqtt_message_info.wait_for_publish()
-            while not userdata['msg']:
-                #print("sleeping")
-                time.sleep(1)
+            topic2 = "%s/%s" % (topic, field)
+            payload = topic_info['data'][field]
+            sender(publisher, topic2, payload, userdata)
     elif msg_type == 'json':
         payload = json.dumps(topic_info['data'])
-        userdata['msg'] = False
-        mqtt_message_info = client.publish(topic, payload)
-        mqtt_message_info.wait_for_publish()
-        while not userdata['msg']:
-            #print("sleeping")
-            time.sleep(1)
+        sender(publisher, topic, payload, userdata)
     elif msg_type == 'keyword':
         msg = ''
         data = topic_info['data']
@@ -75,12 +54,7 @@ def send_msg2(msg_type, client, topic, topic_info, userdata):
             msg = "%s%s%s%s%s" % (msg, field, topic_info['delimiter'], data[field], topic_info['separator'])
         msg = msg[:-1]
         msg = msg.encode("utf-8")
-        userdata['msg'] = False
-        mqtt_message_info = client.publish(topic, msg)
-        mqtt_message_info.wait_for_publish()
-        while not userdata['msg']:
-            #print("sleeping")
-            time.sleep(1)
+        sender(publisher, topic, msg, userdata)
 
 def setup(payload_type, config_dict, manager, logger):
 

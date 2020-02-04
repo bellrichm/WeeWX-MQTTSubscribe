@@ -76,7 +76,7 @@ class TestJsonPayload(unittest.TestCase):
             for topics in testrun['payload']:
                 for topic in topics:
                     topic_info = topics[topic]
-                    utils.send_msg2(testtype, client, topic, topic_info, userdata)
+                    utils.send_msg(utils.send_mqtt_msg, testtype, client.publish, topic, topic_info, userdata)
 
             #time.sleep(1) # more fudge to allow it to get to the service
 

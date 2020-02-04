@@ -27,7 +27,9 @@ class TestIndividualPayload(unittest.TestCase):
 
         for testrun in testruns:
             for topics in testrun['payload']:
-                utils.send_msg(testtype, on_message, topics)
+                for topic in topics:
+                    topic_info = topics[topic]
+                    utils.send_msg(utils.send_direct_msg, testtype, on_message, topic, topic_info)
 
             records = []
             for topic in manager.subscribed_topics:
