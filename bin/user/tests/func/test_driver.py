@@ -108,7 +108,7 @@ class TestJsonPayload(unittest.TestCase):
 
     #@unittest.skip("")
     def test_get_data_individual2(self):
-        with open("bin/user/tests/func/data/firstx.json") as file_pointer:
+        with open("bin/user/tests/func/data/basic_withoutaccum.json") as file_pointer:
             testx_data = json.load(file_pointer, object_hook=utils.byteify)
             config_dict = configobj.ConfigObj(testx_data['config'])
             for testtype in testx_data['types']:
@@ -116,7 +116,7 @@ class TestJsonPayload(unittest.TestCase):
 
     #@unittest.skip("")
     def test_get_data_individual2b(self):
-        with open("bin/user/tests/func/data/firstxi.json") as file_pointer:
+        with open("bin/user/tests/func/data/basic_withoutaccum_individual.json") as file_pointer:
             testx_data = json.load(file_pointer, object_hook=utils.byteify)
             config_dict = configobj.ConfigObj(testx_data['config'])
             for testtype in testx_data['types']:

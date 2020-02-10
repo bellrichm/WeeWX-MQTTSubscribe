@@ -1,6 +1,10 @@
 {
+  "comments": [
+    "Basic, not run through WeeWX accumulator."
+  ],  
   "types": [
-    "individual"
+    "json",
+    "keyword"
   ],
   "config": [
     "[MQTTSubscribeService]",
@@ -50,11 +54,7 @@
           {
             "dateTime": null,
             "usUnits": 17,
-            "inTemp": 0
-          },
-          {
-            "dateTime": null,
-            "usUnits": 17,
+            "inTemp": 0,
             "outTemp": 1
           }
         ]
