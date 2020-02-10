@@ -39,12 +39,12 @@ class TestJsonPayload(unittest.TestCase):
         #print(msg.topic)
         #print(msg.payload)
 
-    def service_test(self, testtype, testruns, config_dict):
+    def service_test(self, test_type, testruns, config_dict):
         #sleep = 1
 
         cdict = config_dict['MQTTSubscribeService']
         message_callback_config = cdict.get('message_callback', None)
-        message_callback_config['type'] = testtype
+        message_callback_config['type'] = test_type
 
         min_config_dict = {
             'Station': {
@@ -93,7 +93,7 @@ class TestJsonPayload(unittest.TestCase):
                 for topic in topics:
                     topic_info = topics[topic]
                     #print(topic_info)
-                    utils.send_msg(utils.send_mqtt_msg, testtype, client.publish, topic, topic_info, userdata)
+                    utils.send_msg(utils.send_mqtt_msg, test_type, client.publish, topic, topic_info, userdata)
 
             time.sleep(1) # more fudge to allow it to get to the service
             #time.sleep(sleep)
@@ -111,7 +111,7 @@ class TestJsonPayload(unittest.TestCase):
             #records.append(record)
 
             records = [record]
-            utils.check(self, testtype, records, testrun['results']['records'])
+            utils.check(self, test_type, records, testrun['results']['records'])
 
         #print(records)
         service.shutDown()
@@ -121,26 +121,26 @@ class TestJsonPayload(unittest.TestCase):
     #@unittest.skip("")
     def test_get_data_individual1(self):
         with open("bin/user/tests/func/data/wind.json") as file_pointer:
-            testx_data = json.load(file_pointer, object_hook=utils.byteify)
-            config_dict = configobj.ConfigObj(testx_data['config'])
-            for testtype in testx_data['types']:
-                self.service_test(testtype, testx_data['testruns'], config_dict)
+            test_data = json.load(file_pointer, object_hook=utils.byteify)
+            config_dict = configobj.ConfigObj(test_data['config'])
+            for test_type in test_data['types']:
+                self.service_test(test_type, test_data['testruns'], config_dict)
 
     #@unittest.skip("")
     def test_get_data_individual2(self):
         with open("bin/user/tests/func/data/basic_withaccum.json") as file_pointer:
-            testx_data = json.load(file_pointer, object_hook=utils.byteify)
-            config_dict = configobj.ConfigObj(testx_data['config'])
-            for testtype in testx_data['types']:
-                self.service_test(testtype, testx_data['testruns'], config_dict)
+            test_data = json.load(file_pointer, object_hook=utils.byteify)
+            config_dict = configobj.ConfigObj(test_data['config'])
+            for test_type in test_data['types']:
+                self.service_test(test_type, test_data['testruns'], config_dict)
 
     #@unittest.skip("")
     def test_get_data_individual3(self):
         with open("bin/user/tests/func/data/accumulatedrain_withaccum.json") as file_pointer:
-            testx_data = json.load(file_pointer, object_hook=utils.byteify)
-            config_dict = configobj.ConfigObj(testx_data['config'])
-            for testtype in testx_data['types']:
-                self.service_test(testtype, testx_data['testruns'], config_dict)
+            test_data = json.load(file_pointer, object_hook=utils.byteify)
+            config_dict = configobj.ConfigObj(test_data['config'])
+            for test_type in test_data['types']:
+                self.service_test(test_type, test_data['testruns'], config_dict)
 
 if __name__ == '__main__':
     unittest.main(exit=False)
