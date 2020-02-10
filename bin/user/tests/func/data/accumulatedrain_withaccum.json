@@ -1,5 +1,8 @@
 {
-  "comment": "",
+  "comments": [
+    "Test that an observation, like rain total, that accumulates is converted to increments.",
+    "When a 'None' value is run through WeewWX accumulator, it is converted to a zero."
+  ],
   "types": [
     "individual",
     "json",

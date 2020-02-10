@@ -136,7 +136,7 @@ class TestJsonPayload(unittest.TestCase):
 
     #@unittest.skip("")
     def test_get_data_individual3(self):
-        with open("bin/user/tests/func/data/accumulatedraina.json") as file_pointer:
+        with open("bin/user/tests/func/data/accumulatedrain_withaccum.json") as file_pointer:
             testx_data = json.load(file_pointer, object_hook=utils.byteify)
             config_dict = configobj.ConfigObj(testx_data['config'])
             for testtype in testx_data['types']:

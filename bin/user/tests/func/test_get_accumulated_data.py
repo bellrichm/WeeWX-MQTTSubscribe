@@ -60,7 +60,7 @@ class TestIndividualPayload(unittest.TestCase):
 
     #@unittest.skip("")
     def test_get_accumulated_datax_individual3(self):
-        with open("bin/user/tests/func/data/accumulatedraina.json") as fp:
+        with open("bin/user/tests/func/data/accumulatedrain_withaccum.json") as fp:
             testx_data = json.load(fp, object_hook=utils.byteify)
             config_dict = configobj.ConfigObj(testx_data['config'])['MQTTSubscribeService']
             for testtype in testx_data['types']:
