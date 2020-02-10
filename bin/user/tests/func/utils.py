@@ -27,6 +27,25 @@ def byteify(data, ignore_dicts=False):
     # if it's anything else, return it in its original form
     return data
 
+def on_connect(client, userdata, flags, rc): # (match callback signature) pylint: disable=unused-argument
+    # https://pypi.org/project/paho-mqtt/#on-connect
+    # rc:
+    # 0: Connection successful
+    # 1: Connection refused - incorrect protocol version
+    # 2: Connection refused - invalid client identifier
+    # 3: Connection refused - server unavailable
+    # 4: Connection refused - bad username or password
+    # 5: Connection refused - not authorised
+    # 6-255: Currently unused.
+    for topic in userdata['topics']:
+        (result, mid) = client.subscribe(topic) # (match callback signature) pylint: disable=unused-variable
+    userdata['connected_flag'] = True
+
+def on_message(client, userdata, msg): # (match callback signature) pylint: disable=unused-argument
+    userdata['msg'] = True
+    #print(msg.topic)
+    #print(msg.payload)
+
 def send_mqtt_msg(publisher, topic, payload, userdata):
     userdata['msg'] = False
     mqtt_message_info = publisher(topic, payload)
