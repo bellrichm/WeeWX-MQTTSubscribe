@@ -1,4 +1,8 @@
 {
+  "comments": [
+    "Basic test,",
+    "Run through the WeeWX acuumulator."
+  ],  
   "types": [
     "individual",
     "json",
