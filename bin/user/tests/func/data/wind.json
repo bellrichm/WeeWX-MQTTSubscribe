@@ -1,4 +1,7 @@
 {
+  "comments": [
+    "Wind data collected into a packet,"
+  ],  
   "types": [
     "individual",
     "json",
