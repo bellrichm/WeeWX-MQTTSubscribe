@@ -1,6 +1,10 @@
 {
   "comment": "",
-  "types": ["individual", "json", "keyword"],
+  "types": [
+    "individual",
+    "json",
+    "keyword"
+  ],
   "config": [
     "[MQTTSubscribeService]",
     "    # Configuration for the message callback.",
@@ -29,73 +33,70 @@
       "messages": [
         {
           "weewx": {
-          "separator": ",",
-          "delimiter": "=",
-          "data": {
-            "rainTotal": 1
-            }    
-          }
-        }         
-      ],
-      "results": 
-        {
-          "units": 17,          
-          "records": [
-            {
-              "dateTime": null,
-              "usUnits": 17,
-              "rain": 0
-            }               
-          ]
-        }
-    },
-    {
-      "messages":[
-        {
-          "weewx": {
-          "separator": ",",
-          "delimiter": "=",
-          "data": {
-            "rainTotal": 2
-            }    
+            "separator": ",",
+            "delimiter": "=",
+            "data": {
+              "rainTotal": 1
+            }
           }
         }
       ],
-      "results":{
-        "units": 17,   
-      "records": [
-        {
-          "dateTime": null,
-          "usUnits": 17,
-          "rain": 1
-        }
-      ]      
+      "results": {
+        "units": 17,
+        "records": [
+          {
+            "dateTime": null,
+            "usUnits": 17,
+            "rain": 0
+          }
+        ]
       }
     },
     {
-      "messages":[
+      "messages": [
         {
           "weewx": {
-          "separator": ",",
-          "delimiter": "=",
-          "data": {
-            "rainTotal": 4
-            }    
+            "separator": ",",
+            "delimiter": "=",
+            "data": {
+              "rainTotal": 2
+            }
           }
         }
       ],
-      "results":{
-        "units": 17,   
-      "records": [
-        {
-          "dateTime": null,
-          "usUnits": 17,
-          "rain": 2
-        }
-      ]      
+      "results": {
+        "units": 17,
+        "records": [
+          {
+            "dateTime": null,
+            "usUnits": 17,
+            "rain": 1
+          }
+        ]
       }
-    }    
+    },
+    {
+      "messages": [
+        {
+          "weewx": {
+            "separator": ",",
+            "delimiter": "=",
+            "data": {
+              "rainTotal": 4
+            }
+          }
+        }
+      ],
+      "results": {
+        "units": 17,
+        "records": [
+          {
+            "dateTime": null,
+            "usUnits": 17,
+            "rain": 2
+          }
+        ]
+      }
+    }
   ]
 }
-    
-

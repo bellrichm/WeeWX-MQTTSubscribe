@@ -1,5 +1,9 @@
 {
-  "types": ["individual", "json", "keyword"],
+  "types": [
+    "individual",
+    "json",
+    "keyword"
+  ],
   "config": [
     "[MQTTSubscribeService]",
     "    # Configuration for the message callback.",
@@ -33,29 +37,26 @@
       "messages": [
         {
           "weewx": {
-          "separator": ",",
-          "delimiter": "=",
-          "data": {
-            "windDir": 0,
-            "windSpeed": 1  
-          }    
+            "separator": ",",
+            "delimiter": "=",
+            "data": {
+              "windDir": 0,
+              "windSpeed": 1
+            }
           }
         }
       ],
-      "results": 
-        {
-          "units": 17,          
-          "records": [
-            {
-              "dateTime": null,
-              "usUnits": 17,
-              "windDir": 0,
-              "windSpeed": 1 
-            }
-          ]
-        }    
+      "results": {
+        "units": 17,
+        "records": [
+          {
+            "dateTime": null,
+            "usUnits": 17,
+            "windDir": 0,
+            "windSpeed": 1
+          }
+        ]
+      }
     }
   ]
 }
-    
-
