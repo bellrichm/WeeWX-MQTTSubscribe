@@ -41,27 +41,21 @@ def send_direct_msg(publisher, topic, payload, userdata=None):
 def send_msg(sender, msg_type, publisher, topic, topic_info, userdata=None):
     if msg_type == 'individual':
         for field in sorted(topic_info['data']): # a bit of a hack, but need a determined order
-            topic2 = "%s/%s" % (topic, field)
             payload = topic_info['data'][field]
-            sender(publisher, topic2, payload, userdata)
+            sender(publisher, "%s/%s" % (topic, field), payload, userdata)
     elif msg_type == 'json':
         payload = json.dumps(topic_info['data'])
         sender(publisher, topic, payload, userdata)
     elif msg_type == 'keyword':
         msg = ''
-        data = topic_info['data']
-        for field in data:
-            msg = "%s%s%s%s%s" % (msg, field, topic_info['delimiter'], data[field], topic_info['separator'])
+        for field in topic_info['data']:
+            msg = "%s%s%s%s%s" % (msg, field, topic_info['delimiter'], topic_info['data'][field], topic_info['separator'])
         msg = msg[:-1]
         msg = msg.encode("utf-8")
         sender(publisher, topic, msg, userdata)
 
-def setup(payload_type, config_dict, manager, logger):
-
-    message_callback_config = config_dict.get('message_callback', None)
-    if message_callback_config is None:
-        raise ValueError("[[message_callback]] is required.")
-
+def get_callback(payload_type, config_dict, manager, logger):
+    message_callback_config = config_dict.get('message_callback', {})
     message_callback_config['type'] = payload_type
 
     message_callback_provider_name = config_dict.get('message_callback_provider',
@@ -74,23 +68,23 @@ def setup(payload_type, config_dict, manager, logger):
 
     return message_callback_provider.get_callback()
 
-def check(self, test_type, records, test):
+def check(self, test_type, results, expected_results):
     msg = "for payload of %s" % test_type
-    #print(records)
-    #print(test['records'])
-    self.assertEqual(len(records), len(test), msg)
+    #print(results)
+    #print(expected_results['results'])
+    self.assertEqual(len(results), len(expected_results), msg)
     i = 0
-    for recordx in test:
-        print("testing %s %s" % (test_type, recordx))
-        for field in recordx:
+    for expected_result in expected_results:
+        print("testing %s %s" % (test_type, expected_result))
+        for field in expected_result:
             msg = "for payload of %s and field %s in record %i" % (test_type, field, i+1)
-            self.assertIn(field, records[i], msg)
-            if recordx[field] is not None:
+            self.assertIn(field, results[i], msg)
+            if expected_result[field] is not None:
                 msg = "for payload of %s and field %s in record %i" % (test_type, field, i+1)
-                if recordx[field] == "None": # ToDo - cleanup
-                    self.assertIsNone(records[i][field], msg)
+                if expected_result[field] == "None": # ToDo - cleanup
+                    self.assertIsNone(results[i][field], msg)
                 else:
-                    self.assertEqual(records[i][field], recordx[field], msg)
+                    self.assertEqual(results[i][field], expected_result[field], msg)
         i += 1
 
 class Msg(object):

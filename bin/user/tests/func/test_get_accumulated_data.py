@@ -25,7 +25,7 @@ class TestIndividualPayload(unittest.TestCase):
         manager = TopicManager(topics_dict, logger)
 
 
-        on_message = utils.setup(testtype, config_dict, manager, logger)
+        on_message = utils.get_callback(testtype, config_dict, manager, logger)
         for testrun in testruns:
             start_ts = time.time()
             for topics in testrun['messages']:
