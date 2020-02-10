@@ -73,7 +73,7 @@ class TestJsonPayload(unittest.TestCase):
             time.sleep(1)
 
         for testrun in testruns:
-            for topics in testrun['payload']:
+            for topics in testrun['messages']:
                 for topic in topics:
                     topic_info = topics[topic]
                     utils.send_msg(utils.send_mqtt_msg, testtype, client.publish, topic, topic_info, userdata)
@@ -104,7 +104,7 @@ class TestJsonPayload(unittest.TestCase):
             testx_data = json.load(file_pointer, object_hook=utils.byteify)
             config_dict = configobj.ConfigObj(testx_data['config'])
             for testtype in testx_data['types']:
-                self.driver_test(testtype, testx_data['data'], config_dict)
+                self.driver_test(testtype, testx_data['testruns'], config_dict)
 
     #@unittest.skip("")
     def test_get_data_individual2(self):
@@ -112,7 +112,7 @@ class TestJsonPayload(unittest.TestCase):
             testx_data = json.load(file_pointer, object_hook=utils.byteify)
             config_dict = configobj.ConfigObj(testx_data['config'])
             for testtype in testx_data['types']:
-                self.driver_test(testtype, testx_data['data'], config_dict)
+                self.driver_test(testtype, testx_data['testruns'], config_dict)
 
     #@unittest.skip("")
     def test_get_data_individual2b(self):
@@ -120,7 +120,7 @@ class TestJsonPayload(unittest.TestCase):
             testx_data = json.load(file_pointer, object_hook=utils.byteify)
             config_dict = configobj.ConfigObj(testx_data['config'])
             for testtype in testx_data['types']:
-                self.driver_test(testtype, testx_data['data'], config_dict)
+                self.driver_test(testtype, testx_data['testruns'], config_dict)
 
     #@unittest.skip("")
     def test_get_data_individual3(self):
@@ -128,25 +128,7 @@ class TestJsonPayload(unittest.TestCase):
             testx_data = json.load(file_pointer, object_hook=utils.byteify)
             config_dict = configobj.ConfigObj(testx_data['config'])
             for testtype in testx_data['types']:
-                self.driver_test(testtype, testx_data['data'], config_dict)
-
-    #def test_get_data_individual(self):
-        #self.driver_test('individual')
-
-    #def test_get_data_json(self):
-        #self.driver_test('json')
-
-    #def test_get_data_keyword(self):
-        #self.driver_test('keyword')
-
-    #def test_get_accumulated_data_individual(self):
-        #self.service_test('individual')
-
-    #def test_get_accumulated_data_json(self):
-        #self.service_test('json')
-
-    #def test_get_accumulated_data_keyword(self):
-        #self.service_test('keyword')
+                self.driver_test(testtype, testx_data['testruns'], config_dict)
 
 if __name__ == '__main__':
     unittest.main(exit=False)

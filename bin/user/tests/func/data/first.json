@@ -28,9 +28,9 @@
     "        unit_system = METRICWX",
     "        [[[weewx/#]]]"
   ],
-  "data": [
+  "testruns": [
     {
-      "payload": [
+      "messages": [
         {
           "weewx": {
           "separator": ",",

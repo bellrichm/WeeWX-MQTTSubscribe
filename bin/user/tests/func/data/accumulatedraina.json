@@ -24,9 +24,9 @@
     "        adjust_start_time = 1",
     "        [[[weewx/#]]]"
   ],
-  "data": [
+  "testruns": [
     {
-      "payload": [
+      "messages": [
         {
           "weewx": {
           "separator": ",",
@@ -50,7 +50,7 @@
         }
     },
     {
-      "payload":[
+      "messages":[
         {
           "weewx": {
           "separator": ",",
@@ -73,7 +73,7 @@
       }
     },
     {
-      "payload":[
+      "messages":[
         {
           "weewx": {
           "separator": ",",

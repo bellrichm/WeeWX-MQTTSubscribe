@@ -26,7 +26,7 @@ class TestIndividualPayload(unittest.TestCase):
         on_message = utils.setup(testtype, config_dict, manager, logger)
 
         for testrun in testruns:
-            for topics in testrun['payload']:
+            for topics in testrun['messages']:
                 for topic in topics:
                     topic_info = topics[topic]
                     utils.send_msg(utils.send_direct_msg, testtype, on_message, topic, topic_info)
@@ -47,7 +47,7 @@ class TestIndividualPayload(unittest.TestCase):
             testx_data = json.load(fp, object_hook=utils.byteify)
             config_dict = configobj.ConfigObj(testx_data['config'])['MQTTSubscribeService']
             for testtype in testx_data['types']:
-                self.get_data_test(testtype, testx_data['data'], config_dict)
+                self.get_data_test(testtype, testx_data['testruns'], config_dict)
 
     #@unittest.skip("")
     def test_get_data_individual1(self):
@@ -55,7 +55,7 @@ class TestIndividualPayload(unittest.TestCase):
             testx_data = json.load(fp, object_hook=utils.byteify)
             config_dict = configobj.ConfigObj(testx_data['config'])['MQTTSubscribeService']
             for testtype in testx_data['types']:
-                self.get_data_test(testtype, testx_data['data'], config_dict)
+                self.get_data_test(testtype, testx_data['testruns'], config_dict)
 
     #@unittest.skip("")
     def test_get_data_individual1b(self):
@@ -63,7 +63,7 @@ class TestIndividualPayload(unittest.TestCase):
             testx_data = json.load(fp, object_hook=utils.byteify)
             config_dict = configobj.ConfigObj(testx_data['config'])['MQTTSubscribeService']
             for testtype in testx_data['types']:
-                self.get_data_test(testtype, testx_data['data'], config_dict)
+                self.get_data_test(testtype, testx_data['testruns'], config_dict)
 
 
     #@unittest.skip("")
@@ -72,7 +72,7 @@ class TestIndividualPayload(unittest.TestCase):
             testx_data = json.load(fp, object_hook=utils.byteify)
             config_dict = configobj.ConfigObj(testx_data['config'])['MQTTSubscribeService']
             for testtype in testx_data['types']:
-                self.get_data_test(testtype, testx_data['data'], config_dict)
+                self.get_data_test(testtype, testx_data['testruns'], config_dict)
 
 if __name__ == '__main__':
     unittest.main(exit=False)
