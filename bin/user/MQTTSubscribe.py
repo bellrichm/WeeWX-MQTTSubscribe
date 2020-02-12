@@ -432,6 +432,10 @@ class TopicManager(object):
 
         return datetime_value
 
+    def has_data(self, topic):
+        """ Return True if queue has data. """
+        return bool(self._get_queue(topic))
+
     def get_data(self, topic, end_ts=MAXSIZE):
         """ Get data off the queue of MQTT data. """
         queue = self._get_queue(topic)
@@ -462,6 +466,9 @@ class TopicManager(object):
 
     def get_accumulated_data(self, topic, start_time, end_time, units):
         """ Get the MQTT data after being accumulated. """
+        if not self.has_data(topic):
+            return {}
+
         ignore_start_time = self._get_value('ignore_start_time', topic)
         ignore_end_time = self._get_value('ignore_end_time', topic)
         adjust_start_time = self._get_value('adjust_start_time', topic)
@@ -469,7 +476,6 @@ class TopicManager(object):
 
         if ignore_start_time:
             self.logger.debug("TopicManager ignoring start time.")
-            # Todo - queue might be empty?
             start_ts = self.peek_datetime(topic) - adjust_start_time
         else:
             start_ts = start_time - adjust_start_time

@@ -42,6 +42,14 @@ class TestIndividualPayload(unittest.TestCase):
             utils.check(self, test_type, records, testrun['results']['records'])
 
     #@unittest.skip("")
+    def test_get_data_empty(self):
+        with open("bin/user/tests/func/data/empty.json") as fp:
+            test_data = json.load(fp, object_hook=utils.byteify)
+            config_dict = configobj.ConfigObj(test_data['config'])['MQTTSubscribeService']
+            for test_type in test_data['types']:
+                self.get_data_test(test_type, test_data['testruns'], config_dict)
+
+    #@unittest.skip("")
     def test_get_data_individual0(self):
         with open("bin/user/tests/func/data/wind.json") as fp:
             test_data = json.load(fp, object_hook=utils.byteify)
@@ -64,7 +72,6 @@ class TestIndividualPayload(unittest.TestCase):
             config_dict = configobj.ConfigObj(test_data['config'])['MQTTSubscribeService']
             for test_type in test_data['types']:
                 self.get_data_test(test_type, test_data['testruns'], config_dict)
-
 
     #@unittest.skip("")
     def test_get_data_individual(self):

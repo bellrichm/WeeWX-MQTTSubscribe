@@ -23,8 +23,12 @@ class TestJsonPayload(unittest.TestCase):
         #sleep = 2
 
         cdict = config_dict['MQTTSubscribeService']
-        message_callback_config = cdict.get('message_callback', None)
-        message_callback_config['type'] = test_type
+        if not 'message_callback' in config_dict['MQTTSubscribeService']:
+            config_dict['MQTTSubscribeService']['message_callback'] = {}
+        config_dict['MQTTSubscribeService']['message_callback']['type'] = test_type
+
+        #message_callback_config = cdict.get('message_callback', None)
+        #message_callback_config['type'] = test_type
 
         driver = MQTTSubscribeDriver(**cdict)
 
@@ -89,6 +93,14 @@ class TestJsonPayload(unittest.TestCase):
         return
 
     #@unittest.skip("")
+    def test_get_data_empty(self):
+        with open("bin/user/tests/func/data/empty.json") as file_pointer:
+            test_data = json.load(file_pointer, object_hook=utils.byteify)
+            config_dict = configobj.ConfigObj(test_data['config'])
+            for test_type in test_data['types']:
+                self.driver_test(test_type, test_data['testruns'], config_dict)
+
+    #@unittest.skip("")
     def test_get_data_individual1(self):
         with open("bin/user/tests/func/data/wind.json") as file_pointer:
             test_data = json.load(file_pointer, object_hook=utils.byteify)
@@ -121,4 +133,4 @@ class TestJsonPayload(unittest.TestCase):
                 self.driver_test(test_type, test_data['testruns'], config_dict)
 
 if __name__ == '__main__':
-    unittest.main(exit=False)
+    unittest.main(exit=False, failfast=True)

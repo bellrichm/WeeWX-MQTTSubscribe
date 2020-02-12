@@ -518,6 +518,7 @@ class TestAccumulatedData(unittest.TestCase):
                 accumulated_data = SUT.get_accumulated_data(self.topic, 0, time.time(), 0)
 
                 self.assertDictEqual(accumulated_data, {})
+                mock_Accum.assert_not_called()
                 mock_Accum.addRecord.assert_not_called()
                 mock_Accum.getRecord.assert_not_called()
                 mock_to_std_system.assert_not_called()

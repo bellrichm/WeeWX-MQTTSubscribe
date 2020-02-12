@@ -25,8 +25,11 @@ class TestJsonPayload(unittest.TestCase):
         #sleep = 1
 
         cdict = config_dict['MQTTSubscribeService']
-        message_callback_config = cdict.get('message_callback', None)
-        message_callback_config['type'] = test_type
+        if not 'message_callback' in config_dict['MQTTSubscribeService']:
+            config_dict['MQTTSubscribeService']['message_callback'] = {}
+        config_dict['MQTTSubscribeService']['message_callback']['type'] = test_type
+        #message_callback_config = cdict.get('message_callback', {})
+        #message_callback_config['type'] = test_type
 
         min_config_dict = {
             'Station': {
@@ -109,6 +112,14 @@ class TestJsonPayload(unittest.TestCase):
         client2.disconnect()
 
     #@unittest.skip("")
+    def test_get_data_empty(self):
+        with open("bin/user/tests/func/data/emptyaccumulated.json") as file_pointer:
+            test_data = json.load(file_pointer, object_hook=utils.byteify)
+            config_dict = configobj.ConfigObj(test_data['config'])
+            for test_type in test_data['types']:
+                self.service_test(test_type, test_data['testruns'], config_dict)
+
+    #@unittest.skip("")
     def test_get_data_individual1(self):
         with open("bin/user/tests/func/data/wind.json") as file_pointer:
             test_data = json.load(file_pointer, object_hook=utils.byteify)
@@ -133,4 +144,4 @@ class TestJsonPayload(unittest.TestCase):
                 self.service_test(test_type, test_data['testruns'], config_dict)
 
 if __name__ == '__main__':
-    unittest.main(exit=False)
+    unittest.main(exit=False, failfast=True)
