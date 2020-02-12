@@ -13,4 +13,4 @@ else
     COVERAGE=$2
 fi
 
-PYTHONPATH=bin:../$WEEWX/bin $COVERAGE run  -m unittest discover bin/user/tests; $COVERAGE html --include bin/user/MQTTSubscribe.py
+PYTHONPATH=bin:../$WEEWX/bin $COVERAGE run  -m unittest discover bin/user/tests/unit; $COVERAGE html --include bin/user/MQTTSubscribe.py
