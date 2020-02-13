@@ -82,6 +82,7 @@ def on_publish(client, userdata, mid):  # (match callback signature) pylint: dis
 
 
 def main():
+    # pylint: disable=too-many-locals
     """ The main entry point. """
     parser = init_parser()
     options = parser.parse_args()

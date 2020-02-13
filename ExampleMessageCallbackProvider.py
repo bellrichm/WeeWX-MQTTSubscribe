@@ -26,6 +26,7 @@ from weeutil.weeutil import to_float
 
 
 class MessageCallbackProvider(object):
+    # pylint: disable=too-few-public-methods
     """ Provide the MQTT callback. """
     def __init__(self, config, logger, topic_manager):
         self.logger = logger

@@ -93,10 +93,11 @@ def init_parser():
 def _get_option(option, default):
     if option:
         return option
-    else:
-        return default
+
+    return default
 
 def main():
+    # pylint: disable=too-many-locals, too-many-branches, too-many-statements
     """ The main entry point. """
     parser = init_parser()
     options = parser.parse_args()

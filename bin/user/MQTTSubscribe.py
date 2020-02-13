@@ -288,7 +288,7 @@ except ImportError: # pragma: no cover
             if self.console:
                 print('%s: %s' % (__name__, msg))
 
-VERSION = '1.5.0'
+VERSION = '1.5.1-rc01'
 DRIVER_NAME = 'MQTTSubscribeDriver'
 DRIVER_VERSION = VERSION
 
@@ -320,6 +320,7 @@ class CollectData(object):
 class TopicManager(object):
     """ Manage the MQTT topic subscriptions. """
     def __init__(self, config, logger):
+        # pylint: disable=too-many-locals
         self.logger = logger
 
         if not config.sections:
@@ -432,6 +433,10 @@ class TopicManager(object):
 
         return datetime_value
 
+    def has_data(self, topic):
+        """ Return True if queue has data. """
+        return bool(self._get_queue(topic))
+
     def get_data(self, topic, end_ts=MAXSIZE):
         """ Get data off the queue of MQTT data. """
         queue = self._get_queue(topic)
@@ -462,6 +467,9 @@ class TopicManager(object):
 
     def get_accumulated_data(self, topic, start_time, end_time, units):
         """ Get the MQTT data after being accumulated. """
+        if not self.has_data(topic):
+            return {}
+
         ignore_start_time = self._get_value('ignore_start_time', topic)
         ignore_end_time = self._get_value('ignore_end_time', topic)
         adjust_start_time = self._get_value('adjust_start_time', topic)
@@ -545,6 +553,8 @@ class TopicManager(object):
                 self.topics[topic] = subscribed_topic
                 return subscribed_topic
 
+        return None
+
     def _to_epoch(self, datetime_input, datetime_format, offset_format=None):
         self.logger.debug("TopicManager datetime conversion datetime_input:%s datetime_format:%s offset_format:%s"
                           %(datetime_input, datetime_format, offset_format))
@@ -570,6 +580,7 @@ class TopicManager(object):
         return epoch
 
 class MessageCallbackProvider(object):
+    # pylint: disable=too-many-instance-attributes, too-few-public-methods
     """ Provide the MQTT callback. """
     def __init__(self, config, logger, topic_manager):
         self.logger = logger
@@ -627,12 +638,12 @@ class MessageCallbackProvider(object):
         conversion_type = self.fields.get(field, {}).get('conversion_type', 'float')
         if conversion_type == 'bool':
             return to_bool(value)
-        elif conversion_type == 'float':
+        if conversion_type == 'float':
             return to_float(value)
-        elif conversion_type == 'int':
+        if conversion_type == 'int':
             return to_int(value)
-        else:
-            return value
+
+        return value
 
     def _byteify(self, data, ignore_dicts=False):
         if PY2:
@@ -680,11 +691,12 @@ class MessageCallbackProvider(object):
         if current_total is not None and previous_total is not None:
             if current_total >= previous_total:
                 return current_total - previous_total
-            else:
-                self.logger.info("MessageCallbackProvider _calc_increment skipping calculating increment " \
-                                 "for %s with current: %f and previous %f values."
-                                 % (observation, current_total, previous_total))
-                return None
+
+            self.logger.info("MessageCallbackProvider _calc_increment skipping calculating increment " \
+                             "for %s with current: %f and previous %f values."
+                             % (observation, current_total, previous_total))
+
+        return None
 
     def _log_message(self, msg):
         self.logger.debug("MessageCallbackProvider For %s has QOS of %i and retain of %s received: %s"
@@ -777,6 +789,7 @@ class MessageCallbackProvider(object):
 class MQTTSubscribe(object):
     """ Manage MQTT sunscriptions. """
     def __init__(self, service_dict, logger):
+        # pylint: disable=too-many-locals, too-many-statements
         self.logger = logger
 
         if 'topic' in service_dict:
@@ -1047,14 +1060,14 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice): # (methods not used) py
         if not self.archive_topic:
             self.logger.debug("MQTTSubscribeDriver no archive topic configured.")
             raise NotImplementedError
-        else:
-            for data in self.subscriber.get_data(self.archive_topic, lastgood_ts):
-                if data:
-                    self.logger.debug("MQTTSubscribeDriver record is %s: %s"
-                                      % (weeutil.weeutil.timestamp_to_string(data['dateTime']), to_sorted_string(data)))
-                    yield data
-                else:
-                    break
+
+        for data in self.subscriber.get_data(self.archive_topic, lastgood_ts):
+            if data:
+                self.logger.debug("MQTTSubscribeDriver record is %s: %s"
+                                  % (weeutil.weeutil.timestamp_to_string(data['dateTime']), to_sorted_string(data)))
+                yield data
+            else:
+                break
 
 class MQTTSubscribeDriverConfEditor(weewx.drivers.AbstractConfEditor): # pragma: no cover
     """ Methods for producing and updating configuration stanzas for use in configuration file. """
@@ -1152,6 +1165,7 @@ if __name__ == '__main__': # pragma: no cover
     """
 
     def main():
+        # pylint: disable=too-many-locals, too-many-statements
         """ Prepare and run MQTTSubscribe in simulation mode. """
         parser = argparse.ArgumentParser(usage=USAGE)
         parser.add_argument('--version', action='version', version="MQTTSubscribe version is %s" % VERSION)
@@ -1305,6 +1319,7 @@ if __name__ == '__main__': # pragma: no cover
                 break
 
     def simulate_service(engine, config_dict, binding, record_count, interval, delay, units):
+        # pylint: disable=too-many-arguments, too-many-locals
         """ Simulate running MQTTSubscribe as a service. """
         service = MQTTSubscribeService(engine, config_dict)
         i = 0
