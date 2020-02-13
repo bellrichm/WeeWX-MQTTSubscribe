@@ -320,6 +320,7 @@ class CollectData(object):
 class TopicManager(object):
     """ Manage the MQTT topic subscriptions. """
     def __init__(self, config, logger):
+        # pylint: disable=too-many-locals
         self.logger = logger
 
         if not config.sections:
@@ -577,6 +578,7 @@ class TopicManager(object):
         return epoch
 
 class MessageCallbackProvider(object):
+    # pylint: disable=too-many-instance-attributes, too-few-public-methods
     """ Provide the MQTT callback. """
     def __init__(self, config, logger, topic_manager):
         self.logger = logger
@@ -784,6 +786,7 @@ class MessageCallbackProvider(object):
 class MQTTSubscribe(object):
     """ Manage MQTT sunscriptions. """
     def __init__(self, service_dict, logger):
+        # pylint: disable=too-many-locals, too-many-statements
         self.logger = logger
 
         if 'topic' in service_dict:
@@ -1159,6 +1162,7 @@ if __name__ == '__main__': # pragma: no cover
     """
 
     def main():
+        # pylint: disable=too-many-locals, too-many-statements
         """ Prepare and run MQTTSubscribe in simulation mode. """
         parser = optparse.OptionParser(usage=USAGE)
         parser.add_option("--version", action="store_true", dest="version",
@@ -1196,7 +1200,7 @@ if __name__ == '__main__': # pragma: no cover
 
         if options.version:
             print("Print MQTTSubscribe version is %s" % VERSION)
-            exit()
+            sys.exit()
 
         simulation_type = options.type
         binding = options.binding
@@ -1316,6 +1320,7 @@ if __name__ == '__main__': # pragma: no cover
                 break
 
     def simulate_service(engine, config_dict, binding, record_count, interval, delay, units):
+        # pylint: disable=too-many-arguments, too-many-locals
         """ Simulate running MQTTSubscribe as a service. """
         service = MQTTSubscribeService(engine, config_dict)
         i = 0
