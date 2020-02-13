@@ -16,12 +16,13 @@ from user.MQTTSubscribe import MQTTSubscribe, Logger
 
 
 class Msg(object):
+    # pylint: disable=too-few-public-methods
     def __init(self):
         pass
 
-
 class TestInitialization(unittest.TestCase):
-    def test_username_None(self):
+    @staticmethod
+    def test_username_None():
         host = 'host'
         port = random.randint(1000, 9999)
         keepalive = random.randint(1, 10)
@@ -54,7 +55,8 @@ class TestInitialization(unittest.TestCase):
                 SUT.client.username_pw_set.assert_not_called()
                 SUT.client.connect.assert_called_once_with(host, port, keepalive)
 
-    def test_password_None(self):
+    @staticmethod
+    def test_password_None():
         host = 'host'
         port = random.randint(1000, 9999)
         keepalive = random.randint(1, 10)
@@ -87,7 +89,8 @@ class TestInitialization(unittest.TestCase):
                 SUT.client.username_pw_set.assert_not_called()
                 SUT.client.connect.assert_called_once_with(host, port, keepalive)
 
-    def test_username_and_password_None(self):
+    @staticmethod
+    def test_username_and_password_None():
         host = 'host'
         port = random.randint(1000, 9999)
         keepalive = random.randint(1, 10)
@@ -120,7 +123,8 @@ class TestInitialization(unittest.TestCase):
                 SUT.client.username_pw_set.assert_not_called()
                 SUT.client.connect.assert_called_once_with(host, port, keepalive)
 
-    def test_username_and_password_set(self):
+    @staticmethod
+    def test_username_and_password_set():
         host = 'host'
         port = random.randint(1000, 9999)
         keepalive = random.randint(1, 10)

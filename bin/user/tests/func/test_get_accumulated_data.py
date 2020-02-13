@@ -20,6 +20,7 @@ from user.MQTTSubscribe import TopicManager, Logger
 
 class TestIndividualPayload(unittest.TestCase):
     def get_accumulated_data_test(self, test_type, testruns, config_dict):
+        # pylint: disable=too-many-locals
         logger = Logger()
         topics_dict = config_dict.get('topics', {})
         manager = TopicManager(topics_dict, logger)

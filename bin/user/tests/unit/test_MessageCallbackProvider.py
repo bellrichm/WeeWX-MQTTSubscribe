@@ -21,6 +21,7 @@ from user.MQTTSubscribe import MessageCallbackProvider, TopicManager, Logger
 PY2 = sys.version_info[0] == 2
 
 class Msg(object):
+    # pylint: disable=too-few-public-methods
     def __init__(self, topic, payload, qos, retain):
         self.topic = topic
         self.payload = payload
@@ -32,8 +33,8 @@ class TestFieldsConfiguration(unittest.TestCase):
         message_handler_config = {}
         message_handler_config['type'] = 'individual'
 
-        input_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),  # pylint: disable=unused-variable
-        output_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),  # pylint: disable=unused-variable
+        input_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])  # pylint: disable=unused-variable
+        output_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])  # pylint: disable=unused-variable
 
         label_map = {}
         label_map[input_name] = output_name
@@ -49,9 +50,9 @@ class TestFieldsConfiguration(unittest.TestCase):
         message_handler_config = {}
         message_handler_config['type'] = 'individual'
 
-        input_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),  # pylint: disable=unused-variable
-        output_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),  # pylint: disable=unused-variable
-        label_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),  # pylint: disable=unused-variable
+        input_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])  # pylint: disable=unused-variable
+        output_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])  # pylint: disable=unused-variable
+        label_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])  # pylint: disable=unused-variable
 
         label_map = {}
         label_map[input_name] = label_name
@@ -73,9 +74,9 @@ class TestFieldsConfiguration(unittest.TestCase):
         message_handler_config = {}
         message_handler_config['type'] = 'individual'
 
-        input_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),  # pylint: disable=unused-variable
-        #output_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),  # pylint: disable=unused-variable
-        label_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),  # pylint: disable=unused-variable
+        input_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])  # pylint: disable=unused-variable
+        #output_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])  # pylint: disable=unused-variable
+        label_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])  # pylint: disable=unused-variable
 
         label_map = {}
         label_map[input_name] = label_name
@@ -97,9 +98,9 @@ class TestFieldsConfiguration(unittest.TestCase):
         message_handler_config = {}
         message_handler_config['type'] = 'individual'
 
-        input_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),  # pylint: disable=unused-variable
-        output_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),  # pylint: disable=unused-variable
-        label_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),  # pylint: disable=unused-variable
+        input_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])  # pylint: disable=unused-variable
+        output_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])  # pylint: disable=unused-variable
+        label_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])  # pylint: disable=unused-variable
 
         label_map = {}
         label_map[input_name] = label_name
@@ -126,8 +127,8 @@ class TestFieldsConfiguration(unittest.TestCase):
         message_handler_config = {}
         message_handler_config['type'] = 'individual'
 
-        input_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),  # pylint: disable=unused-variable
-        label_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),  # pylint: disable=unused-variable
+        input_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])  # pylint: disable=unused-variable
+        label_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])  # pylint: disable=unused-variable
         label_map = {}
         label_map[input_name] = label_name
         message_handler_config['label_map'] = label_map
@@ -146,8 +147,8 @@ class TestFieldsConfiguration(unittest.TestCase):
         message_handler_config = {}
         message_handler_config['type'] = 'individual'
 
-        input_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),  # pylint: disable=unused-variable
-        output_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),  # pylint: disable=unused-variable
+        input_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])  # pylint: disable=unused-variable
+        output_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])  # pylint: disable=unused-variable
 
         fields = {}
         field = {}
@@ -167,8 +168,8 @@ class TestFieldsConfiguration(unittest.TestCase):
         message_handler_config = {}
         message_handler_config['type'] = 'individual'
 
-        input_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),  # pylint: disable=unused-variable
-        output_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),  # pylint: disable=unused-variable
+        input_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])  # pylint: disable=unused-variable
+        output_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])  # pylint: disable=unused-variable
 
         fields = {}
         field = {}
@@ -191,7 +192,7 @@ class TestFieldsConfiguration(unittest.TestCase):
         message_handler_config = {}
         message_handler_config['type'] = 'individual'
 
-        input_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),  # pylint: disable=unused-variable
+        input_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])  # pylint: disable=unused-variable
 
         contains_total = [input_name]
         message_handler_config['contains_total'] = contains_total
@@ -205,7 +206,7 @@ class TestFieldsConfiguration(unittest.TestCase):
         message_handler_config = {}
         message_handler_config['type'] = 'individual'
 
-        input_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),  # pylint: disable=unused-variable
+        input_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])  # pylint: disable=unused-variable
 
         fields = {}
         field = {}
@@ -223,7 +224,7 @@ class TestFieldsConfiguration(unittest.TestCase):
         message_handler_config = {}
         message_handler_config['type'] = 'individual'
 
-        input_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),  # pylint: disable=unused-variable
+        input_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])  # pylint: disable=unused-variable
         conversion_type = 'INT'
 
         fields = {}
@@ -281,7 +282,7 @@ class TestConversionType(unittest.TestCase):
         message_handler_config = {}
         message_handler_config['type'] = 'individual'
 
-        input_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),  # pylint: disable=unused-variable
+        input_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])  # pylint: disable=unused-variable
         conversion_type = 'bool'
         value = 'false'
 
@@ -302,7 +303,7 @@ class TestConversionType(unittest.TestCase):
         message_handler_config = {}
         message_handler_config['type'] = 'individual'
 
-        input_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),  # pylint: disable=unused-variable
+        input_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])  # pylint: disable=unused-variable
         conversion_type = 'float'
         value_float = round(random.uniform(10, 100), 2)
         value = str(value_float)
@@ -324,7 +325,7 @@ class TestConversionType(unittest.TestCase):
         message_handler_config = {}
         message_handler_config['type'] = 'individual'
 
-        input_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),  # pylint: disable=unused-variable
+        input_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])  # pylint: disable=unused-variable
         conversion_type = 'int'
         value_int = random.randint(1, 10)
         value = str(value_int)
@@ -346,7 +347,7 @@ class TestConversionType(unittest.TestCase):
         message_handler_config = {}
         message_handler_config['type'] = 'individual'
 
-        input_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),  # pylint: disable=unused-variable
+        input_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])  # pylint: disable=unused-variable
         value_float = round(random.uniform(10, 100), 2)
         value = str(value_float)
 
@@ -366,7 +367,7 @@ class TestConversionType(unittest.TestCase):
         message_handler_config = {}
         message_handler_config['type'] = 'individual'
 
-        input_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),  # pylint: disable=unused-variable
+        input_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])  # pylint: disable=unused-variable
         conversion_type = 'None'
         value = str(round(random.uniform(10, 100), 2))
 

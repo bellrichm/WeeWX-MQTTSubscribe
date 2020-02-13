@@ -36,7 +36,8 @@ class TestgenLoopPackets(unittest.TestCase):
 
         self.config_dict['topic'] = topic
 
-    def generator(self, test_data):
+    @staticmethod
+    def generator(test_data):
         for data in test_data:
             yield data
 
@@ -99,7 +100,8 @@ class TestgenArchiveRecords(unittest.TestCase):
         self.config_dict['topics']['foo/bar'] = {}
         self.config_dict['topics'][archive_topic] = {}
 
-    def generator(self, test_data):
+    @staticmethod
+    def generator(test_data):
         for data in test_data:
             yield data
 

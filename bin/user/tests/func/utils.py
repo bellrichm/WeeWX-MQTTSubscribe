@@ -55,9 +55,11 @@ def send_mqtt_msg(publisher, topic, payload, userdata):
         time.sleep(1)
 
 def send_direct_msg(publisher, topic, payload, userdata=None):
+    # match function signature pylint: disable=unused-argument
     publisher(None, None, Msg(topic, payload, 0, 0))
 
 def send_msg(sender, msg_type, publisher, topic, topic_info, userdata=None):
+    # pylint: disable=too-many-arguments
     if msg_type == 'individual':
         for field in sorted(topic_info['data']): # a bit of a hack, but need a determined order
             payload = topic_info['data'][field]
@@ -107,6 +109,7 @@ def check(self, test_type, results, expected_results):
         i += 1
 
 class Msg(object):
+    # pylint: disable=too-few-public-methods
     def __init__(self, topic, payload, qos, retain):
         self.topic = topic
         self.payload = payload

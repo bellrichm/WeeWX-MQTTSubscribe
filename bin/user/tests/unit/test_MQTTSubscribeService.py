@@ -58,7 +58,8 @@ class Testnew_loop_packet(unittest.TestCase):
         self.config_dict['MQTTSubscribeService'] = {}
         self.config_dict['MQTTSubscribeService']['topic'] = 'foo/bar'
 
-    def generator(self, test_data):
+    @staticmethod
+    def generator(test_data):
         for data in test_data:
             yield data
 
@@ -157,7 +158,8 @@ class Testnew_archive_record(unittest.TestCase):
         self.config_dict['MQTTSubscribeService'] = {}
         self.config_dict['MQTTSubscribeService']['topic'] = topic
 
-    def generator(self, test_data):
+    @staticmethod
+    def generator(test_data):
         for data in test_data:
             yield data
 

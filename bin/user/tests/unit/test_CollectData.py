@@ -69,8 +69,7 @@ class Test_add_data(unittest.TestCase):
         added_data = SUT.add_data(second_field, second_data)
 
         self.assertDictEqual(added_data, {})
-        self.assertDictEqual(SUT.data, total_data)        
-
+        self.assertDictEqual(SUT.data, total_data)
 
 class Test_get_data(unittest.TestCase):
     wind_field = 'windSpeed'

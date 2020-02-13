@@ -171,6 +171,7 @@ class TestAppendData(unittest.TestCase):
         self.assertIn('usUnits', data)
 
     def test_dateteime_format_add_offset(self):
+        # pylint: disable=too-many-locals
         queue_data_subset = {
             'inTemp': random.uniform(1, 100),
             'outTemp': random.uniform(1, 100),
@@ -213,6 +214,7 @@ class TestAppendData(unittest.TestCase):
         self.assertEqual(adjusted_epoch, data['dateTime'])
 
     def test_dateteime_format_subtract_offset(self):
+        # pylint: disable=too-many-locals
         queue_data_subset = {
             'inTemp': random.uniform(1, 100),
             'outTemp': random.uniform(1, 100),
@@ -296,7 +298,8 @@ class TestGetQueueData(unittest.TestCase):
     config_dict[topic] = {}
     config = configobj.ConfigObj(config_dict)
 
-    def create_queue_data(self):
+    @staticmethod
+    def create_queue_data():
         return {
             'inTemp': random.uniform(1, 100),
             'outTemp': random.uniform(1, 100),
@@ -420,7 +423,8 @@ class TestAccumulatedData(unittest.TestCase):
     config_dict[topic] = {}
     config = configobj.ConfigObj(config_dict)
 
-    def create_queue_data(self):
+    @staticmethod
+    def create_queue_data():
         return {
             'inTemp': random.uniform(1, 100),
             'outTemp': random.uniform(1, 100),

@@ -20,6 +20,7 @@ from user.MQTTSubscribe import MQTTSubscribeDriver
 
 class TestJsonPayload(unittest.TestCase):
     def driver_test(self, test_type, testruns, config_dict):
+        # pylint: disable=too-many-locals
         #sleep = 2
 
         cdict = config_dict['MQTTSubscribeService']
@@ -89,8 +90,6 @@ class TestJsonPayload(unittest.TestCase):
         driver.closePort()
         client.disconnect()
         client2.disconnect()
-
-        return
 
     #@unittest.skip("")
     def test_get_data_empty(self):
