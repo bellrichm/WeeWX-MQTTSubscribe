@@ -46,34 +46,37 @@ def on_message(client, userdata, msg): # (match callback signature) pylint: disa
     #print(msg.topic)
     #print(msg.payload)
 
-def send_mqtt_msg(publisher, topic, payload, userdata):
+def send_mqtt_msg(publisher, topic, payload, userdata, self):
     userdata['msg'] = False
     mqtt_message_info = publisher(topic, payload)
     mqtt_message_info.wait_for_publish()
+    i = 1
     while not userdata['msg']:
-        #print("sleeping")
+        if i > userdata['max_msg_wait']:
+            self.fail("Timed out waiting for MQTT message.")
         time.sleep(1)
+        i += 1
 
-def send_direct_msg(publisher, topic, payload, userdata=None):
+def send_direct_msg(publisher, topic, payload, userdata, self):
     # match function signature pylint: disable=unused-argument
     publisher(None, None, Msg(topic, payload, 0, 0))
 
-def send_msg(sender, msg_type, publisher, topic, topic_info, userdata=None):
+def send_msg(sender, msg_type, publisher, topic, topic_info, userdata=None, self=None):
     # pylint: disable=too-many-arguments
     if msg_type == 'individual':
         for field in sorted(topic_info['data']): # a bit of a hack, but need a determined order
             payload = topic_info['data'][field]
-            sender(publisher, "%s/%s" % (topic, field), payload, userdata)
+            sender(publisher, "%s/%s" % (topic, field), payload, userdata, self)
     elif msg_type == 'json':
         payload = json.dumps(topic_info['data'])
-        sender(publisher, topic, payload, userdata)
+        sender(publisher, topic, payload, userdata, self)
     elif msg_type == 'keyword':
         msg = ''
         for field in topic_info['data']:
             msg = "%s%s%s%s%s" % (msg, field, topic_info['delimiter'], topic_info['data'][field], topic_info['separator'])
         msg = msg[:-1]
         msg = msg.encode("utf-8")
-        sender(publisher, topic, msg, userdata)
+        sender(publisher, topic, msg, userdata, self)
 
 def get_callback(payload_type, config_dict, manager, logger):
     message_callback_config = config_dict.get('message_callback', {})

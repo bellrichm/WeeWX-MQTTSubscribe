@@ -48,14 +48,20 @@ class TestJsonPayload(unittest.TestCase):
         client.connect(host, port, keepalive)
         client.loop_start()
 
+        max_connect_wait = 1 # ToDo - configure
+        i = 1
         while not userdata['connected_flag']: #wait in loop
+            if i > max_connect_wait:
+                self.fail("Timed out waiting for connections.")
             #print("waiting to connect")
             time.sleep(1)
+            i += 1
 
         userdata2 = {
             'topics': cdict['topics'].sections,
             'connected_flag': False,
-            'msg': False
+            'msg': False,
+            'max_msg_wait': 1 # ToDo - configure
         }
         client2 = mqtt.Client(userdata=userdata2)
         client2.on_connect = utils.on_connect
@@ -63,15 +69,20 @@ class TestJsonPayload(unittest.TestCase):
         client2.connect(host, port, keepalive)
         client2.loop_start()
 
+        max_connect2_wait = 1 # ToDo - configure
+        i = 1
         while not userdata2['connected_flag']: #wait in loop
             #print("waiting to connect")
+            if i > max_connect2_wait:
+                self.fail("Timed out waiting for connection 2.")
             time.sleep(1)
+            i += 1
 
         for testrun in testruns:
             for topics in testrun['messages']:
                 for topic in topics:
                     topic_info = topics[topic]
-                    utils.send_msg(utils.send_mqtt_msg, test_type, client.publish, topic, topic_info, userdata2)
+                    utils.send_msg(utils.send_mqtt_msg, test_type, client.publish, topic, topic_info, userdata2, self)
 
             #time.sleep(1) # more fudge to allow it to get to the service
 

@@ -134,6 +134,7 @@ disable=print-statement,
         deprecated-sys-function,
         exception-escape,
         comprehension-escape,
+        fixme,
         useless-object-inheritance, # python2 compatibility
 
 # Enable the message, report, category or checker with the given id(s). You can
