@@ -553,6 +553,8 @@ class TopicManager(object):
                 self.topics[topic] = subscribed_topic
                 return subscribed_topic
 
+        return None
+
     def _to_epoch(self, datetime_input, datetime_format, offset_format=None):
         self.logger.debug("TopicManager datetime conversion datetime_input:%s datetime_format:%s offset_format:%s"
                           %(datetime_input, datetime_format, offset_format))
@@ -636,12 +638,12 @@ class MessageCallbackProvider(object):
         conversion_type = self.fields.get(field, {}).get('conversion_type', 'float')
         if conversion_type == 'bool':
             return to_bool(value)
-        elif conversion_type == 'float':
+        if conversion_type == 'float':
             return to_float(value)
-        elif conversion_type == 'int':
+        if conversion_type == 'int':
             return to_int(value)
-        else:
-            return value
+
+        return value
 
     def _byteify(self, data, ignore_dicts=False):
         if PY2:
@@ -689,11 +691,12 @@ class MessageCallbackProvider(object):
         if current_total is not None and previous_total is not None:
             if current_total >= previous_total:
                 return current_total - previous_total
-            else:
-                self.logger.info("MessageCallbackProvider _calc_increment skipping calculating increment " \
-                                 "for %s with current: %f and previous %f values."
-                                 % (observation, current_total, previous_total))
-                return None
+
+            self.logger.info("MessageCallbackProvider _calc_increment skipping calculating increment " \
+                             "for %s with current: %f and previous %f values."
+                             % (observation, current_total, previous_total))
+
+        return None
 
     def _log_message(self, msg):
         self.logger.debug("MessageCallbackProvider For %s has QOS of %i and retain of %s received: %s"
@@ -1057,14 +1060,14 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice): # (methods not used) py
         if not self.archive_topic:
             self.logger.debug("MQTTSubscribeDriver no archive topic configured.")
             raise NotImplementedError
-        else:
-            for data in self.subscriber.get_data(self.archive_topic, lastgood_ts):
-                if data:
-                    self.logger.debug("MQTTSubscribeDriver record is %s: %s"
-                                      % (weeutil.weeutil.timestamp_to_string(data['dateTime']), to_sorted_string(data)))
-                    yield data
-                else:
-                    break
+
+        for data in self.subscriber.get_data(self.archive_topic, lastgood_ts):
+            if data:
+                self.logger.debug("MQTTSubscribeDriver record is %s: %s"
+                                  % (weeutil.weeutil.timestamp_to_string(data['dateTime']), to_sorted_string(data)))
+                yield data
+            else:
+                break
 
 class MQTTSubscribeDriverConfEditor(weewx.drivers.AbstractConfEditor): # pragma: no cover
     """ Methods for producing and updating configuration stanzas for use in configuration file. """
