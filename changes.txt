@@ -1,3 +1,12 @@
+V1.5.1
+Enhancements/Fixes
+- Fixed bug with ignoring start and end times when queues are empty.
+
+Internal Improvements
+- Migrated from optparse to argparse (#37).
+- Improved linting support and additional linting cleanup.
+- Added function testing.
+
 V1.5.0
 Enhancements/Fixes
 - Support fields that have cumulative values (#40).

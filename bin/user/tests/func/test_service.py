@@ -22,7 +22,7 @@ from user.MQTTSubscribe import MQTTSubscribeService
 
 class TestJsonPayload(unittest.TestCase):
     def service_test(self, test_type, testruns, config_dict):
-        # pylint: disable=too-many-locals
+        # pylint: disable=too-many-locals, too-many-statements
         #sleep = 1
 
         cdict = config_dict['MQTTSubscribeService']
