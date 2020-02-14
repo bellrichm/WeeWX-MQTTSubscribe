@@ -231,26 +231,21 @@ try: # pragma: no cover
     class Logger(object):
         """ The logging class. """
         def __init__(self, console=None):
-            self.console = console
             self._logmsg = logging.getLogger(__name__)
+            if console:
+                self._logmsg.addHandler(logging.StreamHandler(sys.stdout))
 
         def debug(self, msg):
             """ Log debug messages. """
             self._logmsg.debug(msg)
-            if self.console:
-                print(msg)
 
         def info(self, msg):
             """ Log informational messages. """
             self._logmsg.info(msg)
-            if self.console:
-                print(msg)
 
         def error(self, msg):
             """ Log error messages. """
             self._logmsg.error(msg)
-            if self.console:
-                print(msg)
 except ImportError: # pragma: no cover
     import syslog
     def setup_logging(logging_level):
