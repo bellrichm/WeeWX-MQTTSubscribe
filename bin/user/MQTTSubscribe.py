@@ -288,7 +288,7 @@ except ImportError: # pragma: no cover
             if self.console:
                 print('%s: %s' % (__name__, msg))
 
-VERSION = '1.5.1'
+VERSION = '1.5.2-rc01'
 DRIVER_NAME = 'MQTTSubscribeDriver'
 DRIVER_VERSION = VERSION
 
