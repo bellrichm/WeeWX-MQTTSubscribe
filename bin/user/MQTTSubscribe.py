@@ -222,6 +222,7 @@ try: # pragma: no cover
         weeutil.logger.setup('wee_MQTTSS', {})
 
         log = logging.getLogger(__name__)
+        # ToDo - setup customized logger
 
         log.info("Initializing weewx version %s", weewx.__version__)
         log.info("Using Python %s", sys.version)
@@ -1041,7 +1042,7 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice): # (methods not used) py
 
                 for data in self.subscriber.get_data(topic):
                     if data:
-                        self.logger.debug("MQTTSubscribeDriver packet is %s: %s"
+                        self.logger.debug("MQTTSubscribeDriver loop packet is %s: %s"
                                           % (weeutil.weeutil.timestamp_to_string(data['dateTime']), to_sorted_string(data)))
                         yield data
                     else:
@@ -1058,7 +1059,7 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice): # (methods not used) py
 
         for data in self.subscriber.get_data(self.archive_topic, lastgood_ts):
             if data:
-                self.logger.debug("MQTTSubscribeDriver record is %s: %s"
+                self.logger.debug("MQTTSubscribeDriver archive record is %s: %s"
                                   % (weeutil.weeutil.timestamp_to_string(data['dateTime']), to_sorted_string(data)))
                 yield data
             else:
