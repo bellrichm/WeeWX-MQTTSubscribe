@@ -28,13 +28,13 @@ build_script:
 
     pip install pylint
 
-    pip install coveralls --user --no-warn-script-location --no-python-version-warning
+    pip install coveralls 
 
-    pip install nose --user --no-warn-script-location --no-python-version-warning
+    pip install nose 
 
-    pip install coverage --user --no-warn-script-location --no-python-version-warning
+    pip install coverage
 
-    export PATH=/home/appveyor/.local/bin:$PATH
+    #export PATH=/home/appveyor/.local/bin:$PATH
 
     #./coverage.sh
 
