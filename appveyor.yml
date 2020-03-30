@@ -20,9 +20,9 @@ build_script:
 
 
 
-    pip install configobj --user --no-python-version-warning
+    pip install configobj
 
-    pip install paho-mqtt --user --no-python-version-warning
+    pip install paho-mqtt --no-python-version-warning
 
     pip install mock --user --no-python-version-warning
 
