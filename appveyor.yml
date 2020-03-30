@@ -22,11 +22,11 @@ build_script:
 
     pip install configobj
 
-    pip install paho-mqtt --no-python-version-warning
+    pip install paho-mqtt
 
-    pip install mock --user --no-python-version-warning
+    pip install mock
 
-    pip install pylint --user --no-warn-script-location --no-python-version-warning
+    pip install pylint
 
     pip install coveralls --user --no-warn-script-location --no-python-version-warning
 
