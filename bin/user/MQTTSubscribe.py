@@ -1061,7 +1061,7 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice): # (methods not used) py
 
             time.sleep(self.wait_before_retry)
 
-    def genArchiveRecords(self, lastgood_ts):
+    def genArchiveRecords(self, lastgood_ts): # need to override parent - pylint: disable=invalid-name
         """ Called to generate the archive records. """
         if not self.archive_topic:
             self.logger.debug("MQTTSubscribeDriver no archive topic configured.")
