@@ -9,13 +9,14 @@ import mock
 
 import random
 import time
-import weewx
+
+import test_weewx_stubs # used to set up stubs - pylint: disable=unused-import
 
 from user.MQTTSubscribe import MQTTSubscribeDriver
 
 
 class TestgenLoopPackets(unittest.TestCase):
-    mock_StdEngine = mock.Mock(spec=weewx.engine.StdEngine)
+    mock_StdEngine = mock.Mock()
 
     def __init__(self, methodName):
         super(TestgenLoopPackets, self).__init__(methodName)
@@ -76,7 +77,7 @@ class TestgenLoopPackets(unittest.TestCase):
 
 
 class TestgenArchiveRecords(unittest.TestCase):
-    mock_StdEngine = mock.Mock(spec=weewx.engine.StdEngine)
+    mock_StdEngine = mock.Mock()
 
     def __init__(self, methodName):
         super(TestgenArchiveRecords, self).__init__(methodName)
