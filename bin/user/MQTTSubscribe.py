@@ -1375,8 +1375,6 @@ if __name__ == '__main__': # pragma: no cover
                 print("Loop packet is: %s %s"
                       % (weeutil.weeutil.timestamp_to_string(new_loop_packet_event.packet['dateTime']),
                          to_sorted_string(new_loop_packet_event.packet)))
-            else:
-                pass
 
             i += 1
 
