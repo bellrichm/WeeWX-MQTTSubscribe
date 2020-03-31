@@ -15,6 +15,8 @@ import string
 import sys
 import time
 
+import test_weewx_stubs # used to set up stubs - pylint: disable=unused-import
+
 from user.MQTTSubscribe import MessageCallbackProvider, TopicManager, Logger
 
 # Stole from six module. Added to eliminate dependency on six when running under WeeWX 3.x
