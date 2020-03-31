@@ -59,7 +59,7 @@ build_script:
       -Dsonar.python.xunit.reportPath=nosetests.xml \
       -Dsonar.python.coverage.reportPaths=coverage.xml \
       -Dsonar.python.coveragePlugin=cobertura \
-      -D sonar.python.pylint.reportPath=pylint.txt \
+      -Dsonar.python.pylint.reportPath=pylint.txt \
       -Dsonar.host.url=https://sonarcloud.io \
       -Dsonar.login=$SKEY \
       #-X
