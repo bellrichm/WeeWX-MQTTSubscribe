@@ -959,7 +959,7 @@ class MQTTSubscribeService(StdService):
         else:
             raise ValueError("MQTTSubscribeService: Unknown binding: %s" % binding)
 
-    def shutDown(self):
+    def shutDown(self): # need to override parent - pylint: disable=invalid-name
         """Run when an engine shutdown is requested."""
         self.subscriber.disconnect()
 
@@ -1039,7 +1039,7 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice): # (methods not used) py
         """ The archive interval. """
         return self._archive_interval
 
-    def closePort(self):
+    def closePort(self): # need to override parent - pylint: disable=invalid-name
         """ Called to perform any close/cleanup before termination. """
         self.subscriber.disconnect()
 
