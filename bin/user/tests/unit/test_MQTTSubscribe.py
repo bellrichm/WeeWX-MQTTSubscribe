@@ -11,9 +11,10 @@ import configobj
 import paho.mqtt.client
 import random
 import string
-import weewx
-from user.MQTTSubscribe import MQTTSubscribe, Logger
 
+import test_weewx_stubs
+
+from user.MQTTSubscribe import MQTTSubscribe, Logger
 
 class Msg(object):
     # pylint: disable=too-few-public-methods
@@ -162,7 +163,7 @@ class TestInitialization(unittest.TestCase):
 
 class Teston_connect(unittest.TestCase):
     unit_system_name = 'US'
-    unit_system = weewx.units.unit_constants[unit_system_name]
+    unit_system = test_weewx_stubs.UNITS_CONSTANTS[unit_system_name]
     config_dict = {
         'console': False,
         'full_topic_fieldname': False,
