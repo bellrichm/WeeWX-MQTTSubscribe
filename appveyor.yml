@@ -17,19 +17,19 @@ build_script:
 
 
 
-    pip install configobj
+    pip install configobj --quiet
 
-    pip install paho-mqtt
+    pip install paho-mqtt --quiet
 
-    pip install mock
+    pip install mock --quiet
 
-    pip install pylint
+    pip install pylint --quiet
 
-    pip install coveralls 
+    pip install coveralls --quiet
 
-    pip install nose 
+    pip install nose --quiet
 
-    pip install coverage
+    pip install coverage --quiet
 
     #export PATH=/home/appveyor/.local/bin:$PATH
 
