@@ -9,6 +9,8 @@ import unittest
 import random
 import time
 
+import test_weewx_stubs # used to set up stubs - pylint: disable=unused-import
+
 from user.MQTTSubscribe import CollectData
 
 
