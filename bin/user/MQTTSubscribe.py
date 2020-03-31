@@ -337,7 +337,6 @@ class TopicManager(object):
         default_unit_system_name = config.get('unit_system', 'US').strip().upper()
         if default_unit_system_name not in weewx.units.unit_constants:
             raise ValueError("MQTTSubscribe: Unknown unit system: %s" % default_unit_system_name)
-        unit_system = weewx.units.unit_constants[default_unit_system_name]
 
         max_queue = config.get('max_queue', MAXSIZE)
 
