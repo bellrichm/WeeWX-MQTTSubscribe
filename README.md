@@ -174,4 +174,4 @@ Prior to making any updates/changes, always make a backup.
 
 
 
-[![Coverage Status](https://coveralls.io/repos/github/bellrichm/WeeWX-MQTTSubscribe/badge.svg?branch=master)](https://coveralls.io/github/bellrichm/WeeWX-MQTTSubscribe?branch=master)
+[![Coverage Status](https://coveralls.io/repos/github/bellrichm/WeeWX-MQTTSubscribe/badge.svg?branch=master&service=github)](https://coveralls.io/github/bellrichm/WeeWX-MQTTSubscribe?branch=master)
