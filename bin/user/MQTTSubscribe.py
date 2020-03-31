@@ -1043,7 +1043,7 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice): # (methods not used) py
         """ Called to perform any close/cleanup before termination. """
         self.subscriber.disconnect()
 
-    def genLoopPackets(self):
+    def genLoopPackets(self): # need to override parent - pylint: disable=invalid-name
         """ Called to generate loop packets. """
         while True:
             for topic in self.subscriber.subscribed_topics: # topics might not be cached.. therefore use subscribed?
