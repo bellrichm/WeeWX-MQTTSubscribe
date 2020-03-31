@@ -9,13 +9,14 @@ import mock
 
 import random
 import time
-import weewx
+
+import test_weewx_stubs
 
 from user.MQTTSubscribe import MQTTSubscribeService
 
 
 class Testnew_loop_packet(unittest.TestCase):
-    mock_StdEngine = mock.Mock(spec=weewx.engine.StdEngine)
+    mock_StdEngine = mock.Mock()
 
     def __init__(self, methodName):
         super(Testnew_loop_packet, self).__init__(methodName)
@@ -71,8 +72,8 @@ class Testnew_loop_packet(unittest.TestCase):
         self.setup_queue_tests(start_ts, end_period_ts)
         self.final_packet_data.update(self.target_data)
 
-        new_loop_packet_event = weewx.Event(weewx.NEW_LOOP_PACKET,
-                                            packet=self.packet_data)
+        new_loop_packet_event = test_weewx_stubs.Event(test_weewx_stubs.NEW_LOOP_PACKET,
+                                                       packet=self.packet_data)
 
         with mock.patch('user.MQTTSubscribe.MQTTSubscribe') as mock_manager:
             type(mock_manager.return_value).subscribed_topics = mock.PropertyMock(return_value=[topic])
@@ -95,8 +96,8 @@ class Testnew_loop_packet(unittest.TestCase):
         self.setup_queue_tests(start_ts, end_period_ts)
         self.final_packet_data.update(self.target_data)
 
-        new_loop_packet_event = weewx.Event(weewx.NEW_LOOP_PACKET,
-                                            packet=self.packet_data)
+        new_loop_packet_event = test_weewx_stubs.Event(test_weewx_stubs.NEW_LOOP_PACKET,
+                                                       packet=self.packet_data)
 
         with mock.patch('user.MQTTSubscribe.MQTTSubscribe') as mock_manager:
             with mock.patch('user.MQTTSubscribe.Logger'):
@@ -115,7 +116,8 @@ class Testnew_loop_packet(unittest.TestCase):
 
 
 class Testnew_archive_record(unittest.TestCase):
-    mock_StdEngine = mock.Mock(spec=weewx.engine.StdEngine)
+    #mock_StdEngine = mock.Mock(spec=weewx.engine.StdEngine)
+    mock_StdEngine = mock.Mock()
 
     def __init__(self, methodName):
         super(Testnew_archive_record, self).__init__(methodName)
@@ -171,9 +173,9 @@ class Testnew_archive_record(unittest.TestCase):
         self.setup_archive_queue_tests(start_ts, end_period_ts, topic)
         self.final_record_data.update(self.target_data)
 
-        new_loop_record_event = weewx.Event(weewx.NEW_ARCHIVE_RECORD,
-                                            record=self.record_data,
-                                            origin='hardware')
+        new_loop_record_event = test_weewx_stubs.Event(test_weewx_stubs.NEW_ARCHIVE_RECORD,
+                                                       record=self.record_data,
+                                                       origin='hardware')
 
         with mock.patch('user.MQTTSubscribe.MQTTSubscribe') as mock_manager:
             type(mock_manager.return_value).subscribed_topics = mock.PropertyMock(return_value=[topic])
