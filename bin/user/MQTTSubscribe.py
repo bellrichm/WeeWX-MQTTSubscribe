@@ -960,6 +960,7 @@ class MQTTSubscribeService(StdService):
             raise ValueError("MQTTSubscribeService: Unknown binding: %s" % binding)
 
     def shutDown(self):
+        """Run when an engine shutdown is requested."""
         self.subscriber.disconnect()
 
     def new_loop_packet(self, event):
@@ -1030,16 +1031,20 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice): # (methods not used) py
 
     @property
     def hardware_name(self):
+        """ The name of the hardware driver. """
         return "MQTTSubscribeDriver"
 
     @property
     def archive_interval(self):
+        """ The archive interval. """
         return self._archive_interval
 
     def closePort(self):
+        """ Called to perform any close/cleanup before termination. """
         self.subscriber.disconnect()
 
     def genLoopPackets(self):
+        """ Called to generate loop packets. """
         while True:
             for topic in self.subscriber.subscribed_topics: # topics might not be cached.. therefore use subscribed?
                 if topic == self.archive_topic:
@@ -1058,6 +1063,7 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice): # (methods not used) py
             time.sleep(self.wait_before_retry)
 
     def genArchiveRecords(self, lastgood_ts):
+        """ Called to generate the archive records. """
         if not self.archive_topic:
             self.logger.debug("MQTTSubscribeDriver no archive topic configured.")
             raise NotImplementedError
@@ -1074,6 +1080,7 @@ class MQTTSubscribeDriverConfEditor(weewx.drivers.AbstractConfEditor): # pragma:
     """ Methods for producing and updating configuration stanzas for use in configuration file. """
     @property
     def default_stanza(self):
+        """ The default configuration stanza. """
         return """
 [MQTTSubscribeDriver]
     # This section is for the MQTTSubscribe driver.
@@ -1112,6 +1119,7 @@ class MQTTSubscribeDriverConfEditor(weewx.drivers.AbstractConfEditor): # pragma:
         [[[SECOND/REPLACE_ME]]]
 """
     def prompt_for_settings(self):
+        """ Prompt for settings required for proper operation of this driver. """
         settings = {}
         settings['message_callback'] = {}
         settings['topics'] = {}
