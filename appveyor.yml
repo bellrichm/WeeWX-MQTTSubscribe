@@ -1,9 +1,6 @@
 version: 1.5.2-rc{build}
 image: Ubuntu1804
 stack: python 3.7
-environment:
-  SKEY: 82042921343dcec70c2a48eaa947b723ea9afdd5
-  COVERALLS_REPO_TOKEN: DKSmdX1H70csSzemlw7Yjv6oe5QXrZ0uX
 build_script:
 - sh: >-
     export SONAR_SCANNER_VERSION=4.2.0.1873
