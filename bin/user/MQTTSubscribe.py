@@ -596,7 +596,7 @@ class MessageCallbackProvider(object):
         if self.type not in self.callbacks:
             raise ValueError("Invalid type configured: %s" % self.type)
 
-        self.set_backwards_compatibility(label_map, orig_fields, contains_total)    
+        self.set_backwards_compatibility(label_map, orig_fields, contains_total)
 
         for field in self.fields:
             if  'contains_total' in self.fields[field]:
@@ -607,6 +607,7 @@ class MessageCallbackProvider(object):
         self.previous_values = {}
 
     def set_backwards_compatibility(self, label_map, orig_fields, contains_total):
+        """ Any config for backwards compatibility. """
         # backwards compatible, add the label map
         for field in label_map:
             if not field in orig_fields:
@@ -622,7 +623,7 @@ class MessageCallbackProvider(object):
                     value['contains_total'] = True
                     self.fields[field] = value
                 else:
-                    self.fields[field]['contains_total'] = True   
+                    self.fields[field]['contains_total'] = True
 
     def get_callback(self):
         """ Get the MQTT callback. """
@@ -1214,29 +1215,11 @@ if __name__ == '__main__': # pragma: no cover
 
         config_dict = configobj.ConfigObj(config_path, file_error=True)
 
-        if options.topics:
-            topics = options.topics.split(',')
-            if 'MQTTSubscribeService' in config_dict and 'topics' in config_dict['MQTTSubscribeService']:
-                config_dict['MQTTSubscribeService']['topics'] = {}
-            if 'MQTTSubscribeDriver' in config_dict and 'topics' in config_dict['MQTTSubscribeDriver']:
-                config_dict['MQTTSubscribeDriver']['topics'] = {}
-            for topic in topics:
-                weeutil.config.merge_config(config_dict,
-                                            {'MQTTSubscribeService': {'topics': {topic:{}}}})
-                weeutil.config.merge_config(config_dict,
-                                            {'MQTTSubscribeDriver': {'topics': {topic:{}}}})
+        config_topics(config_dict, options.topics)
 
-        if options.host:
-            weeutil.config.merge_config(config_dict,
-                                        {'MQTTSubscribeService': {'host': options.host}})
-            weeutil.config.merge_config(config_dict,
-                                        {'MQTTSubscribeDriver': {'host': options.host}})
+        config_host(config_dict, options.host)
 
-        if options.callback:
-            weeutil.config.merge_config(config_dict,
-                                        {'MQTTSubscribeService': {'message_callback': {'type': options.callback}}})
-            weeutil.config.merge_config(config_dict,
-                                        {'MQTTSubscribeDriver': {'message_callback': {'type': options.callback}}})
+        config_callback(config_dict, options.callback)
 
         min_config_dict = {
             'Station': {
@@ -1266,12 +1249,7 @@ if __name__ == '__main__': # pragma: no cover
         weeutil.config.merge_config(config_dict,
                                     {'MQTTSubscribeService': {'binding': binding}})
 
-        # if specified, override the console logging
-        if options.console:
-            weeutil.config.merge_config(config_dict,
-                                        {'MQTTSubscribeService': {'console': True}})
-            weeutil.config.merge_config(config_dict,
-                                        {'MQTTSubscribeDriver': {'console': True}})
+        config_console(config_dict, options.console)
 
         if simulation_type == "service":
             simulate_service(engine, config_dict, binding, record_count, interval, delay, units)
@@ -1289,6 +1267,44 @@ if __name__ == '__main__': # pragma: no cover
                 simulate_driver_archive(driver, record_count, interval, delay)
             elif binding == "loop":
                 simulate_driver_packet(driver, record_count)
+
+    def config_topics(config_dict, topic_option):
+        """ Configure the topics. """
+        if topic_option:
+            topics = topic_option.split(',')
+            if 'MQTTSubscribeService' in config_dict and 'topics' in config_dict['MQTTSubscribeService']:
+                config_dict['MQTTSubscribeService']['topics'] = {}
+            if 'MQTTSubscribeDriver' in config_dict and 'topics' in config_dict['MQTTSubscribeDriver']:
+                config_dict['MQTTSubscribeDriver']['topics'] = {}
+            for topic in topics:
+                weeutil.config.merge_config(config_dict,
+                                            {'MQTTSubscribeService': {'topics': {topic:{}}}})
+                weeutil.config.merge_config(config_dict,
+                                            {'MQTTSubscribeDriver': {'topics': {topic:{}}}})
+
+    def config_host(config_dict, host_option):
+        """ Configure the host. """
+        if host_option:
+            weeutil.config.merge_config(config_dict,
+                                        {'MQTTSubscribeService': {'host': host_option}})
+            weeutil.config.merge_config(config_dict,
+                                        {'MQTTSubscribeDriver': {'host': host_option}})
+
+    def config_callback(config_dict, callback_option):
+        """ Configure the callback. """
+        if callback_option:
+            weeutil.config.merge_config(config_dict,
+                                        {'MQTTSubscribeService': {'message_callback': {'type': callback_option}}})
+            weeutil.config.merge_config(config_dict,
+                                        {'MQTTSubscribeDriver': {'message_callback': {'type': callback_option}}})
+
+    def config_console(config_dict, console_option):
+        """ If specified, override the console logging. """
+        if console_option:
+            weeutil.config.merge_config(config_dict,
+                                        {'MQTTSubscribeService': {'console': True}})
+            weeutil.config.merge_config(config_dict,
+                                        {'MQTTSubscribeDriver': {'console': True}})
 
     def simulate_driver_archive(driver, record_count, interval, delay):
         """ Simulate running MQTTSubscribe as a driver that generates archive records. """
