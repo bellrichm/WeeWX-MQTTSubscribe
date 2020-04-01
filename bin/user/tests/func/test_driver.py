@@ -19,7 +19,7 @@ import utils
 from user.MQTTSubscribe import MQTTSubscribeDriver
 
 class TestJsonPayload(unittest.TestCase):
-    def driver_test(self, test_type, testruns, config_dict):
+    def driver_check(self, test_type, testruns, config_dict):
         # pylint: disable=too-many-locals
         #sleep = 2
 
@@ -108,7 +108,7 @@ class TestJsonPayload(unittest.TestCase):
             test_data = json.load(file_pointer, object_hook=utils.byteify)
             config_dict = configobj.ConfigObj(test_data['config'])
             for test_type in test_data['types']:
-                self.driver_test(test_type, test_data['testruns'], config_dict)
+                self.driver_check(test_type, test_data['testruns'], config_dict)
 
     #@unittest.skip("")
     def test_get_data_individual1(self):
@@ -116,7 +116,7 @@ class TestJsonPayload(unittest.TestCase):
             test_data = json.load(file_pointer, object_hook=utils.byteify)
             config_dict = configobj.ConfigObj(test_data['config'])
             for test_type in test_data['types']:
-                self.driver_test(test_type, test_data['testruns'], config_dict)
+                self.driver_check(test_type, test_data['testruns'], config_dict)
 
     #@unittest.skip("")
     def test_get_data_individual2(self):
@@ -124,7 +124,7 @@ class TestJsonPayload(unittest.TestCase):
             test_data = json.load(file_pointer, object_hook=utils.byteify)
             config_dict = configobj.ConfigObj(test_data['config'])
             for test_type in test_data['types']:
-                self.driver_test(test_type, test_data['testruns'], config_dict)
+                self.driver_check(test_type, test_data['testruns'], config_dict)
 
     #@unittest.skip("")
     def test_get_data_individual2b(self):
@@ -132,7 +132,7 @@ class TestJsonPayload(unittest.TestCase):
             test_data = json.load(file_pointer, object_hook=utils.byteify)
             config_dict = configobj.ConfigObj(test_data['config'])
             for test_type in test_data['types']:
-                self.driver_test(test_type, test_data['testruns'], config_dict)
+                self.driver_check(test_type, test_data['testruns'], config_dict)
 
     #@unittest.skip("")
     def test_get_data_individual3(self):
@@ -140,7 +140,7 @@ class TestJsonPayload(unittest.TestCase):
             test_data = json.load(file_pointer, object_hook=utils.byteify)
             config_dict = configobj.ConfigObj(test_data['config'])
             for test_type in test_data['types']:
-                self.driver_test(test_type, test_data['testruns'], config_dict)
+                self.driver_check(test_type, test_data['testruns'], config_dict)
 
 if __name__ == '__main__':
     unittest.main(exit=False, failfast=True)
