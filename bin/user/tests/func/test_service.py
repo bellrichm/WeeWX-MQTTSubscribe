@@ -21,7 +21,7 @@ from weewx.engine import StdEngine
 from user.MQTTSubscribe import MQTTSubscribeService
 
 class TestJsonPayload(unittest.TestCase):
-    def service_test(self, test_type, testruns, config_dict):
+    def service_check(self, test_type, testruns, config_dict):
         # pylint: disable=too-many-locals, too-many-statements
         #sleep = 1
 
@@ -129,7 +129,7 @@ class TestJsonPayload(unittest.TestCase):
             test_data = json.load(file_pointer, object_hook=utils.byteify)
             config_dict = configobj.ConfigObj(test_data['config'])
             for test_type in test_data['types']:
-                self.service_test(test_type, test_data['testruns'], config_dict)
+                self.service_check(test_type, test_data['testruns'], config_dict)
 
     #@unittest.skip("")
     def test_get_data_individual1(self):
@@ -137,7 +137,7 @@ class TestJsonPayload(unittest.TestCase):
             test_data = json.load(file_pointer, object_hook=utils.byteify)
             config_dict = configobj.ConfigObj(test_data['config'])
             for test_type in test_data['types']:
-                self.service_test(test_type, test_data['testruns'], config_dict)
+                self.service_check(test_type, test_data['testruns'], config_dict)
 
     #@unittest.skip("")
     def test_get_data_individual2(self):
@@ -145,7 +145,7 @@ class TestJsonPayload(unittest.TestCase):
             test_data = json.load(file_pointer, object_hook=utils.byteify)
             config_dict = configobj.ConfigObj(test_data['config'])
             for test_type in test_data['types']:
-                self.service_test(test_type, test_data['testruns'], config_dict)
+                self.service_check(test_type, test_data['testruns'], config_dict)
 
     #@unittest.skip("")
     def test_get_data_individual3(self):
@@ -153,7 +153,7 @@ class TestJsonPayload(unittest.TestCase):
             test_data = json.load(file_pointer, object_hook=utils.byteify)
             config_dict = configobj.ConfigObj(test_data['config'])
             for test_type in test_data['types']:
-                self.service_test(test_type, test_data['testruns'], config_dict)
+                self.service_check(test_type, test_data['testruns'], config_dict)
 
 if __name__ == '__main__':
     unittest.main(exit=False, failfast=True)

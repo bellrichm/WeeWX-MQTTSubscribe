@@ -19,7 +19,7 @@ import time
 from user.MQTTSubscribe import TopicManager, Logger
 
 class TestIndividualPayload(unittest.TestCase):
-    def get_accumulated_data_test(self, test_type, testruns, config_dict):
+    def get_accumulated_data_check(self, test_type, testruns, config_dict):
         # pylint: disable=too-many-locals
         logger = Logger()
         topics_dict = config_dict.get('topics', {})
@@ -48,7 +48,7 @@ class TestIndividualPayload(unittest.TestCase):
             test_data = json.load(fp, object_hook=utils.byteify)
             config_dict = configobj.ConfigObj(test_data['config'])['MQTTSubscribeService']
             for test_type in test_data['types']:
-                self.get_accumulated_data_test(test_type, test_data['testruns'], config_dict)
+                self.get_accumulated_data_check(test_type, test_data['testruns'], config_dict)
 
     #@unittest.skip("")
     def test_get_accumulated_data_individual1(self):
@@ -56,7 +56,7 @@ class TestIndividualPayload(unittest.TestCase):
             test_data = json.load(fp, object_hook=utils.byteify)
             config_dict = configobj.ConfigObj(test_data['config'])['MQTTSubscribeService']
             for test_type in test_data['types']:
-                self.get_accumulated_data_test(test_type, test_data['testruns'], config_dict)
+                self.get_accumulated_data_check(test_type, test_data['testruns'], config_dict)
 
     #@unittest.skip("")
     def test_get_accumulated_data_individual(self):
@@ -64,7 +64,7 @@ class TestIndividualPayload(unittest.TestCase):
             test_data = json.load(fp, object_hook=utils.byteify)
             config_dict = configobj.ConfigObj(test_data['config'])['MQTTSubscribeService']
             for test_type in test_data['types']:
-                self.get_accumulated_data_test(test_type, test_data['testruns'], config_dict)
+                self.get_accumulated_data_check(test_type, test_data['testruns'], config_dict)
 
     #@unittest.skip("")
     def test_get_accumulated_datax_individual3(self):
@@ -72,7 +72,7 @@ class TestIndividualPayload(unittest.TestCase):
             test_data = json.load(fp, object_hook=utils.byteify)
             config_dict = configobj.ConfigObj(test_data['config'])['MQTTSubscribeService']
             for test_type in test_data['types']:
-                self.get_accumulated_data_test(test_type, test_data['testruns'], config_dict)
+                self.get_accumulated_data_check(test_type, test_data['testruns'], config_dict)
 
 if __name__ == '__main__':
     unittest.main(exit=False)
