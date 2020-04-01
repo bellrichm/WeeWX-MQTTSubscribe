@@ -63,7 +63,7 @@ build_script:
       -Dsonar.python.pylint.reportPath=pylint.txt \
       -Dsonar.host.url=https://sonarcloud.io \
       -Dsonar.login=$SKEY \
-      #-X
+      -X
 
     #-Dsonar.python.xunit.reportPath=nosetests.xml
 
@@ -74,7 +74,6 @@ build_script:
 
     ls -la
 
-    |
     find "$APPVEYOR_BUILD_FOLDER" -type f -name 'nosetests.xml' -print0 | xargs -0 -I '{}' curl -F 'file=@{}' "https://ci.appveyor.com/api/testresults/xunit/$APPVEYOR_JOB_ID"
 
 
