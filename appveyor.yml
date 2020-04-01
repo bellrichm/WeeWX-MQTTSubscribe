@@ -45,6 +45,7 @@ build_script:
     # sed -i 's/filename="/filename=".\//g' coverage.xml
 
     sed -i 's/classname="/classname="bin\/user\/tests\/unit./g' nosetests.xml
+    
     cp nosetests.xml nosetests2.xml
 
 
