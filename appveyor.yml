@@ -61,6 +61,8 @@ build_script:
 
     sed -i 's/classname="/classname="bin\/user\/tests\/unit./g' nosetests.xml
 
+    sed -i 's/classname="/classname="bin\/user\/tests\/func./g' nosetests2.xml
+
     #cp nosetests.xml nosetests2.xml
 
 
