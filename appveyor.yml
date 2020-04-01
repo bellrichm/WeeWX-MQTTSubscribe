@@ -58,7 +58,9 @@ build_script:
 
     appveyor AddTest -Name xUnit -FileName nosetests.xml -Framework xUnit
 
-    appveyor AddTest -Name JUnit -FileName nosetests.xml -Framework JUnit
+    appveyor AddTest -Name JUnit -FileName ./nosetests.xml -Framework JUnit
+
+    appveyor AddTest -Name JUnitX -FileName nosetestsx.xml -Framework JUnit
 
     appveyor AddTest -Name NUnit -FileName nosetests.xml -Framework NUnit
 
