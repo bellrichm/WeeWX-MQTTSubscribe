@@ -63,7 +63,7 @@ build_script:
       -Dsonar.python.pylint.reportPath=pylint.txt \
       -Dsonar.host.url=https://sonarcloud.io \
       -Dsonar.login=$SKEY \
-      -X
+      #-X
 
     #-Dsonar.python.xunit.reportPath=nosetests.xml
 
@@ -78,6 +78,8 @@ build_script:
 
 
     cat nosetests.xml
+    
+    appveyor AddTest nosetests.xml -Framework xUnit
 
 
     python --version
