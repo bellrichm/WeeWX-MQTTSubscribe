@@ -1,6 +1,6 @@
 version: 1.5.2-rc{build}
 image: Ubuntu1804
-stack: python 3.7
+stack: python 3.7, python 2.7
 build_script:
 - sh: >-
     export SONAR_SCANNER_VERSION=4.2.0.1873
@@ -38,7 +38,7 @@ build_script:
     #./coverage.sh
 
 
-    PYTHONPATH=bin nosetests ./bin/user/tests/unit --exe --exclude=setup --cover-package=user.MQTTSubscribe --with-coverage --cover-branches --cover-xml --logging-level=DEBUG
+    PYTHONPATH=bin nosetests ./bin/user/tests/unit --exe --exclude=setup --cover-package=user.MQTTSubscribe --with-xunit --with-coverage --cover-branches --cover-xml --logging-level=DEBUG
 
 
     # sed -i 's/filename="/filename=".\//g' coverage.xml
@@ -75,4 +75,26 @@ build_script:
 
 
     python --version
+
+    pip --version
+
+    python2 --version
+
+    python3 --version
+
+    pip2 --version
+
+    pip3 --version
+
+    which python
+
+    which python2
+
+    which python3
+
+    which pip
+
+    which pip2
+
+    which pip3
 test: off
