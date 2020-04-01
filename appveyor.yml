@@ -74,6 +74,10 @@ build_script:
 
     ls -la
 
+    |
+    find "$APPVEYOR_BUILD_FOLDER" -type f -name 'nosetests.xml' -print0 | xargs -0 -I '{}' curl -F 'file=@{}' "https://ci.appveyor.com/api/testresults/xunit/$APPVEYOR_JOB_ID"
+
+
     cat nosetests.xml
 
 
