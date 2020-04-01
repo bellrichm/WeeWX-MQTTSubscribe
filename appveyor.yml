@@ -45,6 +45,7 @@ build_script:
     # sed -i 's/filename="/filename=".\//g' coverage.xml
 
     sed -i 's/classname="/classname="bin\/user\/tests\/unit./g' nosetests.xml
+    cp nosetests.xml nosetests2.xml
 
 
     coveralls
@@ -60,6 +61,7 @@ build_script:
       -Dsonar.tests=./bin/user/tests/unit \
       -Dsonar.language=py \
       -Dsonar.python.xunit.reportPath=nosetests.xml \
+      -Dsonar.python.xunit.skipDetails=false \
       -Dsonar.python.coverage.reportPaths=coverage.xml \
       -Dsonar.python.coveragePlugin=cobertura \
       -Dsonar.python.pylint.reportPath=pylint.txt \
@@ -81,7 +83,9 @@ build_script:
 
     cat nosetests.xml
 
-    appveyor AddTest -Name nosetests.xml -FileName nosetests.xml -Framework JUnit
+.   appveyor PushArtifact -FileName nosetests.xml
+
+    appveyor AddTest -Name nosetests.xml -FileName nosetests.xml -Framework NUnit
 
 
     python --version
