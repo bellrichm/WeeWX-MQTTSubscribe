@@ -18,18 +18,18 @@ import json
 from user.MQTTSubscribe import TopicManager, Logger
 
 class TestIndividualPayload(unittest.TestCase):
-    def get_data_test(self, get_data_check, testruns, config_dict):
+    def get_data_check(self, test_types, testruns, config_dict):
         logger = Logger()
         topics_dict = config_dict.get('topics', {})
         manager = TopicManager(topics_dict, logger)
 
-        on_message = utils.get_callback(get_data_check, config_dict, manager, logger)
+        on_message = utils.get_callback(test_types, config_dict, manager, logger)
 
         for testrun in testruns:
             for topics in testrun['messages']:
                 for topic in topics:
                     topic_info = topics[topic]
-                    utils.send_msg(utils.send_direct_msg, get_data_check, on_message, topic, topic_info)
+                    utils.send_msg(utils.send_direct_msg, test_types, on_message, topic, topic_info)
 
             records = []
             for topic in manager.subscribed_topics:
@@ -39,7 +39,7 @@ class TestIndividualPayload(unittest.TestCase):
                     else:
                         break
 
-            utils.check(self, get_data_check, records, testrun['results']['records'])
+            utils.check(self, test_types, records, testrun['results']['records'])
 
     #@unittest.skip("")
     def test_get_data_empty(self):
@@ -47,7 +47,7 @@ class TestIndividualPayload(unittest.TestCase):
             test_data = json.load(fp, object_hook=utils.byteify)
             config_dict = configobj.ConfigObj(test_data['config'])['MQTTSubscribeService']
             for test_type in test_data['types']:
-                self.get_data_test(test_type, test_data['testruns'], config_dict)
+                self.get_data_check(test_type, test_data['testruns'], config_dict)
 
     #@unittest.skip("")
     def test_get_data_individual0(self):
@@ -55,7 +55,7 @@ class TestIndividualPayload(unittest.TestCase):
             test_data = json.load(fp, object_hook=utils.byteify)
             config_dict = configobj.ConfigObj(test_data['config'])['MQTTSubscribeService']
             for test_type in test_data['types']:
-                self.get_data_test(test_type, test_data['testruns'], config_dict)
+                self.get_data_check(test_type, test_data['testruns'], config_dict)
 
     #@unittest.skip("")
     def test_get_data_individual1(self):
@@ -63,7 +63,7 @@ class TestIndividualPayload(unittest.TestCase):
             test_data = json.load(fp, object_hook=utils.byteify)
             config_dict = configobj.ConfigObj(test_data['config'])['MQTTSubscribeService']
             for test_type in test_data['types']:
-                self.get_data_test(test_type, test_data['testruns'], config_dict)
+                self.get_data_check(test_type, test_data['testruns'], config_dict)
 
     #@unittest.skip("")
     def test_get_data_individual1b(self):
@@ -71,7 +71,7 @@ class TestIndividualPayload(unittest.TestCase):
             test_data = json.load(fp, object_hook=utils.byteify)
             config_dict = configobj.ConfigObj(test_data['config'])['MQTTSubscribeService']
             for test_type in test_data['types']:
-                self.get_data_test(test_type, test_data['testruns'], config_dict)
+                self.get_data_check(test_type, test_data['testruns'], config_dict)
 
     #@unittest.skip("")
     def test_get_data_individual(self):
@@ -79,7 +79,7 @@ class TestIndividualPayload(unittest.TestCase):
             test_data = json.load(fp, object_hook=utils.byteify)
             config_dict = configobj.ConfigObj(test_data['config'])['MQTTSubscribeService']
             for test_type in test_data['types']:
-                self.get_data_test(test_type, test_data['testruns'], config_dict)
+                self.get_data_check(test_type, test_data['testruns'], config_dict)
 
 if __name__ == '__main__':
     unittest.main(exit=False)

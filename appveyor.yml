@@ -48,7 +48,7 @@ build_script:
 
     mosquitto -h
 
-    mosquitto &
+    # mosquitto &
 
     PYTHONPATH=bin:./weewx-4.0.0b18/bin nosetests ./bin/user/tests/func --exe --exclude=setup --cover-package=user.MQTTSubscribe --with-xunit --with-coverage --cover-branches --cover-xml --xunit-file=nosetests2.xml --verbosity=3
 
@@ -110,7 +110,7 @@ build_script:
 
     cat nosetests2.xml
 
-
+    cat nosetests.xml
 
 
     python --version
