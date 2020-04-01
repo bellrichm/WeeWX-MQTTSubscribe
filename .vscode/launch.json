@@ -178,7 +178,8 @@
             },
             "program": "${workspaceFolder}/../weewx/bin/weewxd",
             "args": [
-                "weewx.device.conf"
+                //"weewx.device.conf"
+                "../weewx/weewx.conf"
             ],            
             // Work around for timeout
             //"console": "externalTerminal"
