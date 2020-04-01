@@ -75,6 +75,7 @@ build_script:
 
     appveyor -h
 
+    cp nosetests.xml xxxx.xml
 
     # sed -i 's/filename="/filename=".\//g' coverage.xml
 
@@ -152,4 +153,10 @@ build_script:
 
     ls -la /usr/sbin
 
-test: off
+test:
+- sh: >-
+    echo "test script"
+
+    appveyor AddTest -Name JUnitb -FileName nosetests.xml -Framework JUnit
+
+    appveyor AddTest -Name JUnitc -FileName xxxx.xml -Framework JUnit
