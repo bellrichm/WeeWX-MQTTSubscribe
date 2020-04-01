@@ -69,7 +69,7 @@ build_script:
 
     appveyor AddTest -Name xUnit2 -FileName nosetests2.xml -Framework xUnit
 
-    appveyor AddTest -Name JUnit2 -FileName nosetests2.xml -Framework JUnit
+    appveyor UpdateTest -Name JUnit2 -FileName nosetests2.xml -Framework JUnit
 
     appveyor AddTest -Name NUnit2 -FileName nosetests2.xml -Framework NUnit
 
