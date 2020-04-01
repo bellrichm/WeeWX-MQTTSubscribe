@@ -41,11 +41,14 @@ build_script:
 
     PYTHONPATH=bin nosetests ./bin/user/tests/unit --exe --exclude=setup --cover-package=user.MQTTSubscribe --with-xunit --with-coverage --cover-branches --cover-xml --verbosity=3
 
+    appveyor PushArtifact -Path . -FileName nosetests.xml
+
+    appveyor AddTest -Name nosetests.xml -FileName nosetests.xml -Framework xUnit
 
     # sed -i 's/filename="/filename=".\//g' coverage.xml
 
     sed -i 's/classname="/classname="bin\/user\/tests\/unit./g' nosetests.xml
-    
+
     cp nosetests.xml nosetests2.xml
 
 
@@ -61,7 +64,7 @@ build_script:
       -Dsonar.sources=./bin/user/MQTTSubscribe.py \
       -Dsonar.tests=./bin/user/tests/unit \
       -Dsonar.language=py \
-      -Dsonar.python.xunit.reportPath=nosetests.xml \
+      -Dsonar.python.xunit.reportPath=nosetests.xml,nosetests2.xml \
       -Dsonar.python.xunit.skipDetails=false \
       -Dsonar.python.coverage.reportPaths=coverage.xml \
       -Dsonar.python.coveragePlugin=cobertura \
@@ -84,9 +87,7 @@ build_script:
 
     cat nosetests.xml
 
-    appveyor PushArtifact -FileName nosetests.xml
 
-    appveyor AddTest -Name nosetests.xml -FileName nosetests.xml -Framework NUnit
 
 
     python --version
