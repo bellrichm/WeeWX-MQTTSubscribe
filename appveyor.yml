@@ -63,6 +63,15 @@ build_script:
     appveyor AddTest -Name NUnit -FileName nosetests.xml -Framework NUnit
 
 
+    appveyor PushArtifact -Path ./nosetests2.xml -FileName nosetests2.xml
+
+    appveyor AddTest -Name xUnit2 -FileName nosetests2.xml -Framework xUnit
+
+    appveyor AddTest -Name JUnit2 -FileName nosetests2.xml -Framework JUnit
+
+    appveyor AddTest -Name NUnit2 -FileName nosetests2.xml -Framework NUnit
+
+
     # sed -i 's/filename="/filename=".\//g' coverage.xml
 
     sed -i 's/classname="/classname="bin\/user\/tests\/unit./g' nosetests.xml
