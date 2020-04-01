@@ -44,13 +44,13 @@ build_script:
 
     tar xfz weewx-4.0.0b18.tar.gz
 
-    sudo apt-get install mosquitto
+    sudo apt-get --assume-yes install mosquitto
 
     mosquitto -h
 
     mosquitto &
 
-    PYTHONPATH=bin:./weewx-4.0.0b18/bin nosetests ./bin/user/tests/func --exe --exclude=setup --cover-package=user.MQTTSubscribe --with-xunit --with-coverage --cover-branches --cover-xml --xunit-file=nosetest2.xml --verbosity=3
+    PYTHONPATH=bin:./weewx-4.0.0b18/bin nosetests ./bin/user/tests/func --exe --exclude=setup --cover-package=user.MQTTSubscribe --with-xunit --with-coverage --cover-branches --cover-xml --xunit-file=nosetests2.xml --verbosity=3
 
     PYTHONPATH=bin nosetests ./bin/user/tests/unit --exe --exclude=setup --cover-package=user.MQTTSubscribe --with-xunit --with-coverage --cover-branches --cover-xml --verbosity=3
 
@@ -84,7 +84,7 @@ build_script:
       -Dsonar.sources=./bin/user/MQTTSubscribe.py \
       -Dsonar.tests=./bin/user/tests/unit \
       -Dsonar.language=py \
-      -Dsonar.python.xunit.reportPath=nosetest*.xml \
+      -Dsonar.python.xunit.reportPath=nosetests*.xml \
       -Dsonar.python.xunit.skipDetails=false \
       -Dsonar.python.coverage.reportPaths=coverage.xml \
       -Dsonar.python.coveragePlugin=cobertura \
@@ -136,4 +136,7 @@ build_script:
     which pip2
 
     which pip3
+
+    ls -la /usr/sbin
+
 test: off
