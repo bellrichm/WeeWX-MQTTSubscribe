@@ -83,7 +83,7 @@ build_script:
 
     cat nosetests.xml
 
-.   appveyor PushArtifact -FileName nosetests.xml
+    appveyor PushArtifact -FileName nosetests.xml
 
     appveyor AddTest -Name nosetests.xml -FileName nosetests.xml -Framework NUnit
 
