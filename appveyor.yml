@@ -44,6 +44,8 @@ build_script:
 
     # sed -i 's/filename="/filename=".\//g' coverage.xml
 
+    sed -i 's/classname="/classname="bin\/user\/tests\/unit./g' nosetests.xml
+
 
     coveralls
 
@@ -54,7 +56,7 @@ build_script:
     sonar-scanner \
       -Dsonar.organization=bellrichm \
       -Dsonar.projectKey=bellrichm_WeeWX-MQTTSubscribe \
-      -Dsonar.sources=./bin/user \
+      -Dsonar.sources=./bin/user/MQTTSubscribe.py\
       -Dsonar.tests=./bin/user/tests/unit \
       -Dsonar.language=py \
       -Dsonar.python.xunit.reportPath=nosetests.xml \
