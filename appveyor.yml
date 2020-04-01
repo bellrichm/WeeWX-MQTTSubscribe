@@ -44,6 +44,8 @@ build_script:
 
     tar xfz weewx-4.0.0b18.tar.gz
 
+    sudo apt-get install mosquitto
+
     mosquitto -h
 
     mosquitto &
