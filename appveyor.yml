@@ -56,7 +56,7 @@ build_script:
     sonar-scanner \
       -Dsonar.organization=bellrichm \
       -Dsonar.projectKey=bellrichm_WeeWX-MQTTSubscribe \
-      -Dsonar.sources=./bin/user/MQTTSubscribe.py\
+      -Dsonar.sources=./bin/user/MQTTSubscribe.py \
       -Dsonar.tests=./bin/user/tests/unit \
       -Dsonar.language=py \
       -Dsonar.python.xunit.reportPath=nosetests.xml \
@@ -81,7 +81,7 @@ build_script:
 
     cat nosetests.xml
 
-    appveyor AddTest -Name nosetests.xml -FileName nosetests.xml -Framework xUnit
+    appveyor AddTest -Name nosetests.xml -FileName nosetests.xml -Framework JUnit
 
 
     python --version
