@@ -39,7 +39,7 @@ build_script:
     #./coverage.sh
 
 
-    PYTHONPATH=bin nosetests ./bin/user/tests/unit --exe --exclude=setup --cover-package=user.MQTTSubscribe --with-xunit --with-coverage --cover-branches --cover-xml --logging-level=DEBUG
+    PYTHONPATH=bin nosetests ./bin/user/tests/unit --exe --exclude=setup --cover-package=user.MQTTSubscribe --with-xunit --with-coverage --cover-branches --cover-xml --verbosity=3
 
 
     # sed -i 's/filename="/filename=".\//g' coverage.xml
@@ -61,7 +61,6 @@ build_script:
       -Dsonar.python.coverage.reportPaths=coverage.xml \
       -Dsonar.python.coveragePlugin=cobertura \
       -Dsonar.python.pylint.reportPath=pylint.txt \
-      -Dsonar.python.xunit.skipDetails=false \
       -Dsonar.host.url=https://sonarcloud.io \
       -Dsonar.login=$SKEY \
       #-X
@@ -74,6 +73,8 @@ build_script:
 
 
     ls -la
+
+    cat nosetests.xml
 
 
     python --version
