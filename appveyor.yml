@@ -38,10 +38,16 @@ build_script:
 
     #./coverage.sh
 
+    wget  http://www.weewx.com/downloads/development_versions/weewx-4.0.0b18.tar.gz
+
+    tar xvfz weewx-4.0.0b18.tar.gz
+
+    PYTHONPATH=bin:./weewx-4.0.0b18.tar.gz nosetests ./bin/user/tests/unit --exe --exclude=setup --cover-package=user.MQTTSubscribe --with-xunit --with-coverage --cover-branches --cover-xml --xunit-file=nosetest2.xml --verbosity=3
+
 
     PYTHONPATH=bin nosetests ./bin/user/tests/unit --exe --exclude=setup --cover-package=user.MQTTSubscribe --with-xunit --with-coverage --cover-branches --cover-xml --verbosity=3
 
-    appveyor PushArtifact -Path ./ -FileName nosetests.xml
+    appveyor PushArtifact -Path ./nosetests.xml -FileName nosetests.xml
 
     appveyor AddTest -Name nosetests.xml -FileName nosetests.xml -Framework xUnit
 
@@ -51,7 +57,7 @@ build_script:
 
     sed -i 's/classname="/classname="bin\/user\/tests\/unit./g' nosetests.xml
 
-    cp nosetests.xml nosetests2.xml
+    #cp nosetests.xml nosetests2.xml
 
 
     coveralls
@@ -66,7 +72,7 @@ build_script:
       -Dsonar.sources=./bin/user/MQTTSubscribe.py \
       -Dsonar.tests=./bin/user/tests/unit \
       -Dsonar.language=py \
-      -Dsonar.python.xunit.reportPath=nosetest*.xml \
+      -Dsonar.python.xunit.reportPath=nosetest.xml \
       -Dsonar.python.xunit.skipDetails=false \
       -Dsonar.python.coverage.reportPaths=coverage.xml \
       -Dsonar.python.coveragePlugin=cobertura \
@@ -74,6 +80,9 @@ build_script:
       -Dsonar.host.url=https://sonarcloud.io \
       -Dsonar.login=$SKEY \
       #-X
+
+
+    #-Dsonar.python.xunit.reportPath=nosetest*.xml \
 
     #-Dsonar.python.xunit.reportPath=nosetests.xml
 
