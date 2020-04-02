@@ -157,7 +157,9 @@ build_script:
     which pip3
 
     # ls -la /usr/sbin
+    
     which appveyor
+    
     pwd
 
 test_script:
