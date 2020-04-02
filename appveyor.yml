@@ -26,7 +26,7 @@ build_script:
   - sh: appveyor/build_script.sh  
 
 test_script:
-- sh: test_script.sh
+- sh: appveyor/test_script.sh
 
 after_test:
   - sh: appveyor/after_test.sh
