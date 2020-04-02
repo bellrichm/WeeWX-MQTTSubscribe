@@ -5,6 +5,7 @@
     unzip -qq -o $HOME/.sonar/sonar-scanner.zip -d $HOME/.sonar/
     export PATH=$SONAR_SCANNER_HOME/bin:$PATH
     export SONAR_SCANNER_OPTS="-server"
+    echo $PATH
 
     echo "Running mosquitto install"
     sudo apt-get -qq --assume-yes install mosquitto

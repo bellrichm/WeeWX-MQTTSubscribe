@@ -3,6 +3,8 @@ coveralls
 sed -i 's/classname="/classname="bin\/user\/tests\/unit./g' nosetests.xml
 sed -i 's/classname="/classname="bin\/user\/tests\/func./g' nosetests2.xml
 
+echo $PATH
+
 sonar-scanner \
   -Dsonar.organization=bellrichm \
   -Dsonar.projectKey=bellrichm_WeeWX-MQTTSubscribe \
