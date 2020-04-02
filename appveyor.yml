@@ -6,36 +6,25 @@ environment:
   matrix:
     - WEEWX: weewx-4.0.0b18.tar.gz
       PYTHON: 2.7
-      WEEWX_URL: http://www.weewx.com/downloads/development_versions/
       APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
+      WEEWX_URL: http://www.weewx.com/downloads/development_versions/
+      
     - WEEWX: weewx-4.0.0b18.tar.gz
       PYTHON: 3.6
-      WEEWX_URL: http://www.weewx.com/downloads/development_versions/
       APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
+      WEEWX_URL: http://www.weewx.com/downloads/development_versions/
+      
     - WEEWX: weewx-3.9.2.tar.gz
       PYTHON: 2.7
-      WEEWX_URL: http://www.weewx.com/downloads/released_versions/
       APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
+      WEEWX_URL: http://www.weewx.com/downloads/released_versions/
+      
 stack: python %PYTHON%
 install:
   - sh: appveyor/install.sh
 build_script:
 - sh: >-
-    echo "Running pip installs"
 
-    pip install configobj --quiet
-
-    pip install paho-mqtt --quiet
-
-    pip install mock --quiet
-
-    pip install pylint --quiet
-
-    pip install coveralls --quiet
-
-    pip install nose --quiet
-
-    pip install coverage --quiet
 
     #export PATH=/home/appveyor/.local/bin:$PATH
 
@@ -49,7 +38,6 @@ build_script:
 
     tar xfz $WEEWX --strip-components=1 -C weewx
 
-    sudo apt-get --assume-yes install mosquitto
 
     #mosquitto -h
 
