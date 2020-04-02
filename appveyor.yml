@@ -52,7 +52,11 @@ build_script:
 
     PYTHONPATH=bin:./weewx-4.0.0b18/bin nosetests ./bin/user/tests/func --exe --exclude=setup --cover-package=user.MQTTSubscribe --with-xunit --with-coverage --cover-branches --cover-xml --xunit-file=nosetests2.xml --verbosity=3
 
+    find "$APPVEYOR_BUILD_FOLDER" -type f -name 'nosetests2.xml' -print0 | xargs -0 -I '{}' curl -F 'file=@{}' "https://ci.appveyor.com/api/testresults/junit/$APPVEYOR_JOB_ID"
+
     PYTHONPATH=bin:./weewx-4.0.0b18/bin nosetests ./bin/user/tests/func/test_get_data.py --exe --exclude=setup --cover-package=user.MQTTSubscribe --with-xunit --with-coverage --cover-branches --cover-xml --xunit-file=single.xml --verbosity=3
+
+    #find "$APPVEYOR_BUILD_FOLDER" -type f -name 'single.xml' -print0 | xargs -0 -I '{}' curl -F 'file=@{}' "https://ci.appveyor.com/api/testresults/junit/$APPVEYOR_JOB_ID"
 
     PYTHONPATH=bin nosetests ./bin/user/tests/unit --exe --exclude=setup --cover-package=user.MQTTSubscribe --with-xunit --with-coverage --cover-branches --cover-xml --verbosity=3
 
@@ -124,8 +128,6 @@ build_script:
 
     # ls -la
 
-    find "$APPVEYOR_BUILD_FOLDER" -type f -name 'single.xml' -print0 | xargs -0 -I '{}' curl -F 'file=@{}' "https://ci.appveyor.com/api/testresults/junit/$APPVEYOR_JOB_ID"
-
 
     #cat nosetests2.xml
 
@@ -172,9 +174,9 @@ test_script:
 
     # exit 1 # force error while in development - did not call on_failure....
 
-init:
-  - sh: curl -sflL 'https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-ssh.sh' | bash -e -    
+#init:
+#  - sh: curl -sflL 'https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-ssh.sh' | bash -e -    
 
 on_finish:
   - sh: export APPVEYOR_SSH_BLOCK=true
-  # - sh: curl -sflL 'https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-ssh.sh' | bash -e -
+  - sh: curl -sflL 'https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-ssh.sh' | bash -e -
