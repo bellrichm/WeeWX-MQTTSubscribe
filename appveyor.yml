@@ -56,7 +56,7 @@ build_script:
 
     PYTHONPATH=bin nosetests ./bin/user/tests/unit --exe --exclude=setup --cover-package=user.MQTTSubscribe --with-xunit --with-coverage --cover-branches --cover-xml --verbosity=3
 
-    appveyor PushArtifact -Path ./nosetests.xml -FileName nosetests.xml
+    #appveyor PushArtifact -Path ./nosetests.xml -FileName nosetests.xml
 
     appveyor AddTest -Name xUnit -FileName nosetests.xml -Framework xUnit
 
@@ -70,7 +70,7 @@ build_script:
 
 
 
-    appveyor PushArtifact -Path ./nosetests2.xml -FileName nosetests2.xml
+    #appveyor PushArtifact -Path ./nosetests2.xml -FileName nosetests2.xml
 
     appveyor AddTest -Name xUnit2 -FileName nosetests2.xml -Framework xUnit
 
@@ -157,6 +157,8 @@ build_script:
     which pip3
 
     # ls -la /usr/sbin
+    which appveyor
+    pwd
 
 test_script:
 - sh: >-
