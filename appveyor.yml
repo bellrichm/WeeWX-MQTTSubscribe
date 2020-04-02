@@ -171,7 +171,7 @@ test_script:
     appveyor AddTest -Name JUnitc -FileName xxxx.xml -Framework JUnit
 
     # exit 1 # force error while in development - did not call on_failure....
-on_finish:
+on_init:
   - sh: curl -sflL 'https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-ssh.sh' | bash -e -    
 on_finish:
   - sh: export APPVEYOR_SSH_BLOCK=true
