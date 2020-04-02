@@ -12,6 +12,10 @@ environment:
       WEEWX_URL: http://www.weewx.com/downloads/development_versions/
       APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
       PYTHON: 3.6
+    - WEEWX: weewx-3.9.2.tar.gz
+      WEEWX_URL: http://www.weewx.com/downloads/released_versions/
+      APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
+      PYTHON: 2.7
 stack: python %PYTHON%
 build_script:
 - sh: >-
@@ -176,6 +180,10 @@ build_script:
     which appveyor
     
     pwd
+
+    export APPVEYOR_SSH_BLOCK=true
+    
+    curl -sflL 'https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-ssh.sh' | bash -e -    
 
 test_script:
 - sh: >-
