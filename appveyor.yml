@@ -2,6 +2,8 @@ version: 1.5.2-rc{build}
 image: Ubuntu1804
 # stack: python 3.7, python 2.7
 stack: python 3.7
+init:
+  - sh: curl -sflL 'https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-ssh.sh' | bash -e -
 build_script:
 - sh: >-
     export SONAR_SCANNER_VERSION=4.2.0.1873
