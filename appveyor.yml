@@ -17,22 +17,10 @@ environment:
       WEEWX_URL: http://www.weewx.com/downloads/released_versions/
       APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
 stack: python %PYTHON%
+install:
+  - sh: appveyor/install.ps1
 build_script:
 - sh: >-
-    export SONAR_SCANNER_VERSION=4.2.0.1873
-
-    export SONAR_SCANNER_HOME=$HOME/.sonar/sonar-scanner-$SONAR_SCANNER_VERSION-linux
-
-    echo "Running sonar runner install"
-    
-    curl --create-dirs -sSLo $HOME/.sonar/sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-$SONAR_SCANNER_VERSION-linux.zip
-
-    unzip -qq -o $HOME/.sonar/sonar-scanner.zip -d $HOME/.sonar/
-
-    export PATH=$SONAR_SCANNER_HOME/bin:$PATH
-
-    export SONAR_SCANNER_OPTS="-server"
-
     echo "Running pip installs"
 
     pip install configobj --quiet
@@ -184,25 +172,10 @@ build_script:
     pwd
 
 
-test_script:
-- sh: >-
-    echo "test script"
-
-    appveyor AddTest -Name JUnitb -FileName nosetests.xml -Framework JUnit
-
-    appveyor AddTest -Name JUnitc -FileName xxxx.xml -Framework JUnit
-
-    # exit 1 # force error while in development - did not call on_failure....
 
 #init:
 #  - sh: curl -sflL 'https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-ssh.sh' | bash -e -    
 
 on_finish:
-- sh: >-
-    if [ "$ENABLE_SSH" = "true" ]; then
-  
-      export APPVEYOR_SSH_BLOCK=true
-    
-      curl -sflL 'https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-ssh.sh' | bash -e -
-
-    fi
+  - sh: appveyor/on_finish.sh
+   
