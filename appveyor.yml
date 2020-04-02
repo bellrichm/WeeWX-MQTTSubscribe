@@ -24,24 +24,7 @@ install:
   - sh: appveyor/install.sh
 build_script:
 - sh: >-
-
-
-    #export PATH=/home/appveyor/.local/bin:$PATH
-
-    #./coverage.sh
-
-    echo "Running weewx install"
-
-    wget  $WEEWX_URL/$WEEWX
-
-    mkdir weewx
-
-    tar xfz $WEEWX --strip-components=1 -C weewx
-
-
-    #mosquitto -h
-
-    # mosquitto &
+    pylint ./bin/user/MQTTSubscribe.py -r n --msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}" | tee pylint.txt
 
     PYTHONPATH=bin:./weewx/bin nosetests ./bin/user/tests/func --exe --exclude=setup --cover-package=user.MQTTSubscribe --with-xunit --with-coverage --cover-branches --cover-xml --xunit-file=nosetests2.xml --verbosity=3
 
@@ -55,29 +38,6 @@ build_script:
 
     find "$APPVEYOR_BUILD_FOLDER" -type f -name 'nosetests.xml' -print0 | xargs -0 -I '{}' curl -F 'file=@{}' "https://ci.appveyor.com/api/testresults/junit/$APPVEYOR_JOB_ID"
 
-    #appveyor PushArtifact -Path ./nosetests.xml -FileName nosetests.xml
-
-    #appveyor AddTest -Name xUnit -FileName nosetests.xml -Framework xUnit
-
-    #appveyor AddTest -Name JUnit -FileName $APPVEYOR_BUILD_FOLDER/nosetests.xml -Framework JUnit
-
-    #appveyor AddTest -Name JUnitX -FileName nosetestsx.xml -Framework JUnitx
-
-    #appveyor AddTest -Name NUnit -FileName nosetests.xml -Framework NUnit
-
-    #appveyor AddTest -Name single -FileName single.xml -Framework JUnit
-
-
-
-    #appveyor PushArtifact -Path ./nosetests2.xml -FileName nosetests2.xml
-
-    #appveyor AddTest -Name xUnit2 -FileName nosetests2.xml -Framework xUnit
-
-    #appveyor UpdateTest -Name JUnit2 -FileName nosetests2.xml -Framework JUnit
-
-    #appveyor AddTest -Name NUnit2 -FileName nosetests2.xml -Framework NUnit
-
-    #appveyor -h
 
     cp nosetests.xml xxxx.xml
 
@@ -93,7 +53,7 @@ build_script:
     coveralls
 
 
-    pylint ./bin/user/MQTTSubscribe.py -r n --msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}" | tee pylint.txt
+    
 
 
     sonar-scanner \

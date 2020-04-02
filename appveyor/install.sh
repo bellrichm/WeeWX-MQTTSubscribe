@@ -17,3 +17,8 @@
     pip install coveralls --quiet --no-python-version-warning
     pip install nose --quiet --no-python-version-warning
     pip install coverage --quiet --no-python-version-warning
+
+    echo "Running weewx install"
+    wget  $WEEWX_URL/$WEEWX
+    mkdir weewx
+    tar xfz $WEEWX --strip-components=1 -C weewx    
