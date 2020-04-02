@@ -46,7 +46,7 @@ build_script:
 
     sudo apt-get --assume-yes install mosquitto
 
-    mosquitto -h
+    #mosquitto -h
 
     # mosquitto &
 
@@ -78,7 +78,7 @@ build_script:
 
     appveyor AddTest -Name NUnit2 -FileName nosetests2.xml -Framework NUnit
 
-    appveyor -h
+    #appveyor -h
 
     cp nosetests.xml xxxx.xml
 
@@ -122,14 +122,14 @@ build_script:
     #-Dsonar.python.coveragePlugin=cobertura
 
 
-    ls -la
+    # ls -la
 
        find "$APPVEYOR_BUILD_FOLDER" -type f -name 'nosetests.xml' -print0 | xargs -0 -I '{}' curl -F 'file=@{}' "https://ci.appveyor.com/api/testresults/xunit/$APPVEYOR_JOB_ID"
 
 
-    cat nosetests2.xml
+    #cat nosetests2.xml
 
-    cat nosetests.xml
+    #cat nosetests.xml
 
 
     python --version
@@ -156,7 +156,7 @@ build_script:
 
     which pip3
 
-    ls -la /usr/sbin
+    # ls -la /usr/sbin
 
 test_script:
 - sh: >-
@@ -165,6 +165,8 @@ test_script:
     appveyor AddTest -Name JUnitb -FileName nosetests.xml -Framework JUnit
 
     appveyor AddTest -Name JUnitc -FileName xxxx.xml -Framework JUnit
-init:
+
+    exit 1 # force error while in development
+on_failure:
   - sh: export APPVEYOR_SSH_BLOCK=true
   - sh: curl -sflL 'https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-ssh.sh' | bash -e -
