@@ -2,14 +2,14 @@ version: 1.5.2-rc{build}
 #image: Ubuntu1804
 # stack: python 3.7, python 2.7
 #stack: python 3.7
-environment:
-  matrix:
-    # Ubuntu - python 2.7
-    - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
-      PYTHON: "2.7"
-    # Ubuntu - python 3
-    - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
-      PYTHON: "3.6"
+#environment:
+#  matrix:
+#    # Ubuntu - python 2.7
+#    - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
+#      PYTHON: "2.7"
+#    # Ubuntu - python 3
+#    - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
+#      PYTHON: "3.6"
 stack: python %PYTHON%
 build_script:
 - sh: >-
@@ -187,5 +187,5 @@ test_script:
 #  - sh: curl -sflL 'https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-ssh.sh' | bash -e -    
 
 on_finish:
-  - sh: export APPVEYOR_SSH_BLOCK=true
+  #- sh: export APPVEYOR_SSH_BLOCK=true
   - sh: curl -sflL 'https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-ssh.sh' | bash -e -
