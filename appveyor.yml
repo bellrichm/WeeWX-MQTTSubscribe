@@ -5,17 +5,17 @@ version: 1.5.2-rc{build}
 environment:
   matrix:
     - WEEWX: weewx-4.0.0b18.tar.gz
+    . PYTHON: 2.7
       WEEWX_URL: http://www.weewx.com/downloads/development_versions/
       APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
-      PYTHON: 2.7
     - WEEWX: weewx-4.0.0b18.tar.gz
+      PYTHON: 3.6
       WEEWX_URL: http://www.weewx.com/downloads/development_versions/
       APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
-      PYTHON: 3.6
     - WEEWX: weewx-3.9.2.tar.gz
+    . PYTHON: 2.7
       WEEWX_URL: http://www.weewx.com/downloads/released_versions/
       APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
-      PYTHON: 2.7
 stack: python %PYTHON%
 build_script:
 - sh: >-
@@ -76,6 +76,8 @@ build_script:
     #find "$APPVEYOR_BUILD_FOLDER" -type f -name 'single.xml' -print0 | xargs -0 -I '{}' curl -F 'file=@{}' "https://ci.appveyor.com/api/testresults/junit/$APPVEYOR_JOB_ID"
 
     PYTHONPATH=bin nosetests ./bin/user/tests/unit --exe --exclude=setup --cover-package=user.MQTTSubscribe --with-xunit --with-coverage --cover-branches --cover-xml --verbosity=3
+
+    find "$APPVEYOR_BUILD_FOLDER" -type f -name 'nosetests.xml' -print0 | xargs -0 -I '{}' curl -F 'file=@{}' "https://ci.appveyor.com/api/testresults/junit/$APPVEYOR_JOB_ID"
 
     #appveyor PushArtifact -Path ./nosetests.xml -FileName nosetests.xml
 
@@ -181,9 +183,6 @@ build_script:
     
     pwd
 
-    export APPVEYOR_SSH_BLOCK=true
-    
-    curl -sflL 'https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-ssh.sh' | bash -e -    
 
 test_script:
 - sh: >-
