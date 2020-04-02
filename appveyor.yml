@@ -53,6 +53,8 @@ build_script:
 
     wget  $WEEWX_URL/$WEEWX
 
+    mkdir weewx
+
     tar xfz $WEEWX -C weewx
 
     sudo apt-get --assume-yes install mosquitto
