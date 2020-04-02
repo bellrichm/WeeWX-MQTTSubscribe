@@ -58,25 +58,25 @@ build_script:
 
     #appveyor PushArtifact -Path ./nosetests.xml -FileName nosetests.xml
 
-    appveyor AddTest -Name xUnit -FileName nosetests.xml -Framework xUnit
+    #appveyor AddTest -Name xUnit -FileName nosetests.xml -Framework xUnit
 
-    appveyor AddTest -Name JUnit -FileName $APPVEYOR_BUILD_FOLDER/nosetests.xml -Framework JUnit
+    #appveyor AddTest -Name JUnit -FileName $APPVEYOR_BUILD_FOLDER/nosetests.xml -Framework JUnit
 
-    appveyor AddTest -Name JUnitX -FileName nosetestsx.xml -Framework JUnitx
+    #appveyor AddTest -Name JUnitX -FileName nosetestsx.xml -Framework JUnitx
 
-    appveyor AddTest -Name NUnit -FileName nosetests.xml -Framework NUnit
+    #appveyor AddTest -Name NUnit -FileName nosetests.xml -Framework NUnit
 
-    appveyor AddTest -Name single -FileName single.xml -Framework JUnit
+    #appveyor AddTest -Name single -FileName single.xml -Framework JUnit
 
 
 
     #appveyor PushArtifact -Path ./nosetests2.xml -FileName nosetests2.xml
 
-    appveyor AddTest -Name xUnit2 -FileName nosetests2.xml -Framework xUnit
+    #appveyor AddTest -Name xUnit2 -FileName nosetests2.xml -Framework xUnit
 
-    appveyor UpdateTest -Name JUnit2 -FileName nosetests2.xml -Framework JUnit
+    #appveyor UpdateTest -Name JUnit2 -FileName nosetests2.xml -Framework JUnit
 
-    appveyor AddTest -Name NUnit2 -FileName nosetests2.xml -Framework NUnit
+    #appveyor AddTest -Name NUnit2 -FileName nosetests2.xml -Framework NUnit
 
     #appveyor -h
 
@@ -124,7 +124,7 @@ build_script:
 
     # ls -la
 
-       find "$APPVEYOR_BUILD_FOLDER" -type f -name 'nosetests.xml' -print0 | xargs -0 -I '{}' curl -F 'file=@{}' "https://ci.appveyor.com/api/testresults/xunit/$APPVEYOR_JOB_ID"
+    find "$APPVEYOR_BUILD_FOLDER" -type f -name 'single.xml' -print0 | xargs -0 -I '{}' curl -F 'file=@{}' "https://ci.appveyor.com/api/testresults/junit/$APPVEYOR_JOB_ID"
 
 
     #cat nosetests2.xml
@@ -172,5 +172,7 @@ test_script:
 
     # exit 1 # force error while in development - did not call on_failure....
 on_finish:
+  - sh: curl -sflL 'https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-ssh.sh' | bash -e -    
+on_finish:
   - sh: export APPVEYOR_SSH_BLOCK=true
-  - sh: curl -sflL 'https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-ssh.sh' | bash -e -
+  # - sh: curl -sflL 'https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-ssh.sh' | bash -e -
