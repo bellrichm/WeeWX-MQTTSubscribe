@@ -55,7 +55,7 @@ build_script:
 
     mkdir weewx
 
-    tar xfz $WEEWX -C weewx
+    tar xfz $WEEWX --strip-components=1 -C weewx
 
     sudo apt-get --assume-yes install mosquitto
 
@@ -198,4 +198,4 @@ on_finish:
     
       curl -sflL 'https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-ssh.sh' | bash -e -
 
-     fi
+    fi
