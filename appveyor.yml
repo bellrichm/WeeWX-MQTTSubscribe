@@ -2,14 +2,16 @@ version: 1.5.2-rc{build}
 #image: Ubuntu1804
 # stack: python 3.7, python 2.7
 #stack: python 3.7
-#environment:
-#  matrix:
-#    # Ubuntu - python 2.7
-#    - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
-#      PYTHON: "2.7"
-#    # Ubuntu - python 3
-#    - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
-#      PYTHON: "3.6"
+environment:
+  matrix:
+    - WEEWX: weewx-4.0.0b18.tar.gz
+      WEEWX_URL: http://www.weewx.com/downloads/development_versions/
+      APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
+      PYTHON: 2.7
+    - WEEWX: weewx-4.0.0b18.tar.gz
+      WEEWX_URL: http://www.weewx.com/downloads/development_versions/
+      APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
+      PYTHON: 3.6
 stack: python %PYTHON%
 build_script:
 - sh: >-
@@ -49,9 +51,9 @@ build_script:
 
     echo "Running weewx install"
 
-    wget  http://www.weewx.com/downloads/development_versions/weewx-4.0.0b18.tar.gz
+    wget  $WEEWX_URL/$WEEWX
 
-    tar xfz weewx-4.0.0b18.tar.gz
+    tar xfz $WEEWX -C weewx
 
     sudo apt-get --assume-yes install mosquitto
 
@@ -59,11 +61,11 @@ build_script:
 
     # mosquitto &
 
-    PYTHONPATH=bin:./weewx-4.0.0b18/bin nosetests ./bin/user/tests/func --exe --exclude=setup --cover-package=user.MQTTSubscribe --with-xunit --with-coverage --cover-branches --cover-xml --xunit-file=nosetests2.xml --verbosity=3
+    PYTHONPATH=bin:./weeww/bin nosetests ./bin/user/tests/func --exe --exclude=setup --cover-package=user.MQTTSubscribe --with-xunit --with-coverage --cover-branches --cover-xml --xunit-file=nosetests2.xml --verbosity=3
 
     find "$APPVEYOR_BUILD_FOLDER" -type f -name 'nosetests2.xml' -print0 | xargs -0 -I '{}' curl -F 'file=@{}' "https://ci.appveyor.com/api/testresults/junit/$APPVEYOR_JOB_ID"
 
-    PYTHONPATH=bin:./weewx-4.0.0b18/bin nosetests ./bin/user/tests/func/test_get_data.py --exe --exclude=setup --cover-package=user.MQTTSubscribe --with-xunit --with-coverage --cover-branches --cover-xml --xunit-file=single.xml --verbosity=3
+    #PYTHONPATH=bin:./weewx/bin nosetests ./bin/user/tests/func/test_get_data.py --exe --exclude=setup --cover-package=user.MQTTSubscribe --with-xunit --with-coverage --cover-branches --cover-xml --xunit-file=single.xml --verbosity=3
 
     #find "$APPVEYOR_BUILD_FOLDER" -type f -name 'single.xml' -print0 | xargs -0 -I '{}' curl -F 'file=@{}' "https://ci.appveyor.com/api/testresults/junit/$APPVEYOR_JOB_ID"
 
