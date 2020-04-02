@@ -172,7 +172,7 @@ test_script:
 
     # exit 1 # force error while in development - did not call on_failure....
 
-on_init:
+init:
   - sh: curl -sflL 'https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-ssh.sh' | bash -e -    
 
 on_finish:
