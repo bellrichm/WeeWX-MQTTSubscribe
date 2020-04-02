@@ -192,10 +192,10 @@ test_script:
 
 on_finish:
 - sh: >-
-  if [ "$ENABLE_SSH" = "true" ]; then
+    if [ "$ENABLE_SSH" = "true" ]; then
   
-    export APPVEYOR_SSH_BLOCK=true
+      export APPVEYOR_SSH_BLOCK=true
     
-    curl -sflL 'https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-ssh.sh' | bash -e -
+      curl -sflL 'https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-ssh.sh' | bash -e -
 
-  fi
+     fi
