@@ -2,8 +2,6 @@ version: 1.5.2-rc{build}
 image: Ubuntu1804
 # stack: python 3.7, python 2.7
 stack: python 3.7
-init:
-  - sh: curl -sflL 'https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-ssh.sh' | bash -e -
 build_script:
 - sh: >-
     export SONAR_SCANNER_VERSION=4.2.0.1873
@@ -54,6 +52,8 @@ build_script:
 
     PYTHONPATH=bin:./weewx-4.0.0b18/bin nosetests ./bin/user/tests/func --exe --exclude=setup --cover-package=user.MQTTSubscribe --with-xunit --with-coverage --cover-branches --cover-xml --xunit-file=nosetests2.xml --verbosity=3
 
+    PYTHONPATH=bin:./weewx-4.0.0b18/bin nosetests ./bin/user/tests/func/test_get_data.py --exe --exclude=setup --cover-package=user.MQTTSubscribe --with-xunit --with-coverage --cover-branches --cover-xml --xunit-file=single.xml --verbosity=3
+
     PYTHONPATH=bin nosetests ./bin/user/tests/unit --exe --exclude=setup --cover-package=user.MQTTSubscribe --with-xunit --with-coverage --cover-branches --cover-xml --verbosity=3
 
     appveyor PushArtifact -Path ./nosetests.xml -FileName nosetests.xml
@@ -65,6 +65,9 @@ build_script:
     appveyor AddTest -Name JUnitX -FileName nosetestsx.xml -Framework JUnitx
 
     appveyor AddTest -Name NUnit -FileName nosetests.xml -Framework NUnit
+
+    appveyor AddTest -Name single -FileName single.xml -Framework JUnit
+
 
 
     appveyor PushArtifact -Path ./nosetests2.xml -FileName nosetests2.xml
@@ -162,3 +165,6 @@ test_script:
     appveyor AddTest -Name JUnitb -FileName nosetests.xml -Framework JUnit
 
     appveyor AddTest -Name JUnitc -FileName xxxx.xml -Framework JUnit
+init:
+  - sh: export APPVEYOR_SSH_BLOCK=true
+  - sh: curl -sflL 'https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-ssh.sh' | bash -e -
