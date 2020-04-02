@@ -5,7 +5,7 @@ version: 1.5.2-rc{build}
 environment:
   matrix:
     - WEEWX: weewx-4.0.0b18.tar.gz
-    . PYTHON: 2.7
+      PYTHON: 2.7
       WEEWX_URL: http://www.weewx.com/downloads/development_versions/
       APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
     - WEEWX: weewx-4.0.0b18.tar.gz
@@ -13,7 +13,7 @@ environment:
       WEEWX_URL: http://www.weewx.com/downloads/development_versions/
       APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
     - WEEWX: weewx-3.9.2.tar.gz
-    . PYTHON: 2.7
+      PYTHON: 2.7
       WEEWX_URL: http://www.weewx.com/downloads/released_versions/
       APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
 stack: python %PYTHON%
