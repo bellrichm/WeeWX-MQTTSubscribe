@@ -12,8 +12,7 @@ if [ "$SONAR_UPLOAD" = "true" ]; then
   sonar-scanner \
     -Dsonar.organization=bellrichm \
     -Dsonar.projectKey=bellrichm_WeeWX-MQTTSubscribe \
-    -Dsonar.branch.name=$APPVEYOR_REPO_BRANCH
-     \
+    -Dsonar.branch.name=$APPVEYOR_REPO_BRANCH \
     -Dsonar.sources=./bin/user/MQTTSubscribe.py \
     -Dsonar.tests=./bin/user/tests \
     -Dsonar.language=py \
