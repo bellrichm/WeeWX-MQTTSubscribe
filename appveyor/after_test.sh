@@ -13,6 +13,7 @@ if [ "$SONAR_UPLOAD" = "true" ]; then
     -Dsonar.organization=bellrichm \
     -Dsonar.projectKey=bellrichm_WeeWX-MQTTSubscribe \
     -Dsonar.branch.name=master \
+    -Dsonar.branch.target=master \
     -Dsonar.sources=./bin/user/MQTTSubscribe.py \
     -Dsonar.tests=./bin/user/tests \
     -Dsonar.language=py \
