@@ -4,8 +4,8 @@ sed -i 's/classname="/classname="bin\/user\/tests\/unit./g' nosetests.xml
 sed -i 's/classname="/classname="bin\/user\/tests\/func./g' nosetests2.xml
 
 echo $PATH
-export PATH=$SONAR_SCANNER_HOME/bin:$PATH
-echo $PATH
+
+echo $SONAR_SCANNER_OPTS
 
 sonar-scanner \
   -Dsonar.organization=bellrichm \
