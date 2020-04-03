@@ -150,6 +150,8 @@ Prior to making any updates/changes, always make a backup.
     sudo systemctl restart weewx
     ```
 
+[![Build status](https://ci.appveyor.com/api/projects/status/3j9pagnyahpiw93r/branch/master?svg=true)](https://ci.appveyor.com/project/bellrichm/weewx-mqttsubscribe/branch/master)
+
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=bellrichm_WeeWX-MQTTSubscribe&metric=alert_status)](https://sonarcloud.io/dashboard?id=bellrichm_WeeWX-MQTTSubscribe)
 
 [![Bugs](https://sonarcloud.io/api/project_badges/measure?project=bellrichm_WeeWX-MQTTSubscribe&metric=bugs)](https://sonarcloud.io/dashboard?id=bellrichm_WeeWX-MQTTSubscribe)
