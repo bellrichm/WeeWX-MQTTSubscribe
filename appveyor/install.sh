@@ -15,6 +15,6 @@
     pip install coverage --quiet --no-python-version-warning
 
     echo "Running weewx install"
-    wget  $WEEWX_URL/$WEEWX.tar.gz
+    wget  $WEEWX_URL/weewx-$WEEWX.tar.gz
     mkdir weewx
-    tar xfz $WEEWX.tar.gz --strip-components=1 -C weewx    
+    tar xfz weewx-$WEEWX.tar.gz --strip-components=1 -C weewx    
