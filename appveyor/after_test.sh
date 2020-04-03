@@ -12,7 +12,6 @@ if [ "$SONAR_UPLOAD" = "true" ]; then
   sonar-scanner \
     -Dsonar.organization=bellrichm \
     -Dsonar.projectKey=bellrichm_WeeWX-MQTTSubscribe \
-    -Dsonar.branch.name=master \
     -Dsonar.sources=./bin/user/MQTTSubscribe.py \
     -Dsonar.tests=./bin/user/tests \
     -Dsonar.language=py \
@@ -23,5 +22,5 @@ if [ "$SONAR_UPLOAD" = "true" ]; then
     -Dsonar.python.pylint.reportPath=pylint.txt \
     -Dsonar.host.url=https://sonarcloud.io \
     -Dsonar.login=$SKEY \
-    -X
+    # -X
 fi
