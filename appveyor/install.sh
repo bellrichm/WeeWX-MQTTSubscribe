@@ -1,7 +1,6 @@
     echo "Running sonar runner install"
     curl --create-dirs -sSLo $HOME/.sonar/sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-$SONAR_SCANNER_VERSION-linux.zip
     unzip -qq -o $HOME/.sonar/sonar-scanner.zip -d $HOME/.sonar/
-    echo $PATH
 
     echo "Running mosquitto install"
     sudo apt-get -qq --assume-yes install mosquitto
