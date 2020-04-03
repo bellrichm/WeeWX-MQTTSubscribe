@@ -22,7 +22,7 @@ environment:
 stack: python %PYTHON%
 
 init:
-  -sh: export SONAR_SCANNER_HOME=$HOME/.sonar/sonar-scanner-$SONAR_SCANNER_VERSION-linux
+  -sh: >- export SONAR_SCANNER_HOME=$HOME/.sonar/sonar-scanner-$SONAR_SCANNER_VERSION-linux
 
 install:
   - sh: appveyor/install.sh
