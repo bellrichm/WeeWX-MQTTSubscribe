@@ -1,7 +1,6 @@
 #version: 1.5.2-rc{build}
 environment:
   SONAR_SCANNER_VERSION: 4.2.0.1873
-  SONAR_SCANNER_HOME: $HOME/.sonar/sonar-scanner-$SONAR_SCANNER_VERSION-linux
   matrix:
     - WEEWX: weewx-4.0.0b18.tar.gz
       PYTHON: 2.7
@@ -21,6 +20,10 @@ environment:
       WEEWX_URL: http://www.weewx.com/downloads/released_versions/
       
 stack: python %PYTHON%
+
+init:
+  -sh: export SONAR_SCANNER_HOME=$HOME/.sonar/sonar-scanner-$SONAR_SCANNER_VERSION-linux
+
 install:
   - sh: appveyor/install.sh
 
