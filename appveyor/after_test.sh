@@ -7,6 +7,9 @@ fi
 sed -i 's/classname="/classname="bin\/user\/tests\/unit./g' nosetests.xml
 sed -i 's/classname="/classname="bin\/user\/tests\/func./g' nosetests2.xml
 
+echo $APPVEYOR_BUILD_VERSION
+echo $APPVEYOR_REPO_BRANCH
+
 # only upload once
 if [ "$SONAR_UPLOAD" = "true" ]; then
   sonar-scanner \
