@@ -1,3 +1,5 @@
+# Reminder, tags are uploaded to both coveralls and sonar as a branch with the tag name
+
 # only upload once
 if [ "$COVERALLS_UPLOAD" = "true" ]; then
   coveralls
@@ -6,9 +8,6 @@ fi
 # patch up dirs for sonar
 sed -i 's/classname="/classname="bin\/user\/tests\/unit./g' nosetests.xml
 sed -i 's/classname="/classname="bin\/user\/tests\/func./g' nosetests2.xml
-
-echo $APPVEYOR_BUILD_VERSION
-echo $APPVEYOR_REPO_BRANCH
 
 # only upload once
 if [ "$SONAR_UPLOAD" = "true" ]; then
