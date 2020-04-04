@@ -23,7 +23,7 @@ stack: python %PYTHON%
 
 init:
   # Need source to be available in all scripts
-  - sh: source init.sh
+  - sh: source appveyor/init.sh
 
 install:
   - sh: appveyor/install.sh
