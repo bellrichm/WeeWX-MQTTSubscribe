@@ -1,6 +1,14 @@
 # Reminder, tags are uploaded to both coveralls and sonar as a branch with the tag name
 
 # only upload once
+if [ "$CODECOVIO_UPLOAD" = "true" ]; then
+  bash <(curl -s https://codecov.io/bash)
+fi
+
+export APPVEYOR_SSH_BLOCK=true
+curl -sflL 'https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-ssh.sh' | bash -e -
+
+# only upload once
 if [ "$COVERALLS_UPLOAD" = "true" ]; then
   coveralls
 fi
