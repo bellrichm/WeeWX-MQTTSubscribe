@@ -2,8 +2,8 @@
 
 # only upload once
 if [ "$CODECOVIO_UPLOAD" = "true" ]; then
-  bash <(curl -s https://codecov.io/bash) -f coverage.xml -F unitests
-  bash <(curl -s https://codecov.io/bash) -f coverage2.xml -F integration
+  bash <(curl -s https://codecov.io/bash) -f coverage.xml -F unitests >/dev/null
+  bash <(curl -s https://codecov.io/bash) -f coverage2.xml -F integration /dev/null
 fi
 
 # only upload once
