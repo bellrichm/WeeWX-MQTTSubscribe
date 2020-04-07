@@ -14,7 +14,6 @@ environment:
       PYTHON: 2.7
       APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
       WEEWX_URL: http://www.weewx.com/downloads/development_versions/
-      COVERALLS_UPLOAD: true
       CODECOVIO_UPLOAD: true
 
     - WEEWX: 3.9.2
