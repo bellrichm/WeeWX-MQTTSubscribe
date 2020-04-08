@@ -101,13 +101,16 @@ def check(self, test_type, results, expected_results):
     for expected_result in expected_results:
         print("testing %s %s" % (test_type, expected_result))
         for field in expected_result:
-            msg = "for payload of %s and field %s in record %i" % (test_type, field, i+1)
+            msg = "for payload of %s and field %s in record %i\n" % (test_type, field, i+1)
+            msg = msg + "should be in %s" % results[i]
             self.assertIn(field, results[i], msg)
             if expected_result[field] is not None:
-                msg = "for payload of %s and field %s in record %i" % (test_type, field, i+1)
+                msg = "for payload of %s and field %s in record %i\n" % (test_type, field, i+1)
                 if expected_result[field] == "None": # ToDo - cleanup
+                    msg = msg + "should be none, %s" % results[i][field]
                     self.assertIsNone(results[i][field], msg)
                 else:
+                    msg = msg + "should be equal %s but is %s" % (expected_result[field], results[i][field])
                     self.assertEqual(results[i][field], expected_result[field], msg)
         i += 1
 
