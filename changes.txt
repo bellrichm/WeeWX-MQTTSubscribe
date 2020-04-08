@@ -1,3 +1,8 @@
+V1.5.2
+Internal Improvements
+- Improved log messages to easily differentiate between loop and archive processing.
+- Automate testing and code analysis.
+
 V1.5.1
 Enhancements/Fixes
 - Fixed bug with ignoring start and end times when queues are empty.
