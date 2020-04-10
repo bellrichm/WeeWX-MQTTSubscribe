@@ -6,6 +6,7 @@ environment:
   matrix:
     - job_name: weewx4-py3
       job_group: build
+      job_depends_on: initialize
       WEEWX: 4.0.0b18
       PYTHON: 3.6
       APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
@@ -16,6 +17,7 @@ environment:
 
     - job_name: weewx4-py2
       job_group: build  
+      job_depends_on: initialize
       WEEWX: 4.0.0b18
       PYTHON: 2.7
       APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
@@ -24,20 +26,18 @@ environment:
 
     - job_name: weewx3-py2
       job_group: build
+      job_depends_on: initialize
       WEEWX: 3.9.2
       PYTHON: 2.7
       APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
       WEEWX_URL: http://www.weewx.com/downloads/released_versions/
 
-    - job_name: done
-      job_depends_on: build
-      #WEEWX: 3.9.2
-      PYTHON: 2.7
-      #APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
-      #WEEWX_URL: http://www.weewx.com/downloads/released_versions/      
+    - job_name: initialize
 
     - job_name: finalize
       job_depends_on: build
+
+stack: python %PYTHON%      
 
 for:
 - 
@@ -47,8 +47,6 @@ for:
 
   build_script:
     - sh: echo "finalize"
-      
-stack: python %PYTHON%
 
 init:
   # This runs before the commit is even checked out
