@@ -28,11 +28,11 @@ environment:
       WEEWX_URL: http://www.weewx.com/downloads/released_versions/
 
     - job_name: done
-      #job_depends_on: build
-      WEEWX: 3.9.2
-      PYTHON: 2.7
+      job_depends_on: build
+      #WEEWX: 3.9.2
+      #PYTHON: 2.7
       APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
-      WEEWX_URL: http://www.weewx.com/downloads/released_versions/      
+      #WEEWX_URL: http://www.weewx.com/downloads/released_versions/      
 
     - job_name: finalize
       job_depends_on: build
