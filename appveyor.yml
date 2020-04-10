@@ -27,22 +27,20 @@ environment:
       APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
       WEEWX_URL: http://www.weewx.com/downloads/released_versions/
 
-    - job_name: finalize2
+    - job_name: done
       job_depends_on: build
-      PYTHON: 3.6
 
     - job_name: finalize
       job_depends_on: build
-      PYTHON: 3.6
 
 for:
-  - 
-    matrix:
-      only:
-      - job_name: finalize
+- 
+  matrix:
+    only:
+    - job_name: finalize
 
-    build_script:
-      - sh: echo "finalize"
+  build_script:
+    - sh: echo "finalize"
       
 stack: python %PYTHON%
 
