@@ -39,14 +39,14 @@ environment:
     - job_name: finalize
       job_depends_on: build
 
-#for:
-#- 
-#  matrix:
-#    only:
-#    - job_name: finalize
+for:
+- 
+  matrix:
+    only:
+    - job_name: finalize
 
-#  install:
-#    - sh: echo "finalize"
+  install:
+    - sh: echo "finalize"
       
 stack: python %PYTHON%
 
