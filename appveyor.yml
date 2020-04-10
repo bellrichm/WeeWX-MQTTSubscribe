@@ -70,10 +70,7 @@ for:
     - sh: echo "after_test"
     #- sh: appveyor/after_test.sh
 
-  on_finish:
-    - sh: echo "on_finish"
-    #- sh: appveyor/on_finish.sh
-
+# common/default scripts
 init:
   # This runs before the commit is even checked out
   - sh: echo "init"
@@ -84,3 +81,6 @@ install:
   #- sh: source appveyor/init.sh 
   #- sh: appveyor/install.sh    
    
+on_finish:
+  - sh: echo "on_finish"
+  #- sh: appveyor/on_finish.sh
