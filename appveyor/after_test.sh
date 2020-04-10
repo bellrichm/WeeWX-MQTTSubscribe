@@ -8,7 +8,8 @@ fi
 
 # only upload once
 if [ "$COVERALLS_UPLOAD" = "true" ]; then
-  COVERALLS_PARALLEL=true coveralls
+  #COVERALLS_PARALLEL=true coveralls
+  coveralls
 fi
 
 # patch up dirs for sonar

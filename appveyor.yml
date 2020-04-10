@@ -45,6 +45,9 @@ for:
     only:
     - job_name: initialize
 
+install:
+  - sh: echo "install unneeded"    
+
   build: off
 
 - 
@@ -52,9 +55,12 @@ for:
     only:
     - job_name: finalize
 
+install:
+  - sh: echo "install unneeded"    
+
   build_script:
     - sh: echo "finalize"
-    - sh: curl -k https://coveralls.io/webhook?repo_token=$COVERALLS_REPO_TOKEN -d "payload[build_num]=$APPVEYOR_BUILD_ID&payload[status]=done"
+    #- sh: curl -k https://coveralls.io/webhook?repo_token=$COVERALLS_REPO_TOKEN -d "payload[build_num]=$APPVEYOR_BUILD_ID&payload[status]=done"
 
 - 
   matrix:
