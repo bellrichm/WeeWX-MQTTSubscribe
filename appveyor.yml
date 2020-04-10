@@ -27,6 +27,9 @@ environment:
       APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
       WEEWX_URL: http://www.weewx.com/downloads/released_versions/
 
+    - job_name: finalize2
+      job_depends_on: build
+
 for:
   - 
     matrix:
@@ -35,7 +38,7 @@ for:
         job_depends_on: build
 
     build_script:
-      -sh: echo "finalize"
+      - sh: echo "finalize"
       
 stack: python %PYTHON%
 
@@ -44,18 +47,23 @@ init:
 
 install:
   # 'source' so that variables are set in parent environment
+  - sh: echo "install"
   - sh: source appveyor/init.sh 
   - sh: appveyor/install.sh
 
 build_script:
+  - sh: echo "build_script"
   - sh: appveyor/build_script.sh  
 
 test_script:
-- sh: appveyor/test_script.sh
+  - sh: echo "test_script"
+  - sh: appveyor/test_script.sh
 
 after_test:
+  - sh: echo "after_test"
   - sh: appveyor/after_test.sh
 
 on_finish:
+  - sh: echo "on_finish"
   - sh: appveyor/on_finish.sh
    
