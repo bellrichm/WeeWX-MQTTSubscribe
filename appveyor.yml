@@ -1,6 +1,8 @@
 environment:
   SONAR_SCANNER_VERSION: 4.2.0.1873
   SONAR_SCANNER_OPTS: -server
+  APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
+  PYTHON: 3.6
   matrix:
     - job_name: weewx4-py3
       job_group: build
@@ -30,8 +32,8 @@ environment:
     - job_name: done
       job_depends_on: build
       #WEEWX: 3.9.2
-      #PYTHON: 2.7
-      APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
+      PYTHON: 2.7
+      #APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
       #WEEWX_URL: http://www.weewx.com/downloads/released_versions/      
 
     - job_name: finalize
