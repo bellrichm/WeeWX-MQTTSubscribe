@@ -9,7 +9,7 @@ environment:
   WEEWX_URL: http://www.weewx.com/downloads/released_versions/
 
   matrix:
-    - job_name: "%WEEWX%-py%PTHON%"
+    - job_name: $WEEWX
       job_group: build
       job_depends_on: initialize
       WEEWX_URL: http://www.weewx.com/downloads/development_versions/
@@ -38,6 +38,13 @@ environment:
 stack: python %PYTHON%      
 
 for:
+- 
+  matrix:
+    only:
+    - job_name: initialize
+
+  build: off
+
 - 
   matrix:
     only:
