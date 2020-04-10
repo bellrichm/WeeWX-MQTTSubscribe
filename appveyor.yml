@@ -78,11 +78,11 @@ init:
   - sh: echo "init"
 
 install:
-  # 'source' so that variables are set in parent environment
   - sh: echo "install"
-  #- sh: source appveyor/init.sh 
-  #- sh: appveyor/install.sh    
+  # 'source' so that variables are set in parent environment
+  - sh: source appveyor/init.sh 
+  - sh: appveyor/install.sh    
    
 on_finish:
   - sh: echo "on_finish"
-  #- sh: appveyor/on_finish.sh
+  - sh: appveyor/on_finish.sh
