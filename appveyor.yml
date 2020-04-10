@@ -23,6 +23,7 @@ environment:
       PYTHON: 2.7
       WEEWX_URL: http://www.weewx.com/downloads/development_versions/
       CODECOVIO_UPLOAD: true
+      COVERALLS_UPLOAD: true
 
     - job_name: weewx3-py2
       job_group: build
@@ -52,6 +53,7 @@ for:
 
   build_script:
     - sh: echo "finalize"
+    - sh: curl -k $COVERALLS_ENDPOINT/webhook?repo_token=$COVERALLS_REPO_TOKEN -d "payload[build_num]=$APPVEYOR_BUILD_NUMBER&payload[status]=done"
 
 - 
   matrix:
@@ -60,15 +62,15 @@ for:
 
   build_script:
     - sh: echo "build_script"
-    #- sh: appveyor/build_script.sh  
+    - sh: appveyor/build_script.sh  
 
   test_script:
     - sh: echo "test_script"
-    #- sh: appveyor/test_script.sh
+    - sh: appveyor/test_script.sh
 
   after_test:
     - sh: echo "after_test"
-    #- sh: appveyor/after_test.sh
+    - sh: appveyor/after_test.sh
 
 # common/default scripts
 init:
