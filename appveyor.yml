@@ -45,8 +45,8 @@ for:
     only:
     - job_name: initialize
 
-install:
-  - sh: echo "install unneeded"    
+  install:
+    - sh: echo "install unneeded"    
 
   build: off
 
@@ -55,8 +55,8 @@ install:
     only:
     - job_name: finalize
 
-install:
-  - sh: echo "install unneeded"    
+  install:
+    - sh: echo "install unneeded"    
 
   build_script:
     - sh: echo "finalize"
