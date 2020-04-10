@@ -1,15 +1,17 @@
 environment:
+  # common values
   SONAR_SCANNER_VERSION: 4.2.0.1873
   SONAR_SCANNER_OPTS: -server
+  # default values
   APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
   PYTHON: 3.6
+  WEEWX: 4.0.0b18
+  WEEWX_URL: http://www.weewx.com/downloads/released_versions/
+
   matrix:
     - job_name: weewx4-py3
       job_group: build
       job_depends_on: initialize
-      WEEWX: 4.0.0b18
-      PYTHON: 3.6
-      APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
       WEEWX_URL: http://www.weewx.com/downloads/development_versions/
       CODECOVIO_UPLOAD: true
       COVERALLS_UPLOAD: true
@@ -18,9 +20,7 @@ environment:
     - job_name: weewx4-py2
       job_group: build  
       job_depends_on: initialize
-      WEEWX: 4.0.0b18
       PYTHON: 2.7
-      APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
       WEEWX_URL: http://www.weewx.com/downloads/development_versions/
       CODECOVIO_UPLOAD: true
 
@@ -29,8 +29,6 @@ environment:
       job_depends_on: initialize
       WEEWX: 3.9.2
       PYTHON: 2.7
-      APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
-      WEEWX_URL: http://www.weewx.com/downloads/released_versions/
 
     - job_name: initialize
 
