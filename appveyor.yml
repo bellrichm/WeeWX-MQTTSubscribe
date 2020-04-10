@@ -2,7 +2,9 @@ environment:
   SONAR_SCANNER_VERSION: 4.2.0.1873
   SONAR_SCANNER_OPTS: -server
   matrix:
-    - WEEWX: 4.0.0b18
+    - job_name: weewx4-py3
+      job_group: build
+      WEEWX: 4.0.0b18
       PYTHON: 3.6
       APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
       WEEWX_URL: http://www.weewx.com/downloads/development_versions/
@@ -10,16 +12,30 @@ environment:
       COVERALLS_UPLOAD: true
       SONAR_UPLOAD: true
 
-    - WEEWX: 4.0.0b18
+    - job_name: weewx4-py2
+      job_group: build  
+      WEEWX: 4.0.0b18
       PYTHON: 2.7
       APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
       WEEWX_URL: http://www.weewx.com/downloads/development_versions/
       CODECOVIO_UPLOAD: true
 
-    - WEEWX: 3.9.2
+    - job_name: weewx3-py2
+      job_group: build
+      WEEWX: 3.9.2
       PYTHON: 2.7
       APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
       WEEWX_URL: http://www.weewx.com/downloads/released_versions/
+
+for:
+  - 
+    matrix:
+      only:
+      - job_name: finalize
+        job_depends_on: build
+
+    build_script:
+      -sh: echo "finalize"
       
 stack: python %PYTHON%
 
