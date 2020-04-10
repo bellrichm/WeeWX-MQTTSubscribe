@@ -30,8 +30,8 @@ environment:
     - job_name: finalize2
       job_depends_on: build
 
-      - job_name: finalize
-        job_depends_on: build
+    - job_name: finalize
+      job_depends_on: build
 
 for:
   - 
