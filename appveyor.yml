@@ -23,7 +23,6 @@ environment:
       PYTHON: 2.7
       WEEWX_URL: http://www.weewx.com/downloads/development_versions/
       CODECOVIO_UPLOAD: true
-      COVERALLS_UPLOAD: true
 
     - job_name: weewx3-py2
       job_group: build
