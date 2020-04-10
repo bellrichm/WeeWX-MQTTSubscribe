@@ -45,7 +45,7 @@ for:
     only:
     - job_name: finalize
 
-  install:
+  build_script:
     - sh: echo "finalize"
       
 stack: python %PYTHON%
