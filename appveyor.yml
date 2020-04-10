@@ -28,7 +28,7 @@ environment:
       WEEWX_URL: http://www.weewx.com/downloads/released_versions/
 
     - job_name: done
-      job_depends_on: build
+      #job_depends_on: build
 
     - job_name: finalize
       job_depends_on: build
