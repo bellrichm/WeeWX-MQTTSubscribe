@@ -32,9 +32,11 @@ environment:
       PYTHON: 2.7
 
     - job_name: initialize
+      WEEWX_URL: http://www.weewx.com/downloads/development_versions/
 
     - job_name: finalize
       job_depends_on: build
+      WEEWX_URL: http://www.weewx.com/downloads/development_versions/
 
 stack: python %PYTHON%      
 
