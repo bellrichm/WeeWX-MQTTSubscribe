@@ -55,7 +55,7 @@ for:
 
   build_script:
     - sh: echo "finalize"
-    - sh: curl -k https://coveralls.io/webhook?repo_token=$COVERALLS_REPO_TOKEN -d "payload[build_num]=$APPVEYOR_BUILD_NUMBER&payload[status]=done"
+    - sh: curl -k https://coveralls.io/webhook?repo_token=$COVERALLS_REPO_TOKEN -d "payload[build_num]=$APPVEYOR_BUILD_ID&payload[status]=done"
 
 - 
   matrix:
