@@ -30,12 +30,14 @@ environment:
     - job_name: finalize2
       job_depends_on: build
 
+      - job_name: finalize
+        job_depends_on: build
+
 for:
   - 
     matrix:
       only:
       - job_name: finalize
-        job_depends_on: build
 
     build_script:
       - sh: echo "finalize"
@@ -48,22 +50,22 @@ init:
 install:
   # 'source' so that variables are set in parent environment
   - sh: echo "install"
-  - sh: source appveyor/init.sh 
-  - sh: appveyor/install.sh
+  #- sh: source appveyor/init.sh 
+  #- sh: appveyor/install.sh
 
 build_script:
   - sh: echo "build_script"
-  - sh: appveyor/build_script.sh  
+  #- sh: appveyor/build_script.sh  
 
 test_script:
   - sh: echo "test_script"
-  - sh: appveyor/test_script.sh
+  #- sh: appveyor/test_script.sh
 
 after_test:
   - sh: echo "after_test"
-  - sh: appveyor/after_test.sh
+  #- sh: appveyor/after_test.sh
 
 on_finish:
   - sh: echo "on_finish"
-  - sh: appveyor/on_finish.sh
+  #- sh: appveyor/on_finish.sh
    
