@@ -1,45 +1,95 @@
 environment:
+  # common values
   SONAR_SCANNER_VERSION: 4.2.0.1873
   SONAR_SCANNER_OPTS: -server
+  # default values
+  APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
+  PYTHON: 3.6 
+  WEEWX: 4.0.0b18
+  WEEWX_URL: http://www.weewx.com/downloads/released_versions/
+
   matrix:
-    - WEEWX: 4.0.0b18
-      PYTHON: 3.6
-      APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
+    - job_name: weewx4-py3
+      job_group: build
+      job_depends_on: initialize
       WEEWX_URL: http://www.weewx.com/downloads/development_versions/
       CODECOVIO_UPLOAD: true
       COVERALLS_UPLOAD: true
       SONAR_UPLOAD: true
 
-    - WEEWX: 4.0.0b18
+    - job_name: weewx4-py2
+      job_group: build  
+      job_depends_on: initialize
       PYTHON: 2.7
-      APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
       WEEWX_URL: http://www.weewx.com/downloads/development_versions/
       CODECOVIO_UPLOAD: true
 
-    - WEEWX: 3.9.2
+    - job_name: weewx3-py2
+      job_group: build
+      job_depends_on: initialize
+      WEEWX: 3.9.2
       PYTHON: 2.7
-      APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
-      WEEWX_URL: http://www.weewx.com/downloads/released_versions/
-      
-stack: python %PYTHON%
 
+    - job_name: initialize
+      WEEWX_URL: http://www.weewx.com/downloads/development_versions/
+
+    - job_name: finalize
+      job_depends_on: build
+      WEEWX_URL: http://www.weewx.com/downloads/development_versions/
+
+stack: python %PYTHON%      
+
+for:
+- 
+  matrix:
+    only:
+    - job_name: initialize
+
+  install:
+    - sh: echo "install unneeded"    
+
+  build: off
+
+- 
+  matrix:
+    only:
+    - job_name: finalize
+
+  install:
+    - sh: echo "install unneeded"    
+
+  build_script:
+    - sh: echo "finalize"
+    #- sh: curl -k https://coveralls.io/webhook?repo_token=$COVERALLS_REPO_TOKEN -d "payload[build_num]=$APPVEYOR_BUILD_ID&payload[status]=done"
+
+- 
+  matrix:
+    only:
+    - job_group: build
+
+  build_script:
+    - sh: echo "build_script"
+    - sh: appveyor/build_script.sh  
+
+  test_script:
+    - sh: echo "test_script"
+    - sh: appveyor/test_script.sh
+
+  after_test:
+    - sh: echo "after_test"
+    - sh: appveyor/after_test.sh
+
+# common/default scripts
 init:
   # This runs before the commit is even checked out
+  - sh: echo "init"
 
 install:
+  - sh: echo "install"
   # 'source' so that variables are set in parent environment
   - sh: source appveyor/init.sh 
-  - sh: appveyor/install.sh
-
-build_script:
-  - sh: appveyor/build_script.sh  
-
-test_script:
-- sh: appveyor/test_script.sh
-
-after_test:
-  - sh: appveyor/after_test.sh
-
-on_finish:
-  - sh: appveyor/on_finish.sh
+  - sh: appveyor/install.sh    
    
+on_finish:
+  - sh: echo "on_finish"
+  - sh: appveyor/on_finish.sh
