@@ -93,15 +93,25 @@ class TestJsonPayload(unittest.TestCase):
             time.sleep(1)
             i += 1
 
+        topic = None
+        msg_count = 0
         for testrun in testruns:
             for topics in testrun['messages']:
                 for topic in topics:
                     topic_info = topics[topic]
                     #print(topic_info)
-                    utils.send_msg(utils.send_mqtt_msg, test_type, client.publish, topic, topic_info, userdata2, self)
+                    msg_count = utils.send_msg(utils.send_mqtt_msg, test_type, client.publish, topic, topic_info, userdata2, self)
 
-            time.sleep(1) # more fudge to allow it to get to the service
-            #time.sleep(sleep)
+            # A bit of a hack, ok huge, to wait until MQTTSubscribe has queued the data
+            # This is useful when debugging MQTTSubscribe with breakpoints
+            max_waits = 10
+            wait_count = 0
+            if topic is not None:
+                topic_queue = service.subscriber.manager._get_queue(topic) # pylint: disable=protected-access
+                while len(topic_queue) < msg_count and wait_count < max_waits:
+                    # print("sleeping")
+                    time.sleep(1)
+                    wait_count += 1
 
             record = {}
             units = testrun['results']['units']
