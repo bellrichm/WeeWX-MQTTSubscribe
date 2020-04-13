@@ -63,13 +63,16 @@ def send_direct_msg(publisher, topic, payload, userdata, self):
 
 def send_msg(sender, msg_type, publisher, topic, topic_info, userdata=None, self=None):
     # pylint: disable=too-many-arguments
+    i = 0
     if msg_type == 'individual':
         for field in sorted(topic_info['data']): # a bit of a hack, but need a determined order
             payload = topic_info['data'][field]
             sender(publisher, "%s/%s" % (topic, field), payload, userdata, self)
+            i += 1
     elif msg_type == 'json':
         payload = json.dumps(topic_info['data'])
         sender(publisher, topic, payload, userdata, self)
+        i += 1
     elif msg_type == 'keyword':
         msg = ''
         for field in topic_info['data']:
@@ -77,6 +80,9 @@ def send_msg(sender, msg_type, publisher, topic, topic_info, userdata=None, self
         msg = msg[:-1]
         msg = msg.encode("utf-8")
         sender(publisher, topic, msg, userdata, self)
+        i += 1
+
+    return i
 
 def get_callback(payload_type, config_dict, manager, logger):
     message_callback_config = config_dict.get('message_callback', {})
@@ -91,6 +97,19 @@ def get_callback(payload_type, config_dict, manager, logger):
                                                                 manager)
 
     return message_callback_provider.get_callback()
+
+# A bit of a hack, ok huge, to wait until MQTTSubscribe has queued the data
+# This is useful when debugging MQTTSubscribe with breakpoints
+def wait_on_queue(provider, topic, msg_count, max_waits, sleep_time):
+    wait_count = 0
+    if topic is not None:
+        topic_queue = provider.subscriber.manager._get_queue(topic)  # pylint: disable=protected-access
+        while len(topic_queue) < msg_count and wait_count < max_waits:
+            # print("sleeping")
+            time.sleep(sleep_time)
+            wait_count += 1
+
+    return wait_count
 
 def check(self, test_type, results, expected_results):
     msg = "for payload of %s" % test_type

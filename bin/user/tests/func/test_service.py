@@ -93,15 +93,14 @@ class TestJsonPayload(unittest.TestCase):
             time.sleep(1)
             i += 1
 
+        max_waits = 10
         for testrun in testruns:
             for topics in testrun['messages']:
                 for topic in topics:
                     topic_info = topics[topic]
                     #print(topic_info)
-                    utils.send_msg(utils.send_mqtt_msg, test_type, client.publish, topic, topic_info, userdata2, self)
-
-            time.sleep(1) # more fudge to allow it to get to the service
-            #time.sleep(sleep)
+                    msg_count = utils.send_msg(utils.send_mqtt_msg, test_type, client.publish, topic, topic_info, userdata2, self)
+                    utils.wait_on_queue(service, topic, msg_count, max_waits, 1)
 
             record = {}
             units = testrun['results']['units']

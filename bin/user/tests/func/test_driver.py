@@ -78,13 +78,18 @@ class TestJsonPayload(unittest.TestCase):
             time.sleep(1)
             i += 1
 
+        max_waits = 10
         for testrun in testruns:
             for topics in testrun['messages']:
                 for topic in topics:
                     topic_info = topics[topic]
-                    utils.send_msg(utils.send_mqtt_msg, test_type, client.publish, topic, topic_info, userdata2, self)
+                    msg_count = utils.send_msg(utils.send_mqtt_msg, test_type, client.publish, topic, topic_info, userdata2, self)
+                    wait_count = utils.wait_on_queue(driver, topic, msg_count, max_waits, 1)
 
-            #time.sleep(1) # more fudge to allow it to get to the service
+                    # If queue not filled, fail now
+                    # otherwise will end up in 'infinite' loop in genLoopPackets
+                    msg = "Could not fill queue."
+                    self.assertLess(wait_count, max_waits, msg)
 
             records = []
             gen = driver.genLoopPackets()
