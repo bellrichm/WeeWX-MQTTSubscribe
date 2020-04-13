@@ -3,6 +3,7 @@ environment:
   SONAR_SCANNER_VERSION: 4.2.0.1873
   SONAR_SCANNER_OPTS: -server
   # default values
+  ENABLED: true
   APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
   PYTHON: 3.6 
   WEEWX: 4.0.0b18
@@ -16,6 +17,7 @@ environment:
       CODECOVIO_UPLOAD: true
       COVERALLS_UPLOAD: true
       SONAR_UPLOAD: true
+      ENABLED: falde
 
     - job_name: weewx4-py3.5
       job_group: build  
