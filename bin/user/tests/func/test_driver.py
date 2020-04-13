@@ -78,29 +78,18 @@ class TestJsonPayload(unittest.TestCase):
             time.sleep(1)
             i += 1
 
-        topic = None
-        msg_count = 0
+        max_waits = 10
         for testrun in testruns:
             for topics in testrun['messages']:
                 for topic in topics:
                     topic_info = topics[topic]
                     msg_count = utils.send_msg(utils.send_mqtt_msg, test_type, client.publish, topic, topic_info, userdata2, self)
+                    wait_count = utils.wait_on_queue(driver, topic, msg_count, max_waits, 1)
 
-            # A bit of a hack, ok huge, to wait until MQTTSubscribe has queued the data
-            # This is useful when debugging MQTTSubscribe with breakpoints
-            max_waits = 10
-            wait_count = 0
-            if topic is not None:
-                topic_queue = driver.subscriber.manager._get_queue(topic) # pylint: disable=protected-access
-                while len(topic_queue) < msg_count and wait_count < max_waits:
-                    # print("sleeping")
-                    time.sleep(1)
-                    wait_count += 1
-
-                # If queue not filled, fail now
-                # otherwise will end up in 'infinite' loop in genLoopPackets
-                msg = "Could not fill queue."
-                self.assertLess(wait_count, max_waits, msg)
+                    # If queue not filled, fail now
+                    # otherwise will end up in 'infinite' loop in genLoopPackets
+                    msg = "Could not fill queue."
+                    self.assertLess(wait_count, max_waits, msg)
 
             records = []
             gen = driver.genLoopPackets()

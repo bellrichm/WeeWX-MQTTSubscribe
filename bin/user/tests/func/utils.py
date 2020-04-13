@@ -98,6 +98,19 @@ def get_callback(payload_type, config_dict, manager, logger):
 
     return message_callback_provider.get_callback()
 
+# A bit of a hack, ok huge, to wait until MQTTSubscribe has queued the data
+# This is useful when debugging MQTTSubscribe with breakpoints
+def wait_on_queue(provider, topic, msg_count, max_waits, sleep_time):
+    wait_count = 0
+    if topic is not None:
+        topic_queue = provider.subscriber.manager._get_queue(topic)  # pylint: disable=protected-access
+        while len(topic_queue) < msg_count and wait_count < max_waits:
+            # print("sleeping")
+            time.sleep(sleep_time)
+            wait_count += 1
+
+    return wait_count
+
 def check(self, test_type, results, expected_results):
     msg = "for payload of %s" % test_type
     #print(results)
