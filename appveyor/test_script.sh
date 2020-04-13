@@ -5,7 +5,7 @@ fi
  PYTHONPATH=bin nosetests ./bin/user/tests/unit --exe --exclude=setup --cover-package=user.MQTTSubscribe --with-xunit --with-coverage --cover-branches --cover-xml --logging-level=ERROR --verbosity=1
  rc=$?
  find "$APPVEYOR_BUILD_FOLDER" -type f -name 'nosetests.xml' -print0 | xargs -0 -I '{}' curl -F 'file=@{}' "https://ci.appveyor.com/api/testresults/junit/$APPVEYOR_JOB_ID"
-if [ $rc ne 0 ];
+if [ $rc ne 0 ]; then
   exit $rc
 fi
 
