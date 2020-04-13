@@ -17,13 +17,14 @@ environment:
       CODECOVIO_UPLOAD: true
       COVERALLS_UPLOAD: true
       SONAR_UPLOAD: true
+      ENABLED: false
 
     - job_name: weewx4-py3.5
       job_group: build  
       job_depends_on: initialize
       PYTHON: 3.5
       WEEWX_URL: http://www.weewx.com/downloads/development_versions/
-      ENABLED: false
+      ENABLED: true
 
     - job_name: weewx4-py2
       job_group: build  
@@ -31,6 +32,7 @@ environment:
       PYTHON: 2.7
       WEEWX_URL: http://www.weewx.com/downloads/development_versions/
       CODECOVIO_UPLOAD: true
+      ENABLED: false
 
     - job_name: weewx3-py2
       job_group: build
