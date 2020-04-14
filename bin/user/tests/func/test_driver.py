@@ -17,6 +17,7 @@ import paho.mqtt.client as mqtt
 import utils
 
 from user.MQTTSubscribe import MQTTSubscribeDriver
+from user.MQTTSubscribe import setup_logging
 
 class TestJsonPayload(unittest.TestCase):
     def driver_check(self, test_type, testruns, config_dict):
@@ -31,6 +32,7 @@ class TestJsonPayload(unittest.TestCase):
         #message_callback_config = cdict.get('message_callback', None)
         #message_callback_config['type'] = test_type
 
+        #config_dict['MQTTSubscribeService']['console'] = True
         driver = MQTTSubscribeDriver(**cdict)
 
         #client_id = 'clientid'
@@ -88,8 +90,8 @@ class TestJsonPayload(unittest.TestCase):
 
                     # If queue not filled, fail now
                     # otherwise will end up in 'infinite' loop in genLoopPackets
-                    msg = "Could not fill queue."
-                    self.assertLess(wait_count, max_waits, msg)
+                    if wait_count >= max_waits:
+                        self.fail("Could not fill queue.")
 
             records = []
             gen = driver.genLoopPackets()
@@ -148,4 +150,5 @@ class TestJsonPayload(unittest.TestCase):
                 self.driver_check(test_type, test_data['testruns'], config_dict)
 
 if __name__ == '__main__':
+    setup_logging(1)
     unittest.main(exit=False, failfast=True)
