@@ -7,6 +7,7 @@ fi
  find "$APPVEYOR_BUILD_FOLDER" -type f -name 'nosetests.xml' -print0 | xargs -0 -I '{}' curl -F 'file=@{}' "https://ci.appveyor.com/api/testresults/junit/$APPVEYOR_JOB_ID"
 # ToDo - option to not exit on error - gor debugging
 if [ $rc ne 0 ]; then
+  echo "$rc"
   #exit $rc
 fi
 
