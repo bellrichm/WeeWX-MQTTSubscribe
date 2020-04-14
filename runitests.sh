@@ -1,10 +1,22 @@
 #! /bin/bash
 
-echo "Running python 2 weewx 4"
-PYTHONPATH=bin:../weewx4/bin python2 -m unittest discover bin/user/tests/func
-echo "Running python 3 weewx 4"
-PYTHONPATH=bin:../weewx4/bin python3 -m unittest discover bin/user/tests/func
-echo "Running python 2 weewx 3"
-PYTHONPATH=bin:../weewx3/bin python2 -m unittest discover bin/user/tests/func
+export PYENV_VERSION=2.7.17
+export WEEWX=weewx4
+echo "Running python $PYENV_VERSION $WEEWX"
+PYTHONPATH=bin:../$WEEWX/bin python -m unittest discover bin/user/tests/func
 
+export PYENV_VERSION=3.6.9
+export WEEWX=weewx4
+echo "Running python $PYENV_VERSION $WEEWX"
+PYTHONPATH=bin:../$WEEWX/bin python -m unittest discover bin/user/tests/func
+
+export PYENV_VERSION=3.5.9
+export WEEWX=weewx4
+echo "Running python $PYENV_VERSION $WEEWX"
+PYTHONPATH=bin:../$WEEWX/bin python -m unittest discover bin/user/tests/func
+
+PYENV_VERSION=2.7.17
+export WEEWX=weewx3
+echo "Running python $PYENV_VERSION $WEEWX"
+PYTHONPATH=bin:../$WEEWX/bin python -m unittest discover bin/user/tests/func
 
