@@ -19,6 +19,7 @@ import utils
 import weewx
 from weewx.engine import StdEngine
 from user.MQTTSubscribe import MQTTSubscribeService
+from user.MQTTSubscribe import setup_logging
 
 class TestJsonPayload(unittest.TestCase):
     def service_check(self, test_type, testruns, config_dict):
@@ -49,6 +50,7 @@ class TestJsonPayload(unittest.TestCase):
 
         engine = StdEngine(min_config_dict)
 
+        #config_dict['MQTTSubscribeService']['console'] = True
         service = MQTTSubscribeService(engine, config_dict)
 
         host = 'localhost'
@@ -155,4 +157,5 @@ class TestJsonPayload(unittest.TestCase):
                 self.service_check(test_type, test_data['testruns'], config_dict)
 
 if __name__ == '__main__':
+    setup_logging(1)
     unittest.main(exit=False, failfast=True)

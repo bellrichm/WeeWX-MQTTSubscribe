@@ -897,7 +897,12 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, mock_manager)
 
         payload = round(random.uniform(1, 100), 2)
-        msg = Msg(topic, str(payload), 0, 0)
+        if PY2:
+            payload_str = str(payload)
+        else:
+            payload_str = str(payload).encode('UTF-8')
+
+        msg = Msg(topic, payload_str, 0, 0)
 
         SUT._on_message_individual(None, None, msg)
         mock_manager.append_data.assert_called_once_with(msg.topic, {self.topic_end: payload}, self.topic_end)
@@ -918,7 +923,12 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         SUT = MessageCallbackProvider(message_handler_config, mock_logger, mock_manager)
 
         payload = round(random.uniform(1, 100), 2)
-        msg = Msg(topic, str(payload), 0, 0)
+        if PY2:
+            payload_str = str(payload)
+        else:
+            payload_str = str(payload).encode('UTF-8')
+
+        msg = Msg(topic, payload_str, 0, 0)
 
         SUT._on_message_individual(None, None, msg)
         mock_manager.append_data.assert_called_once_with(msg.topic, {msg.topic: None}, msg.topic)
@@ -937,7 +947,13 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         SUT.previous_values['inTemp'] = prev_temp
 
         payload = round(random.uniform(1, 100), 2)
-        msg = Msg(topic, str(payload), 0, 0)
+        payload = round(random.uniform(1, 100), 2)
+        if PY2:
+            payload_str = str(payload)
+        else:
+            payload_str = str(payload).encode('UTF-8')
+
+        msg = Msg(topic, payload_str, 0, 0)
 
         SUT._on_message_individual(None, None, msg)
         mock_manager.append_data.assert_called_once_with(msg.topic, {msg.topic: None}, msg.topic)
@@ -956,7 +972,12 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         SUT.previous_values['inTemp'] = prev_temp
 
         payload = round(random.uniform(10, 100), 2)
-        msg = Msg(topic, str(payload), 0, 0)
+        if PY2:
+            payload_str = str(payload)
+        else:
+            payload_str = str(payload).encode('UTF-8')
+
+        msg = Msg(topic, payload_str, 0, 0)
 
         SUT._on_message_individual(None, None, msg)
         mock_manager.append_data.assert_called_once_with(msg.topic, {msg.topic: payload - prev_temp}, msg.topic)
@@ -969,7 +990,12 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, mock_manager)
 
         payload = round(random.uniform(1, 100), 2)
-        msg = Msg(self.single_topic, str(payload), 0, 0)
+        if PY2:
+            payload_str = str(payload)
+        else:
+            payload_str = str(payload).encode('UTF-8')
+
+        msg = Msg(self.single_topic, payload_str, 0, 0)
 
         SUT._on_message_individual(None, None, msg)
         mock_manager.append_data.assert_called_once_with(msg.topic, {self.topic_end: payload}, self.topic_end)
@@ -981,8 +1007,13 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, mock_manager)
 
         payload = round(random.uniform(1, 100), 2)
+        if PY2:
+            payload_str = str(payload)
+        else:
+            payload_str = str(payload).encode('UTF-8')
+
         msg = Msg(self.multi_topic,
-                  str(payload),
+                  payload_str,
                   0,
                   0)
 
@@ -996,8 +1027,13 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, mock_manager)
 
         payload = round(random.uniform(1, 100), 2)
+        if PY2:
+            payload_str = str(payload)
+        else:
+            payload_str = str(payload).encode('UTF-8')
+
         msg = Msg(self.topic,
-                  str(payload),
+                  payload_str,
                   0,
                   0)
 
@@ -1063,7 +1099,12 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
         SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, mock_manager)
 
         payload = round(random.uniform(1, 100), 2)
-        msg = Msg(self.single_topic, str(payload), 0, 0)
+        if PY2:
+            payload_str = str(payload)
+        else:
+            payload_str = str(payload).encode('UTF-8')
+
+        msg = Msg(self.single_topic, payload_str, 0, 0)
 
         SUT._on_message_individual(None, None, msg)
         mock_manager.append_data.assert_called_once_with(msg.topic, {self.topic_end: payload}, self.topic_end)
@@ -1078,7 +1119,12 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
         SUT = MessageCallbackProvider(message_handler_config, mock_logger, mock_manager)
 
         payload = round(random.uniform(1, 100), 2)
-        msg = Msg(self.multi_topic, str(payload), 0, 0)
+        if PY2:
+            payload_str = str(payload)
+        else:
+            payload_str = str(payload).encode('UTF-8')
+
+        msg = Msg(self.multi_topic, payload_str, 0, 0)
 
         SUT._on_message_individual(None, None, msg)
         mock_manager.append_data.assert_called_once_with(msg.topic, {msg.topic: payload}, msg.topic)
@@ -1093,7 +1139,12 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
         SUT = MessageCallbackProvider(message_handler_config, mock_logger, mock_manager)
 
         payload = round(random.uniform(1, 100), 2)
-        msg = Msg(self.topic, str(payload), 0, 0)
+        if PY2:
+            payload_str = str(payload)
+        else:
+            payload_str = str(payload).encode('UTF-8')
+
+        msg = Msg(self.topic, payload_str, 0, 0)
 
         SUT._on_message_individual(None, None, msg)
         mock_manager.append_data.assert_called_once_with(msg.topic, {msg.topic: payload}, msg.topic)

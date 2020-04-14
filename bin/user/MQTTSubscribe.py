@@ -751,7 +751,12 @@ class MessageCallbackProvider(object):
         try:
             self._log_message(msg)
 
-            data = self._byteify(json.loads(msg.payload, object_hook=self._byteify), ignore_dicts=True)
+            if PY2:
+                payload_str = msg.payload
+            else:
+                payload_str = msg.payload.decode('utf-8')
+
+            data = self._byteify(json.loads(payload_str, object_hook=self._byteify), ignore_dicts=True)
             self.topic_manager.append_data(msg.topic, self._flatten_dict(data, self.flatten_delimiter))
 
         except Exception as exception: # (want to catch all) pylint: disable=broad-except
@@ -763,6 +768,11 @@ class MessageCallbackProvider(object):
         try:
             self._log_message(msg)
 
+            payload_str = msg.payload
+            if not PY2:
+                if msg.payload is not None:
+                    payload_str = msg.payload.decode('utf-8')
+
             if self.full_topic_fieldname:
                 key = msg.topic
             else:
@@ -771,7 +781,7 @@ class MessageCallbackProvider(object):
             if PY2:
                 key = key.encode('utf-8')
 
-            value = self._convert_value(key, msg.payload)
+            value = self._convert_value(key, payload_str)
 
             if self.fields.get(key, {}).get('contains_total', False):
                 current_value = value
