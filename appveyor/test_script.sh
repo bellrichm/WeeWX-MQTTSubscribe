@@ -8,7 +8,7 @@ fi
 # ToDo - option to not exit on error - gor debugging
 if [ $rc -ne 0 ]; then
   echo "$rc"
-  #exit $rc
+  exit $rc
 fi
 
  PYTHONPATH=bin:./weewx/bin nosetests ./bin/user/tests/func --exe --exclude=setup --cover-package=user.MQTTSubscribe --with-xunit --with-coverage --cover-branches --cover-xml --cover-xml-file=coverage2.xml --xunit-file=nosetests2.xml --logging-level=ERROR --verbosity=1
