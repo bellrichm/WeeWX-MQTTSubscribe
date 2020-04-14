@@ -67,10 +67,15 @@ def send_msg(sender, msg_type, publisher, topic, topic_info, userdata=None, self
     if msg_type == 'individual':
         for field in sorted(topic_info['data']): # a bit of a hack, but need a determined order
             payload = topic_info['data'][field]
+            if isinstance(payload, int):
+                payload = str(payload).encode("utf-8")
             sender(publisher, "%s/%s" % (topic, field), payload, userdata, self)
             i += 1
     elif msg_type == 'json':
-        payload = json.dumps(topic_info['data'])
+        if PY2:
+            payload = json.dumps(topic_info['data'])
+        else:
+            payload = json.dumps(topic_info['data']).encode("utf-8")
         sender(publisher, topic, payload, userdata, self)
         i += 1
     elif msg_type == 'keyword':

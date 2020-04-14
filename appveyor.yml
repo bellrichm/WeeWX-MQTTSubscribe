@@ -23,7 +23,6 @@ environment:
       job_depends_on: initialize
       PYTHON: 3.5
       WEEWX_URL: http://www.weewx.com/downloads/development_versions/
-      ENABLED: false
 
     - job_name: weewx4-py2
       job_group: build  
