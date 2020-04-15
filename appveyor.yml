@@ -31,6 +31,12 @@ environment:
       WEEWX_URL: http://www.weewx.com/downloads/development_versions/
       CODECOVIO_UPLOAD: true
 
+    - job_name: weewx3.7.1-py2
+      job_group: build
+      job_depends_on: initialize
+      WEEWX: 3.7.1
+      PYTHON: 2.7
+
     - job_name: weewx3-py2
       job_group: build
       job_depends_on: initialize
