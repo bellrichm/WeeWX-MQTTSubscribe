@@ -5,12 +5,12 @@ environment:
   # default values
   ENABLED: true
   APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
-  PYTHON: 3.6 
+  PYTHON: 3.6.9 
   WEEWX: 4.0.0b18
   WEEWX_URL: http://www.weewx.com/downloads/released_versions/
 
   matrix:
-    - job_name: weewx4-py3
+    - job_name: weewx4-py3.6.9
       job_group: build
       job_depends_on: initialize
       WEEWX_URL: http://www.weewx.com/downloads/development_versions/
@@ -18,30 +18,30 @@ environment:
       COVERALLS_UPLOAD: true
       SONAR_UPLOAD: true
 
-    - job_name: weewx4-py3.5
+    - job_name: weewx4-py3.5.9
       job_group: build  
       job_depends_on: initialize
-      PYTHON: 3.5
+      PYTHON: 3.5.9
       WEEWX_URL: http://www.weewx.com/downloads/development_versions/
 
-    - job_name: weewx4-py2
+    - job_name: weewx4-py2.7.17
       job_group: build  
       job_depends_on: initialize
-      PYTHON: 2.7
+      PYTHON: 2.7.17
       WEEWX_URL: http://www.weewx.com/downloads/development_versions/
       CODECOVIO_UPLOAD: true
 
-    - job_name: weewx3.7.1-py2
+    - job_name: weewx3.7.1-py2.7.17
       job_group: build
       job_depends_on: initialize
       WEEWX: 3.7.1
-      PYTHON: 2.7
+      PYTHON: 2.7.17
 
-    - job_name: weewx3-py2
+    - job_name: weewx3.9.2-py2.7.17
       job_group: build
       job_depends_on: initialize
       WEEWX: 3.9.2
-      PYTHON: 2.7
+      PYTHON: 2.7.17
 
     - job_name: initialize
       WEEWX_URL: http://www.weewx.com/downloads/development_versions/
