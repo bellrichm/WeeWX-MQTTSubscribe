@@ -25,7 +25,14 @@ Because there are [multiple methods to install WeeWX](http://weewx.com/docs/user
 Prior to making any updates/changes, always make a backup.
 
 ## Preqrequisites
-1. Install the paho MQTT client.
+|WeeWX version   |Python version                         |
+|----------------|---------------------------------------|
+|3.7.1 or greater|Python 2.7.x                           |
+|4.0.0 or greater|Python 2.7.x <br> Python 3.5 or greater| 
+
+See the [current MQTTSubscribe build/test matrix](https://ci.appveyor.com/project/bellrichm/weewx-mqttsubscribe) for the current WeeWX and python versions being tested.
+
+Paho MQTT python client.
 
     ```
     pip install paho-mqtt
