@@ -37,6 +37,13 @@ environment:
       WEEWX: 3.9.0
       PYTHON: 2.7.17
 
+    - job_name: weewx4-py3.9
+      job_group: build  
+      job_depends_on: initialize
+      PYTHON: 3.9
+      WEEWX_URL: http://www.weewx.com/downloads/development_versions/
+      CODECOVIO_UPLOAD: true
+
     - job_name: initialize
       WEEWX_URL: http://www.weewx.com/downloads/development_versions/
 
