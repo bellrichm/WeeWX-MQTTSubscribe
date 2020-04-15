@@ -5,12 +5,12 @@ environment:
   # default values
   ENABLED: true
   APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
-  PYTHON: 3.6.9 
+  PYTHON: 3.6.10
   WEEWX: 4.0.0b18
   WEEWX_URL: http://www.weewx.com/downloads/released_versions/
 
   matrix:
-    - job_name: weewx4-py3.6.9
+    - job_name: weewx4-py3.6.10
       job_group: build
       job_depends_on: initialize
       WEEWX_URL: http://www.weewx.com/downloads/development_versions/
