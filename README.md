@@ -27,7 +27,7 @@ Prior to making any updates/changes, always make a backup.
 ## Preqrequisites
 |WeeWX version   |Python version                         |
 |----------------|---------------------------------------|
-|3.7.1 or greater|Python 2.7.x                           |
+|3.9.0 or greater|Python 2.7.x                           |
 |4.0.0 or greater|Python 2.7.x <br> Python 3.5 or greater| 
 
 See the [current MQTTSubscribe build/test matrix](https://ci.appveyor.com/project/bellrichm/weewx-mqttsubscribe) for the current WeeWX and python versions being tested.
