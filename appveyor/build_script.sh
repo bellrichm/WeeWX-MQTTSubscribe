@@ -6,4 +6,11 @@ PYTHONPATH=./weewx/bin pylint ./bin/user/MQTTSubscribe.py -r n --msg-template="{
 rc=${PIPESTATUS[0]}
 detail=`cat pylint.txt`
 
-appveyor AddMessage "pylint $WEEWX $PYTHON: $rc" -Details "$detail"
+if [ $rc eq 0 ]; then
+  category="Information"
+if [ $rc gt 2 ]; then
+  category="Warning"
+else
+  category="Error"
+
+appveyor AddMessage "pylint weewx=$WEEWX python=$PYTHON rc=$rc" -Category $category -Details "$detail"
