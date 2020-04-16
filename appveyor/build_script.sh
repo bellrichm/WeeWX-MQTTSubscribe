@@ -6,9 +6,9 @@ PYTHONPATH=./weewx/bin pylint ./bin/user/MQTTSubscribe.py -r n --msg-template="{
 rc=${PIPESTATUS[0]}
 detail=`cat pylint.txt`
 
-if [ $rc eq 0 ]; then
+if [ $rc -eq 0 ]; then
   category="Information"
-if [ $rc gt 2 ]; then
+if [ $rc -gt 2 ]; then
   category="Warning"
 else
   category="Error"
