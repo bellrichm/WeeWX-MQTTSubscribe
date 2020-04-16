@@ -15,14 +15,12 @@ environment:
       job_depends_on: initialize
       PYTHON: 3.8
       WEEWX_URL: http://www.weewx.com/downloads/development_versions/
-      ENABLED: false
 
     - job_name: weewx4-py3.7.x
       job_group: build  
       job_depends_on: initialize
       PYTHON: 3.7
       WEEWX_URL: http://www.weewx.com/downloads/development_versions/
-      ENABLED: false
 
     - job_name: weewx4-py3.6.10
       job_group: build
@@ -31,14 +29,12 @@ environment:
       CODECOVIO_UPLOAD: true
       COVERALLS_UPLOAD: true
       SONAR_UPLOAD: true
-      ENABLED: false
 
     - job_name: weewx4-py3.5.9
       job_group: build  
       job_depends_on: initialize
       PYTHON: 3.5.9
       WEEWX_URL: http://www.weewx.com/downloads/development_versions/
-      ENABLED: false
 
     - job_name: weewx4-py2.7.17
       job_group: build  
@@ -52,7 +48,6 @@ environment:
       job_depends_on: initialize
       WEEWX: 3.9.0
       PYTHON: 2.7.17
-      ENABLED: false
 
     - job_name: weewx3.7.1-py2.7.17
       job_group: build
