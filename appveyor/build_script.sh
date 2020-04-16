@@ -12,5 +12,6 @@ if [ $rc gt 2 ]; then
   category="Warning"
 else
   category="Error"
+fi
 
 appveyor AddMessage "pylint weewx=$WEEWX python=$PYTHON rc=$rc" -Category $category -Details "$detail"
