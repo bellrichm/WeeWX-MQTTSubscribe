@@ -14,4 +14,4 @@ else
   category="Error"
 fi
 
-appveyor AddMessage "pylint weewx=$WEEWX python=$PYTHON rc=$rc" -Category $category -Details "$detail"
+appveyor AddMessage "pylint weewx=$WEEWX python=$PYTHON rc=$rc $category" -Details "$detail"
