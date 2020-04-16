@@ -1,11 +1,14 @@
 # pylint: disable=missing-docstring
 # pylint: disable=invalid-name
+# pylint: disable=too-few-public-methods
+from __future__ import print_function
+
 import locale
 import sys
 import time
 
-class weewx: # pylint: disable=invalid-name
-    class units:
+class weewx(object): # pylint: disable=invalid-name
+    class units(object):
         METRIC = 0x10
         METRICWX = 0x11
         US = 0x01
@@ -19,7 +22,7 @@ class weewx: # pylint: disable=invalid-name
         def to_std_system(self):
             pass
 
-    class accum:
+    class accum(object):
         def Accum(self):
             pass
 
@@ -29,20 +32,20 @@ class weewx: # pylint: disable=invalid-name
     class NEW_LOOP_PACKET(object):
         """Event issued when a new LOOP packet is available. The event contains
         attribute 'packet', which is the new LOOP packet."""
-    class engine:
+    class engine(object):
         class StdService(object):
             def __init__(self, engine, config_dict):
                 pass
             def bind(self, p1, p2):
                 pass
-    class drivers: # pylint: disable=invalid-name
-        class AbstractDevice:
+    class drivers(object): # pylint: disable=invalid-name
+        class AbstractDevice(object):
             pass
-        class AbstractConfEditor:
+        class AbstractConfEditor(object):
             pass
 
-class weeutil:
-    class weeutil():
+class weeutil(object):
+    class weeutil(object):
         class TimeSpan(tuple):
             """Represents a time span, exclusive on the left, inclusive on the right."""
 

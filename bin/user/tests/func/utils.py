@@ -1,5 +1,6 @@
 # pylint: disable=missing-docstring
 # pylint: disable=fixme
+from __future__ import print_function
 
 import json
 import sys
