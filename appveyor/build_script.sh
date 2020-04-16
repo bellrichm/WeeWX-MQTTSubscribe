@@ -8,7 +8,7 @@ detail=`cat pylint.txt`
 
 if [ $rc -eq 0 ]; then
   category="Information"
-if [ $rc -gt 2 ]; then
+elif [ $rc -gt 2 ]; then
   category="Warning"
 else
   category="Error"
