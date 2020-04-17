@@ -219,7 +219,7 @@ try: # pragma: no cover
         if logging_level:
             weewx.debug = logging_level
 
-        weeutil.logger.setup('wee_MQTTSS', {})
+        weeutil.logger.setup('wee_MQTTSS', {}) # weewx3 false positive, code never reached pylint: disable=no-member
 
         log = logging.getLogger(__name__)
         # ToDo - setup customized logger
