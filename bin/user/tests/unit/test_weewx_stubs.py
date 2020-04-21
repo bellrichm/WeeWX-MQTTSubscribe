@@ -8,6 +8,8 @@ import sys
 import time
 
 class weewx(object): # pylint: disable=invalid-name
+    debug = 2
+
     class units(object):
         METRIC = 0x10
         METRICWX = 0x11
@@ -149,6 +151,10 @@ try:
             if console:
                 self._logmsg.addHandler(logging.StreamHandler(sys.stdout))
 
+        def trace(self, msg):
+            """ Log trace messages. """
+            self._logmsg.debug(msg)
+
         def debug(self, msg):
             """ Log debug messages. """
             self._logmsg.debug(msg)
@@ -168,6 +174,10 @@ except ImportError: # pragma: no cover
         def __init__(self, console=None):
             syslog.setlogmask(syslog.LOG_UPTO(syslog.LOG_ERR))
             self.console = console
+
+        def trace(self, msg):
+            """ Log trace messages. """
+            self._logmsg(syslog.LOG_DEBUG, msg)
 
         def debug(self, msg):
             """ Log debug messages. """
