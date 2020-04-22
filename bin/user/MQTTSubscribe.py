@@ -1035,8 +1035,7 @@ class MQTTSubscribeService(StdService):
 
 def loader(config_dict, engine): # (Need to match function signature) pylint: disable=unused-argument
     """ Load and return the driver. """
-    config = configobj.ConfigObj(config_dict)
-    return MQTTSubscribeDriver(**config[DRIVER_NAME])
+    return MQTTSubscribeDriver(**config_dict[DRIVER_NAME])
 
 def confeditor_loader():
     """ Load and return the configuration editor. """
