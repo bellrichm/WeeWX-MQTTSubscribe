@@ -238,7 +238,7 @@ try: # pragma: no cover
 
         def trace(self, msg):
             """ Log trace messages. """
-            if weewx.debug > 2:
+            if weewx.debug > 1:
                 self._logmsg.debug(msg)
 
         def debug(self, msg):
@@ -274,7 +274,7 @@ except ImportError: # pragma: no cover
 
         def trace(self, msg):
             """ Log trace messages. """
-            if weewx.debug > 2:
+            if weewx.debug > 1:
                 self._logmsg(syslog.LOG_DEBUG, msg)
 
         def debug(self, msg):
