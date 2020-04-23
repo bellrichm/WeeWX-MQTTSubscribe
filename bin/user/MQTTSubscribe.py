@@ -214,12 +214,12 @@ else:
 try: # pragma: no cover
     import weeutil.logger
     import logging
-    def setup_logging(logging_level):
+    def setup_logging(logging_level, config_dict):
         """ Setup logging for running in standalone mode."""
         if logging_level:
             weewx.debug = logging_level
 
-        weeutil.logger.setup('wee_MQTTSS', {}) # weewx3 false positive, code never reached pylint: disable=no-member
+        weeutil.logger.setup('wee_MQTTSS', config_dict) # weewx3 false positive, code never reached pylint: disable=no-member
 
         log = logging.getLogger(__name__)
         # ToDo - setup customized logger
@@ -254,7 +254,7 @@ try: # pragma: no cover
             self._logmsg.error(msg)
 except ImportError: # pragma: no cover
     import syslog
-    def setup_logging(logging_level):
+    def setup_logging(logging_level, config_dict): # Need to match signature pylint: disable=unused-argument
         """ Setup logging for running in standalone mode."""
         syslog.openlog('wee_MQTTSS', syslog.LOG_PID | syslog.LOG_CONS)
         if logging_level:
@@ -1251,11 +1251,11 @@ if __name__ == '__main__': # pragma: no cover
         delay = options.delay
         units = weewx.units.unit_constants[options.units]
 
-        setup_logging(options.verbose)
-
         config_path = os.path.abspath(options.config_file)
 
         config_dict = configobj.ConfigObj(config_path, file_error=True)
+
+        setup_logging(options.verbose, config_dict)
 
         config_topics(config_dict, options.topics)
 
