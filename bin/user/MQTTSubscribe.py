@@ -188,6 +188,7 @@ from __future__ import print_function
 import datetime
 import json
 import locale
+import logging
 import platform
 import random
 import re
@@ -213,7 +214,6 @@ else:
 
 try: # pragma: no cover
     import weeutil.logger
-    import logging
     def setup_logging(logging_level, config_dict):
         """ Setup logging for running in standalone mode."""
         if logging_level:
@@ -223,15 +223,23 @@ try: # pragma: no cover
 
     class Logger(object):
         """ The logging class. """
-        def __init__(self, filename=None, console=None):
+        def __init__(self, level='NOTSET', filename=None, console=None):
+            # Setup custom TRACE level
+            self.trace_level = 5
+            if logging.getLevelName(self.trace_level) == 'Level 5':
+                logging.addLevelName(self.trace_level, "TRACE")
+
             self._logmsg = logging.getLogger(__name__)
             if console:
                 self._logmsg.addHandler(logging.StreamHandler(sys.stdout))
 
+            # currently does not deal with any parent handlers
+            self.level = logging._checkLevel(level) # not sure there is a better way pylint: disable=protected-access
+            self._logmsg.setLevel(self.level)
             if filename is not None:
                 formatter = logging.Formatter("%(levelname)s %(message)s", "%Y-%m-%d %H:%M:%S")
                 file_handler = logging.FileHandler(filename, mode='w')
-                file_handler.setLevel(logging.DEBUG)
+                file_handler.setLevel(self.level)
                 file_handler.setFormatter(formatter)
                 self._logmsg.addHandler(file_handler)
 
@@ -245,8 +253,7 @@ try: # pragma: no cover
 
         def trace(self, msg):
             """ Log trace messages. """
-            if weewx.debug > 1:
-                self._logmsg.debug(msg)
+            self._logmsg.log(self.trace_level, msg)
 
         def debug(self, msg):
             """ Log debug messages. """
@@ -271,7 +278,13 @@ except ImportError: # pragma: no cover
 
     class Logger(object):
         """ The logging class. """
-        def __init__(self, console=None):
+        def __init__(self, level='NOTSET', filename=None, console=None): # Need to match signature pylint: disable=unused-argument
+            # Setup custom TRACE level
+            self.trace_level = 5
+            if logging.getLevelName(self.trace_level) == 'Level 5':
+                logging.addLevelName(self.trace_level, "TRACE")
+
+            self.level = logging._checkLevel(level) # not sure there is a better way pylint: disable=protected-access
             self.console = console
 
         def log_environment(self):
@@ -284,7 +297,7 @@ except ImportError: # pragma: no cover
 
         def trace(self, msg):
             """ Log trace messages. """
-            if weewx.debug > 1:
+            if self.level == self.trace_level:
                 self._logmsg(syslog.LOG_DEBUG, msg)
 
         def debug(self, msg):
