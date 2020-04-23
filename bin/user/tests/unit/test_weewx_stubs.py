@@ -8,6 +8,7 @@ import sys
 import time
 
 class weewx(object): # pylint: disable=invalid-name
+    __version__ = "unknown"
     debug = 2
 
     class units(object):

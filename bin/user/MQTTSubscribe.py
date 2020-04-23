@@ -224,17 +224,19 @@ try: # pragma: no cover
         log = logging.getLogger(__name__)
         # ToDo - setup customized logger
 
-        log.info("Initializing weewx version %s", weewx.__version__)
-        log.info("Using Python %s", sys.version)
-        log.info("Platform %s", platform.platform())
-        log.info("Locale is '%s'", locale.setlocale(locale.LC_ALL))
-
     class Logger(object):
         """ The logging class. """
         def __init__(self, console=None):
             self._logmsg = logging.getLogger(__name__)
             if console:
                 self._logmsg.addHandler(logging.StreamHandler(sys.stdout))
+
+        def log_environment(self):
+            """ Log the environment we are running in. """
+            self.info("Using weewx version %s" % weewx.__version__)
+            self.info("Using Python %s" % sys.version)
+            self.info("Platform %s" % platform.platform())
+            self.info("Locale is '%s'" % locale.setlocale(locale.LC_ALL))
 
         def trace(self, msg):
             """ Log trace messages. """
@@ -262,15 +264,18 @@ except ImportError: # pragma: no cover
         else:
             syslog.setlogmask(syslog.LOG_UPTO(syslog.LOG_INFO))
 
-        syslog.syslog(syslog.LOG_INFO, "wee_MQTTSS: Initializing weewx version %s" % weewx.__version__)
-        syslog.syslog(syslog.LOG_INFO, "wee_MQTTSS: Using Python %s" % sys.version)
-        syslog.syslog(syslog.LOG_INFO, "wee_MQTTSS: Platform %s" % platform.platform())
-        syslog.syslog(syslog.LOG_INFO, "wee_MQTTSS: Locale is '%s'" % locale.setlocale(locale.LC_ALL))
-
     class Logger(object):
         """ The logging class. """
         def __init__(self, console=None):
             self.console = console
+
+        def log_environment(self):
+            """ Log the environment we are running in. """
+            # Since WeeWX logs this, only log it when debugging
+            self.debug("Using weewx version %s" % weewx.__version__)
+            self.debug("Using Python %s" % sys.version)
+            self.debug("Platform %s" % platform.platform())
+            self.debug("Locale is '%s'" % locale.setlocale(locale.LC_ALL))
 
         def trace(self, msg):
             """ Log trace messages. """
@@ -956,6 +961,7 @@ class MQTTSubscribeService(StdService):
         service_dict = config_dict.get('MQTTSubscribeService', {})
         console = to_bool(service_dict.get('console', False))
         self.logger = Logger(console)
+        self.logger.log_environment()
 
         self.enable = to_bool(service_dict.get('enable', True))
         if not self.enable:
@@ -1047,6 +1053,7 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice): # (methods not used) py
     def __init__(self, **stn_dict):
         console = to_bool(stn_dict.get('console', False))
         self.logger = Logger(console)
+        self.logger.log_environment()
 
         self.wait_before_retry = float(stn_dict.get('wait_before_retry', 2))
         self._archive_interval = to_int(stn_dict.get('archive_interval', 300))
