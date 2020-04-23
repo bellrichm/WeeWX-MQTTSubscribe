@@ -185,6 +185,7 @@ Configuration:
 
 from __future__ import with_statement
 from __future__ import print_function
+import copy
 import datetime
 import json
 import locale
@@ -233,15 +234,35 @@ try: # pragma: no cover
             if console:
                 self._logmsg.addHandler(logging.StreamHandler(sys.stdout))
 
-            # currently does not deal with any parent handlers
             self.level = logging._checkLevel(level) # not sure there is a better way pylint: disable=protected-access
-            self._logmsg.setLevel(self.level)
+            if self.level > 0:
+                self._logmsg.propagate = 0
+                self._logmsg.setLevel(self.level)
+                # Get a copy of all the handlers
+                handlers = self.get_handlers(self._logmsg)
+                for handler in handlers:
+                    handler.setLevel(self.level)
+                    self._logmsg.addHandler(handler)
+
             if filename is not None:
                 formatter = logging.Formatter("%(levelname)s %(message)s", "%Y-%m-%d %H:%M:%S")
                 file_handler = logging.FileHandler(filename, mode='w')
                 file_handler.setLevel(self.level)
                 file_handler.setFormatter(formatter)
                 self._logmsg.addHandler(file_handler)
+
+        def get_handlers(self, logger):
+            """ recursively get parent handlers """
+            handlers = []
+            for handler in logger.handlers:
+                # Unfortunately cannot make a deep copy, but this seems safe
+                # we only change the logging level...
+                handlers.append(copy.copy(handler))
+
+            if logger.propagate and logger.parent is not None:
+                handlers.extend(self.get_handlers(logger.parent))
+
+            return handlers
 
         def log_environment(self):
             """ Log the environment we are running in. """
