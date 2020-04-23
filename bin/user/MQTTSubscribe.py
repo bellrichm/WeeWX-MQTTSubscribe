@@ -239,7 +239,7 @@ try: # pragma: no cover
                 self._logmsg.propagate = 0
                 self._logmsg.setLevel(self.level)
                 # Get a copy of all the handlers
-                handlers = self.get_handlers(self._logmsg)
+                handlers = self.get_handlers(self._logmsg.parent)
                 for handler in handlers:
                     handler.setLevel(self.level)
                     self._logmsg.addHandler(handler)
@@ -998,8 +998,10 @@ class MQTTSubscribeService(StdService):
         super(MQTTSubscribeService, self).__init__(engine, config_dict)
 
         service_dict = config_dict.get('MQTTSubscribeService', {})
+        logging_filename = service_dict.get('logging_filename', None)
+        logging_level = service_dict.get('logging_level', 'NOTSET')
         console = to_bool(service_dict.get('console', False))
-        self.logger = Logger(console=console)
+        self.logger = Logger(level=logging_level, filename=logging_filename, console=console)
         self.logger.log_environment()
 
         self.enable = to_bool(service_dict.get('enable', True))
@@ -1091,7 +1093,9 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice): # (methods not used) py
 
     def __init__(self, **stn_dict):
         console = to_bool(stn_dict.get('console', False))
-        self.logger = Logger(console=console)
+        logging_filename = stn_dict.get('logging_filename', None)
+        logging_level = stn_dict.get('logging_level', 'NOTSET')
+        self.logger = Logger(level=logging_level, filename=logging_filename, console=console)
         self.logger.log_environment()
 
         self.wait_before_retry = float(stn_dict.get('wait_before_retry', 2))
