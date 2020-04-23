@@ -221,9 +221,6 @@ try: # pragma: no cover
 
         weeutil.logger.setup('wee_MQTTSS', config_dict) # weewx3 false positive, code never reached pylint: disable=no-member
 
-        log = logging.getLogger(__name__)
-        # ToDo - setup customized logger
-
     class Logger(object):
         """ The logging class. """
         def __init__(self, console=None):
