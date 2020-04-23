@@ -223,17 +223,25 @@ try: # pragma: no cover
 
     class Logger(object):
         """ The logging class. """
-        def __init__(self, console=None):
+        def __init__(self, filename=None, console=None):
             self._logmsg = logging.getLogger(__name__)
             if console:
                 self._logmsg.addHandler(logging.StreamHandler(sys.stdout))
 
+            if filename is not None:
+                formatter = logging.Formatter("%(levelname)s %(message)s", "%Y-%m-%d %H:%M:%S")
+                file_handler = logging.FileHandler(filename, mode='w')
+                file_handler.setLevel(logging.DEBUG)
+                file_handler.setFormatter(formatter)
+                self._logmsg.addHandler(file_handler)
+
         def log_environment(self):
             """ Log the environment we are running in. """
-            self.info("Using weewx version %s" % weewx.__version__)
-            self.info("Using Python %s" % sys.version)
-            self.info("Platform %s" % platform.platform())
-            self.info("Locale is '%s'" % locale.setlocale(locale.LC_ALL))
+            # Since WeeWX logs this, only log it when debugging
+            self.debug("Using weewx version %s" % weewx.__version__)
+            self.debug("Using Python %s" % sys.version)
+            self.debug("Platform %s" % platform.platform())
+            self.debug("Locale is '%s'" % locale.setlocale(locale.LC_ALL))
 
         def trace(self, msg):
             """ Log trace messages. """
@@ -957,7 +965,7 @@ class MQTTSubscribeService(StdService):
 
         service_dict = config_dict.get('MQTTSubscribeService', {})
         console = to_bool(service_dict.get('console', False))
-        self.logger = Logger(console)
+        self.logger = Logger(console=console)
         self.logger.log_environment()
 
         self.enable = to_bool(service_dict.get('enable', True))
@@ -1049,7 +1057,7 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice): # (methods not used) py
 
     def __init__(self, **stn_dict):
         console = to_bool(stn_dict.get('console', False))
-        self.logger = Logger(console)
+        self.logger = Logger(console=console)
         self.logger.log_environment()
 
         self.wait_before_retry = float(stn_dict.get('wait_before_retry', 2))
