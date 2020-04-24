@@ -308,6 +308,10 @@ except ImportError: # pragma: no cover
             self.level = logging._checkLevel(level) # not sure there is a better way pylint: disable=protected-access
             self.console = console
 
+            self.file = None
+            if filename is not None:
+                self.file = open(filename, 'w')
+
         def log_environment(self):
             """ Log the environment we are running in. """
             # Since WeeWX logs this, only log it when debugging
@@ -337,6 +341,8 @@ except ImportError: # pragma: no cover
             syslog.syslog(dst, '%s: %s' % (__name__, msg))
             if self.console:
                 print('%s: %s' % (__name__, msg))
+            if self.file:
+                self.file.write('%s: %s\n' % (__name__, msg))
 
 VERSION = '1.5.3-rc03'
 DRIVER_NAME = 'MQTTSubscribeDriver'
