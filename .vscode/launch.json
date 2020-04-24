@@ -12,6 +12,7 @@
         "console": "integratedTerminal"
     },
         {
+            "justMyCode": true,
             "name": "Service: Loop",
             "type": "python",
             "request": "launch",

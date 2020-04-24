@@ -185,9 +185,11 @@ Configuration:
 
 from __future__ import with_statement
 from __future__ import print_function
+import copy
 import datetime
 import json
 import locale
+import logging
 import platform
 import random
 import re
@@ -213,28 +215,66 @@ else:
 
 try: # pragma: no cover
     import weeutil.logger
-    import logging
-    def setup_logging(logging_level):
+    def setup_logging(logging_level, config_dict):
         """ Setup logging for running in standalone mode."""
         if logging_level:
             weewx.debug = logging_level
 
-        weeutil.logger.setup('wee_MQTTSS', {}) # weewx3 false positive, code never reached pylint: disable=no-member
-
-        log = logging.getLogger(__name__)
-        # ToDo - setup customized logger
-
-        log.info("Initializing weewx version %s", weewx.__version__)
-        log.info("Using Python %s", sys.version)
-        log.info("Platform %s", platform.platform())
-        log.info("Locale is '%s'", locale.setlocale(locale.LC_ALL))
+        weeutil.logger.setup('wee_MQTTSS', config_dict) # weewx3 false positive, code never reached pylint: disable=no-member
 
     class Logger(object):
         """ The logging class. """
-        def __init__(self, console=None):
+        def __init__(self, level='NOTSET', filename=None, console=None):
+            # Setup custom TRACE level
+            self.trace_level = 5
+            if logging.getLevelName(self.trace_level) == 'Level 5':
+                logging.addLevelName(self.trace_level, "TRACE")
+
             self._logmsg = logging.getLogger(__name__)
             if console:
                 self._logmsg.addHandler(logging.StreamHandler(sys.stdout))
+
+            self.level = logging._checkLevel(level) # not sure there is a better way pylint: disable=protected-access
+            if self.level > 0:
+                self._logmsg.propagate = 0
+                self._logmsg.setLevel(self.level)
+                # Get a copy of all the handlers
+                handlers = self.get_handlers(self._logmsg.parent)
+                for handler in handlers:
+                    handler.setLevel(self.level)
+                    self._logmsg.addHandler(handler)
+
+            if filename is not None:
+                formatter = logging.Formatter("%(levelname)s %(message)s", "%Y-%m-%d %H:%M:%S")
+                file_handler = logging.FileHandler(filename, mode='w')
+                file_handler.setLevel(self.level)
+                file_handler.setFormatter(formatter)
+                self._logmsg.addHandler(file_handler)
+
+        def get_handlers(self, logger):
+            """ recursively get parent handlers """
+            handlers = []
+            for handler in logger.handlers:
+                # Unfortunately cannot make a deep copy, but this seems safe
+                # we only change the logging level...
+                handlers.append(copy.copy(handler))
+
+            if logger.propagate and logger.parent is not None:
+                handlers.extend(self.get_handlers(logger.parent))
+
+            return handlers
+
+        def log_environment(self):
+            """ Log the environment we are running in. """
+            # Since WeeWX logs this, only log it when debugging
+            self.debug("Using weewx version %s" % weewx.__version__)
+            self.debug("Using Python %s" % sys.version)
+            self.debug("Platform %s" % platform.platform())
+            self.debug("Locale is '%s'" % locale.setlocale(locale.LC_ALL))
+
+        def trace(self, msg):
+            """ Log trace messages. """
+            self._logmsg.log(self.trace_level, msg)
 
         def debug(self, msg):
             """ Log debug messages. """
@@ -249,7 +289,7 @@ try: # pragma: no cover
             self._logmsg.error(msg)
 except ImportError: # pragma: no cover
     import syslog
-    def setup_logging(logging_level):
+    def setup_logging(logging_level, config_dict): # Need to match signature pylint: disable=unused-argument
         """ Setup logging for running in standalone mode."""
         syslog.openlog('wee_MQTTSS', syslog.LOG_PID | syslog.LOG_CONS)
         if logging_level:
@@ -257,15 +297,33 @@ except ImportError: # pragma: no cover
         else:
             syslog.setlogmask(syslog.LOG_UPTO(syslog.LOG_INFO))
 
-        syslog.syslog(syslog.LOG_INFO, "wee_MQTTSS: Initializing weewx version %s" % weewx.__version__)
-        syslog.syslog(syslog.LOG_INFO, "wee_MQTTSS: Using Python %s" % sys.version)
-        syslog.syslog(syslog.LOG_INFO, "wee_MQTTSS: Platform %s" % platform.platform())
-        syslog.syslog(syslog.LOG_INFO, "wee_MQTTSS: Locale is '%s'" % locale.setlocale(locale.LC_ALL))
-
     class Logger(object):
         """ The logging class. """
-        def __init__(self, console=None):
+        def __init__(self, level='NOTSET', filename=None, console=None): # Need to match signature pylint: disable=unused-argument
+            # Setup custom TRACE level
+            self.trace_level = 5
+            if logging.getLevelName(self.trace_level) == 'Level 5':
+                logging.addLevelName(self.trace_level, "TRACE")
+
+            self.level = logging._checkLevel(level) # not sure there is a better way pylint: disable=protected-access
             self.console = console
+
+            self.file = None
+            if filename is not None:
+                self.file = open(filename, 'w')
+
+        def log_environment(self):
+            """ Log the environment we are running in. """
+            # Since WeeWX logs this, only log it when debugging
+            self.debug("Using weewx version %s" % weewx.__version__)
+            self.debug("Using Python %s" % sys.version)
+            self.debug("Platform %s" % platform.platform())
+            self.debug("Locale is '%s'" % locale.setlocale(locale.LC_ALL))
+
+        def trace(self, msg):
+            """ Log trace messages. """
+            if self.level == self.trace_level:
+                self._logmsg(syslog.LOG_DEBUG, msg)
 
         def debug(self, msg):
             """ Log debug messages. """
@@ -283,6 +341,8 @@ except ImportError: # pragma: no cover
             syslog.syslog(dst, '%s: %s' % (__name__, msg))
             if self.console:
                 print('%s: %s' % (__name__, msg))
+            if self.file:
+                self.file.write('%s: %s\n' % (__name__, msg))
 
 VERSION = '1.5.3-rc03'
 DRIVER_NAME = 'MQTTSubscribeDriver'
@@ -379,6 +439,8 @@ class TopicManager(object):
 
     def append_data(self, topic, in_data, fieldname=None):
         """ Add the MQTT data to the queue. """
+        self.logger.debug("TopicManager data-> incoming %s: %s"
+                          %(topic, to_sorted_string(in_data)))
         data = dict(in_data)
         payload = {}
 
@@ -392,7 +454,7 @@ class TopicManager(object):
 
         payload['wind_data'] = False
         if fieldname in self.wind_fields:
-            self.logger.debug("TopicManager Adding wind data %s %s: %s"
+            self.logger.trace("TopicManager Adding wind data %s %s: %s"
                               % (fieldname, weeutil.weeutil.timestamp_to_string(data['dateTime']), to_sorted_string(data)))
             payload['wind_data'] = fieldname
 
@@ -402,7 +464,7 @@ class TopicManager(object):
         if datetime_format and 'dateTime' in data:
             data['dateTime'] = self._to_epoch(data['dateTime'], datetime_format, self._get_value('offset_format', topic))
 
-        self.logger.debug("TopicManager Added to queue %s %s %s: %s"
+        self.logger.trace("TopicManager Added to queue %s %s %s: %s"
                           %(topic, self._lookup_topic(topic),
                             weeutil.weeutil.timestamp_to_string(data['dateTime']), to_sorted_string(data)))
         payload['data'] = data
@@ -411,7 +473,7 @@ class TopicManager(object):
     def peek_datetime(self, topic):
         """ Return the date/time of the first element in the queue. """
         queue = self._get_queue(topic)
-        self.logger.debug("TopicManager queue size is: %i" % len(queue))
+        self.logger.trace("TopicManager queue size is: %i" % len(queue))
         datetime_value = None
         if queue:
             datetime_value = queue[0]['data']['dateTime']
@@ -421,7 +483,7 @@ class TopicManager(object):
     def peek_last_datetime(self, topic):
         """ Return the date/time of the last element in the queue. """
         queue = self._get_queue(topic)
-        self.logger.debug("TopicManager queue size is: %i" % len(queue))
+        self.logger.trace("TopicManager queue size is: %i" % len(queue))
         datetime_value = 0
         if queue:
             datetime_value = queue[-1]['data']['dateTime']
@@ -435,29 +497,29 @@ class TopicManager(object):
     def get_data(self, topic, end_ts=MAXSIZE):
         """ Get data off the queue of MQTT data. """
         queue = self._get_queue(topic)
-        self.logger.debug("TopicManager starting queue %s size is: %i" %(topic, len(queue)))
+        self.logger.trace("TopicManager starting queue %s size is: %i" %(topic, len(queue)))
         collector = CollectData(self.wind_fields)
         while queue:
             if queue[0]['data']['dateTime'] > end_ts:
-                self.logger.debug("TopicManager leaving queue: %s size: %i content: %s" %(topic, len(queue), queue[0]))
+                self.logger.trace("TopicManager leaving queue: %s size: %i content: %s" %(topic, len(queue), queue[0]))
                 break
             payload = queue.popleft()
             wind_field = payload['wind_data']
             if wind_field:
-                self.logger.debug("TopicManager processing wind data %s %s: %s."
+                self.logger.trace("TopicManager processing wind data %s %s: %s."
                                   %(wind_field, weeutil.weeutil.timestamp_to_string(payload['data']['dateTime']), to_sorted_string(payload)))
                 data = collector.add_data(wind_field, payload['data'])
             else:
                 data = payload['data']
             if data:
-                self.logger.debug("TopicManager retrieved queue %s %s: %s"
-                                  %(topic, weeutil.weeutil.timestamp_to_string(data['dateTime']), to_sorted_string(data)))
+                self.logger.debug("TopicManager data-> outgoing %s: %s"
+                                  %(topic, to_sorted_string(data)))
                 yield data
 
         data = collector.get_data()
         if data:
-            self.logger.debug("TopicManager retrieved wind queue final %s %s: %s"
-                              %(topic, weeutil.weeutil.timestamp_to_string(data['dateTime']), to_sorted_string(data)))
+            self.logger.debug("TopicManager data-> outgoing collected %s: %s"
+                              % (topic, to_sorted_string(data)))
             yield data
 
     def get_accumulated_data(self, topic, start_time, end_time, units):
@@ -471,25 +533,25 @@ class TopicManager(object):
         adjust_end_time = self._get_value('adjust_end_time', topic)
 
         if ignore_start_time:
-            self.logger.debug("TopicManager ignoring start time.")
+            self.logger.trace("TopicManager ignoring start time.")
             start_ts = self.peek_datetime(topic) - adjust_start_time
         else:
             start_ts = start_time - adjust_start_time
 
         if ignore_end_time:
-            self.logger.debug("TopicManager ignoring end time.")
+            self.logger.trace("TopicManager ignoring end time.")
             end_ts = self.peek_last_datetime(topic) + adjust_end_time
         else:
             end_ts = end_time + adjust_end_time
 
-        self.logger.debug("TopicManager processing interval: %f %f" %(start_ts, end_ts))
+        self.logger.trace("TopicManager processing interval: %f %f" %(start_ts, end_ts))
         accumulator = weewx.accum.Accum(weeutil.weeutil.TimeSpan(start_ts, end_ts))
 
         for data in self.get_data(topic, end_ts):
             if data:
                 try:
-                    self.logger.debug("TopicManager data to accumulate: %s %s"
-                                      % (weeutil.weeutil.timestamp_to_string(data['dateTime']), to_sorted_string(data)))
+                    self.logger.trace("TopicManager input to accumulate %s %s: %s"
+                                      % (topic, weeutil.weeutil.timestamp_to_string(data['dateTime']), to_sorted_string(data)))
                     accumulator.addRecord(data)
                 except weewx.accum.OutOfSpan:
                     self.logger.info("TopicManager ignoring record outside of interval %f %f %f %s"
@@ -500,18 +562,20 @@ class TopicManager(object):
         target_data = {}
         if not accumulator.isEmpty:
             aggregate_data = accumulator.getRecord()
-            self.logger.debug("TopicManager data prior to conversion is: %s %s"
-                              % (weeutil.weeutil.timestamp_to_string(aggregate_data['dateTime']), to_sorted_string(aggregate_data)))
+            self.logger.trace("TopicManager prior to conversion is %s %s: %s"
+                              % (topic, weeutil.weeutil.timestamp_to_string(aggregate_data['dateTime']), to_sorted_string(aggregate_data)))
             target_data = weewx.units.to_std_system(aggregate_data, units)
-            self.logger.debug("TopicManager data after to conversion is: %s %s"
-                              % (weeutil.weeutil.timestamp_to_string(target_data['dateTime']), to_sorted_string(target_data)))
+            self.logger.trace("TopicManager after conversion is %s %s: %s"
+                              % (topic, weeutil.weeutil.timestamp_to_string(target_data['dateTime']), to_sorted_string(target_data)))
         else:
-            self.logger.debug("TopicManager accumulator was empty")
+            self.logger.trace("TopicManager accumulator was empty")
 
         # Force dateTime to packet's datetime so that the packet datetime is not updated to the MQTT datetime
         if ignore_end_time:
             target_data['dateTime'] = end_time
 
+        self.logger.debug("TopicManager data-> outgoing accumulated %s: %s"
+                          % (topic, to_sorted_string(target_data)))
         return target_data
 
     def _queue_size_check(self, queue, max_queue):
@@ -551,7 +615,7 @@ class TopicManager(object):
         return None
 
     def _to_epoch(self, datetime_input, datetime_format, offset_format=None):
-        self.logger.debug("TopicManager datetime conversion datetime_input:%s datetime_format:%s offset_format:%s"
+        self.logger.trace("TopicManager datetime conversion datetime_input:%s datetime_format:%s offset_format:%s"
                           %(datetime_input, datetime_format, offset_format))
         if offset_format:
             offset_start = len(datetime_input)-len(offset_format)
@@ -563,14 +627,14 @@ class TopicManager(object):
 
             datetime_string = datetime_input[:offset_start-1].strip()
 
-            self.logger.debug("TopicManager datetime conversion offset:%s sign:%s" %(offset, sign))
+            self.logger.trace("TopicManager datetime conversion offset:%s sign:%s" %(offset, sign))
 
         else:
             datetime_string = datetime_input
             offset_delta = datetime.timedelta(hours=0, minutes=0)
 
         epoch = time.mktime((datetime.datetime.strptime(datetime_string, datetime_format) + offset_delta).timetuple())
-        self.logger.debug("TopicManager datetime conversion datetime_string:%s epoch:%s" %(datetime_string, epoch))
+        self.logger.trace("TopicManager datetime conversion datetime_string:%s epoch:%s" %(datetime_string, epoch))
 
         return epoch
 
@@ -684,22 +748,22 @@ class MessageCallbackProvider(object):
         return dict(_items())
 
     def _calc_increment(self, observation, current_total, previous_total):
-        self.logger.info("MessageCallbackProvider _calc_increment calculating increment " \
+        self.logger.trace("MessageCallbackProvider _calc_increment calculating increment " \
                          "for %s with current: %f and previous %s values."
-                         % (observation, current_total, (previous_total is None and 'None' or str(previous_total))))
+                          % (observation, current_total, (previous_total is None and 'None' or str(previous_total))))
 
         if current_total is not None and previous_total is not None:
             if current_total >= previous_total:
                 return current_total - previous_total
 
-            self.logger.info("MessageCallbackProvider _calc_increment skipping calculating increment " \
+            self.logger.trace("MessageCallbackProvider _calc_increment skipping calculating increment " \
                              "for %s with current: %f and previous %f values."
-                             % (observation, current_total, previous_total))
+                              % (observation, current_total, previous_total))
 
         return None
 
     def _log_message(self, msg):
-        self.logger.debug("MessageCallbackProvider For %s has QOS of %i and retain of %s received: %s"
+        self.logger.trace("MessageCallbackProvider For %s has QOS of %i and retain of %s received: %s"
                           %(msg.topic, msg.qos, msg.retain, msg.payload))
 
     def _log_exception(self, method, exception, msg):
@@ -860,7 +924,7 @@ class MQTTSubscribe(object):
             mqtt.MQTT_LOG_INFO: self.logger.info,
             mqtt.MQTT_LOG_NOTICE: self.logger.info,
             mqtt.MQTT_LOG_WARNING: self.logger.info,
-            mqtt.MQTT_LOG_ERR: self.logger.debug,
+            mqtt.MQTT_LOG_ERR: self.logger.error,
             mqtt.MQTT_LOG_DEBUG: self.logger.debug
         }
 
@@ -940,8 +1004,11 @@ class MQTTSubscribeService(StdService):
         super(MQTTSubscribeService, self).__init__(engine, config_dict)
 
         service_dict = config_dict.get('MQTTSubscribeService', {})
+        logging_filename = service_dict.get('logging_filename', None)
+        logging_level = service_dict.get('logging_level', 'NOTSET')
         console = to_bool(service_dict.get('console', False))
-        self.logger = Logger(console)
+        self.logger = Logger(level=logging_level, filename=logging_filename, console=console)
+        self.logger.log_environment()
 
         self.enable = to_bool(service_dict.get('enable', True))
         if not self.enable:
@@ -983,15 +1050,19 @@ class MQTTSubscribeService(StdService):
             self.end_ts = event.packet['dateTime']
 
             for topic in self.subscriber.subscribed_topics: # topics might not be cached.. therefore use subscribed?
-                self.logger.debug("MQTTSubscribeService packet prior to update is: %s %s"
+                self.logger.trace("MQTTSubscribeService packet prior to update is: %s %s"
                                   % (weeutil.weeutil.timestamp_to_string(event.packet['dateTime']),
                                      to_sorted_string(event.packet)))
                 target_data = self.subscriber.get_accumulated_data(topic,
                                                                    start_ts, self.end_ts, event.packet['usUnits'])
                 event.packet.update(target_data)
-                self.logger.debug("MQTTSubscribeService packet after update is: %s %s"
+                self.logger.trace("MQTTSubscribeService packet after update is: %s %s"
                                   % (weeutil.weeutil.timestamp_to_string(event.packet['dateTime']),
                                      to_sorted_string(event.packet)))
+
+            self.logger.debug("MQTTSubscribeService data-> final packet is %s: %s"
+                              % (weeutil.weeutil.timestamp_to_string(event.packet['dateTime']),
+                                 to_sorted_string(event.packet)))
 
     # this works for hardware generation, but software generation does not 'quality control'
     # the archive record, so this data is not 'QC' in this case.
@@ -1002,19 +1073,22 @@ class MQTTSubscribeService(StdService):
         start_ts = end_ts - event.record['interval'] * 60
 
         for topic in self.subscriber.subscribed_topics: # topics might not be cached.. therefore use subscribed?
-            self.logger.debug("MQTTSubscribeService record prior to update is: %s %s"
+            self.logger.trace("MQTTSubscribeService record prior to update is: %s %s"
                               % (weeutil.weeutil.timestamp_to_string(event.record['dateTime']),
                                  to_sorted_string(event.record)))
             target_data = self.subscriber.get_accumulated_data(topic, start_ts, end_ts, event.record['usUnits'])
             event.record.update(target_data)
-            self.logger.debug("MQTTSubscribeService record after update is: %s %s"
+            self.logger.trace("MQTTSubscribeService record after update is: %s %s"
                               % (weeutil.weeutil.timestamp_to_string(event.record['dateTime']),
                                  to_sorted_string(event.record)))
 
+        self.logger.debug("MQTTSubscribeService data-> final record is %s: %s"
+                          % (weeutil.weeutil.timestamp_to_string(event.record['dateTime']),
+                             to_sorted_string(event.record)))
+
 def loader(config_dict, engine): # (Need to match function signature) pylint: disable=unused-argument
     """ Load and return the driver. """
-    config = configobj.ConfigObj(config_dict)
-    return MQTTSubscribeDriver(**config[DRIVER_NAME])
+    return MQTTSubscribeDriver(**config_dict[DRIVER_NAME])
 
 def confeditor_loader():
     """ Load and return the configuration editor. """
@@ -1025,7 +1099,10 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice): # (methods not used) py
 
     def __init__(self, **stn_dict):
         console = to_bool(stn_dict.get('console', False))
-        self.logger = Logger(console)
+        logging_filename = stn_dict.get('logging_filename', None)
+        logging_level = stn_dict.get('logging_level', 'NOTSET')
+        self.logger = Logger(level=logging_level, filename=logging_filename, console=console)
+        self.logger.log_environment()
 
         self.wait_before_retry = float(stn_dict.get('wait_before_retry', 2))
         self._archive_interval = to_int(stn_dict.get('archive_interval', 300))
@@ -1061,13 +1138,13 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice): # (methods not used) py
 
                 for data in self.subscriber.get_data(topic):
                     if data:
-                        self.logger.debug("MQTTSubscribeDriver loop packet is %s: %s"
-                                          % (weeutil.weeutil.timestamp_to_string(data['dateTime']), to_sorted_string(data)))
+                        self.logger.debug("MQTTSubscribeDriver data-> final loop packet is %s %s: %s"
+                                          % (topic, weeutil.weeutil.timestamp_to_string(data['dateTime']), to_sorted_string(data)))
                         yield data
                     else:
                         break
 
-            self.logger.debug("MQTTSubscribeDriver queues are empty.")
+            self.logger.trace("MQTTSubscribeDriver queues are empty.")
 
             time.sleep(self.wait_before_retry)
 
@@ -1079,8 +1156,8 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice): # (methods not used) py
 
         for data in self.subscriber.get_data(self.archive_topic, lastgood_ts):
             if data:
-                self.logger.debug("MQTTSubscribeDriver archive record is %s: %s"
-                                  % (weeutil.weeutil.timestamp_to_string(data['dateTime']), to_sorted_string(data)))
+                self.logger.debug("MQTTSubscribeDriver data-> final archive record is %s %s: %s"
+                                  % (self.archive_topic, weeutil.weeutil.timestamp_to_string(data['dateTime']), to_sorted_string(data)))
                 yield data
             else:
                 break
@@ -1230,11 +1307,11 @@ if __name__ == '__main__': # pragma: no cover
         delay = options.delay
         units = weewx.units.unit_constants[options.units]
 
-        setup_logging(options.verbose)
-
         config_path = os.path.abspath(options.config_file)
 
         config_dict = configobj.ConfigObj(config_path, file_error=True)
+
+        setup_logging(options.verbose, config_dict)
 
         config_topics(config_dict, options.topics)
 
