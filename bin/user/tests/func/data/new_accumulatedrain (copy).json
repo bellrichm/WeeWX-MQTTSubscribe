@@ -1,0 +1,144 @@
+{
+  "comments": [
+    "Test that an observation, like rain total, that accumulates is converted to increments."
+  ],
+  "types": [
+    "individual",
+    "json",
+    "keyword"
+  ],
+  "config": [
+    "[MQTTSubscribeService]",
+    "    # Configuration for the message callback.",
+    "    [[message_callback]]",
+    "        [[[fields]]]",
+    "            # The incoming field name from MQTT",
+    "            [[[[rainTotal]]]]",
+    "              # The WeeWX name.",
+    "              # Default is the name from MQTT.",
+    "                name = rain",
+    "              # True if the incoming data is cumulative.",
+    "              # Valid values: True, False",
+    "              # Default is False",
+    "                contains_total = True",
+    "                ",
+    "    # The topics to subscribe to.",
+    "    [[topics]]",
+    "        unit_system = METRICWX",
+    "        # Timing issue when running test",
+    "        ignore_start_time = True",
+    "        adjust_start_time = 1",
+    "        [[[weewx/#]]]"
+  ],
+  "testruns": [
+    {
+      "messages": [
+        {
+          "weewx": {
+            "separator": ",",
+            "delimiter": "=",
+            "data": {
+              "rainTotal": 1
+            }
+          }
+        }
+      ],
+      "results": [
+        {
+          "test": "accumulate",
+          "payloads": [
+            "json",
+            "keyword",
+            "individual"
+          ],
+          "units": 17,
+          "records": [
+            {
+              "dateTime": null,
+              "usUnits": 17,
+              "rain": 0
+            }
+          ]
+        },
+        {
+          "test": "single",
+          "payloads": [
+            "json",
+            "keyword",
+            "individual"
+          ],
+          "units": 17,
+          "records": [
+            {
+              "dateTime": null,
+              "usUnits": 17,
+              "rain": "None"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "messages": [
+        {
+          "weewx": {
+            "separator": ",",
+            "delimiter": "=",
+            "data": {
+              "rainTotal": 2
+            }
+          }
+        }
+      ],
+      "results": [
+        {
+          "test": "both",
+          "payloads": [
+            "json",
+            "keyword",
+            "individual"
+          ],
+          "units": 17,
+          "records": [
+            {
+              "dateTime": null,
+              "usUnits": 17,
+              "rain": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "messages": [
+        {
+          "weewx": {
+            "separator": ",",
+            "delimiter": "=",
+            "data": {
+              "rainTotal": 4
+            }
+          }
+        }
+      ],
+      "results": [
+        {
+          "test": "both",
+          "payloads": [
+            "json",
+            "keyword",
+            "individual"
+          ],
+          "units": 17,
+          "records": [
+            {
+              "dateTime": null,
+              "usUnits": 17,
+              "rain": 2
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
