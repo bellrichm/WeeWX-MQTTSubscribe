@@ -14,16 +14,7 @@ from user.MQTTSubscribe import setup_logging
 from user.MQTTSubscribe import MQTTSubscribeService
 
 class TestOne(unittest.TestCase):
-    def get_tests(self, file):
-        test_data = json.load(file, object_hook=utils.byteify)
-        ##config_dict = configobj.ConfigObj(test_data['config'])['MQTTSubscribeService']
-        config_dict = configobj.ConfigObj(test_data['config'])
-        #print(config_dict)
-        testruns = test_data['testruns']
-        #print(testruns)
-        return config_dict, testruns
-
-    def run_test(self, config_dict, testruns, payload):
+    def runit(self, config_dict, testruns, payload):
         #sleep = 1
 
         cdict = config_dict['MQTTSubscribeService']
@@ -135,85 +126,109 @@ class TestOne(unittest.TestCase):
     def test_accumulatedrain_individual(self):
         payload = 'individual'
         with open("bin/user/tests/integ/data/accumulatedrain.json") as file:
-            config_dict, testruns = self.get_tests(file)
-            self.run_test(config_dict, testruns, payload)
+            test_data = json.load(file, object_hook=utils.byteify)
+            config_dict = configobj.ConfigObj(test_data['config'])
+            testruns = test_data['testruns']
+            self.runit(config_dict, testruns, payload)
 
     #@unittest.skip("")
     def test_accumulatedrain_json(self):
         payload = 'json'
         with open("bin/user/tests/integ/data/accumulatedrain.json") as file:
-            config_dict, testruns = self.get_tests(file)
-            self.run_test(config_dict, testruns, payload)
+            test_data = json.load(file, object_hook=utils.byteify)
+            config_dict = configobj.ConfigObj(test_data['config'])
+            testruns = test_data['testruns']
+            self.runit(config_dict, testruns, payload)
 
     #@unittest.skip("")
     def test_accumulatedrain_keyword(self):
         payload = 'keyword'
         with open("bin/user/tests/integ/data/accumulatedrain.json") as file:
-            config_dict, testruns = self.get_tests(file)
-            self.run_test(config_dict, testruns, payload)
+            test_data = json.load(file, object_hook=utils.byteify)
+            config_dict = configobj.ConfigObj(test_data['config'])
+            testruns = test_data['testruns']
+            self.runit(config_dict, testruns, payload)
 
     #@unittest.skip("")
     def test_basic_individual(self):
         payload = 'individual'
         with open("bin/user/tests/integ/data/basic.json") as file:
-            config_dict, testruns = self.get_tests(file)
-            self.run_test(config_dict, testruns, payload)
+            test_data = json.load(file, object_hook=utils.byteify)
+            config_dict = configobj.ConfigObj(test_data['config'])
+            testruns = test_data['testruns']
+            self.runit(config_dict, testruns, payload)
 
     #@unittest.skip("")
     def test_basic_json(self):
         payload = 'json'
         with open("bin/user/tests/integ/data/basic.json") as file:
-            config_dict, testruns = self.get_tests(file)
-            self.run_test(config_dict, testruns, payload)
+            test_data = json.load(file, object_hook=utils.byteify)
+            config_dict = configobj.ConfigObj(test_data['config'])
+            testruns = test_data['testruns']
+            self.runit(config_dict, testruns, payload)
 
     #@unittest.skip("")
     def test_basic_keyword(self):
         payload = 'keyword'
         with open("bin/user/tests/integ/data/basic.json") as file:
-            config_dict, testruns = self.get_tests(file)
-            self.run_test(config_dict, testruns, payload)
+            test_data = json.load(file, object_hook=utils.byteify)
+            config_dict = configobj.ConfigObj(test_data['config'])
+            testruns = test_data['testruns']
+            self.runit(config_dict, testruns, payload)
 
     #@unittest.skip("")
     def test_empty_individual(self):
         payload = 'individual'
         with open("bin/user/tests/integ/data/empty.json") as file:
-            config_dict, testruns = self.get_tests(file)
-            self.run_test(config_dict, testruns, payload)
+            test_data = json.load(file, object_hook=utils.byteify)
+            config_dict = configobj.ConfigObj(test_data['config'])
+            testruns = test_data['testruns']
+            self.runit(config_dict, testruns, payload)
 
     #@unittest.skip("")
     def test_empty_json(self):
         payload = 'json'
         with open("bin/user/tests/integ/data/empty.json") as file:
-            config_dict, testruns = self.get_tests(file)
-            self.run_test(config_dict, testruns, payload)
+            test_data = json.load(file, object_hook=utils.byteify)
+            config_dict = configobj.ConfigObj(test_data['config'])
+            testruns = test_data['testruns']
+            self.runit(config_dict, testruns, payload)
 
     #@unittest.skip("")
     def test_empty_keyword(self):
         payload = 'keyword'
         with open("bin/user/tests/integ/data/empty.json") as file:
-            config_dict, testruns = self.get_tests(file)
-            self.run_test(config_dict, testruns, payload)
+            test_data = json.load(file, object_hook=utils.byteify)
+            config_dict = configobj.ConfigObj(test_data['config'])
+            testruns = test_data['testruns']
+            self.runit(config_dict, testruns, payload)
 
     #@unittest.skip("")
     def test_wind_individual(self):
         payload = 'individual'
         with open("bin/user/tests/integ/data/wind.json") as file:
-            config_dict, testruns = self.get_tests(file)
-            self.run_test(config_dict, testruns, payload)
+            test_data = json.load(file, object_hook=utils.byteify)
+            config_dict = configobj.ConfigObj(test_data['config'])
+            testruns = test_data['testruns']
+            self.runit(config_dict, testruns, payload)
 
     #@unittest.skip("")
     def test_wind_json(self):
         payload = 'json'
         with open("bin/user/tests/integ/data/wind.json") as file:
-            config_dict, testruns = self.get_tests(file)
-            self.run_test(config_dict, testruns, payload)
+            test_data = json.load(file, object_hook=utils.byteify)
+            config_dict = configobj.ConfigObj(test_data['config'])
+            testruns = test_data['testruns']
+            self.runit(config_dict, testruns, payload)
 
     #@unittest.skip("")
     def test_wind_keyword(self):
         payload = 'keyword'
         with open("bin/user/tests/integ/data/wind.json") as file:
-            config_dict, testruns = self.get_tests(file)
-            self.run_test(config_dict, testruns, payload)
+            test_data = json.load(file, object_hook=utils.byteify)
+            config_dict = configobj.ConfigObj(test_data['config'])
+            testruns = test_data['testruns']
+            self.runit(config_dict, testruns, payload)
 
 if __name__ == '__main__':
     setup_logging(1, {})
