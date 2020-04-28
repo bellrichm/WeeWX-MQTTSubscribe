@@ -19,7 +19,7 @@
       "messages": [],
       "results": [
         {
-          "test": "accumlate",
+          "test": "accumulate",
           "payloads": [
             "json",
             "keyword",
@@ -30,17 +30,17 @@
             {}
           ]
         },
-        [
-          {
-            "test": "single",
-            "payloads": [
-              "json",
-              "keyword",
-              "individual"
-            ],
-            "units": 17,
-            "records": []
-          },
+        
+        {
+          "test": "single",
+          "payloads": [
+            "json",
+            "keyword",
+            "individual"
+          ],
+          "units": 17,
+          "records": []
+        }
         ]
       }
     ]

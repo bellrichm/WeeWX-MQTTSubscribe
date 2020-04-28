@@ -124,27 +124,96 @@ class TestOne(unittest.TestCase):
             #records.append(record)
 
             records = [record]
-            utils.check(self, payload, records,result['records'])
+            utils.check(self, payload, records, result['records'])
 
         #print(records)
         service.shutDown()
         client.disconnect()
         client2.disconnect()
 
-    def test_one(self):
+    #@unittest.skip("")
+    def test_accumulatedrain_individual(self):
         payload = 'individual'
-        with open("bin/user/tests/func/data/new_accumulatedrain.json") as file:
+        with open("bin/user/tests/integ/data/accumulatedrain.json") as file:
             config_dict, testruns = self.get_tests(file)
             self.run_test(config_dict, testruns, payload)
-            #for testrun in testruns:
-            #    results = testrun['results']
-            #    for result in results:
-            #        if result['test'] == 'single' or result['test'] == 'both':
-            #            if payload in result['payloads']:
-            #                self.run_test(config_dict, testrun['messages'], result, payload)
-            print(testruns)
-            print("working")
-        print("done")
+
+    #@unittest.skip("")
+    def test_accumulatedrain_json(self):
+        payload = 'json'
+        with open("bin/user/tests/integ/data/accumulatedrain.json") as file:
+            config_dict, testruns = self.get_tests(file)
+            self.run_test(config_dict, testruns, payload)
+
+    #@unittest.skip("")
+    def test_accumulatedrain_keyword(self):
+        payload = 'keyword'
+        with open("bin/user/tests/integ/data/accumulatedrain.json") as file:
+            config_dict, testruns = self.get_tests(file)
+            self.run_test(config_dict, testruns, payload)
+
+    #@unittest.skip("")
+    def test_basic_individual(self):
+        payload = 'individual'
+        with open("bin/user/tests/integ/data/basic.json") as file:
+            config_dict, testruns = self.get_tests(file)
+            self.run_test(config_dict, testruns, payload)
+
+    #@unittest.skip("")
+    def test_basic_json(self):
+        payload = 'json'
+        with open("bin/user/tests/integ/data/basic.json") as file:
+            config_dict, testruns = self.get_tests(file)
+            self.run_test(config_dict, testruns, payload)
+
+    #@unittest.skip("")
+    def test_basic_keyword(self):
+        payload = 'keyword'
+        with open("bin/user/tests/integ/data/basic.json") as file:
+            config_dict, testruns = self.get_tests(file)
+            self.run_test(config_dict, testruns, payload)
+
+    #@unittest.skip("")
+    def test_empty_individual(self):
+        payload = 'individual'
+        with open("bin/user/tests/integ/data/empty.json") as file:
+            config_dict, testruns = self.get_tests(file)
+            self.run_test(config_dict, testruns, payload)
+
+    #@unittest.skip("")
+    def test_empty_json(self):
+        payload = 'json'
+        with open("bin/user/tests/integ/data/empty.json") as file:
+            config_dict, testruns = self.get_tests(file)
+            self.run_test(config_dict, testruns, payload)
+
+    #@unittest.skip("")
+    def test_empty_keyword(self):
+        payload = 'keyword'
+        with open("bin/user/tests/integ/data/empty.json") as file:
+            config_dict, testruns = self.get_tests(file)
+            self.run_test(config_dict, testruns, payload)
+
+    #@unittest.skip("")
+    def test_wind_individual(self):
+        payload = 'individual'
+        with open("bin/user/tests/integ/data/wind.json") as file:
+            config_dict, testruns = self.get_tests(file)
+            self.run_test(config_dict, testruns, payload)
+
+    #@unittest.skip("")
+    def test_wind_json(self):
+        payload = 'json'
+        with open("bin/user/tests/integ/data/wind.json") as file:
+            config_dict, testruns = self.get_tests(file)
+            self.run_test(config_dict, testruns, payload)
+
+    #@unittest.skip("")
+    def test_wind_keyword(self):
+        payload = 'keyword'
+        with open("bin/user/tests/integ/data/wind.json") as file:
+            config_dict, testruns = self.get_tests(file)
+            self.run_test(config_dict, testruns, payload)
 
 if __name__ == '__main__':
     setup_logging(1, {})
