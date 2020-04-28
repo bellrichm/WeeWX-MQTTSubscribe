@@ -13,4 +13,4 @@ echo "Running python $PYENV_VERSION weewx $WEEWX"
 PYTHONPATH=bin:../$WEEWX/bin python -m pylint ./*.py
 PYTHONPATH=bin:../$WEEWX/bin python -m pylint ./bin/user
 PYTHONPATH=bin:../$WEEWX/bin python -m pylint ./bin/user/tests/unit/*.py -d duplicate-code
-PYTHONPATH=bin:../$WEEWX/bin python -m pylint ./bin/user/tests/func/*.py -d duplicate-code
+PYTHONPATH=bin:../$WEEWX/bin python -m pylint ./bin/user/tests/integ/*.py -d duplicate-code

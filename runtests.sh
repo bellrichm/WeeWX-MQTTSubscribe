@@ -11,6 +11,6 @@ fi
 echo "Running python $PYENV_VERSION weewx $WEEWX"
 PYTHONPATH=bin:../$WEEWX/bin python -m unittest discover bin/user/tests/unit
 
-PYTHONPATH=bin:../$WEEWX/bin python -m unittest discover bin/user/tests/func
+PYTHONPATH=bin:../$WEEWX/bin python -m unittest discover bin/user/tests/integ
 
 echo "Completed python $PYENV_VERSION weewx $WEEWX"
