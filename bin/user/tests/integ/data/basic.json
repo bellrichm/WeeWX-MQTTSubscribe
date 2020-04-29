@@ -52,11 +52,8 @@
 			],
 			"results": [
 				{
-					"test": "both",
-					"payloads": [
-						"json",
-						"keyword"
-					],
+					"test": ["accumulate", "single"],
+					"payloads": ["json", "keyword"],
 					"units": 17,
 					"records": [
 						{
@@ -68,10 +65,8 @@
 					]
 				},
 				{
-					"test": "accumulate",
-					"payloads": [
-						"individual"
-					],
+					"test": ["accumulate"],
+					"payloads": ["individual"],
 					"units": 17,
 					"records": [
 						{
@@ -83,10 +78,8 @@
 					]
 				},
 				{
-					"test": "single",
-					"payloads": [
-						"individual"
-					],
+					"test": ["single"],
+					"payloads": ["individual"],
 					"records": [
 						{
 							"dateTime": null,

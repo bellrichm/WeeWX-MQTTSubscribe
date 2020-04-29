@@ -45,12 +45,8 @@
       ],
       "results": [
         {
-          "test": "accumulate",
-          "payloads": [
-            "json",
-            "keyword",
-            "individual"
-          ],
+          "test": ["accumulate"],
+          "payloads": ["json", "keyword", "individual"],
           "units": 17,
           "records": [
             {
@@ -61,12 +57,8 @@
           ]
         },
         {
-          "test": "single",
-          "payloads": [
-            "json",
-            "keyword",
-            "individual"
-          ],
+          "test": ["single"],
+          "payloads": ["json", "keyword", "individual"],
           "units": 17,
           "records": [
             {
@@ -92,12 +84,8 @@
       ],
       "results": [
         {
-          "test": "both",
-          "payloads": [
-            "json",
-            "keyword",
-            "individual"
-          ],
+          "test": ["accumulate", "single"],
+          "payloads": ["json", "keyword", "individual"],
           "units": 17,
           "records": [
             {
@@ -123,11 +111,8 @@
       ],
       "results": [
         {
-          "test": "both",
-          "payloads": [
-            "json",
-            "keyword",
-            "individual"
+          "test": ["accumulate", "single"],
+          "payloads": ["json", "keyword", "individual"
           ],
           "units": 17,
           "records": [

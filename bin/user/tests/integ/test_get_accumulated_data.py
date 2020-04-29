@@ -28,7 +28,7 @@ class TestOne(unittest.TestCase):
             results = testrun['results']
             result = {}
             for result in results:
-                if result['test'] == 'accumulate' or result['test'] == 'both':
+                if 'accumulate' in result['test']:
                     if payload in result['payloads']:
                         break
 

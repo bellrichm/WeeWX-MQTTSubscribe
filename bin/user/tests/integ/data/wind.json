@@ -51,12 +51,8 @@
       ],
       "results": [
         {
-          "test": "both",
-          "payloads": [
-            "json",
-            "keyword",
-            "individual"
-          ],
+          "test": ["accumulate", "single"],
+          "payloads": ["json", "keyword", "individual"],
           "units": 17,
           "records": [
             {
