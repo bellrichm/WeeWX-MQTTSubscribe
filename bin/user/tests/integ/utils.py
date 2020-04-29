@@ -124,7 +124,9 @@ def wait_on_queue(provider, topic, msg_count, max_waits, sleep_time):
 
 def check(self, test_type, results, expected_results):
     self.longMessage = True
-    msg = "for payload of %s" % test_type
+    msg = "\n\tfor payload of %s" % test_type
+    msg = msg + "\n\t%s" % results
+    msg = msg + "\n\t%s" % expected_results
     #print(results)
     #print(expected_results['results'])
     self.assertEqual(len(results), len(expected_results), msg)
