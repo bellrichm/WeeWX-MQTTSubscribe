@@ -109,8 +109,13 @@ def get_callback(payload_type, config_dict, manager, logger):
 def wait_on_queue(provider, topic, msg_count, max_waits, sleep_time):
     wait_count = 0
     if topic is not None:
-        topic_queue = provider.subscriber.manager._get_queue(topic)  # pylint: disable=protected-access
-        while len(topic_queue) < msg_count and wait_count < max_waits:
+        queue_count = 0
+        # todo - clean up
+        while queue_count < msg_count and wait_count < max_waits:
+            queue_count = 0
+            for subscribed_topic in provider.subscriber.manager.subscribed_topics:
+                topic_queue = provider.subscriber.manager._get_queue(subscribed_topic)  # pylint: disable=protected-access
+                queue_count = queue_count + len(topic_queue)
             # print("sleeping")
             time.sleep(sleep_time)
             wait_count += 1
@@ -118,6 +123,7 @@ def wait_on_queue(provider, topic, msg_count, max_waits, sleep_time):
     return wait_count
 
 def check(self, test_type, results, expected_results):
+    self.longMessage = True
     msg = "for payload of %s" % test_type
     #print(results)
     #print(expected_results['results'])
@@ -125,9 +131,11 @@ def check(self, test_type, results, expected_results):
     i = 0
     for expected_result in expected_results:
         print("testing %s %s" % (test_type, expected_result))
+        msg = "\n\t%s\n\t%s" %(expected_result, results[i])
+        self.assertEqual(len(expected_result), len(results[i]), msg)
         for field in expected_result:
-            msg = "for payload of %s and field %s in record %i\n" % (test_type, field, i+1)
-            msg = msg + "should be in %s" % results[i]
+            msg = "\n\tfor payload of %s in record %i\n" % (test_type, i+1)
+            #msg = msg + "should be in %s" % results[i]
             self.assertIn(field, results[i], msg)
             if expected_result[field] is not None:
                 msg = "for payload of %s and field %s in record %i\n" % (test_type, field, i+1)

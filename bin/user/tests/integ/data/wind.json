@@ -46,7 +46,7 @@
       ],
       "results": [
         {
-          "test": ["accumulate", "single"],
+          "test": ["single"],
           "payloads": ["json", "keyword", "individual"],
           "units": 17,
           "records": [
@@ -55,6 +55,21 @@
               "usUnits": 17,
               "windDir": 0,
               "windSpeed": 1
+            }
+          ]
+        },
+        {
+          "test": ["accumulate"],
+          "payloads": ["json", "keyword", "individual"],
+          "units": 17,
+          "records": [
+            {
+              "dateTime": null,
+              "usUnits": 17,
+              "windDir": 0,
+              "windSpeed": 1,
+              "windGustDir": 0,
+              "windGust": 1              
             }
           ]
         }
