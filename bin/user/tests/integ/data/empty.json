@@ -21,6 +21,17 @@
             {}
           ]
         },
+        {
+          "test": ["service"],
+          "payloads": ["json", "keyword", "individual"],
+          "units": 17,
+          "records": [
+            {
+              "usUnits": 17,
+              "dateTime": null
+            }
+          ]
+        },
         
         {
           "test": ["single", "driver"],

@@ -101,7 +101,7 @@ class TestOne(unittest.TestCase):
             results = testrun['results']
             result = {}
             for result in results:
-                if 'accumulate' in result['test']:
+                if 'service' in result['test']:
                     if payload in result['payloads']:
                         break
 

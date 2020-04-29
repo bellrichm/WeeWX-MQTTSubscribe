@@ -40,7 +40,7 @@
       ],
       "results": [
         {
-          "test": ["accumulate"],
+          "test": ["accumulate", "service"],
           "payloads": ["json", "keyword", "individual"],
           "units": 17,
           "records": [
@@ -79,7 +79,7 @@
       ],
       "results": [
         {
-          "test": ["accumulate", "single", "driver"],
+          "test": ["accumulate", "single", "service", "driver"],
           "payloads": ["json", "keyword", "individual"],
           "units": 17,
           "records": [
@@ -106,7 +106,7 @@
       ],
       "results": [
         {
-          "test": ["accumulate", "single", "driver"],
+          "test": ["accumulate", "single", "service", "driver"],
           "payloads": ["json", "keyword", "individual"
           ],
           "units": 17,
