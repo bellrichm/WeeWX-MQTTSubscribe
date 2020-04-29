@@ -1,0 +1,47 @@
+{
+  "comments": [
+    ""
+  ],
+  "types": [
+    "individual",
+    "json",
+    "keyword"
+  ],
+  "config": [
+    "[MQTTSubscribeService]",
+    "    # The topics to subscribe to.",
+    "    [[topics]]",
+    "        ignore_start_time = True",
+    "        [[[weewx/#]]]"
+  ],
+  "testruns": [
+    {
+      "messages": [],
+      "results": [
+        {
+          "test": "accumulate",
+          "payloads": [
+            "json",
+            "keyword",
+            "individual"
+          ],
+          "units": 17,
+          "records": [
+            {}
+          ]
+        },
+        
+        {
+          "test": "single",
+          "payloads": [
+            "json",
+            "keyword",
+            "individual"
+          ],
+          "units": 17,
+          "records": []
+        }
+        ]
+      }
+    ]
+  }

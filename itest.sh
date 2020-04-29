@@ -9,19 +9,19 @@ fi
 export PYENV_VERSION=2.7.17
 export WEEWX=weewx4
 echo "Running python $PYENV_VERSION $WEEWX"
-PYTHONPATH=bin:../$WEEWX/bin python bin/user/tests/func/$TEST
+PYTHONPATH=bin:../$WEEWX/bin python bin/user/tests/integ/$TEST
 
 export PYENV_VERSION=3.6.9
 export WEEWX=weewx4
 echo "Running python $PYENV_VERSION $WEEWX"
-PYTHONPATH=bin:../$WEEWX/bin python bin/user/tests/func/$TEST
+PYTHONPATH=bin:../$WEEWX/bin python bin/user/tests/integ/$TEST
 
 export PYENV_VERSION=3.5.9
 export WEEWX=weewx4
 echo "Running python $PYENV_VERSION $WEEWX"
-PYTHONPATH=bin:../$WEEWX/bin python bin/user/tests/func/$TEST
+PYTHONPATH=bin:../$WEEWX/bin python bin/user/tests/integ/$TEST
 
 export PYENV_VERSION=2.7.17
 export WEEWX=weewx3
 echo "Running python $PYENV_VERSION $WEEWX"
-PYTHONPATH=bin:../$WEEWX/bin python bin/user/tests/func/$TEST
+PYTHONPATH=bin:../$WEEWX/bin python bin/user/tests/integ/$TEST
