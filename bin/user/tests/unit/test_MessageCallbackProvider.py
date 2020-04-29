@@ -837,6 +837,45 @@ class TestJsonPayload(unittest.TestCase):
 
         mock_manager.append_data.assert_called_once_with(msg.topic, flattened_payload_dict)
 
+    def test_payload_nested_rename(self):
+        mock_manager = mock.Mock(spec=TopicManager)
+        stub_logger = test_weewx_stubs.Logger(console=True)
+
+        message_handler_config = copy.deepcopy(self.message_handler_config)
+        message_handler_config['fields'] = {}
+        message_handler_config['fields']['nested01_inTemp'] = {}
+        message_handler_config['fields']['nested01_inTemp']['name'] = 'inTemp'
+
+        SUT = MessageCallbackProvider(message_handler_config, stub_logger, mock_manager)
+
+        payload_dict = {
+            'nested01': {
+                'inTemp': round(random.uniform(1, 100), 2),
+                'outTemp': round(random.uniform(1, 100), 2)
+            }
+        }
+
+        payload_dict['dateTime'] = time.time()
+        payload_dict['usUnits'] = random.randint(1, 10)
+
+        flattened_payload_dict = {
+            'inTemp': payload_dict['nested01']['inTemp'],
+            'nested01_outTemp': payload_dict['nested01']['outTemp']
+        }
+        flattened_payload_dict['dateTime'] = payload_dict['dateTime']
+        flattened_payload_dict['usUnits'] = payload_dict['usUnits']
+
+        if PY2:
+            payload = json.dumps(payload_dict)
+        else:
+            payload = json.dumps(payload_dict).encode("utf-8")
+
+        msg = Msg(self.topic, payload, 0, 0)
+
+        SUT._on_message_json(None, None, msg)
+
+        mock_manager.append_data.assert_called_once_with(msg.topic, flattened_payload_dict)
+
 
 class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
     topic_end = 'bar'
