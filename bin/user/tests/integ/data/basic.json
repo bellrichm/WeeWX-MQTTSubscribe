@@ -47,7 +47,7 @@
 			],
 			"results": [
 				{
-					"test": ["accumulate", "single"],
+					"test": ["accumulate", "single", "driver"],
 					"payloads": ["json", "keyword"],
 					"units": 17,
 					"records": [
@@ -73,7 +73,7 @@
 					]
 				},
 				{
-					"test": ["single"],
+					"test": ["single", "driver"],
 					"payloads": ["individual"],
 					"records": [
 						{

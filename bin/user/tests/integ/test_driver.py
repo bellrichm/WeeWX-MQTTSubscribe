@@ -95,7 +95,7 @@ class TestOne(unittest.TestCase):
             results = testrun['results']
             result = {}
             for result in results:
-                if 'single' in result['test']:
+                if 'driver' in result['test']:
                     if payload in result['payloads']:
                         break
 
