@@ -724,14 +724,7 @@ class MessageCallbackProvider(object):
             for key, value in data.items():
                 key2 = self._byteify(key, ignore_dicts=True)
                 value2 = self._byteify(value, ignore_dicts=True)
-                if not isinstance(value2, dict):
-                    value2 = self._convert_value(key2, value2)
-                    if self.fields.get(key2, {}).get('contains_total', False):
-                        current_value = value2
-                        value2 = self._calc_increment(key2, current_value, self.previous_values.get(key2))
-                        self.previous_values[key2] = current_value
-
-                data2[self.fields.get(key2, {}).get('name', key2)] = value2
+                data2[key2] = value2
             return data2
         # if it's anything else, return it in its original form
         return data
@@ -821,7 +814,21 @@ class MessageCallbackProvider(object):
                 payload_str = msg.payload.decode('utf-8')
 
             data = self._byteify(json.loads(payload_str, object_hook=self._byteify), ignore_dicts=True)
-            self.topic_manager.append_data(msg.topic, self._flatten_dict(data, self.flatten_delimiter))
+
+            data_flattened = self._flatten_dict(data, self.flatten_delimiter)
+
+            data_final = {}
+            # ToDo - if I have to loop, removes benefit of _bytefy, time to remove it?
+            for key in data_flattened:
+                value2 = self._convert_value(key, data_flattened[key])
+                if self.fields.get(key, {}).get('contains_total', False):
+                    current_value = value2
+                    value2 = self._calc_increment(key, current_value, self.previous_values.get(key))
+                    self.previous_values[key] = current_value
+
+                data_final[self.fields.get(key, {}).get('name', key)] = value2
+
+            self.topic_manager.append_data(msg.topic, data_final)
 
         except Exception as exception: # (want to catch all) pylint: disable=broad-except
             self._log_exception('on_message_json', exception, msg)
