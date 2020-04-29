@@ -435,7 +435,6 @@ class TopicManager(object):
             self.subscribed_topics[topic]['offset_format'] = offset_format
             self.subscribed_topics[topic]['max_queue'] = topic_dict.get('max_queue', max_queue)
             self.subscribed_topics[topic]['queue'] = deque()
-            self.subscribed_topics[topic]['queue_wind'] = deque()
 
     def append_data(self, topic, in_data, fieldname=None):
         """ Add the MQTT data to the queue. """
@@ -595,9 +594,6 @@ class TopicManager(object):
 
     def _get_queue(self, topic):
         return self._get_value('queue', topic)
-
-    def _get_wind_queue(self, topic):
-        return self._get_value('queue_wind', topic)
 
     def _get_value(self, value, topic):
         subscribed_topic = self._lookup_topic(topic)
@@ -1116,8 +1112,6 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice): # (methods not used) py
         self.archive_topic = stn_dict.get('archive_topic', None)
 
         self.logger.info("MQTTSubscribeDriver wait before retry is %i" % self.wait_before_retry)
-
-        self.wind_fields = ['windGust', 'windGustDir', 'windDir', 'windSpeed'] # Todo - delete
 
         self.subscriber = MQTTSubscribe(stn_dict, self.logger)
         self.subscriber.start()
