@@ -2,11 +2,6 @@
   "comments": [
     "Test that an observation, like rain total, that accumulates is converted to increments."
   ],
-  "types": [
-    "individual",
-    "json",
-    "keyword"
-  ],
   "config": [
     "[MQTTSubscribeService]",
     "    # Configuration for the message callback.",

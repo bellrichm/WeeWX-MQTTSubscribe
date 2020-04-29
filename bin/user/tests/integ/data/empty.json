@@ -2,11 +2,6 @@
   "comments": [
     ""
   ],
-  "types": [
-    "individual",
-    "json",
-    "keyword"
-  ],
   "config": [
     "[MQTTSubscribeService]",
     "    # The topics to subscribe to.",
