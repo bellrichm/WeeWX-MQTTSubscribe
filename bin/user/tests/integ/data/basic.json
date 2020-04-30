@@ -60,7 +60,7 @@
 					]
 				},
 				{
-					"test": ["accumulate", "service"],
+					"test": ["accumulate"],
 					"payloads": ["json", "keyword"],
 					"units": 17,
 					"records": [
@@ -75,12 +75,38 @@
 					]
 				},				
 				{
-					"test": ["accumulate", "service"],
+					"test": ["service"],
+					"payloads": ["json", "keyword"],
+					"units": 17,
+					"records": [
+						{
+							"dateTime": null,
+							"usUnits": 17,
+							"inTemp": 0,
+							"outTemp": 1
+						}
+					]
+				},				
+				{
+					"test": ["accumulate"],
 					"payloads": ["individual"],
 					"units": 17,
 					"records": [
 						{
 						},
+						{
+							"dateTime": null,
+							"usUnits": 17,
+							"inTemp": 0,
+							"outTemp": 1
+						}
+					]
+				},
+				{
+					"test": ["service"],
+					"payloads": ["individual"],
+					"units": 17,
+					"records": [
 						{
 							"dateTime": null,
 							"usUnits": 17,

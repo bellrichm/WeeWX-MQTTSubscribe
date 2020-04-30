@@ -59,7 +59,7 @@
           ]
         },
         {
-          "test": ["accumulate", "service"],
+          "test": ["accumulate"],
           "payloads": ["json", "keyword"],
           "units": 17,
           "records": [
@@ -75,8 +75,24 @@
             }
           ]
         },
+        {
+          "test": ["service"],
+          "payloads": ["json", "keyword"],
+          "units": 17,
+          "records": [
             {
-              "test": ["accumulate", "service"],
+              "dateTime": null,
+              "usUnits": 17,
+              "windDir": 0,
+              "windSpeed": 1,
+              "windGustDir": 0,
+              "windGust": 1              
+            }
+          ]
+        },
+
+            {
+              "test": ["accumulate"],
               "payloads": ["individual"],
               "units": 17,
               "records": [
@@ -90,8 +106,23 @@
                 },
                 {
                 }
+              ]
+            },
+        {
+          "test": ["service"],
+          "payloads": ["individual"],
+          "units": 17,
+          "records": [
+            {
+              "dateTime": null,
+              "usUnits": 17,
+              "windDir": 0,
+              "windSpeed": 1,
+              "windGustDir": 0,
+              "windGust": 1              
+            }
           ]
-        }
+        }   
       ]
     }
   ]
