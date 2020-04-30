@@ -10,29 +10,29 @@ environment:
   WEEWX_URL: http://www.weewx.com/downloads/released_versions/
 
   matrix:
-    - job_name: weewx4-py3.8.x
+    - job_name: weewx4.0.0-py3.8.x
       job_group: build  
       job_depends_on: initialize
       PYTHON: 3.8
 
-    - job_name: weewx4-py3.7.x
+    - job_name: weewx4.0.0-py3.7.x
       job_group: build  
       job_depends_on: initialize
       PYTHON: 3.7
 
-    - job_name: weewx4-py3.6.10
+    - job_name: weewx4.0.0-py3.6.10
       job_group: build
       job_depends_on: initialize
       CODECOVIO_UPLOAD: true
       COVERALLS_UPLOAD: true
       SONAR_UPLOAD: true
 
-    - job_name: weewx4-py3.5.9
+    - job_name: weewx4.0.0-py3.5.9
       job_group: build  
       job_depends_on: initialize
       PYTHON: 3.5.9
 
-    - job_name: weewx4-py2.7.17
+    - job_name: weewx4.0.0-py2.7.17
       job_group: build  
       job_depends_on: initialize
       PYTHON: 2.7.17
@@ -50,11 +50,10 @@ environment:
       WEEWX: 3.7.1
       PYTHON: 2.7.17     
 
-    - job_name: weewx4-py3.9
+    - job_name: weewx4.0.0-py3.9
       job_group: build  
       job_depends_on: initialize
       PYTHON: 3.9
-      WEEWX_URL: http://www.weewx.com/downloads/development_versions/
 
     - job_name: initialize
       WEEWX_URL: http://www.weewx.com/downloads/development_versions/
