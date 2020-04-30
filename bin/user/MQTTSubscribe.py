@@ -435,7 +435,7 @@ class TopicManager(object):
             self.subscribed_topics[topic]['offset_format'] = offset_format
             self.subscribed_topics[topic]['max_queue'] = topic_dict.get('max_queue', max_queue)
             self.subscribed_topics[topic]['queue'] = deque()
-            
+
         # Add the collector queue as a subscribed topic so that data can retrieved from it
         # Yes, this is a bit of a hack.
         # Note, it would not be too hard to allow additional fields via the [fields] configuration option

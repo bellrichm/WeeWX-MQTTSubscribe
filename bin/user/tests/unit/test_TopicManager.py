@@ -392,7 +392,7 @@ class TestGetWindQueueData(unittest.TestCase):
             SUT.append_data(self.topic, self.create_queue_data(), fieldname=self.fieldname)
             # ToDo - need to get the topic a better way
             # perhaps find it by searching on subscribed topic 'type'
-            gen = SUT.get_data(SUT.collected_topic) 
+            gen = SUT.get_data(SUT.collected_topic)
             data = next(gen, None)
 
             self.assertEqual(data, collected_data)
