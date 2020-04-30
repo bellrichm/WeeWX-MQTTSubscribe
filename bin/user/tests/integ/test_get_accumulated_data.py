@@ -34,10 +34,14 @@ class TestAccumulatedData(unittest.TestCase):
 
             results = testrun['results']
             result = {}
+            found = False
             for result in results:
                 if 'accumulate' in result['test']:
                     if payload in result['payloads']:
+                        found = True
                         break
+
+            self.assertTrue(found, "No results for %s" %payload)
 
             records = []
             for topic in sorted(manager.subscribed_topics): # todo - dependent on topic names - not great

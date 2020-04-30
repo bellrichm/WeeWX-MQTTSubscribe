@@ -96,10 +96,14 @@ class TestDriver(unittest.TestCase):
 
             results = testrun['results']
             result = {}
+            found = False
             for result in results:
                 if 'driver' in result['test']:
                     if payload in result['payloads']:
+                        found = True
                         break
+
+            self.assertTrue(found, "No results for %s" %payload)
 
             i = 0
             while i < len(result['records']): # not great, but no way to know if more records

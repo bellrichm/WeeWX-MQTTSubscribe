@@ -40,11 +40,14 @@ class TestGetData(unittest.TestCase):
 
             results = testrun['results']
             result = {}
+            found = False
             for result in results:
                 if 'single' in result['test']:
                     if payload in result['payloads']:
+                        found = True
                         break
 
+            self.assertTrue(found, "No results for %s" %payload)
             utils.check(self, payload, records, result['records'])
 
         #print("")

@@ -102,10 +102,14 @@ class TestService(unittest.TestCase):
 
             results = testrun['results']
             result = {}
+            found = False
             for result in results:
                 if 'service' in result['test']:
                     if payload in result['payloads']:
+                        found = True
                         break
+
+            self.assertTrue(found, "No results for %s" %payload)
 
             record = {}
             units = result['units']
