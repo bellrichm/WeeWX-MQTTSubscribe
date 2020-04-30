@@ -47,7 +47,7 @@
       ],
       "results": [
         {
-          "test": ["single"],
+          "test": ["single", "driver"],
           "payloads": ["individual"],
           "units": 17,
           "records": [
