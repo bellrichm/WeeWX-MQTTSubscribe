@@ -77,6 +77,21 @@
             {
             }
           ]
+        },
+        {
+          "test": ["service"],
+          "payloads": ["individual"],
+          "units": 17,
+          "records": [
+            {
+              "dateTime": null,
+              "usUnits": 17,
+              "windDir": 0,
+              "windSpeed": 1,
+              "windGustDir": 0,
+              "windGust": 1              
+            }
+          ]
         }
       ]
     }

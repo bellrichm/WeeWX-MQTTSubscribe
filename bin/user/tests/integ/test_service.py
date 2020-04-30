@@ -207,6 +207,15 @@ class TestOne(unittest.TestCase):
             self.runit(config_dict, testruns, payload)
 
     #@unittest.skip("")
+    def test_wind_individual_topic(self):
+        payload = 'individual'
+        with open("bin/user/tests/integ/data/wind-individual.json") as file_pointer:
+            test_data = json.load(file_pointer, object_hook=utils.byteify)
+            config_dict = configobj.ConfigObj(test_data['config'])
+            testruns = test_data['testruns']
+            self.runit(config_dict, testruns, payload)
+
+    #@unittest.skip("")
     def test_wind_individual(self):
         payload = 'individual'
         with open("bin/user/tests/integ/data/wind.json") as file_pointer:
