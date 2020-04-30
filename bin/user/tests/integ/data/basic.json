@@ -47,7 +47,7 @@
 			],
 			"results": [
 				{
-					"test": ["accumulate", "single", "service", "driver"],
+					"test": ["single", "driver"],
 					"payloads": ["json", "keyword"],
 					"units": 17,
 					"records": [
@@ -61,9 +61,26 @@
 				},
 				{
 					"test": ["accumulate", "service"],
+					"payloads": ["json", "keyword"],
+					"units": 17,
+					"records": [
+						{
+						},
+						{
+							"dateTime": null,
+							"usUnits": 17,
+							"inTemp": 0,
+							"outTemp": 1
+						}
+					]
+				},				
+				{
+					"test": ["accumulate", "service"],
 					"payloads": ["individual"],
 					"units": 17,
 					"records": [
+						{
+						},
 						{
 							"dateTime": null,
 							"usUnits": 17,
@@ -75,6 +92,7 @@
 				{
 					"test": ["single", "driver"],
 					"payloads": ["individual"],
+					"units": 17,
 					"records": [
 						{
 							"dateTime": null,

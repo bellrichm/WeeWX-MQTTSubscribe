@@ -377,6 +377,7 @@ class TopicManager(object):
     """ Manage the MQTT topic subscriptions. """
     def __init__(self, config, logger):
         # pylint: disable=too-many-locals
+        # pylint: disable=too-many-statements
         self.logger = logger
 
         if not config.sections:
@@ -401,9 +402,27 @@ class TopicManager(object):
         max_queue = config.get('max_queue', MAXSIZE)
 
         self.wind_fields = ['windGust', 'windGustDir', 'windDir', 'windSpeed']
+        # todo - better way? flag/mark as special?
+        self.wind_queue = deque()
+        self.wind_topic = 'todo-just-testing'
+        topic = self.wind_topic
+        self.subscribed_topics = {}
+        self.subscribed_topics[topic] = {}
+        self.subscribed_topics[topic]['type'] = 'collector'
+        self.subscribed_topics[topic]['unit_system'] = weewx.units.unit_constants[default_unit_system_name]
+        self.subscribed_topics[topic]['qos'] = default_qos
+        self.subscribed_topics[topic]['use_server_datetime'] = default_use_server_datetime
+        self.subscribed_topics[topic]['ignore_start_time'] = default_ignore_start_time
+        self.subscribed_topics[topic]['ignore_end_time'] = default_ignore_end_time
+        self.subscribed_topics[topic]['adjust_start_time'] = default_adjust_start_time
+        self.subscribed_topics[topic]['adjust_end_time'] = default_adjust_end_time
+        self.subscribed_topics[topic]['datetime_format'] = default_datetime_format
+        self.subscribed_topics[topic]['offset_format'] = default_offset_format
+        self.subscribed_topics[topic]['max_queue'] = max_queue
+        self.subscribed_topics[topic]['queue'] = self.wind_queue
 
         self.topics = {}
-        self.subscribed_topics = {}
+        ##self.subscribed_topics = {}
 
         for topic in config.sections:
             topic_dict = config.get(topic, {})
@@ -424,6 +443,7 @@ class TopicManager(object):
             unit_system = weewx.units.unit_constants[unit_system_name]
 
             self.subscribed_topics[topic] = {}
+            self.subscribed_topics[topic]['type'] = 'normal'
             self.subscribed_topics[topic]['unit_system'] = unit_system
             self.subscribed_topics[topic]['qos'] = qos
             self.subscribed_topics[topic]['use_server_datetime'] = use_server_datetime
@@ -451,23 +471,26 @@ class TopicManager(object):
         if 'usUnits' not in data:
             data['usUnits'] = self._get_unit_system(topic)
 
-        payload['wind_data'] = False
-        if fieldname in self.wind_fields:
-            self.logger.trace("TopicManager Adding wind data %s %s: %s"
-                              % (fieldname, weeutil.weeutil.timestamp_to_string(data['dateTime']), to_sorted_string(data)))
-            payload['wind_data'] = fieldname
-
-        self._queue_size_check(queue, self._get_max_queue(topic))
-
         datetime_format = self._get_value('datetime_format', topic)
         if datetime_format and 'dateTime' in data:
             data['dateTime'] = self._to_epoch(data['dateTime'], datetime_format, self._get_value('offset_format', topic))
 
-        self.logger.trace("TopicManager Added to queue %s %s %s: %s"
-                          %(topic, self._lookup_topic(topic),
-                            weeutil.weeutil.timestamp_to_string(data['dateTime']), to_sorted_string(data)))
         payload['data'] = data
-        queue.append(payload,)
+
+        self._queue_size_check(queue, self._get_max_queue(topic))
+        # ToDo - wind queue size
+
+        ##payload['wind_data'] = False
+        if fieldname in self.wind_fields:
+            self.logger.trace("TopicManager Adding wind data %s %s: %s"
+                              % (fieldname, weeutil.weeutil.timestamp_to_string(data['dateTime']), to_sorted_string(data)))
+            payload['fieldname'] = fieldname
+            self.wind_queue.append(payload)
+        else:
+            self.logger.trace("TopicManager Added to queue %s %s %s: %s"
+                              %(topic, self._lookup_topic(topic),
+                                weeutil.weeutil.timestamp_to_string(data['dateTime']), to_sorted_string(data)))
+            queue.append(payload,)
 
     def peek_datetime(self, topic):
         """ Return the date/time of the first element in the queue. """
@@ -503,13 +526,14 @@ class TopicManager(object):
                 self.logger.trace("TopicManager leaving queue: %s size: %i content: %s" %(topic, len(queue), queue[0]))
                 break
             payload = queue.popleft()
-            wind_field = payload['wind_data']
-            if wind_field:
+            if self.get_type(topic) == 'collector':
+                fieldname = payload['fieldname']
                 self.logger.trace("TopicManager processing wind data %s %s: %s."
-                                  %(wind_field, weeutil.weeutil.timestamp_to_string(payload['data']['dateTime']), to_sorted_string(payload)))
-                data = collector.add_data(wind_field, payload['data'])
+                                  %(fieldname, weeutil.weeutil.timestamp_to_string(payload['data']['dateTime']), to_sorted_string(payload)))
+                data = collector.add_data(fieldname, payload['data'])
             else:
                 data = payload['data']
+
             if data:
                 self.logger.debug("TopicManager data-> outgoing %s: %s"
                                   %(topic, to_sorted_string(data)))
@@ -585,6 +609,10 @@ class TopicManager(object):
     def get_qos(self, topic):
         """ Get the QOS. """
         return self._get_value('qos', topic)
+
+    def get_type(self, topic):
+        """ Get the type. """
+        return self._get_value('type', topic)
 
     def _get_unit_system(self, topic):
         return self._get_value('unit_system', topic)

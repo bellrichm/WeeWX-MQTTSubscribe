@@ -18,7 +18,10 @@
           "payloads": ["json", "keyword", "individual"],
           "units": 17,
           "records": [
-            {}
+            {
+            },
+            {
+            }
           ]
         },
         {

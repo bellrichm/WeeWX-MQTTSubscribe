@@ -45,6 +45,8 @@
           "units": 17,
           "records": [
             {
+            },
+            {
               "dateTime": null,
               "usUnits": 17,
               "rain": 0
@@ -79,7 +81,7 @@
       ],
       "results": [
         {
-          "test": ["accumulate", "single", "service", "driver"],
+          "test": ["single", "driver"],
           "payloads": ["json", "keyword", "individual"],
           "units": 17,
           "records": [
@@ -89,7 +91,21 @@
               "rain": 1
             }
           ]
-        }
+        },
+        {
+          "test": ["accumulate", "service"],
+          "payloads": ["json", "keyword", "individual"],
+          "units": 17,
+          "records": [
+            {
+            },
+            {
+              "dateTime": null,
+              "usUnits": 17,
+              "rain": 1
+            }
+          ]
+        }        
       ]
     },
     {
@@ -106,7 +122,7 @@
       ],
       "results": [
         {
-          "test": ["accumulate", "single", "service", "driver"],
+          "test": ["single", "driver"],
           "payloads": ["json", "keyword", "individual"
           ],
           "units": 17,
@@ -117,7 +133,22 @@
               "rain": 2
             }
           ]
-        }
+        },
+        {
+          "test": ["accumulate", "service"],
+          "payloads": ["json", "keyword", "individual"
+          ],
+          "units": 17,
+          "records": [
+            {
+            },
+            {
+              "dateTime": null,
+              "usUnits": 17,
+              "rain": 2
+            }
+          ]
+        }        
       ]
     }
   ]

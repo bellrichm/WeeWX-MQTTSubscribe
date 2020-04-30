@@ -131,7 +131,7 @@ class TestOne(unittest.TestCase):
             config_dict = configobj.ConfigObj(test_data['config'])['MQTTSubscribeService']
             testruns = test_data['testruns']
             self.runit(config_dict, testruns, payload)
-    
+
     #@unittest.skip("")
     def test_wind_individual(self):
         payload = 'individual'

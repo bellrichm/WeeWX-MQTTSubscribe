@@ -390,7 +390,8 @@ class TestGetWindQueueData(unittest.TestCase):
             type(mock_CollectData.return_value).add_data = mock.Mock(return_value=collected_data)
             SUT = TopicManager(self.config, mock_logger)
             SUT.append_data(self.topic, self.create_queue_data(), fieldname=self.fieldname)
-            gen = SUT.get_data(self.topic)
+            # ToDo - is this really a good idea?
+            gen = SUT.get_data(SUT.wind_topic)
             data = next(gen, None)
 
             self.assertEqual(data, collected_data)
