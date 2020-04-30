@@ -124,11 +124,7 @@ def wait_on_queue(provider, topic, msg_count, max_waits, sleep_time):
 
 def check(self, test_type, results, expected_results):
     self.longMessage = True
-    msg = "\n\tfor payload of %s" % test_type
-    msg = msg + "\n\t%s" % results
-    msg = msg + "\n\t%s" % expected_results
-    #print(results)
-    #print(expected_results['results'])
+    msg = "\n\t%s\n\t%s" % (results, expected_results)
     self.assertEqual(len(results), len(expected_results), msg)
     i = 0
     for expected_result in expected_results:
@@ -136,16 +132,14 @@ def check(self, test_type, results, expected_results):
         msg = "\n\t%s\n\t%s" %(expected_result, results[i])
         self.assertEqual(len(expected_result), len(results[i]), msg)
         for field in expected_result:
-            msg = "\n\tfor payload of %s in record %i\n" % (test_type, i+1)
-            #msg = msg + "should be in %s" % results[i]
-            self.assertIn(field, results[i], msg)
+            self.assertIn(field, results[i])
             if expected_result[field] is not None:
                 msg = "for payload of %s and field %s in record %i\n" % (test_type, field, i+1)
                 if expected_result[field] == "None": # ToDo - cleanup
-                    msg = msg + "should be none, %s" % results[i][field]
+                    msg = "\n\t for field %s" % field
                     self.assertIsNone(results[i][field], msg)
                 else:
-                    msg = msg + "should be equal %s but is %s" % (expected_result[field], results[i][field])
+                    msg = "\n\t for field %s" % field
                     self.assertEqual(results[i][field], expected_result[field], msg)
         i += 1
 
