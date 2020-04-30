@@ -29,9 +29,8 @@ class TestAccumulatedData(unittest.TestCase):
                 for topic in topics:
                     topic_info = topics[topic]
                     utils.send_msg(utils.send_direct_msg, payload, on_message, topic, topic_info)
-                #utils.send_msg(utils.send_direct_msg, test_type, on_message, topics)
-            end_ts = time.time()
 
+            end_ts = time.time()
             results = testrun['results']
             result = {}
             found = False

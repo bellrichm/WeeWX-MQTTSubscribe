@@ -50,8 +50,6 @@ class TestGetData(unittest.TestCase):
             self.assertTrue(found, "No results for %s" %payload)
             utils.check(self, payload, records, result['records'])
 
-        #print("")
-
 class TestAccumulatedRain(TestGetData):
     #@unittest.skip("")
     def test_accumulatedrain_individual(self):

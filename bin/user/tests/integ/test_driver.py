@@ -27,18 +27,12 @@ class TestDriver(unittest.TestCase):
             config_dict['MQTTSubscribeService']['message_callback'] = {}
         config_dict['MQTTSubscribeService']['message_callback']['type'] = payload
 
-        #message_callback_config = cdict.get('message_callback', None)
-        #message_callback_config['type'] = test_type
-
-        #config_dict['MQTTSubscribeService']['console'] = True
         driver = MQTTSubscribeDriver(**cdict)
 
-        #client_id = 'clientid'
         host = 'localhost'
         port = 1883
         keepalive = 60
 
-        #client = mqtt.Client(client_id)
         userdata = {
             'topics': [],
             'connected_flag': False
@@ -50,10 +44,9 @@ class TestDriver(unittest.TestCase):
 
         max_connect_wait = 1 # ToDo - configure
         i = 1
-        while not userdata['connected_flag']: #wait in loop
+        while not userdata['connected_flag']:
             if i > max_connect_wait:
                 self.fail("Timed out waiting for connections.")
-            #print("waiting to connect")
             time.sleep(1)
             i += 1
 
@@ -71,7 +64,7 @@ class TestDriver(unittest.TestCase):
 
         max_connect2_wait = 1 # ToDo - configure
         i = 1
-        while not userdata2['connected_flag']: #wait in loop
+        while not userdata2['connected_flag']:
             #print("waiting to connect")
             if i > max_connect2_wait:
                 self.fail("Timed out waiting for connection 2.")
@@ -84,7 +77,7 @@ class TestDriver(unittest.TestCase):
                 for topic in topics:
                     topic_info = topics[topic]
                     msg_count = utils.send_msg(utils.send_mqtt_msg, payload, client.publish, topic, topic_info, userdata2, self)
-                    wait_count = utils.wait_on_queue(driver, topic, msg_count, max_waits, 1)
+                    wait_count = utils.wait_on_queue(driver, msg_count, max_waits, 1)
 
                     # If queue not filled, fail now
                     # otherwise will end up in 'infinite' loop in genLoopPackets
@@ -106,9 +99,10 @@ class TestDriver(unittest.TestCase):
             self.assertTrue(found, "No results for %s" %payload)
 
             i = 0
-            while i < len(result['records']): # not great, but no way to know if more records
+            # ToDo not great, but no way to know if more records
+            # could possibly check the queues..
+            while i < len(result['records']): 
                 data = next(gen, None)
-                #print(data)
                 records.append(data)
                 i += 1
 

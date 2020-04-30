@@ -26,8 +26,6 @@ class TestService(unittest.TestCase):
         if not 'message_callback' in config_dict['MQTTSubscribeService']:
             config_dict['MQTTSubscribeService']['message_callback'] = {}
         config_dict['MQTTSubscribeService']['message_callback']['type'] = payload
-        #message_callback_config = cdict.get('message_callback', {})
-        #message_callback_config['type'] = test_type
 
         min_config_dict = {
             'Station': {
@@ -45,8 +43,6 @@ class TestService(unittest.TestCase):
         }
 
         engine = StdEngine(min_config_dict)
-
-        #config_dict['MQTTSubscribeService']['console'] = True
         service = MQTTSubscribeService(engine, config_dict)
 
         host = 'localhost'
@@ -64,8 +60,7 @@ class TestService(unittest.TestCase):
 
         max_connect_wait = 1 # ToDo - configure
         i = 1
-        while not userdata['connected_flag']: #wait in loop
-            #print("waiting to connect")
+        while not userdata['connected_flag']:
             if i > max_connect_wait:
                 self.fail("Timed out waiting for connections.")
             time.sleep(1)
@@ -84,10 +79,9 @@ class TestService(unittest.TestCase):
         client2.loop_start()
         max_connect2_wait = 1 # ToDo - configure
         i = 1
-        while not userdata2['connected_flag']: #wait in loop
+        while not userdata2['connected_flag']:
             if i > max_connect2_wait:
                 self.fail("Timed out waiting for connection 2.")
-            #print("waiting to connect")
             time.sleep(1)
             i += 1
 
@@ -96,9 +90,8 @@ class TestService(unittest.TestCase):
             for topics in testrun['messages']:
                 for topic in topics:
                     topic_info = topics[topic]
-                    #print(topic_info)
                     msg_count = utils.send_msg(utils.send_mqtt_msg, payload, client.publish, topic, topic_info, userdata2, self)
-                    utils.wait_on_queue(service, topic, msg_count, max_waits, 1)
+                    utils.wait_on_queue(service, msg_count, max_waits, 1)
 
             results = testrun['results']
             result = {}
@@ -121,12 +114,10 @@ class TestService(unittest.TestCase):
             record['usUnits'] = units
             new_loop_packet_event = weewx.Event(weewx.NEW_LOOP_PACKET, packet=record)
             service.new_loop_packet(new_loop_packet_event)
-            #records.append(record)
 
             records = [record]
             utils.check(self, payload, records, result['records'])
 
-        #print(records)
         service.shutDown()
         client.disconnect()
         client2.disconnect()

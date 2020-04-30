@@ -106,19 +106,18 @@ def get_callback(payload_type, config_dict, manager, logger):
 
 # A bit of a hack, ok huge, to wait until MQTTSubscribe has queued the data
 # This is useful when debugging MQTTSubscribe with breakpoints
-def wait_on_queue(provider, topic, msg_count, max_waits, sleep_time):
+def wait_on_queue(provider, msg_count, max_waits, sleep_time):
     wait_count = 0
-    if topic is not None:
+    while True:
         queue_count = 0
-        # todo - clean up
-        while queue_count < msg_count and wait_count < max_waits:
-            queue_count = 0
-            for subscribed_topic in provider.subscriber.manager.subscribed_topics:
-                topic_queue = provider.subscriber.manager._get_queue(subscribed_topic)  # pylint: disable=protected-access
-                queue_count = queue_count + len(topic_queue)
-            # print("sleeping")
-            time.sleep(sleep_time)
-            wait_count += 1
+        for subscribed_topic in provider.subscriber.manager.subscribed_topics:
+            topic_queue = provider.subscriber.manager._get_queue(subscribed_topic)  # pylint: disable=protected-access
+            queue_count = queue_count + len(topic_queue)
+
+        wait_count += 1
+        if queue_count >= msg_count or wait_count >= max_waits:
+            break
+        time.sleep(sleep_time)
 
     return wait_count
 
@@ -135,7 +134,7 @@ def check(self, test_type, results, expected_results):
             self.assertIn(field, results[i])
             if expected_result[field] is not None:
                 msg = "for payload of %s and field %s in record %i\n" % (test_type, field, i+1)
-                if expected_result[field] == "None": # ToDo - cleanup
+                if expected_result[field] == "None":
                     msg = "\n\t for field %s" % field
                     self.assertIsNone(results[i][field], msg)
                 else:
