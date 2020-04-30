@@ -52,85 +52,72 @@ class TestGetData(unittest.TestCase):
 class TestAccumulatedRain(TestGetData):
     #@unittest.skip("")
     def test_accumulatedrain_individual(self):
-        payload = 'individual'
         with open("bin/user/tests/integ/data/accumulatedrain.json") as file_pointer:
-            self.runit(payload, file_pointer)
+            self.runit('individual', file_pointer)
 
     #@unittest.skip("")
     def test_accumulatedrain_json(self):
-        payload = 'json'
         with open("bin/user/tests/integ/data/accumulatedrain.json") as file_pointer:
-            self.runit(payload, file_pointer)
+            self.runit('json', file_pointer)
 
     #@unittest.skip("")
     def test_accumulatedrain_keyword(self):
-        payload = 'keyword'
         with open("bin/user/tests/integ/data/accumulatedrain.json") as file_pointer:
-            self.runit(payload, file_pointer)
+            self.runit('keyword', file_pointer)
 
 class TestBasic(TestGetData):
     #@unittest.skip("")
     def test_basic_individual(self):
-        payload = 'individual'
         with open("bin/user/tests/integ/data/basic.json") as file_pointer:
-            self.runit(payload, file_pointer)
+            self.runit('individual', file_pointer)
 
     #@unittest.skip("")
     def test_basic_json(self):
-        payload = 'json'
         with open("bin/user/tests/integ/data/basic.json") as file_pointer:
-            self.runit(payload, file_pointer)
+            self.runit('json', file_pointer)
 
     #@unittest.skip("")
     def test_basic_keyword(self):
-        payload = 'keyword'
         with open("bin/user/tests/integ/data/basic.json") as file_pointer:
-            self.runit(payload, file_pointer)
+            self.runit('keyword', file_pointer)
 
 class TestEmpty(TestGetData):
     #@unittest.skip("")
     def test_empty_individual(self):
-        payload = 'individual'
         with open("bin/user/tests/integ/data/empty.json") as file_pointer:
-            self.runit(payload, file_pointer)
+            self.runit('individual', file_pointer)
 
     #@unittest.skip("")
     def test_empty_json(self):
-        payload = 'json'
         with open("bin/user/tests/integ/data/empty.json") as file_pointer:
-            self.runit(payload, file_pointer)
+            self.runit('json', file_pointer)
 
     #@unittest.skip("")
     def test_empty_keyword(self):
-        payload = 'keyword'
         with open("bin/user/tests/integ/data/empty.json") as file_pointer:
-            self.runit(payload, file_pointer)
+            self.runit('keyword', file_pointer)
 
 class TestIndividualWindTopics(TestGetData):
     #@unittest.skip("")
     def test_wind_individual_topic(self):
-        payload = 'individual'
         with open("bin/user/tests/integ/data/wind-individual.json") as file_pointer:
-            self.runit(payload, file_pointer)
+            self.runit('individual', file_pointer)
 
 class TestWind(TestGetData):
     #@unittest.skip("")
     def test_wind_individual(self):
-        payload = 'individual'
         with open("bin/user/tests/integ/data/wind.json") as file_pointer:
-            self.runit(payload, file_pointer)
+            self.runit('individual', file_pointer)
 
     #@unittest.skip("")
     def test_wind_json(self):
-        payload = 'json'
         with open("bin/user/tests/integ/data/wind.json") as file_pointer:
-            self.runit(payload, file_pointer)
+            self.runit('json', file_pointer)
 
     #@unittest.skip("")
     def test_wind_keyword(self):
-        payload = 'keyword'
         with open("bin/user/tests/integ/data/wind.json") as file_pointer:
-            self.runit(payload, file_pointer)
+            self.runit('keyword', file_pointer)
 
 if __name__ == '__main__':
     unittest.main(exit=False)
