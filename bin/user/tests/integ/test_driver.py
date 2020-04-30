@@ -202,7 +202,7 @@ class TestOne(unittest.TestCase):
             testruns = test_data['testruns']
             self.runit(config_dict, testruns, payload)
 
-    @unittest.skip("")
+    #@unittest.skip("")
     def test_wind_individual(self):
         payload = 'individual'
         with open("bin/user/tests/integ/data/wind.json") as file_pointer:
