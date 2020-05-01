@@ -965,7 +965,11 @@ class MQTTSubscribe(object):
             mqtt.MQTT_LOG_DEBUG: self.logger.debug
         }
 
-        self.client = mqtt.Client(client_id=clientid, clean_session=clean_session)
+        self.userdata = {}
+        self.userdata['connect'] = False
+        self.userdata['connect_rc'] = None
+        self.userdata['connect_flags'] = None
+        self.client = mqtt.Client(client_id=clientid, userdata=self.userdata, clean_session=clean_session)
 
         if log_mqtt:
             self.client.on_log = self._on_log
@@ -1005,6 +1009,12 @@ class MQTTSubscribe(object):
         self.logger.debug("MQTTSubscribe starting loop")
         self.client.loop_start()
 
+        while not self.userdata['connect']:
+            time.sleep(1)
+
+        if self.userdata['connect_rc'] > 0:
+            raise weewx.WeeWxIOError("Unable to connect. Return code is %i flags are %s." % (self.userdata['rc'], self.userdata['flags']))
+
     def disconnect(self):
         """ shut it down """
         self.client.disconnect()
@@ -1021,6 +1031,11 @@ class MQTTSubscribe(object):
         # 6-255: Currently unused.
         self.logger.debug("MQTTSubscribe connected with result code %i" % rc)
         self.logger.debug("MQTTSubscribe connected flags %s" % str(flags))
+
+        userdata['connect'] = True
+        userdata['connect_rc'] = rc
+        userdata['connect_flags'] = flags
+
         for topic in self.manager.subscribed_topics:
             (result, mid) = client.subscribe(topic, self.manager.get_qos(topic))
             self.logger.debug("MQTTSubscribe subscribe to %s has a mid %i and rc %i" %(topic, mid, result))
