@@ -941,11 +941,12 @@ class MQTTSubscribe(object):
         if self.archive_topic and self.archive_topic not in service_dict['topics']:
             raise ValueError("Archive topic %s must be in [[topics]]" % self.archive_topic)
 
+        self.logger.info("MQTTSubscribe version is %s" % VERSION)
+
         self.logger.info("MQTTSubscribe message callback config is %s" % message_callback_config)
         self.logger.info("MQTTSubscribe message callback provider is %s" % message_callback_provider_name)
         self.logger.info("MQTTSubscribe client id is %s" % clientid)
         self.logger.info("MQTTSubscribe client session is %s" % clean_session)
-        self.logger.info("MQTTSubscribe version is %s" % VERSION)
         self.logger.info("MQTTSubscribe host is %s" % host)
         self.logger.info("MQTTSubscribe port is %s" % port)
         self.logger.info("MQTTSubscribe keep alive is %s" % keepalive)
@@ -1053,14 +1054,15 @@ class MQTTSubscribeService(StdService):
 
         binding = service_dict.get('binding', 'loop')
 
-        self.logger.info("MQTTSubscribeService binding is %s" % binding)
-
         if 'archive_topic' in service_dict:
             raise ValueError("archive_topic, %s, is invalid when running as a service" % service_dict['archive_topic'])
 
         self.end_ts = 0 # prime for processing loop packet
 
         self.subscriber = MQTTSubscribe(service_dict, self.logger)
+
+        self.logger.info("MQTTSubscribeService binding is %s" % binding)
+
         self.subscriber.start()
 
         if binding == 'archive':
@@ -1143,9 +1145,9 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice): # (methods not used) py
         self._archive_interval = to_int(stn_dict.get('archive_interval', 300))
         self.archive_topic = stn_dict.get('archive_topic', None)
 
-        self.logger.info("MQTTSubscribeDriver wait before retry is %i" % self.wait_before_retry)
-
         self.subscriber = MQTTSubscribe(stn_dict, self.logger)
+
+        self.logger.info("MQTTSubscribeDriver wait before retry is %i" % self.wait_before_retry)
         self.subscriber.start()
 
     @property
