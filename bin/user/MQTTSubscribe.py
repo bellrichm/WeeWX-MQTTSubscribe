@@ -352,8 +352,9 @@ DRIVER_VERSION = VERSION
 
 class CollectData(object):
     """ Manage fields that are 'grouped together', like wind data. """
-    def __init__(self, fields):
+    def __init__(self, fields, unit_system):
         self.fields = fields
+        self.unit_system = unit_system
         self.data = {}
 
     def add_data(self, field, in_data):
@@ -361,16 +362,20 @@ class CollectData(object):
         old_data = {}
         if field in self.data:
             old_data = dict(self.data)
+            old_data['usUnits'] = self.unit_system
             self.data = {}
 
-        self.data[field] = self.data[field] = in_data[field]
-        self.data['usUnits'] = in_data['usUnits']
+        target_data = weewx.units.to_std_system(in_data, self.unit_system)
+
+        self.data[field] = target_data[field]
         self.data['dateTime'] = in_data['dateTime']
 
         return old_data
 
     def get_data(self):
         """ Return the collection. """
+        if self.data != {}:
+            self.data['usUnits'] = self.unit_system
         return self.data
 
 class TopicManager(object):
@@ -439,6 +444,7 @@ class TopicManager(object):
         # Add the collector queue as a subscribed topic so that data can retrieved from it
         # Yes, this is a bit of a hack.
         # Note, it would not be too hard to allow additional fields via the [fields] configuration option
+        self.collected_units = weewx.units.unit_constants[default_unit_system_name]
         self.collected_fields = ['windGust', 'windGustDir', 'windDir', 'windSpeed']
         self.collected_queue = deque()
         self.collected_topic = "%f-%s" % (time.time(), '-'.join(self.collected_fields))
@@ -519,7 +525,7 @@ class TopicManager(object):
         """ Get data off the queue of MQTT data. """
         queue = self._get_queue(topic)
         self.logger.trace("TopicManager starting queue %s size is: %i" %(topic, len(queue)))
-        collector = CollectData(self.collected_fields)
+        collector = CollectData(self.collected_fields, self.collected_units)
         while queue:
             if queue[0]['data']['dateTime'] > end_ts:
                 self.logger.trace("TopicManager leaving queue: %s size: %i content: %s" %(topic, len(queue), queue[0]))
