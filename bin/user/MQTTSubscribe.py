@@ -245,7 +245,7 @@ try: # pragma: no cover
                     self._logmsg.addHandler(handler)
 
             if filename is not None:
-                formatter = logging.Formatter("%(levelname)s %(message)s", "%Y-%m-%d %H:%M:%S")
+                formatter = logging.Formatter("%(asctime)s %(levelname)s %(message)s", "%Y-%m-%d %H:%M:%S")
                 file_handler = logging.FileHandler(filename, mode='w')
                 file_handler.setLevel(self.level)
                 file_handler.setFormatter(formatter)
