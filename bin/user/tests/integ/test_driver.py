@@ -101,6 +101,7 @@ class TestDriver(unittest.TestCase):
             i = 0
             # ToDo not great, but no way to know if more records
             # could possibly check the queues..
+            # Todo this needs to be fixed for new debug code
             while i < len(result['records']):
                 data = next(gen, None)
                 records.append(data)
