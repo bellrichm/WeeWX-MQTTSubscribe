@@ -784,6 +784,16 @@ class MessageCallbackProvider(object):
 
         return None
 
+    def _update_data(self, orig_name, orig_value):
+        value = self._convert_value(orig_name, orig_value)
+
+        if self.fields.get(orig_name, {}).get('contains_total', False):
+            current_value = value
+            value = self._calc_increment(orig_name, current_value, self.previous_values.get(orig_name))
+            self.previous_values[orig_name] = current_value
+
+        return self.fields.get(orig_name, {}).get('name', orig_name), value
+
     def _log_message(self, msg):
         self.logger.trace("MessageCallbackProvider For %s has QOS of %i and retain of %s received: %s"
                           %(msg.topic, msg.qos, msg.retain, msg.payload))
@@ -813,15 +823,8 @@ class MessageCallbackProvider(object):
                     self.logger.error("**** MessageCallbackProvider Ignoring field=%s " % field)
                     continue
 
-                name = field[:eq_index].strip()
-                value = self._convert_value(name, field[eq_index + 1:].strip())
-
-                if self.fields.get(name, {}).get('contains_total', False):
-                    current_value = value
-                    value = self._calc_increment(name, current_value, self.previous_values.get(name))
-                    self.previous_values[name] = current_value
-
-                data[self.fields.get(name, {}).get('name', name)] = value
+                (fieldname, value) = self._update_data(field[:eq_index].strip(), field[eq_index + 1:].strip())
+                data[fieldname] = value
 
             if data:
                 self.topic_manager.append_data(msg.topic, data)
@@ -849,13 +852,8 @@ class MessageCallbackProvider(object):
             data_final = {}
             # ToDo - if I have to loop, removes benefit of _bytefy, time to remove it?
             for key in data_flattened:
-                value2 = self._convert_value(key, data_flattened[key])
-                if self.fields.get(key, {}).get('contains_total', False):
-                    current_value = value2
-                    value2 = self._calc_increment(key, current_value, self.previous_values.get(key))
-                    self.previous_values[key] = current_value
-
-                data_final[self.fields.get(key, {}).get('name', key)] = value2
+                (fieldname, value) = self._update_data(key, data_flattened[key])
+                data_final[fieldname] = value
 
             self.topic_manager.append_data(msg.topic, data_final)
 
@@ -881,14 +879,8 @@ class MessageCallbackProvider(object):
             if PY2:
                 key = key.encode('utf-8')
 
-            value = self._convert_value(key, payload_str)
 
-            if self.fields.get(key, {}).get('contains_total', False):
-                current_value = value
-                value = self._calc_increment(key, current_value, self.previous_values.get(key))
-                self.previous_values[key] = current_value
-
-            fieldname = self.fields.get(key, {}).get('name', key)
+            (fieldname, value) = self._update_data(key, payload_str)
 
             data = {}
             data[fieldname] = value
