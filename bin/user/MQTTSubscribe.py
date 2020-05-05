@@ -688,19 +688,22 @@ class MessageCallbackProvider(object):
         if self.type not in self.callbacks:
             raise ValueError("Invalid type configured: %s" % self.type)
 
+
+
+        if self.fields:
+            for field in self.fields.sections:
+                if  'contains_total' in self.fields[field]:
+                    self.fields[field]['contains_total'] = to_bool(self.fields[field]['contains_total'])
+                if 'conversion_type' in self.fields[field]:
+                    self.fields[field]['conversion_type'] = self.fields[field]['conversion_type'].lower()
+
         self.set_backwards_compatibility(label_map, orig_fields, contains_total)
-
-        for field in self.fields:
-            if  'contains_total' in self.fields[field]:
-                self.fields[field]['contains_total'] = to_bool(self.fields[field]['contains_total'])
-            if 'conversion_type' in self.fields[field]:
-                self.fields[field]['conversion_type'] = self.fields[field]['conversion_type'].lower()
-
         self.previous_values = {}
 
     def set_backwards_compatibility(self, label_map, orig_fields, contains_total):
         """ Any config for backwards compatibility. """
         # backwards compatible, add the label map
+        # ToDo - fix side affect of setting self.fields
         for field in label_map:
             if not field in orig_fields:
                 self.fields[field] = {}

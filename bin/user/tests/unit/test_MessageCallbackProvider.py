@@ -8,6 +8,7 @@ from __future__ import with_statement
 import unittest
 import mock
 
+import configobj
 import copy
 import json
 import random
@@ -32,25 +33,25 @@ class Msg(object):
 
 class TestFieldsConfiguration(unittest.TestCase):
     def test_field_in_label_map(self):
-        message_handler_config = {}
-        message_handler_config['type'] = 'individual'
+        message_handler_config_dict = {}
+        message_handler_config_dict['type'] = 'individual'
 
         input_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])  # pylint: disable=unused-variable
         output_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])  # pylint: disable=unused-variable
 
         label_map = {}
         label_map[input_name] = output_name
-        message_handler_config['label_map'] = label_map
+        message_handler_config_dict['label_map'] = label_map
 
-        SUT = MessageCallbackProvider(message_handler_config, None, None)
+        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), None, None)
 
         self.assertIn(input_name, SUT.fields)
         self.assertIn('name', SUT.fields[input_name])
         self.assertEqual(SUT.fields[input_name]['name'], output_name)
 
     def test_field_in_label_map_and_fields_with_name(self):
-        message_handler_config = {}
-        message_handler_config['type'] = 'individual'
+        message_handler_config_dict = {}
+        message_handler_config_dict['type'] = 'individual'
 
         input_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])  # pylint: disable=unused-variable
         output_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])  # pylint: disable=unused-variable
@@ -58,23 +59,23 @@ class TestFieldsConfiguration(unittest.TestCase):
 
         label_map = {}
         label_map[input_name] = label_name
-        message_handler_config['label_map'] = label_map
+        message_handler_config_dict['label_map'] = label_map
 
         fields = {}
         field = {}
         field['name'] = output_name
         fields[input_name] = field
-        message_handler_config['fields'] = fields
+        message_handler_config_dict['fields'] = fields
 
-        SUT = MessageCallbackProvider(message_handler_config, None, None)
+        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), None, None)
 
         self.assertIn(input_name, SUT.fields)
         self.assertIn('name', SUT.fields[input_name])
         self.assertEqual(SUT.fields[input_name]['name'], output_name)
 
     def test_field_in_label_map_and_fields_without_name(self):
-        message_handler_config = {}
-        message_handler_config['type'] = 'individual'
+        message_handler_config_dict = {}
+        message_handler_config_dict['type'] = 'individual'
 
         input_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])  # pylint: disable=unused-variable
         #output_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])  # pylint: disable=unused-variable
@@ -82,14 +83,14 @@ class TestFieldsConfiguration(unittest.TestCase):
 
         label_map = {}
         label_map[input_name] = label_name
-        message_handler_config['label_map'] = label_map
+        message_handler_config_dict['label_map'] = label_map
 
         fields = {}
         field = {}
         fields[input_name] = field
-        message_handler_config['fields'] = fields
+        message_handler_config_dict['fields'] = fields
 
-        SUT = MessageCallbackProvider(message_handler_config, None, None)
+        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), None, None)
 
         self.assertIn(input_name, SUT.fields)
         self.assertIn('name', SUT.fields[input_name])
@@ -97,8 +98,8 @@ class TestFieldsConfiguration(unittest.TestCase):
 
 
     def test_field_in_label_map_and_fields_and_contains_total(self):
-        message_handler_config = {}
-        message_handler_config['type'] = 'individual'
+        message_handler_config_dict = {}
+        message_handler_config_dict['type'] = 'individual'
 
         input_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])  # pylint: disable=unused-variable
         output_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])  # pylint: disable=unused-variable
@@ -106,19 +107,19 @@ class TestFieldsConfiguration(unittest.TestCase):
 
         label_map = {}
         label_map[input_name] = label_name
-        message_handler_config['label_map'] = label_map
+        message_handler_config_dict['label_map'] = label_map
 
         fields = {}
         field = {}
         field['name'] = output_name
         field['contains_total'] = False
         fields[input_name] = field
-        message_handler_config['fields'] = fields
+        message_handler_config_dict['fields'] = fields
 
         contains_total = [input_name]
-        message_handler_config['contains_total'] = contains_total
+        message_handler_config_dict['contains_total'] = contains_total
 
-        SUT = MessageCallbackProvider(message_handler_config, None, None)
+        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), None, None)
 
         self.assertIn(input_name, SUT.fields)
         self.assertIn('name', SUT.fields[input_name])
@@ -126,19 +127,19 @@ class TestFieldsConfiguration(unittest.TestCase):
         self.assertFalse(SUT.fields[input_name]['contains_total'])
 
     def test_field_in_label_map_and_contains_total(self):
-        message_handler_config = {}
-        message_handler_config['type'] = 'individual'
+        message_handler_config_dict = {}
+        message_handler_config_dict['type'] = 'individual'
 
         input_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])  # pylint: disable=unused-variable
         label_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])  # pylint: disable=unused-variable
         label_map = {}
         label_map[input_name] = label_name
-        message_handler_config['label_map'] = label_map
+        message_handler_config_dict['label_map'] = label_map
 
         contains_total = [input_name]
-        message_handler_config['contains_total'] = contains_total
+        message_handler_config_dict['contains_total'] = contains_total
 
-        SUT = MessageCallbackProvider(message_handler_config, None, None)
+        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), None, None)
 
         self.assertIn(input_name, SUT.fields)
         self.assertIn('name', SUT.fields[input_name])
@@ -146,8 +147,8 @@ class TestFieldsConfiguration(unittest.TestCase):
         self.assertTrue(SUT.fields[input_name]['contains_total'])
 
     def test_field_in_fields(self):
-        message_handler_config = {}
-        message_handler_config['type'] = 'individual'
+        message_handler_config_dict = {}
+        message_handler_config_dict['type'] = 'individual'
 
         input_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])  # pylint: disable=unused-variable
         output_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])  # pylint: disable=unused-variable
@@ -157,9 +158,9 @@ class TestFieldsConfiguration(unittest.TestCase):
         field['name'] = output_name
         field['contains_total'] = False
         fields[input_name] = field
-        message_handler_config['fields'] = fields
+        message_handler_config_dict['fields'] = fields
 
-        SUT = MessageCallbackProvider(message_handler_config, None, None)
+        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), None, None)
 
         self.assertIn(input_name, SUT.fields)
         self.assertIn('name', SUT.fields[input_name])
@@ -167,8 +168,8 @@ class TestFieldsConfiguration(unittest.TestCase):
         self.assertFalse(SUT.fields[input_name]['contains_total'])
 
     def test_field_in_fields_and_contains_total(self):
-        message_handler_config = {}
-        message_handler_config['type'] = 'individual'
+        message_handler_config_dict = {}
+        message_handler_config_dict['type'] = 'individual'
 
         input_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])  # pylint: disable=unused-variable
         output_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])  # pylint: disable=unused-variable
@@ -178,12 +179,12 @@ class TestFieldsConfiguration(unittest.TestCase):
         field['name'] = output_name
         field['contains_total'] = False
         fields[input_name] = field
-        message_handler_config['fields'] = fields
+        message_handler_config_dict['fields'] = fields
 
         contains_total = [input_name]
-        message_handler_config['contains_total'] = contains_total
+        message_handler_config_dict['contains_total'] = contains_total
 
-        SUT = MessageCallbackProvider(message_handler_config, None, None)
+        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), None, None)
 
         self.assertIn(input_name, SUT.fields)
         self.assertIn('name', SUT.fields[input_name])
@@ -191,22 +192,22 @@ class TestFieldsConfiguration(unittest.TestCase):
         self.assertFalse(SUT.fields[input_name]['contains_total'])
 
     def test_field_in_contains_total(self):
-        message_handler_config = {}
-        message_handler_config['type'] = 'individual'
+        message_handler_config_dict = {}
+        message_handler_config_dict['type'] = 'individual'
 
         input_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])  # pylint: disable=unused-variable
 
         contains_total = [input_name]
-        message_handler_config['contains_total'] = contains_total
+        message_handler_config_dict['contains_total'] = contains_total
 
-        SUT = MessageCallbackProvider(message_handler_config, None, None)
+        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), None, None)
 
         self.assertNotIn('name', SUT.fields[input_name])
         self.assertTrue(SUT.fields[input_name]['contains_total'])
 
     def test_contains_total_is_bool(self):
-        message_handler_config = {}
-        message_handler_config['type'] = 'individual'
+        message_handler_config_dict = {}
+        message_handler_config_dict['type'] = 'individual'
 
         input_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])  # pylint: disable=unused-variable
 
@@ -214,17 +215,17 @@ class TestFieldsConfiguration(unittest.TestCase):
         field = {}
         field['contains_total'] = 'false'
         fields[input_name] = field
-        message_handler_config['fields'] = fields
+        message_handler_config_dict['fields'] = fields
 
-        SUT = MessageCallbackProvider(message_handler_config, None, None)
+        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), None, None)
 
         self.assertIn(input_name, SUT.fields)
         self.assertIn('contains_total', SUT.fields[input_name])
         self.assertIsInstance(SUT.fields[input_name]['contains_total'], bool)
 
     def test_type_is_lowercase(self):
-        message_handler_config = {}
-        message_handler_config['type'] = 'individual'
+        message_handler_config_dict = {}
+        message_handler_config_dict['type'] = 'individual'
 
         input_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])  # pylint: disable=unused-variable
         conversion_type = 'INT'
@@ -233,9 +234,9 @@ class TestFieldsConfiguration(unittest.TestCase):
         field = {}
         field['conversion_type'] = conversion_type
         fields[input_name] = field
-        message_handler_config['fields'] = fields
+        message_handler_config_dict['fields'] = fields
 
-        SUT = MessageCallbackProvider(message_handler_config, None, None)
+        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), None, None)
 
         self.assertIn(input_name, SUT.fields)
         self.assertIn('conversion_type', SUT.fields[input_name])
@@ -243,46 +244,46 @@ class TestFieldsConfiguration(unittest.TestCase):
 
 class TestGetDefaultCallBacks(unittest.TestCase):
     def test_get_unknown_payload_type(self):
-        message_handler_config = {}
+        message_handler_config_dict = {}
         payload_type = 'foobar'
-        message_handler_config['type'] = payload_type
+        message_handler_config_dict['type'] = payload_type
 
         with self.assertRaises(ValueError) as context:
-            MessageCallbackProvider(message_handler_config, None, None)
+            MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), None, None)
 
         self.assertEqual(str(context.exception), "Invalid type configured: %s" % payload_type)
 
     def test_get_individual_payload_type(self):
-        message_handler_config = {}
-        message_handler_config['type'] = 'individual'
+        message_handler_config_dict = {}
+        message_handler_config_dict['type'] = 'individual'
 
-        SUT = MessageCallbackProvider(message_handler_config, None, None)
+        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), None, None)
 
         callback = SUT.get_callback()
         self.assertEqual(callback, SUT._on_message_individual)
 
     def test_get_json_payload_type(self):
-        message_handler_config = {}
-        message_handler_config['type'] = 'json'
+        message_handler_config_dict = {}
+        message_handler_config_dict['type'] = 'json'
 
-        SUT = MessageCallbackProvider(message_handler_config, None, None)
+        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), None, None)
 
         callback = SUT.get_callback()
         self.assertEqual(callback, SUT._on_message_json)
 
     def test_get_keyword_payload_type(self):
-        message_handler_config = {}
-        message_handler_config['type'] = 'keyword'
+        message_handler_config_dict = {}
+        message_handler_config_dict['type'] = 'keyword'
 
-        SUT = MessageCallbackProvider(message_handler_config, None, None)
+        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), None, None)
 
         callback = SUT.get_callback()
         self.assertEqual(callback, SUT._on_message_keyword)
 
 class TestConversionType(unittest.TestCase):
     def test_bool_conversion(self):
-        message_handler_config = {}
-        message_handler_config['type'] = 'individual'
+        message_handler_config_dict = {}
+        message_handler_config_dict['type'] = 'individual'
 
         input_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])  # pylint: disable=unused-variable
         conversion_type = 'bool'
@@ -292,9 +293,9 @@ class TestConversionType(unittest.TestCase):
         field = {}
         field['conversion_type'] = conversion_type
         fields[input_name] = field
-        message_handler_config['fields'] = fields
+        message_handler_config_dict['fields'] = fields
 
-        SUT = MessageCallbackProvider(message_handler_config, None, None)
+        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), None, None)
 
         new_value = SUT._convert_value(input_name, value)
 
@@ -302,8 +303,8 @@ class TestConversionType(unittest.TestCase):
         self.assertFalse(new_value)
 
     def test_float_conversion(self):
-        message_handler_config = {}
-        message_handler_config['type'] = 'individual'
+        message_handler_config_dict = {}
+        message_handler_config_dict['type'] = 'individual'
 
         input_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])  # pylint: disable=unused-variable
         conversion_type = 'float'
@@ -314,9 +315,9 @@ class TestConversionType(unittest.TestCase):
         field = {}
         field['conversion_type'] = conversion_type
         fields[input_name] = field
-        message_handler_config['fields'] = fields
+        message_handler_config_dict['fields'] = fields
 
-        SUT = MessageCallbackProvider(message_handler_config, None, None)
+        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), None, None)
 
         new_value = SUT._convert_value(input_name, value)
 
@@ -324,8 +325,8 @@ class TestConversionType(unittest.TestCase):
         self.assertEqual(new_value, value_float)
 
     def test_int_conversion(self):
-        message_handler_config = {}
-        message_handler_config['type'] = 'individual'
+        message_handler_config_dict = {}
+        message_handler_config_dict['type'] = 'individual'
 
         input_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])  # pylint: disable=unused-variable
         conversion_type = 'int'
@@ -336,9 +337,9 @@ class TestConversionType(unittest.TestCase):
         field = {}
         field['conversion_type'] = conversion_type
         fields[input_name] = field
-        message_handler_config['fields'] = fields
+        message_handler_config_dict['fields'] = fields
 
-        SUT = MessageCallbackProvider(message_handler_config, None, None)
+        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), None, None)
 
         new_value = SUT._convert_value(input_name, value)
 
@@ -346,8 +347,8 @@ class TestConversionType(unittest.TestCase):
         self.assertEqual(new_value, value_int)
 
     def test_default_conversion(self):
-        message_handler_config = {}
-        message_handler_config['type'] = 'individual'
+        message_handler_config_dict = {}
+        message_handler_config_dict['type'] = 'individual'
 
         input_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])  # pylint: disable=unused-variable
         value_float = round(random.uniform(10, 100), 2)
@@ -356,9 +357,9 @@ class TestConversionType(unittest.TestCase):
         fields = {}
         field = {}
         fields[input_name] = field
-        message_handler_config['fields'] = fields
+        message_handler_config_dict['fields'] = fields
 
-        SUT = MessageCallbackProvider(message_handler_config, None, None)
+        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), None, None)
 
         new_value = SUT._convert_value(input_name, value)
 
@@ -366,8 +367,8 @@ class TestConversionType(unittest.TestCase):
         self.assertEqual(new_value, value_float)
 
     def test_no_conversion(self):
-        message_handler_config = {}
-        message_handler_config['type'] = 'individual'
+        message_handler_config_dict = {}
+        message_handler_config_dict['type'] = 'individual'
 
         input_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])  # pylint: disable=unused-variable
         conversion_type = 'None'
@@ -377,9 +378,9 @@ class TestConversionType(unittest.TestCase):
         field = {}
         field['conversion_type'] = conversion_type
         fields[input_name] = field
-        message_handler_config['fields'] = fields
+        message_handler_config_dict['fields'] = fields
 
-        SUT = MessageCallbackProvider(message_handler_config, None, None)
+        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), None, None)
 
         new_value = SUT._convert_value(input_name, value)
 
@@ -394,12 +395,12 @@ class TestKeywordload(unittest.TestCase):
         'outTemp': round(random.uniform(1, 100), 2)
     }
 
-    message_handler_config = {}
-    message_handler_config['type'] = 'keyword'
+    message_handler_config_dict = {}
+    message_handler_config_dict['type'] = 'keyword'
 
     def test_payload_empty(self):
         mock_logger = mock.Mock(spec=Logger)
-        SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, None)
+        SUT = MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, None)
 
         payload = ''
         payload = payload.encode('UTF-8')
@@ -411,7 +412,7 @@ class TestKeywordload(unittest.TestCase):
 
     def test_payload_bad_data(self):
         mock_logger = mock.Mock(spec=Logger)
-        SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, None)
+        SUT = MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, None)
 
         msg = Msg(self.topic, 'field=value', 0, 0)
 
@@ -420,7 +421,7 @@ class TestKeywordload(unittest.TestCase):
 
     def test_payload_missing_delimiter(self):
         mock_logger = mock.Mock(spec=Logger)
-        SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, None)
+        SUT = MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, None)
 
         msg = Msg(self.topic, 'field1=1 field2=2', 0, 0)
 
@@ -429,7 +430,7 @@ class TestKeywordload(unittest.TestCase):
 
     def test_payload_missing_separator(self):
         mock_logger = mock.Mock(spec=Logger)
-        SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, None)
+        SUT = MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, None)
 
         payload = ' field:1'
         payload = payload.encode('UTF-8')
@@ -443,7 +444,7 @@ class TestKeywordload(unittest.TestCase):
         mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
 
-        SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, mock_manager)
+        SUT = MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
 
         payload_dict = dict(self.payload_dict)
         payload_dict['usUnits'] = random.randint(1, 10)
@@ -466,7 +467,7 @@ class TestKeywordload(unittest.TestCase):
         mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
 
-        SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, mock_manager)
+        SUT = MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
 
         payload_dict = dict(self.payload_dict)
         payload_dict['dateTime'] = round(time.time(), 2)
@@ -488,7 +489,7 @@ class TestKeywordload(unittest.TestCase):
         mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
 
-        SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, mock_manager)
+        SUT = MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
 
         payload_dict = dict(self.payload_dict)
         payload_dict['dateTime'] = round(time.time(), 2)
@@ -511,11 +512,11 @@ class TestKeywordload(unittest.TestCase):
         mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
 
-        message_handler_config = {}
-        message_handler_config['type'] = 'keyword'
-        message_handler_config['contains_total'] = 'inTemp'
+        message_handler_config_dict = {}
+        message_handler_config_dict['type'] = 'keyword'
+        message_handler_config_dict['contains_total'] = 'inTemp'
 
-        SUT = MessageCallbackProvider(message_handler_config, mock_logger, mock_manager)
+        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), mock_logger, mock_manager)
 
         payload_dict = dict(self.payload_dict)
         payload_dict['dateTime'] = round(time.time(), 2)
@@ -543,11 +544,11 @@ class TestKeywordload(unittest.TestCase):
         mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
 
-        message_handler_config = {}
-        message_handler_config['type'] = 'keyword'
-        message_handler_config['contains_total'] = 'inTemp'
+        message_handler_config_dict = {}
+        message_handler_config_dict['type'] = 'keyword'
+        message_handler_config_dict['contains_total'] = 'inTemp'
 
-        SUT = MessageCallbackProvider(message_handler_config, mock_logger, mock_manager)
+        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), mock_logger, mock_manager)
         prev_temp = round(random.uniform(101, 200), 2)
         SUT.previous_values['inTemp'] = prev_temp
 
@@ -577,12 +578,12 @@ class TestKeywordload(unittest.TestCase):
         mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
 
-        message_handler_config = {}
-        message_handler_config['type'] = 'keyword'
-        message_handler_config['contains_total'] = 'inTemp'
+        message_handler_config_dict = {}
+        message_handler_config_dict['type'] = 'keyword'
+        message_handler_config_dict['contains_total'] = 'inTemp'
         prev_temp = round(random.uniform(1, 9), 2)
 
-        SUT = MessageCallbackProvider(message_handler_config, mock_logger, mock_manager)
+        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), mock_logger, mock_manager)
         SUT.previous_values['inTemp'] = prev_temp
 
         payload_dict = dict(self.payload_dict)
@@ -614,12 +615,12 @@ class TestJsonPayload(unittest.TestCase):
         'outTemp': round(random.uniform(1, 100), 2)
     }
 
-    message_handler_config = {}
-    message_handler_config['type'] = 'json'
+    message_handler_config_dict = {}
+    message_handler_config_dict['type'] = 'json'
 
     def test_invalid_json(self):
         mock_logger = mock.Mock(spec=Logger)
-        SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, None)
+        SUT = MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, None)
 
         msg = Msg(self.topic,
                   ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),  # pylint: disable=unused-variable
@@ -631,7 +632,7 @@ class TestJsonPayload(unittest.TestCase):
 
     def test_empty_payload(self):
         mock_logger = mock.Mock(spec=Logger)
-        SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, None)
+        SUT = MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, None)
 
         msg = Msg(self.topic, '', 0, 0)
 
@@ -642,7 +643,7 @@ class TestJsonPayload(unittest.TestCase):
         mock_manager = mock.Mock(spec=TopicManager)
         stub_logger = test_weewx_stubs.Logger(console=True)
 
-        SUT = MessageCallbackProvider(self.message_handler_config, stub_logger, mock_manager)
+        SUT = MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), stub_logger, mock_manager)
 
         payload_dict = dict(self.payload_dict)
         payload_dict['usUnits'] = random.randint(1, 10)
@@ -662,7 +663,7 @@ class TestJsonPayload(unittest.TestCase):
         mock_manager = mock.Mock(spec=TopicManager)
         stub_logger = test_weewx_stubs.Logger(console=True)
 
-        SUT = MessageCallbackProvider(self.message_handler_config, stub_logger, mock_manager)
+        SUT = MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), stub_logger, mock_manager)
 
         payload_dict = dict(self.payload_dict)
         payload_dict['dateTime'] = time.time()
@@ -682,7 +683,7 @@ class TestJsonPayload(unittest.TestCase):
         mock_manager = mock.Mock(spec=TopicManager)
         stub_logger = test_weewx_stubs.Logger(console=True)
 
-        SUT = MessageCallbackProvider(self.message_handler_config, stub_logger, mock_manager)
+        SUT = MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), stub_logger, mock_manager)
 
         payload_dict = dict(self.payload_dict)
         payload_dict['dateTime'] = time.time()
@@ -707,10 +708,10 @@ class TestJsonPayload(unittest.TestCase):
         mock_manager = mock.Mock(spec=TopicManager)
         stub_logger = test_weewx_stubs.Logger(console=True)
 
-        message_handler_config = copy.deepcopy(self.message_handler_config)
-        message_handler_config['contains_total'] = 'inTemp'
+        message_handler_config_dict = copy.deepcopy(self.message_handler_config_dict)
+        message_handler_config_dict['contains_total'] = 'inTemp'
 
-        SUT = MessageCallbackProvider(message_handler_config, stub_logger, mock_manager)
+        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), stub_logger, mock_manager)
 
         payload_dict = dict(self.payload_dict)
         payload_dict['dateTime'] = time.time()
@@ -739,11 +740,11 @@ class TestJsonPayload(unittest.TestCase):
         mock_manager = mock.Mock(spec=TopicManager)
         stub_logger = test_weewx_stubs.Logger(console=True)
 
-        message_handler_config = copy.deepcopy(self.message_handler_config)
-        message_handler_config['contains_total'] = 'inTemp'
+        message_handler_config_dict = copy.deepcopy(self.message_handler_config_dict)
+        message_handler_config_dict['contains_total'] = 'inTemp'
         prev_temp = round(random.uniform(101, 200), 2)
 
-        SUT = MessageCallbackProvider(message_handler_config, stub_logger, mock_manager)
+        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), stub_logger, mock_manager)
         SUT.previous_values['inTemp'] = prev_temp
 
         payload_dict = dict(self.payload_dict)
@@ -773,11 +774,11 @@ class TestJsonPayload(unittest.TestCase):
         mock_manager = mock.Mock(spec=TopicManager)
         stub_logger = test_weewx_stubs.Logger(console=True)
 
-        message_handler_config = copy.deepcopy(self.message_handler_config)
-        message_handler_config['contains_total'] = 'inTemp'
+        message_handler_config_dict = copy.deepcopy(self.message_handler_config_dict)
+        message_handler_config_dict['contains_total'] = 'inTemp'
         prev_temp = round(random.uniform(1, 9), 2)
 
-        SUT = MessageCallbackProvider(message_handler_config, stub_logger, mock_manager)
+        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), stub_logger, mock_manager)
         SUT.previous_values['inTemp'] = prev_temp
 
         payload_dict = dict(self.payload_dict)
@@ -807,7 +808,7 @@ class TestJsonPayload(unittest.TestCase):
         mock_manager = mock.Mock(spec=TopicManager)
         stub_logger = test_weewx_stubs.Logger(console=True)
 
-        SUT = MessageCallbackProvider(self.message_handler_config, stub_logger, mock_manager)
+        SUT = MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), stub_logger, mock_manager)
 
         payload_dict = {
             'nested01': {
@@ -841,12 +842,12 @@ class TestJsonPayload(unittest.TestCase):
         mock_manager = mock.Mock(spec=TopicManager)
         stub_logger = test_weewx_stubs.Logger(console=True)
 
-        message_handler_config = copy.deepcopy(self.message_handler_config)
-        message_handler_config['fields'] = {}
-        message_handler_config['fields']['nested01_inTemp'] = {}
-        message_handler_config['fields']['nested01_inTemp']['name'] = 'inTemp'
+        message_handler_config_dict = copy.deepcopy(self.message_handler_config_dict)
+        message_handler_config_dict['fields'] = {}
+        message_handler_config_dict['fields']['nested01_inTemp'] = {}
+        message_handler_config_dict['fields']['nested01_inTemp']['name'] = 'inTemp'
 
-        SUT = MessageCallbackProvider(message_handler_config, stub_logger, mock_manager)
+        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), stub_logger, mock_manager)
 
         payload_dict = {
             'nested01': {
@@ -888,12 +889,12 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         'outTemp': round(random.uniform(1, 100), 2)
     }
 
-    message_handler_config = {}
-    message_handler_config['type'] = 'individual'
+    message_handler_config_dict = {}
+    message_handler_config_dict['type'] = 'individual'
 
     def test_bad_payload(self):
         mock_logger = mock.Mock(spec=Logger)
-        SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, None)
+        SUT = MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, None)
 
         msg = Msg(self.topic,
                   ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),  # pylint: disable=unused-variable
@@ -905,7 +906,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
 
     def test_empty_payload(self):
         mock_logger = mock.Mock(spec=Logger)
-        SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, None)
+        SUT = MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, None)
 
         msg = Msg(self.topic, '', 0, 0)
 
@@ -916,7 +917,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
 
-        SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, mock_manager)
+        SUT = MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
 
         payload = None
         msg = Msg(self.topic, payload, 0, 0)
@@ -933,7 +934,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         else:
             topic = self.topic
 
-        SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, mock_manager)
+        SUT = MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
 
         payload = round(random.uniform(1, 100), 2)
         if PY2:
@@ -956,10 +957,10 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         mock_logger = mock.Mock(spec=Logger)
 
         topic = 'inTemp'
-        message_handler_config = copy.deepcopy(self.message_handler_config)
-        message_handler_config['contains_total'] = topic
+        message_handler_config_dict = copy.deepcopy(self.message_handler_config_dict)
+        message_handler_config_dict['contains_total'] = topic
 
-        SUT = MessageCallbackProvider(message_handler_config, mock_logger, mock_manager)
+        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), mock_logger, mock_manager)
 
         payload = round(random.uniform(1, 100), 2)
         if PY2:
@@ -978,11 +979,11 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         mock_logger = mock.Mock(spec=Logger)
 
         topic = 'inTemp'
-        message_handler_config = copy.deepcopy(self.message_handler_config)
-        message_handler_config['contains_total'] = topic
+        message_handler_config_dict = copy.deepcopy(self.message_handler_config_dict)
+        message_handler_config_dict['contains_total'] = topic
         prev_temp = round(random.uniform(101, 200), 2)
 
-        SUT = MessageCallbackProvider(message_handler_config, mock_logger, mock_manager)
+        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), mock_logger, mock_manager)
         SUT.previous_values['inTemp'] = prev_temp
 
         payload = round(random.uniform(1, 100), 2)
@@ -1003,11 +1004,11 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         mock_logger = mock.Mock(spec=Logger)
 
         topic = 'inTemp'
-        message_handler_config = copy.deepcopy(self.message_handler_config)
-        message_handler_config['contains_total'] = topic
+        message_handler_config_dict = copy.deepcopy(self.message_handler_config_dict)
+        message_handler_config_dict['contains_total'] = topic
         prev_temp = round(random.uniform(1, 9), 2)
 
-        SUT = MessageCallbackProvider(message_handler_config, mock_logger, mock_manager)
+        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), mock_logger, mock_manager)
         SUT.previous_values['inTemp'] = prev_temp
 
         payload = round(random.uniform(10, 100), 2)
@@ -1026,7 +1027,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
 
-        SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, mock_manager)
+        SUT = MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
 
         payload = round(random.uniform(1, 100), 2)
         if PY2:
@@ -1043,7 +1044,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
 
-        SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, mock_manager)
+        SUT = MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
 
         payload = round(random.uniform(1, 100), 2)
         if PY2:
@@ -1063,7 +1064,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
 
-        SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, mock_manager)
+        SUT = MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
 
         payload = round(random.uniform(1, 100), 2)
         if PY2:
@@ -1091,13 +1092,13 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
         'outTemp': round(random.uniform(1, 100), 2)
     }
 
-    message_handler_config = {}
-    message_handler_config['type'] = 'individual'
+    message_handler_config_dict = {}
+    message_handler_config_dict['type'] = 'individual'
 
     def test_bad_payload(self):
         mock_logger = mock.Mock(spec=Logger)
 
-        SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, None)
+        SUT = MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, None)
 
         msg = Msg(self.topic,
                   ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),   # pylint: disable=unused-variable
@@ -1110,7 +1111,7 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
     def test_empty_payload(self):
         mock_logger = mock.Mock(spec=Logger)
 
-        SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, None)
+        SUT = MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, None)
 
         msg = Msg(self.topic, '', 0, 0)
 
@@ -1121,10 +1122,10 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
         mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
 
-        message_handler_config = dict(self.message_handler_config)
-        message_handler_config['full_topic_fieldname'] = True
+        message_handler_config_dict = dict(self.message_handler_config_dict)
+        message_handler_config_dict['full_topic_fieldname'] = True
 
-        SUT = MessageCallbackProvider(message_handler_config, mock_logger, mock_manager)
+        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), mock_logger, mock_manager)
 
         msg = Msg(self.topic, None, 0, 0)
 
@@ -1135,7 +1136,7 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
         mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
 
-        SUT = MessageCallbackProvider(self.message_handler_config, mock_logger, mock_manager)
+        SUT = MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
 
         payload = round(random.uniform(1, 100), 2)
         if PY2:
@@ -1152,10 +1153,10 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
         mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
 
-        message_handler_config = dict(self.message_handler_config)
-        message_handler_config['full_topic_fieldname'] = True
+        message_handler_config_dict = dict(self.message_handler_config_dict)
+        message_handler_config_dict['full_topic_fieldname'] = True
 
-        SUT = MessageCallbackProvider(message_handler_config, mock_logger, mock_manager)
+        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), mock_logger, mock_manager)
 
         payload = round(random.uniform(1, 100), 2)
         if PY2:
@@ -1172,10 +1173,10 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
         mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
 
-        message_handler_config = dict(self.message_handler_config)
-        message_handler_config['full_topic_fieldname'] = True
+        message_handler_config_dict = dict(self.message_handler_config_dict)
+        message_handler_config_dict['full_topic_fieldname'] = True
 
-        SUT = MessageCallbackProvider(message_handler_config, mock_logger, mock_manager)
+        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), mock_logger, mock_manager)
 
         payload = round(random.uniform(1, 100), 2)
         if PY2:
