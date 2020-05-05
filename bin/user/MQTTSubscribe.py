@@ -245,7 +245,7 @@ try: # pragma: no cover
                     self._logmsg.addHandler(handler)
 
             if filename is not None:
-                formatter = logging.Formatter("%(levelname)s %(message)s", "%Y-%m-%d %H:%M:%S")
+                formatter = logging.Formatter("%(asctime)s %(levelname)s %(message)s", "%Y-%m-%d %H:%M:%S")
                 file_handler = logging.FileHandler(filename, mode='w')
                 file_handler.setLevel(self.level)
                 file_handler.setFormatter(formatter)
@@ -352,8 +352,9 @@ DRIVER_VERSION = VERSION
 
 class CollectData(object):
     """ Manage fields that are 'grouped together', like wind data. """
-    def __init__(self, fields):
+    def __init__(self, fields, unit_system):
         self.fields = fields
+        self.unit_system = unit_system
         self.data = {}
 
     def add_data(self, field, in_data):
@@ -361,22 +362,27 @@ class CollectData(object):
         old_data = {}
         if field in self.data:
             old_data = dict(self.data)
+            old_data['usUnits'] = self.unit_system
             self.data = {}
 
-        self.data[field] = self.data[field] = in_data[field]
-        self.data['usUnits'] = in_data['usUnits']
+        target_data = weewx.units.to_std_system(in_data, self.unit_system)
+
+        self.data[field] = target_data[field]
         self.data['dateTime'] = in_data['dateTime']
 
         return old_data
 
     def get_data(self):
         """ Return the collection. """
+        if self.data != {}:
+            self.data['usUnits'] = self.unit_system
         return self.data
 
 class TopicManager(object):
     """ Manage the MQTT topic subscriptions. """
     def __init__(self, config, logger):
         # pylint: disable=too-many-locals
+        # pylint: disable=too-many-statements
         self.logger = logger
 
         if not config.sections:
@@ -400,8 +406,6 @@ class TopicManager(object):
 
         max_queue = config.get('max_queue', MAXSIZE)
 
-        self.wind_fields = ['windGust', 'windGustDir', 'windDir', 'windSpeed']
-
         self.topics = {}
         self.subscribed_topics = {}
 
@@ -424,6 +428,7 @@ class TopicManager(object):
             unit_system = weewx.units.unit_constants[unit_system_name]
 
             self.subscribed_topics[topic] = {}
+            self.subscribed_topics[topic]['type'] = 'normal'
             self.subscribed_topics[topic]['unit_system'] = unit_system
             self.subscribed_topics[topic]['qos'] = qos
             self.subscribed_topics[topic]['use_server_datetime'] = use_server_datetime
@@ -435,7 +440,28 @@ class TopicManager(object):
             self.subscribed_topics[topic]['offset_format'] = offset_format
             self.subscribed_topics[topic]['max_queue'] = topic_dict.get('max_queue', max_queue)
             self.subscribed_topics[topic]['queue'] = deque()
-            self.subscribed_topics[topic]['queue_wind'] = deque()
+
+        # Add the collector queue as a subscribed topic so that data can retrieved from it
+        # Yes, this is a bit of a hack.
+        # Note, it would not be too hard to allow additional fields via the [fields] configuration option
+        self.collected_units = weewx.units.unit_constants[default_unit_system_name]
+        self.collected_fields = ['windGust', 'windGustDir', 'windDir', 'windSpeed']
+        self.collected_queue = deque()
+        self.collected_topic = "%f-%s" % (time.time(), '-'.join(self.collected_fields))
+        topic = self.collected_topic
+        self.subscribed_topics[topic] = {}
+        self.subscribed_topics[topic]['type'] = 'collector'
+        self.subscribed_topics[topic]['unit_system'] = weewx.units.unit_constants[default_unit_system_name]
+        self.subscribed_topics[topic]['qos'] = default_qos
+        self.subscribed_topics[topic]['use_server_datetime'] = default_use_server_datetime
+        self.subscribed_topics[topic]['ignore_start_time'] = default_ignore_start_time
+        self.subscribed_topics[topic]['ignore_end_time'] = default_ignore_end_time
+        self.subscribed_topics[topic]['adjust_start_time'] = default_adjust_start_time
+        self.subscribed_topics[topic]['adjust_end_time'] = default_adjust_end_time
+        self.subscribed_topics[topic]['datetime_format'] = default_datetime_format
+        self.subscribed_topics[topic]['offset_format'] = default_offset_format
+        self.subscribed_topics[topic]['max_queue'] = max_queue
+        self.subscribed_topics[topic]['queue'] = self.collected_queue
 
     def append_data(self, topic, in_data, fieldname=None):
         """ Add the MQTT data to the queue. """
@@ -452,23 +478,24 @@ class TopicManager(object):
         if 'usUnits' not in data:
             data['usUnits'] = self._get_unit_system(topic)
 
-        payload['wind_data'] = False
-        if fieldname in self.wind_fields:
-            self.logger.trace("TopicManager Adding wind data %s %s: %s"
-                              % (fieldname, weeutil.weeutil.timestamp_to_string(data['dateTime']), to_sorted_string(data)))
-            payload['wind_data'] = fieldname
-
-        self._queue_size_check(queue, self._get_max_queue(topic))
-
         datetime_format = self._get_value('datetime_format', topic)
         if datetime_format and 'dateTime' in data:
             data['dateTime'] = self._to_epoch(data['dateTime'], datetime_format, self._get_value('offset_format', topic))
 
-        self.logger.trace("TopicManager Added to queue %s %s %s: %s"
-                          %(topic, self._lookup_topic(topic),
-                            weeutil.weeutil.timestamp_to_string(data['dateTime']), to_sorted_string(data)))
         payload['data'] = data
-        queue.append(payload,)
+
+        if fieldname in self.collected_fields:
+            self._queue_size_check(self.collected_queue, self._get_max_queue(topic))
+            self.logger.trace("TopicManager Adding wind data %s %s: %s"
+                              % (fieldname, weeutil.weeutil.timestamp_to_string(data['dateTime']), to_sorted_string(data)))
+            payload['fieldname'] = fieldname
+            self.collected_queue.append(payload)
+        else:
+            self._queue_size_check(queue, self._get_max_queue(topic))
+            self.logger.trace("TopicManager Added to queue %s %s %s: %s"
+                              %(topic, self._lookup_topic(topic),
+                                weeutil.weeutil.timestamp_to_string(data['dateTime']), to_sorted_string(data)))
+            queue.append(payload,)
 
     def peek_datetime(self, topic):
         """ Return the date/time of the first element in the queue. """
@@ -498,19 +525,20 @@ class TopicManager(object):
         """ Get data off the queue of MQTT data. """
         queue = self._get_queue(topic)
         self.logger.trace("TopicManager starting queue %s size is: %i" %(topic, len(queue)))
-        collector = CollectData(self.wind_fields)
+        collector = CollectData(self.collected_fields, self.collected_units)
         while queue:
             if queue[0]['data']['dateTime'] > end_ts:
                 self.logger.trace("TopicManager leaving queue: %s size: %i content: %s" %(topic, len(queue), queue[0]))
                 break
             payload = queue.popleft()
-            wind_field = payload['wind_data']
-            if wind_field:
+            if self.get_type(topic) == 'collector':
+                fieldname = payload['fieldname']
                 self.logger.trace("TopicManager processing wind data %s %s: %s."
-                                  %(wind_field, weeutil.weeutil.timestamp_to_string(payload['data']['dateTime']), to_sorted_string(payload)))
-                data = collector.add_data(wind_field, payload['data'])
+                                  %(fieldname, weeutil.weeutil.timestamp_to_string(payload['data']['dateTime']), to_sorted_string(payload)))
+                data = collector.add_data(fieldname, payload['data'])
             else:
                 data = payload['data']
+
             if data:
                 self.logger.debug("TopicManager data-> outgoing %s: %s"
                                   %(topic, to_sorted_string(data)))
@@ -587,6 +615,10 @@ class TopicManager(object):
         """ Get the QOS. """
         return self._get_value('qos', topic)
 
+    def get_type(self, topic):
+        """ Get the type. """
+        return self._get_value('type', topic)
+
     def _get_unit_system(self, topic):
         return self._get_value('unit_system', topic)
 
@@ -595,9 +627,6 @@ class TopicManager(object):
 
     def _get_queue(self, topic):
         return self._get_value('queue', topic)
-
-    def _get_wind_queue(self, topic):
-        return self._get_value('queue_wind', topic)
 
     def _get_value(self, value, topic):
         subscribed_topic = self._lookup_topic(topic)
@@ -912,11 +941,12 @@ class MQTTSubscribe(object):
         if self.archive_topic and self.archive_topic not in service_dict['topics']:
             raise ValueError("Archive topic %s must be in [[topics]]" % self.archive_topic)
 
+        self.logger.info("MQTTSubscribe version is %s" % VERSION)
+
         self.logger.info("MQTTSubscribe message callback config is %s" % message_callback_config)
         self.logger.info("MQTTSubscribe message callback provider is %s" % message_callback_provider_name)
         self.logger.info("MQTTSubscribe client id is %s" % clientid)
         self.logger.info("MQTTSubscribe client session is %s" % clean_session)
-        self.logger.info("MQTTSubscribe version is %s" % VERSION)
         self.logger.info("MQTTSubscribe host is %s" % host)
         self.logger.info("MQTTSubscribe port is %s" % port)
         self.logger.info("MQTTSubscribe keep alive is %s" % keepalive)
@@ -935,7 +965,11 @@ class MQTTSubscribe(object):
             mqtt.MQTT_LOG_DEBUG: self.logger.debug
         }
 
-        self.client = mqtt.Client(client_id=clientid, clean_session=clean_session)
+        self.userdata = {}
+        self.userdata['connect'] = False
+        self.userdata['connect_rc'] = None
+        self.userdata['connect_flags'] = None
+        self.client = mqtt.Client(client_id=clientid, userdata=self.userdata, clean_session=clean_session)
 
         if log_mqtt:
             self.client.on_log = self._on_log
@@ -975,6 +1009,12 @@ class MQTTSubscribe(object):
         self.logger.debug("MQTTSubscribe starting loop")
         self.client.loop_start()
 
+        while not self.userdata['connect']:
+            time.sleep(1)
+
+        if self.userdata['connect_rc'] > 0:
+            raise weewx.WeeWxIOError("Unable to connect. Return code is %i flags are %s." % (self.userdata['rc'], self.userdata['flags']))
+
     def disconnect(self):
         """ shut it down """
         self.client.disconnect()
@@ -991,6 +1031,11 @@ class MQTTSubscribe(object):
         # 6-255: Currently unused.
         self.logger.debug("MQTTSubscribe connected with result code %i" % rc)
         self.logger.debug("MQTTSubscribe connected flags %s" % str(flags))
+
+        userdata['connect'] = True
+        userdata['connect_rc'] = rc
+        userdata['connect_flags'] = flags
+
         for topic in self.manager.subscribed_topics:
             (result, mid) = client.subscribe(topic, self.manager.get_qos(topic))
             self.logger.debug("MQTTSubscribe subscribe to %s has a mid %i and rc %i" %(topic, mid, result))
@@ -1024,15 +1069,15 @@ class MQTTSubscribeService(StdService):
 
         binding = service_dict.get('binding', 'loop')
 
-        self.logger.info("MQTTSubscribeService binding is %s" % binding)
-
         if 'archive_topic' in service_dict:
             raise ValueError("archive_topic, %s, is invalid when running as a service" % service_dict['archive_topic'])
 
         self.end_ts = 0 # prime for processing loop packet
-        self.wind_fields = ['windGust', 'windGustDir', 'windDir', 'windSpeed']
 
         self.subscriber = MQTTSubscribe(service_dict, self.logger)
+
+        self.logger.info("MQTTSubscribeService binding is %s" % binding)
+
         self.subscriber.start()
 
         if binding == 'archive':
@@ -1115,11 +1160,9 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice): # (methods not used) py
         self._archive_interval = to_int(stn_dict.get('archive_interval', 300))
         self.archive_topic = stn_dict.get('archive_topic', None)
 
-        self.logger.info("MQTTSubscribeDriver wait before retry is %i" % self.wait_before_retry)
-
-        self.wind_fields = ['windGust', 'windGustDir', 'windDir', 'windSpeed'] # Todo - delete
-
         self.subscriber = MQTTSubscribe(stn_dict, self.logger)
+
+        self.logger.info("MQTTSubscribeDriver wait before retry is %i" % self.wait_before_retry)
         self.subscriber.start()
 
     @property

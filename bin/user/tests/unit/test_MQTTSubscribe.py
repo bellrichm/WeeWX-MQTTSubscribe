@@ -204,7 +204,9 @@ class Teston_connect(unittest.TestCase):
                     SUT = MQTTSubscribe(config, mock_logger)
 
                     rc = random.randint(1, 10)
-                    SUT._on_connect(mock_client, None, None, rc,)   # pylint: disable=protected-access
+                    userdata = {}
+                    userdata['connect'] = False
+                    SUT._on_connect(mock_client, userdata, None, rc,)   # pylint: disable=protected-access
 
                     self.assertEqual(mock_client.subscribe.call_count, 2)
                     mock_client.subscribe.assert_any_call(topic1, qos)

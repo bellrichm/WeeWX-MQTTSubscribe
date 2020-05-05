@@ -46,7 +46,7 @@
       ],
       "results": [
         {
-          "test": ["accumulate", "single"],
+          "test": ["single", "driver"],
           "payloads": ["json", "keyword", "individual"],
           "units": 17,
           "records": [
@@ -57,7 +57,72 @@
               "windSpeed": 1
             }
           ]
-        }
+        },
+        {
+          "test": ["accumulate"],
+          "payloads": ["json", "keyword"],
+          "units": 17,
+          "records": [
+            {
+            },
+            {
+              "dateTime": null,
+              "usUnits": 17,
+              "windDir": 0,
+              "windSpeed": 1,
+              "windGustDir": 0,
+              "windGust": 1              
+            }
+          ]
+        },
+        {
+          "test": ["service"],
+          "payloads": ["json", "keyword"],
+          "units": 17,
+          "records": [
+            {
+              "dateTime": null,
+              "usUnits": 17,
+              "windDir": 0,
+              "windSpeed": 1,
+              "windGustDir": 0,
+              "windGust": 1              
+            }
+          ]
+        },
+
+            {
+              "test": ["accumulate"],
+              "payloads": ["individual"],
+              "units": 17,
+              "records": [
+                {
+                  "dateTime": null,
+                  "usUnits": 17,
+                  "windDir": 0,
+                  "windSpeed": 1,
+                  "windGustDir": 0,
+                  "windGust": 1              
+                },
+                {
+                }
+              ]
+            },
+        {
+          "test": ["service"],
+          "payloads": ["individual"],
+          "units": 17,
+          "records": [
+            {
+              "dateTime": null,
+              "usUnits": 17,
+              "windDir": 0,
+              "windSpeed": 1,
+              "windGustDir": 0,
+              "windGust": 1              
+            }
+          ]
+        }   
       ]
     }
   ]

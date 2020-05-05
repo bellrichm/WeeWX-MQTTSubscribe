@@ -18,12 +18,26 @@
           "payloads": ["json", "keyword", "individual"],
           "units": 17,
           "records": [
-            {}
+            {
+            },
+            {
+            }
+          ]
+        },
+        {
+          "test": ["service"],
+          "payloads": ["json", "keyword", "individual"],
+          "units": 17,
+          "records": [
+            {
+              "usUnits": 17,
+              "dateTime": null
+            }
           ]
         },
         
         {
-          "test": ["single"],
+          "test": ["single", "driver"],
           "payloads": ["json", "keyword", "individual"],
           "units": 17,
           "records": []

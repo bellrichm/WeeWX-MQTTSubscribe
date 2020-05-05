@@ -45,6 +45,8 @@
           "units": 17,
           "records": [
             {
+            },
+            {
               "dateTime": null,
               "usUnits": 17,
               "rain": 0
@@ -52,7 +54,20 @@
           ]
         },
         {
-          "test": ["single"],
+          "test": ["service"],
+          "payloads": ["json", "keyword", "individual"],
+          "units": 17,
+          "records": [
+            {
+              "dateTime": null,
+              "usUnits": 17,
+              "rain": 0
+            }
+          ]
+        },
+
+        {
+          "test": ["single" ,"driver"],
           "payloads": ["json", "keyword", "individual"],
           "units": 17,
           "records": [
@@ -79,7 +94,7 @@
       ],
       "results": [
         {
-          "test": ["accumulate", "single"],
+          "test": ["single", "driver"],
           "payloads": ["json", "keyword", "individual"],
           "units": 17,
           "records": [
@@ -89,7 +104,33 @@
               "rain": 1
             }
           ]
-        }
+        },
+        {
+          "test": ["accumulate"],
+          "payloads": ["json", "keyword", "individual"],
+          "units": 17,
+          "records": [
+            {
+            },
+            {
+              "dateTime": null,
+              "usUnits": 17,
+              "rain": 1
+            }
+          ]
+        },
+        {
+          "test": ["service"],
+          "payloads": ["json", "keyword", "individual"],
+          "units": 17,
+          "records": [
+            {
+              "dateTime": null,
+              "usUnits": 17,
+              "rain": 1
+            }
+          ]
+        }        
       ]
     },
     {
@@ -106,7 +147,7 @@
       ],
       "results": [
         {
-          "test": ["accumulate", "single"],
+          "test": ["single", "driver"],
           "payloads": ["json", "keyword", "individual"
           ],
           "units": 17,
@@ -117,7 +158,36 @@
               "rain": 2
             }
           ]
-        }
+        },
+        {
+          "test": ["accumulate"],
+          "payloads": ["json", "keyword", "individual"
+          ],
+          "units": 17,
+          "records": [
+            {
+            },
+            {
+              "dateTime": null,
+              "usUnits": 17,
+              "rain": 2
+            }
+          ]
+        },
+        {
+        "test": ["service"],
+        "payloads": ["json", "keyword", "individual"
+        ],
+        "units": 17,
+        "records": [
+          {
+            "dateTime": null,
+            "usUnits": 17,
+            "rain": 2
+          }
+        ]
+      }        
+
       ]
     }
   ]

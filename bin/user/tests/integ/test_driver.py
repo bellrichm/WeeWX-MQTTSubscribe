@@ -1,4 +1,8 @@
 # pylint: disable=missing-docstring
+# pylint: disable=wrong-import-order
+# pylint: disable=too-many-locals
+# pylint: disable=too-many-statements
+# pylint: disable=too-many-branches
 
 import json
 import time
@@ -12,27 +16,23 @@ import utils
 from user.MQTTSubscribe import MQTTSubscribeDriver
 from user.MQTTSubscribe import setup_logging
 
-class TestOne(unittest.TestCase):
-    def runit(self, config_dict, testruns, payload):
-        #sleep = 2
+class TestDriver(unittest.TestCase):
+    def runit(self, payload, file_pointer):
+        test_data = json.load(file_pointer, object_hook=utils.byteify)
+        config_dict = configobj.ConfigObj(test_data['config'])
+        testruns = test_data['testruns']
 
         cdict = config_dict['MQTTSubscribeService']
         if not 'message_callback' in config_dict['MQTTSubscribeService']:
             config_dict['MQTTSubscribeService']['message_callback'] = {}
         config_dict['MQTTSubscribeService']['message_callback']['type'] = payload
 
-        #message_callback_config = cdict.get('message_callback', None)
-        #message_callback_config['type'] = test_type
-
-        #config_dict['MQTTSubscribeService']['console'] = True
         driver = MQTTSubscribeDriver(**cdict)
 
-        #client_id = 'clientid'
         host = 'localhost'
         port = 1883
         keepalive = 60
 
-        #client = mqtt.Client(client_id)
         userdata = {
             'topics': [],
             'connected_flag': False
@@ -44,10 +44,9 @@ class TestOne(unittest.TestCase):
 
         max_connect_wait = 1 # ToDo - configure
         i = 1
-        while not userdata['connected_flag']: #wait in loop
+        while not userdata['connected_flag']:
             if i > max_connect_wait:
                 self.fail("Timed out waiting for connections.")
-            #print("waiting to connect")
             time.sleep(1)
             i += 1
 
@@ -65,7 +64,7 @@ class TestOne(unittest.TestCase):
 
         max_connect2_wait = 1 # ToDo - configure
         i = 1
-        while not userdata2['connected_flag']: #wait in loop
+        while not userdata2['connected_flag']:
             #print("waiting to connect")
             if i > max_connect2_wait:
                 self.fail("Timed out waiting for connection 2.")
@@ -78,7 +77,7 @@ class TestOne(unittest.TestCase):
                 for topic in topics:
                     topic_info = topics[topic]
                     msg_count = utils.send_msg(utils.send_mqtt_msg, payload, client.publish, topic, topic_info, userdata2, self)
-                    wait_count = utils.wait_on_queue(driver, topic, msg_count, max_waits, 1)
+                    wait_count = utils.wait_on_queue(driver, msg_count, max_waits, 1)
 
                     # If queue not filled, fail now
                     # otherwise will end up in 'infinite' loop in genLoopPackets
@@ -90,15 +89,21 @@ class TestOne(unittest.TestCase):
 
             results = testrun['results']
             result = {}
+            found = False
             for result in results:
-                if 'single' in result['test']:
+                if 'driver' in result['test']:
                     if payload in result['payloads']:
+                        found = True
                         break
 
+            self.assertTrue(found, "No results for %s" %payload)
+
             i = 0
-            while i < len(result['records']): # not great, but no way to know if more records
+            # ToDo not great, but no way to know if more records
+            # could possibly check the queues..
+            # Todo this needs to be fixed for new debug code
+            while i < len(result['records']):
                 data = next(gen, None)
-                #print(data)
                 records.append(data)
                 i += 1
 
@@ -108,113 +113,75 @@ class TestOne(unittest.TestCase):
         client.disconnect()
         client2.disconnect()
 
+class TestAccumulatedRain(TestDriver):
     #@unittest.skip("")
     def test_accumulatedrain_individual(self):
-        payload = 'individual'
-        with open("bin/user/tests/integ/data/accumulatedrain.json") as file:
-            test_data = json.load(file, object_hook=utils.byteify)
-            config_dict = configobj.ConfigObj(test_data['config'])
-            testruns = test_data['testruns']
-            self.runit(config_dict, testruns, payload)
+        with open("bin/user/tests/integ/data/accumulatedrain.json") as file_pointer:
+            self.runit('individual', file_pointer)
 
     #@unittest.skip("")
     def test_accumulatedrain_json(self):
-        payload = 'json'
-        with open("bin/user/tests/integ/data/accumulatedrain.json") as file:
-            test_data = json.load(file, object_hook=utils.byteify)
-            config_dict = configobj.ConfigObj(test_data['config'])
-            testruns = test_data['testruns']
-            self.runit(config_dict, testruns, payload)
+        with open("bin/user/tests/integ/data/accumulatedrain.json") as file_pointer:
+            self.runit('json', file_pointer)
 
     #@unittest.skip("")
     def test_accumulatedrain_keyword(self):
-        payload = 'keyword'
-        with open("bin/user/tests/integ/data/accumulatedrain.json") as file:
-            test_data = json.load(file, object_hook=utils.byteify)
-            config_dict = configobj.ConfigObj(test_data['config'])
-            testruns = test_data['testruns']
-            self.runit(config_dict, testruns, payload)
+        with open("bin/user/tests/integ/data/accumulatedrain.json") as file_pointer:
+            self.runit('keyword', file_pointer)
 
+class TestBasic(TestDriver):
     #@unittest.skip("")
     def test_basic_individual(self):
-        payload = 'individual'
-        with open("bin/user/tests/integ/data/basic.json") as file:
-            test_data = json.load(file, object_hook=utils.byteify)
-            config_dict = configobj.ConfigObj(test_data['config'])
-            testruns = test_data['testruns']
-            self.runit(config_dict, testruns, payload)
+        with open("bin/user/tests/integ/data/basic.json") as file_pointer:
+            self.runit('individual', file_pointer)
 
     #@unittest.skip("")
     def test_basic_json(self):
-        payload = 'json'
-        with open("bin/user/tests/integ/data/basic.json") as file:
-            test_data = json.load(file, object_hook=utils.byteify)
-            config_dict = configobj.ConfigObj(test_data['config'])
-            testruns = test_data['testruns']
-            self.runit(config_dict, testruns, payload)
+        with open("bin/user/tests/integ/data/basic.json") as file_pointer:
+            self.runit('json', file_pointer)
 
     #@unittest.skip("")
     def test_basic_keyword(self):
-        payload = 'keyword'
-        with open("bin/user/tests/integ/data/basic.json") as file:
-            test_data = json.load(file, object_hook=utils.byteify)
-            config_dict = configobj.ConfigObj(test_data['config'])
-            testruns = test_data['testruns']
-            self.runit(config_dict, testruns, payload)
+        with open("bin/user/tests/integ/data/basic.json") as file_pointer:
+            self.runit('keyword', file_pointer)
 
+class TestEmpty(TestDriver):
     #@unittest.skip("")
     def test_empty_individual(self):
-        payload = 'individual'
-        with open("bin/user/tests/integ/data/empty.json") as file:
-            test_data = json.load(file, object_hook=utils.byteify)
-            config_dict = configobj.ConfigObj(test_data['config'])
-            testruns = test_data['testruns']
-            self.runit(config_dict, testruns, payload)
+        with open("bin/user/tests/integ/data/empty.json") as file_pointer:
+            self.runit('individual', file_pointer)
 
     #@unittest.skip("")
     def test_empty_json(self):
-        payload = 'json'
-        with open("bin/user/tests/integ/data/empty.json") as file:
-            test_data = json.load(file, object_hook=utils.byteify)
-            config_dict = configobj.ConfigObj(test_data['config'])
-            testruns = test_data['testruns']
-            self.runit(config_dict, testruns, payload)
+        with open("bin/user/tests/integ/data/empty.json") as file_pointer:
+            self.runit('json', file_pointer)
 
     #@unittest.skip("")
     def test_empty_keyword(self):
-        payload = 'keyword'
-        with open("bin/user/tests/integ/data/empty.json") as file:
-            test_data = json.load(file, object_hook=utils.byteify)
-            config_dict = configobj.ConfigObj(test_data['config'])
-            testruns = test_data['testruns']
-            self.runit(config_dict, testruns, payload)
+        with open("bin/user/tests/integ/data/empty.json") as file_pointer:
+            self.runit('keyword', file_pointer)
 
+class TestWindIndividualTopics(TestDriver):
+    #@unittest.skip("")
+    def test_wind_individual_topic(self):
+        with open("bin/user/tests/integ/data/wind-individual.json") as file_pointer:
+            self.runit('individual', file_pointer)
+
+class TestWindIndividualWind(TestDriver):
     #@unittest.skip("")
     def test_wind_individual(self):
-        payload = 'individual'
-        with open("bin/user/tests/integ/data/wind.json") as file:
-            test_data = json.load(file, object_hook=utils.byteify)
-            config_dict = configobj.ConfigObj(test_data['config'])
-            testruns = test_data['testruns']
-            self.runit(config_dict, testruns, payload)
+        with open("bin/user/tests/integ/data/wind.json") as file_pointer:
+            self.runit('individual', file_pointer)
 
     #@unittest.skip("")
     def test_wind_json(self):
-        payload = 'json'
-        with open("bin/user/tests/integ/data/wind.json") as file:
-            test_data = json.load(file, object_hook=utils.byteify)
-            config_dict = configobj.ConfigObj(test_data['config'])
-            testruns = test_data['testruns']
-            self.runit(config_dict, testruns, payload)
+        with open("bin/user/tests/integ/data/wind.json") as file_pointer:
+            self.runit('json', file_pointer)
 
     #@unittest.skip("")
     def test_wind_keyword(self):
-        payload = 'keyword'
-        with open("bin/user/tests/integ/data/wind.json") as file:
-            test_data = json.load(file, object_hook=utils.byteify)
-            config_dict = configobj.ConfigObj(test_data['config'])
-            testruns = test_data['testruns']
-            self.runit(config_dict, testruns, payload)
+        with open("bin/user/tests/integ/data/wind.json") as file_pointer:
+            self.runit('keyword', file_pointer)
 
 if __name__ == '__main__':
     setup_logging(1, {})

@@ -106,36 +106,39 @@ def get_callback(payload_type, config_dict, manager, logger):
 
 # A bit of a hack, ok huge, to wait until MQTTSubscribe has queued the data
 # This is useful when debugging MQTTSubscribe with breakpoints
-def wait_on_queue(provider, topic, msg_count, max_waits, sleep_time):
+def wait_on_queue(provider, msg_count, max_waits, sleep_time):
     wait_count = 0
-    if topic is not None:
-        topic_queue = provider.subscriber.manager._get_queue(topic)  # pylint: disable=protected-access
-        while len(topic_queue) < msg_count and wait_count < max_waits:
-            # print("sleeping")
-            time.sleep(sleep_time)
-            wait_count += 1
+    while True:
+        queue_count = 0
+        for subscribed_topic in provider.subscriber.manager.subscribed_topics:
+            topic_queue = provider.subscriber.manager._get_queue(subscribed_topic)  # pylint: disable=protected-access
+            queue_count = queue_count + len(topic_queue)
+
+        wait_count += 1
+        if queue_count >= msg_count or wait_count >= max_waits:
+            break
+        time.sleep(sleep_time)
 
     return wait_count
 
 def check(self, test_type, results, expected_results):
-    msg = "for payload of %s" % test_type
-    #print(results)
-    #print(expected_results['results'])
+    self.longMessage = True
+    msg = "\n\t%s\n\t%s" % (results, expected_results)
     self.assertEqual(len(results), len(expected_results), msg)
     i = 0
     for expected_result in expected_results:
         print("testing %s %s" % (test_type, expected_result))
+        msg = "\n\t%s\n\t%s" %(expected_result, results[i])
+        self.assertEqual(len(expected_result), len(results[i]), msg)
         for field in expected_result:
-            msg = "for payload of %s and field %s in record %i\n" % (test_type, field, i+1)
-            msg = msg + "should be in %s" % results[i]
-            self.assertIn(field, results[i], msg)
+            self.assertIn(field, results[i])
             if expected_result[field] is not None:
                 msg = "for payload of %s and field %s in record %i\n" % (test_type, field, i+1)
-                if expected_result[field] == "None": # ToDo - cleanup
-                    msg = msg + "should be none, %s" % results[i][field]
+                if expected_result[field] == "None":
+                    msg = "\n\t for field %s" % field
                     self.assertIsNone(results[i][field], msg)
                 else:
-                    msg = msg + "should be equal %s but is %s" % (expected_result[field], results[i][field])
+                    msg = "\n\t for field %s" % field
                     self.assertEqual(results[i][field], expected_result[field], msg)
         i += 1
 

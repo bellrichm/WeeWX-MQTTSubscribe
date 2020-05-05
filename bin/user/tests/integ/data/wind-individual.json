@@ -1,11 +1,6 @@
 {
   "comments": [
     "Wind data collected into a packet,"
-  ],  
-  "types": [
-    "individual",
-    "json",
-    "keyword"
   ],
   "config": [
     "[MQTTSubscribeService]",
@@ -33,7 +28,8 @@
     "    # The topics to subscribe to.",
     "    [[topics]]",
     "        unit_system = METRICWX",
-    "        [[[weewx/#]]]"
+    "        [[[weewx/windDir]]]",
+    "        [[[weewx/windSpeed]]]"
   ],
   "testruns": [
     {
@@ -49,17 +45,55 @@
           }
         }
       ],
-      "results": {
-        "units": 17,
-        "records": [
-          {
-            "dateTime": null,
-            "usUnits": 17,
-            "windDir": 0,
-            "windSpeed": 1
-          }
-        ]
-      }
+      "results": [
+        {
+          "test": ["single", "driver"],
+          "payloads": ["individual"],
+          "units": 17,
+          "records": [
+            {
+              "dateTime": null,
+              "usUnits": 17,
+              "windDir": 0,
+              "windSpeed": 1
+            }
+          ]
+        },
+        {
+          "test": ["accumulate"],
+          "payloads": ["individual"],
+          "units": 17,
+          "records": [
+            {
+              "dateTime": null,
+              "usUnits": 17,
+              "windDir": 0,
+              "windSpeed": 1,
+              "windGustDir": 0,
+              "windGust": 1              
+            },
+            {
+            },
+            {
+            }
+          ]
+        },
+        {
+          "test": ["service"],
+          "payloads": ["individual"],
+          "units": 17,
+          "records": [
+            {
+              "dateTime": null,
+              "usUnits": 17,
+              "windDir": 0,
+              "windSpeed": 1,
+              "windGustDir": 0,
+              "windGust": 1              
+            }
+          ]
+        }
+      ]
     }
   ]
 }

@@ -390,7 +390,9 @@ class TestGetWindQueueData(unittest.TestCase):
             type(mock_CollectData.return_value).add_data = mock.Mock(return_value=collected_data)
             SUT = TopicManager(self.config, mock_logger)
             SUT.append_data(self.topic, self.create_queue_data(), fieldname=self.fieldname)
-            gen = SUT.get_data(self.topic)
+            # ToDo - need to get the topic a better way
+            # perhaps find it by searching on subscribed topic 'type'
+            gen = SUT.get_data(SUT.collected_topic)
             data = next(gen, None)
 
             self.assertEqual(data, collected_data)
