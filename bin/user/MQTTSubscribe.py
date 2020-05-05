@@ -1173,6 +1173,10 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice): # (methods not used) py
     @property
     def archive_interval(self):
         """ The archive interval. """
+        if not self.archive_topic:
+            self.logger.debug("MQTTSubscribeDriver no archive topic configured.")
+            raise NotImplementedError
+
         return self._archive_interval
 
     def closePort(self): # need to override parent - pylint: disable=invalid-name
