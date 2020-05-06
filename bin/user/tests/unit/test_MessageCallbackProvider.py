@@ -607,6 +607,113 @@ class TestKeywordload(unittest.TestCase):
         mock_manager.append_data.assert_called_once_with(msg.topic, result_dict)
         self.assertEqual(SUT.previous_values['inTemp'], payload_dict['inTemp'])
 
+    def test_ignore_default_true(self):
+        mock_manager = mock.Mock(spec=TopicManager)
+        mock_logger = mock.Mock(spec=Logger)
+
+        message_handler_config_dict = {}
+        message_handler_config_dict['type'] = 'keyword'
+        field_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])  # pylint: disable=unused-variable
+
+        fields = {}
+        fields['ignore'] = True
+
+        message_handler_config_dict['fields'] = fields
+
+        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), mock_logger, mock_manager)
+
+        payload_dict = dict(self.payload_dict)
+        payload_dict['dateTime'] = round(time.time(), 2)
+        payload_dict['usUnits'] = random.randint(1, 10)
+
+        payload_str = ""
+        delim = ""
+        for key in payload_dict:
+            payload_str = "%s%s%s=%f" % (payload_str, delim, key, payload_dict[key])
+            delim = ","
+
+        payload_str = payload_str.encode('UTF-8')
+
+        msg = Msg(self.topic, payload_str, 0, 0)
+
+        SUT._on_message_keyword(None, None, msg)
+        self.assertFalse(mock_manager.append_data.called)
+
+    def test_ignore_default_true_ignore_field_false(self):
+        mock_manager = mock.Mock(spec=TopicManager)
+        mock_logger = mock.Mock(spec=Logger)
+
+        message_handler_config_dict = {}
+        message_handler_config_dict['type'] = 'keyword'
+        field_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])  # pylint: disable=unused-variable
+
+        fields = {}
+        fields['ignore'] = True
+
+        field = {}
+        field['ignore'] = False
+        fields['dateTime'] = field
+
+        field = {}
+        field['ignore'] = False
+        fields['usUnits'] = field
+
+        message_handler_config_dict['fields'] = fields
+
+        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), mock_logger, mock_manager)
+
+        payload_dict = {}
+        payload_dict['dateTime'] = round(time.time(), 2)
+        payload_dict['usUnits'] = random.randint(1, 10)
+
+        payload_str = ""
+        delim = ""
+        for key in payload_dict:
+            payload_str = "%s%s%s=%f" % (payload_str, delim, key, payload_dict[key])
+            delim = ","
+
+        payload_str = payload_str.encode('UTF-8')
+
+        msg = Msg(self.topic, payload_str, 0, 0)
+
+        SUT._on_message_keyword(None, None, msg)
+        mock_manager.append_data.assert_called_once_with(msg.topic, payload_dict)
+
+    def test_ignore_field_true(self):
+        mock_manager = mock.Mock(spec=TopicManager)
+        mock_logger = mock.Mock(spec=Logger)
+
+        message_handler_config_dict = {}
+        message_handler_config_dict['type'] = 'keyword'
+
+        fields = {}
+
+        field = {}
+        field['ignore'] = True
+        fields['inTemp'] = field
+
+        message_handler_config_dict['fields'] = fields
+
+        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), mock_logger, mock_manager)
+
+        payload_dict = {}
+        payload_dict['outTemp'] = self.payload_dict['outTemp']
+        payload_dict['dateTime'] = round(time.time(), 2)
+        payload_dict['usUnits'] = random.randint(1, 10)
+
+        payload_str = ""
+        delim = ""
+        for key in payload_dict:
+            payload_str = "%s%s%s=%f" % (payload_str, delim, key, payload_dict[key])
+            delim = ","
+
+        payload_str = payload_str.encode('UTF-8')
+
+        msg = Msg(self.topic, payload_str, 0, 0)
+
+        SUT._on_message_keyword(None, None, msg)
+        mock_manager.append_data.assert_called_once_with(msg.topic, payload_dict)
+
 class TestJsonPayload(unittest.TestCase):
     topic = 'foo/bar'
 
@@ -877,6 +984,113 @@ class TestJsonPayload(unittest.TestCase):
 
         mock_manager.append_data.assert_called_once_with(msg.topic, flattened_payload_dict)
 
+    def test_ignore_default_true(self):
+        mock_manager = mock.Mock(spec=TopicManager)
+        mock_logger = mock.Mock(spec=Logger)
+
+        message_handler_config_dict = {}
+        message_handler_config_dict['type'] = 'json'
+
+        fields = {}
+        fields['ignore'] = True
+
+        message_handler_config_dict['fields'] = fields
+
+        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), mock_logger, mock_manager)
+
+        payload_dict = dict(self.payload_dict)
+        payload_dict['dateTime'] = time.time()
+        payload_dict['usUnits'] = random.randint(1, 10)
+
+        if PY2:
+            payload = json.dumps(payload_dict)
+        else:
+            payload = json.dumps(payload_dict).encode("utf-8")
+
+        msg = Msg(self.topic, payload, 0, 0)
+
+        SUT._on_message_json(None, None, msg)
+
+        self.assertFalse(mock_manager.append_data.called)
+
+    def test_ignore_default_true_ignore_field_false(self):
+        mock_manager = mock.Mock(spec=TopicManager)
+        mock_logger = mock.Mock(spec=Logger)
+
+        message_handler_config_dict = {}
+        message_handler_config_dict['type'] = 'json'
+
+        fields = {}
+        fields['ignore'] = True
+
+        field = {}
+        field['ignore'] = False
+        fields['dateTime'] = field
+
+        field = {}
+        field['ignore'] = False
+        fields['usUnits'] = field
+
+        message_handler_config_dict['fields'] = fields
+
+        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), mock_logger, mock_manager)
+
+        payload_dict = {}
+        payload_dict['dateTime'] = time.time()
+        payload_dict['usUnits'] = random.randint(1, 10)
+
+        if PY2:
+            payload = json.dumps(payload_dict)
+        else:
+            payload = json.dumps(payload_dict).encode("utf-8")
+
+        msg = Msg(self.topic, payload, 0, 0)
+
+        SUT._on_message_json(None, None, msg)
+
+        mock_manager.append_data.assert_called_once_with(msg.topic, payload_dict)
+        call_args_list = mock_manager.append_data.call_args_list
+        second_arg = call_args_list[0].args[1]
+        for key in second_arg:
+            self.assertIsInstance(key, str)
+
+    def test_ignore_field_true(self):
+        mock_manager = mock.Mock(spec=TopicManager)
+        mock_logger = mock.Mock(spec=Logger)
+
+        message_handler_config_dict = {}
+        message_handler_config_dict['type'] = 'json'
+        field_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])  # pylint: disable=unused-variable
+
+        fields = {}
+
+        field = {}
+        field['ignore'] = True
+        fields['inTemp'] = field
+
+        message_handler_config_dict['fields'] = fields
+
+        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), mock_logger, mock_manager)
+
+        payload_dict = {}
+        payload_dict['outTemp'] = self.payload_dict['outTemp']
+        payload_dict['dateTime'] = time.time()
+        payload_dict['usUnits'] = random.randint(1, 10)
+
+        if PY2:
+            payload = json.dumps(payload_dict)
+        else:
+            payload = json.dumps(payload_dict).encode("utf-8")
+
+        msg = Msg(self.topic, payload, 0, 0)
+
+        SUT._on_message_json(None, None, msg)
+
+        mock_manager.append_data.assert_called_once_with(msg.topic, payload_dict)
+        call_args_list = mock_manager.append_data.call_args_list
+        second_arg = call_args_list[0].args[1]
+        for key in second_arg:
+            self.assertIsInstance(key, str)
 
 class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
     topic_end = 'bar'
@@ -1080,6 +1294,87 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         SUT._on_message_individual(None, None, msg)
         mock_manager.append_data.assert_called_once_with(msg.topic, {self.topic_end: payload}, self.topic_end)
 
+    def test_ignore_default_true(self):
+        mock_manager = mock.Mock(spec=TopicManager)
+        mock_logger = mock.Mock(spec=Logger)
+
+        message_handler_config_dict = {}
+        message_handler_config_dict['type'] = 'individual'
+
+        fields = {}
+        fields['ignore'] = True
+
+        message_handler_config_dict['fields'] = fields
+
+        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), mock_logger, mock_manager)
+
+        payload = round(random.uniform(1, 100), 2)
+        if PY2:
+            payload_str = str(payload)
+        else:
+            payload_str = str(payload).encode('UTF-8')
+
+        msg = Msg(self.single_topic, payload_str, 0, 0)
+
+        SUT._on_message_individual(None, None, msg)
+        self.assertFalse(mock_manager.append_data.called)
+
+    def test_ignore_default_true_ignore_field_false(self):
+        mock_manager = mock.Mock(spec=TopicManager)
+        mock_logger = mock.Mock(spec=Logger)
+
+        message_handler_config_dict = {}
+        message_handler_config_dict['type'] = 'individual'
+
+        fields = {}
+        fields['ignore'] = True
+
+        field = {}
+        field['ignore'] = False
+        fields[self.single_topic] = field
+
+        message_handler_config_dict['fields'] = fields
+
+        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), mock_logger, mock_manager)
+
+        payload = round(random.uniform(1, 100), 2)
+        if PY2:
+            payload_str = str(payload)
+        else:
+            payload_str = str(payload).encode('UTF-8')
+
+        msg = Msg(self.single_topic, payload_str, 0, 0)
+
+        SUT._on_message_individual(None, None, msg)
+        mock_manager.append_data.assert_called_once_with(msg.topic, {self.topic_end: payload}, self.topic_end)
+
+    def test_ignore_field_true(self):
+        mock_manager = mock.Mock(spec=TopicManager)
+        mock_logger = mock.Mock(spec=Logger)
+
+        message_handler_config_dict = {}
+        message_handler_config_dict['type'] = 'individual'
+        field_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])  # pylint: disable=unused-variable
+
+        fields = {}
+
+        field = {}
+        field['ignore'] = True
+        fields[self.single_topic] = field
+        message_handler_config_dict['fields'] = fields
+
+        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), mock_logger, mock_manager)
+
+        payload = round(random.uniform(1, 100), 2)
+        if PY2:
+            payload_str = str(payload)
+        else:
+            payload_str = str(payload).encode('UTF-8')
+
+        msg = Msg(self.single_topic, payload_str, 0, 0)
+
+        SUT._on_message_individual(None, None, msg)
+        self.assertFalse(mock_manager.append_data.called)
 
 class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
     topic_end = 'bar'
