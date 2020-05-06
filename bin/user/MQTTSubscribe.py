@@ -476,7 +476,7 @@ class TopicManager(object):
         if 'dateTime' not in data or use_server_datetime:
             data['dateTime'] = time.time()
         if 'usUnits' not in data:
-            data['usUnits'] = self._get_unit_system(topic)
+            data['usUnits'] = self.get_unit_system(topic)
 
         datetime_format = self._get_value('datetime_format', topic)
         if datetime_format and 'dateTime' in data:
@@ -619,7 +619,8 @@ class TopicManager(object):
         """ Get the type. """
         return self._get_value('type', topic)
 
-    def _get_unit_system(self, topic):
+    def get_unit_system(self, topic):
+        """ Get the unit system """
         return self._get_value('unit_system', topic)
 
     def _get_max_queue(self, topic):
@@ -697,6 +698,11 @@ class MessageCallbackProvider(object):
                     self.fields[field]['contains_total'] = to_bool(self.fields[field]['contains_total'])
                 if 'conversion_type' in self.fields[field]:
                     self.fields[field]['conversion_type'] = self.fields[field]['conversion_type'].lower()
+                if 'units' in self.fields[field]:
+                    try:
+                        weewx.units.conversionDict[self.fields[field]['units']]
+                    except KeyError:
+                        raise ValueError("For %s invalid units, %s" % (field, self.fields[field]['units']))
 
         self.set_backwards_compatibility(label_map, orig_fields, contains_total)
         self.previous_values = {}
@@ -788,15 +794,20 @@ class MessageCallbackProvider(object):
 
         return None
 
-    def _update_data(self, orig_name, orig_value):
+    def _update_data(self, orig_name, orig_value, unit_system):
         value = self._convert_value(orig_name, orig_value)
+        fieldname = self.fields.get(orig_name, {}).get('name', orig_name)
+
+        if orig_name in self.fields and 'units' in self.fields[orig_name]: # TODO - simplify, if possible
+            (to_units, to_group) = weewx.units.getStandardUnitType(unit_system, fieldname) # match signature pylint: disable=unused-variable
+            (value, new_units, new_group) = weewx.units.convert((value, self.fields[orig_name]['units'], None), to_units) # match signature pylint: disable=unused-variable
 
         if self.fields.get(orig_name, {}).get('contains_total', False):
             current_value = value
             value = self._calc_increment(orig_name, current_value, self.previous_values.get(orig_name))
             self.previous_values[orig_name] = current_value
 
-        return self.fields.get(orig_name, {}).get('name', orig_name), value
+        return fieldname, value
 
     def _log_message(self, msg):
         self.logger.trace("MessageCallbackProvider For %s has QOS of %i and retain of %s received: %s"
@@ -818,6 +829,7 @@ class MessageCallbackProvider(object):
 
             fields = payload_str.split(self.keyword_delimiter)
             data = {}
+            unit_system = self.topic_manager.get_unit_system(msg.topic) # TODO - need public method
             for field in fields:
                 eq_index = field.find(self.keyword_separator)
                 # Ignore all fields that do not have the separator
@@ -829,7 +841,7 @@ class MessageCallbackProvider(object):
 
                 key = field[:eq_index].strip()
                 if not self.fields.get(key, {}).get('ignore', self.fields_ignore_default):
-                    (fieldname, value) = self._update_data(key, field[eq_index + 1:].strip())
+                    (fieldname, value) = self._update_data(key, field[eq_index + 1:].strip(), unit_system)
                     data[fieldname] = value
                 else:
                     self.logger.trace("MessageCallbackProvider on_message_keyword ignoring field: %s" % key)
@@ -857,11 +869,12 @@ class MessageCallbackProvider(object):
 
             data_flattened = self._flatten_dict(data, self.flatten_delimiter)
 
+            unit_system = self.topic_manager.get_unit_system(msg.topic) # TODO - need public method
             data_final = {}
             # ToDo - if I have to loop, removes benefit of _bytefy, time to remove it?
             for key in data_flattened:
                 if not self.fields.get(key, {}).get('ignore', self.fields_ignore_default):
-                    (fieldname, value) = self._update_data(key, data_flattened[key])
+                    (fieldname, value) = self._update_data(key, data_flattened[key], unit_system)
                     data_final[fieldname] = value
                 else:
                     self.logger.trace("MessageCallbackProvider on_message_json ignoring field: %s" % key)
@@ -891,8 +904,9 @@ class MessageCallbackProvider(object):
             if PY2:
                 key = key.encode('utf-8')
 
+            unit_system = self.topic_manager.get_unit_system(msg.topic) # TODO - need public method
             if not self.fields.get(key, {}).get('ignore', self.fields_ignore_default):
-                (fieldname, value) = self._update_data(key, payload_str)
+                (fieldname, value) = self._update_data(key, payload_str, unit_system)
                 data = {}
                 data[fieldname] = value
                 self.topic_manager.append_data(msg.topic, data, fieldname)
