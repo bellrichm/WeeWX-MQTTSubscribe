@@ -688,10 +688,11 @@ class MessageCallbackProvider(object):
         if self.type not in self.callbacks:
             raise ValueError("Invalid type configured: %s" % self.type)
 
-
+        self.fields_ignore_default = to_bool(self.fields.get('ignore', False))
 
         if self.fields:
             for field in self.fields.sections:
+                self.fields[field]['ignore'] = to_bool((self.fields[field]).get('ignore', self.fields_ignore_default))
                 if  'contains_total' in self.fields[field]:
                     self.fields[field]['contains_total'] = to_bool(self.fields[field]['contains_total'])
                 if 'conversion_type' in self.fields[field]:
@@ -823,11 +824,15 @@ class MessageCallbackProvider(object):
                 if eq_index == -1:
                     self.logger.error("MessageCallbackProvider on_message_keyword failed to find separator: %s"
                                       % self.keyword_separator)
-                    self.logger.error("**** MessageCallbackProvider Ignoring field=%s " % field)
+                    self.logger.error("**** MessageCallbackProvider Skipping field=%s " % field)
                     continue
 
-                (fieldname, value) = self._update_data(field[:eq_index].strip(), field[eq_index + 1:].strip())
-                data[fieldname] = value
+                key = field[:eq_index].strip()
+                if not self.fields.get(key, {}).get('ignore', self.fields_ignore_default):
+                    (fieldname, value) = self._update_data(key, field[eq_index + 1:].strip())
+                    data[fieldname] = value
+                else:
+                    self.logger.trace("MessageCallbackProvider on_message_keyword ignoring field: %s" % key)
 
             if data:
                 self.topic_manager.append_data(msg.topic, data)
@@ -855,10 +860,14 @@ class MessageCallbackProvider(object):
             data_final = {}
             # ToDo - if I have to loop, removes benefit of _bytefy, time to remove it?
             for key in data_flattened:
-                (fieldname, value) = self._update_data(key, data_flattened[key])
-                data_final[fieldname] = value
+                if not self.fields.get(key, {}).get('ignore', self.fields_ignore_default):
+                    (fieldname, value) = self._update_data(key, data_flattened[key])
+                    data_final[fieldname] = value
+                else:
+                    self.logger.trace("MessageCallbackProvider on_message_json ignoring field: %s" % key)
 
-            self.topic_manager.append_data(msg.topic, data_final)
+            if data_final:
+                self.topic_manager.append_data(msg.topic, data_final)
 
         except Exception as exception: # (want to catch all) pylint: disable=broad-except
             self._log_exception('on_message_json', exception, msg)
@@ -882,12 +891,13 @@ class MessageCallbackProvider(object):
             if PY2:
                 key = key.encode('utf-8')
 
-
-            (fieldname, value) = self._update_data(key, payload_str)
-
-            data = {}
-            data[fieldname] = value
-            self.topic_manager.append_data(msg.topic, data, fieldname)
+            if not self.fields.get(key, {}).get('ignore', self.fields_ignore_default):
+                (fieldname, value) = self._update_data(key, payload_str)
+                data = {}
+                data[fieldname] = value
+                self.topic_manager.append_data(msg.topic, data, fieldname)
+            else:
+                self.logger.trace("MessageCallbackProvider on_message_individual ignoring field: %s" % key)
         except Exception as exception: # (want to catch all) pylint: disable=broad-except
             self._log_exception('on_message_individual', exception, msg)
 

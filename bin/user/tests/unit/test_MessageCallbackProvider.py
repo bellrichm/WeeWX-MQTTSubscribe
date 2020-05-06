@@ -638,7 +638,7 @@ class TestKeywordload(unittest.TestCase):
 
         SUT._on_message_keyword(None, None, msg)
         self.assertFalse(mock_manager.append_data.called)
-    
+
     def test_ignore_default_true_ignore_field_false(self):
         mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
