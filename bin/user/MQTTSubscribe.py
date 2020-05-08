@@ -52,7 +52,7 @@ Configuration:
 
     # The topic to subscribe to.
     # DEPRECATED - use [[topics]]
-    topic =
+    # topic =
 
     # Turn the service on and off.
     # Default is: true
@@ -66,7 +66,7 @@ Configuration:
     # Default is: 0
     # Only used by the service.
     # DEPRECATED  - use adjust_start_time
-    overlap = 0
+    # overlap = 0
 
     # The binding, loop or archive.
     # Default is: loop
@@ -96,6 +96,7 @@ Configuration:
         # Valid values: True, False
         # Default is: False
         # Only used when type is 'individual'.
+        full_topic_fieldname = False
 
         # When the json is nested, the delimiter between the hierarchies.
         # Default is: _
@@ -112,12 +113,12 @@ Configuration:
         # List of fields that are cumulative values
         # Default is: [] (empty list)
         # DEPRECATED - use [[[fields]]] contains_total setting.
-        contains_total =
+        # contains_total =
 
         # Mapping to WeeWX names.
         # DEPRECATED - use [[[fields]]] name setting
-        [[[label_map]]]
-            temp1 = extraTemp1
+        # [[[label_map]]]
+        #     temp1 = extraTemp1
 
         # Information to map the MQTT data to WeeWX.
         [[[fields]]]
@@ -225,17 +226,20 @@ try: # pragma: no cover
     class Logger(object):
         """ The logging class. """
         def __init__(self, level='NOTSET', filename=None, console=None):
+            self.filename = filename
+            self.console = console
             # Setup custom TRACE level
             self.trace_level = 5
             if logging.getLevelName(self.trace_level) == 'Level 5':
                 logging.addLevelName(self.trace_level, "TRACE")
 
             self._logmsg = logging.getLogger(__name__)
-            if console:
+            if self.console:
                 self._logmsg.addHandler(logging.StreamHandler(sys.stdout))
 
             self.level = logging._checkLevel(level) # not sure there is a better way pylint: disable=protected-access
             if self.level > 0:
+                self.weewx_debug = 0
                 self._logmsg.propagate = 0
                 self._logmsg.setLevel(self.level)
                 # Get a copy of all the handlers
@@ -243,10 +247,12 @@ try: # pragma: no cover
                 for handler in handlers:
                     handler.setLevel(self.level)
                     self._logmsg.addHandler(handler)
+            else:
+                self.weewx_debug = weewx.debug
 
-            if filename is not None:
+            if self.filename is not None:
                 formatter = logging.Formatter("%(asctime)s %(levelname)s %(message)s", "%Y-%m-%d %H:%M:%S")
-                file_handler = logging.FileHandler(filename, mode='w')
+                file_handler = logging.FileHandler(self.filename, mode='w')
                 file_handler.setLevel(self.level)
                 file_handler.setFormatter(formatter)
                 self._logmsg.addHandler(file_handler)
@@ -271,10 +277,18 @@ try: # pragma: no cover
             self.debug("Using Python %s" % sys.version)
             self.debug("Platform %s" % platform.platform())
             self.debug("Locale is '%s'" % locale.setlocale(locale.LC_ALL))
+            self.info("MQTTSubscribe version is %s" % VERSION)
+            self.info("MQTTSubscribe log level: %i" % self.trace_level)
+            self.info("MQTTSubscribe log debug setting: %i" % self.weewx_debug)
+            self.info("MQTTSubscribe log console: %s" % self.console)
+            self.info("MQTTSubscribe log file: %s" % self.filename)
 
         def trace(self, msg):
             """ Log trace messages. """
-            self._logmsg.log(self.trace_level, msg)
+            if self.weewx_debug > 1:
+                self._logmsg.debug(msg)
+            else:
+                self._logmsg.log(self.trace_level, msg)
 
         def debug(self, msg):
             """ Log debug messages. """
@@ -300,6 +314,8 @@ except ImportError: # pragma: no cover
     class Logger(object):
         """ The logging class. """
         def __init__(self, level='NOTSET', filename=None, console=None): # Need to match signature pylint: disable=unused-argument
+            self.filename = filename
+            self.weewx_debug = weewx.debug
             # Setup custom TRACE level
             self.trace_level = 5
             if logging.getLevelName(self.trace_level) == 'Level 5':
@@ -309,7 +325,7 @@ except ImportError: # pragma: no cover
             self.console = console
 
             self.file = None
-            if filename is not None:
+            if self.filename is not None:
                 self.file = open(filename, 'w')
 
         def log_environment(self):
@@ -319,10 +335,15 @@ except ImportError: # pragma: no cover
             self.debug("Using Python %s" % sys.version)
             self.debug("Platform %s" % platform.platform())
             self.debug("Locale is '%s'" % locale.setlocale(locale.LC_ALL))
+            self.info("MQTTSubscribe version is %s" % VERSION)
+            self.info("MQTTSubscribe log level: %i" % self.trace_level)
+            self.info("MQTTSubscribe log debug setting: %i" % self.weewx_debug)
+            self.info("MQTTSubscribe log console: %s" % self.console)
+            self.info("MQTTSubscribe log file: %s" % self.filename)
 
         def trace(self, msg):
             """ Log trace messages. """
-            if self.level == self.trace_level:
+            if self.level == self.trace_level or self.weewx_debug > 1:
                 self._logmsg(syslog.LOG_DEBUG, msg)
 
         def debug(self, msg):
@@ -959,8 +980,6 @@ class MQTTSubscribe(object):
 
         if self.archive_topic and self.archive_topic not in service_dict['topics']:
             raise ValueError("Archive topic %s must be in [[topics]]" % self.archive_topic)
-
-        self.logger.info("MQTTSubscribe version is %s" % VERSION)
 
         self.logger.info("MQTTSubscribe message callback config is %s" % message_callback_config)
         self.logger.info("MQTTSubscribe message callback provider is %s" % message_callback_provider_name)
