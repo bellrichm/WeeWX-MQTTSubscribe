@@ -400,7 +400,8 @@ class TestKeywordload(unittest.TestCase):
 
     def test_payload_empty(self):
         mock_logger = mock.Mock(spec=Logger)
-        SUT = MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, None)
+        mock_manager = mock.Mock(spec=TopicManager)
+        SUT = MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
 
         payload = ''
         payload = payload.encode('UTF-8')
@@ -430,7 +431,8 @@ class TestKeywordload(unittest.TestCase):
 
     def test_payload_missing_separator(self):
         mock_logger = mock.Mock(spec=Logger)
-        SUT = MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, None)
+        mock_manager = mock.Mock(spec=TopicManager)
+        SUT = MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
 
         payload = ' field:1'
         payload = payload.encode('UTF-8')
