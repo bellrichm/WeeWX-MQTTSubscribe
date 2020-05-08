@@ -34,11 +34,11 @@ Configuration:
 
     # username for broker authentication.
     # Default is: None
-    username =
+    username = None
 
     # password for broker authentication.
     # Default is: None
-    password =
+    password = None
 
     # Controls the MQTT logging.
     # Default is: false
@@ -82,7 +82,7 @@ Configuration:
     # Payload in this topic is processed like an archive record.
     # Default is: None
     # Only used by the driver.
-    archive_topic =
+    archive_topic = None
 
     # Configuration for the message callback.
     [[message_callback]]
@@ -104,7 +104,7 @@ Configuration:
 
         # The delimiter between fieldname and value pairs. (field1=value1, field2=value2).
         # Default is: ,
-        keyword_delimiter = ,
+        keyword_delimiter = ","
 
         # The separator between fieldname and value pairs. (field1=value1, field2=value2).
         # Default is: =
@@ -133,10 +133,21 @@ Configuration:
                 # Default is float
                 conversion_type = float
 
+                # The units of the incoming data.
+                # Useful if this field's units differ from the topic's unit_system's units.
+                # Valid values: see, http://www.weewx.com/docs/customizing.htm#units
+                # Default is not set
+                # units = km_per_hour
+
                 # True if the incoming data is cumulative.
                 # Valid values: True, False
                 # Default is False
                 contains_total = False
+
+                # True if the incoming data should not be processed into WeeWX.
+                # Valid values: True, False
+                # Default is False
+                ignore = False
 
     # The topics to subscribe to.
     [[topics]
