@@ -842,7 +842,7 @@ class MessageCallbackProvider(object):
         return fieldname, value
 
     def _log_message(self, msg):
-        self.logger.trace("MessageCallbackProvider For %s has QOS of %i and retain of %s received: %s"
+        self.logger.debug("MessageCallbackProvider data-> incoming topic: %s, QOS: %i, retain: %s, payload: %s"
                           %(msg.topic, msg.qos, msg.retain, msg.payload))
 
     def _log_exception(self, method, exception, msg):
@@ -894,8 +894,10 @@ class MessageCallbackProvider(object):
 
             if PY2:
                 payload_str = msg.payload
+                topic_str = msg.topic.encode('utf-8')
             else:
                 payload_str = msg.payload.decode('utf-8')
+                topic_str = msg.topic
 
             data = self._byteify(json.loads(payload_str, object_hook=self._byteify), ignore_dicts=True)
 
@@ -905,11 +907,15 @@ class MessageCallbackProvider(object):
             data_final = {}
             # ToDo - if I have to loop, removes benefit of _bytefy, time to remove it?
             for key in data_flattened:
-                if not self.fields.get(key, {}).get('ignore', self.fields_ignore_default):
-                    (fieldname, value) = self._update_data(key, data_flattened[key], unit_system)
+                if self.full_topic_fieldname:
+                    lookup_key = topic_str + "/" + key # todo - cleanup and test unicode vs str stuff
+                else:
+                    lookup_key = key
+                if not self.fields.get(lookup_key, {}).get('ignore', self.fields_ignore_default):
+                    (fieldname, value) = self._update_data(lookup_key, data_flattened[key], unit_system)
                     data_final[fieldname] = value
                 else:
-                    self.logger.trace("MessageCallbackProvider on_message_json ignoring field: %s" % key)
+                    self.logger.trace("MessageCallbackProvider on_message_json ignoring field: %s" % lookup_key)
 
             if data_final:
                 self.topic_manager.append_data(msg.topic, data_final)
