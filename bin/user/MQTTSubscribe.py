@@ -376,7 +376,7 @@ except ImportError: # pragma: no cover
             if self.file:
                 self.file.write('%s: %s\n' % (__name__, msg))
 
-VERSION = '1.5.3-rc04'
+VERSION = '1.5.3-rc05'
 DRIVER_NAME = 'MQTTSubscribeDriver'
 DRIVER_VERSION = VERSION
 
