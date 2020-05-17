@@ -1,7 +1,8 @@
 image:
-  - Ubuntu1604
+  # before enabling, need to manage code coverage better
+  #- Ubuntu1604
   - Ubuntu1804
-  - Ubuntu2004
+  #- Ubuntu2004
 
 environment:
   # common values
