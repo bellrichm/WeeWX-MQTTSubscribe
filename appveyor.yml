@@ -1,10 +1,14 @@
+image:
+  - Ubuntu1604
+  - Ubuntu1804
+  - Ubuntu2004
+
 environment:
   # common values
   SONAR_SCANNER_VERSION: 4.2.0.1873
   SONAR_SCANNER_OPTS: -server
   # default values
   ENABLED: true
-  APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
   PYTHON: 3.6.10
   WEEWX: 4.0.0
   WEEWX_URL: http://www.weewx.com/downloads/released_versions/
