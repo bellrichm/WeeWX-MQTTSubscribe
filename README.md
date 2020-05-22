@@ -16,6 +16,8 @@ The service can bind to either new loop packets or new archive records. In both 
 The elements that are processed from the queue can be controlled by various configuration options. By default, if the MQTT datetime is less than the previous packet's datetime it is ignored. This check can be ignored by setting ignore_start_time to True. It can be controlled more granularly by setting adjust_start_time to the number of seconds prior to the previous packet's datetime is allowed. Also by default, when the MQTT datetime is greater than the packet's datetime, the pocessing of the queue for this packet stops. This check can be ignored by setting ignore_end_time to True. It can be controlled more granularly by setting adjust_end_time to the number of seconds after the packet's datetime is allowed to be processed.
 
 ## Installation notes
+**Note:** It is rare that MQTTSubscribe should be configured to run as both a `service` and `driver`. If you are augmenting an existing driver's data, run MQTTSubscribe as a `service`. Otherwise, run it as a `driver`.
+
 Because there are [multiple methods to install WeeWX](http://weewx.com/docs/usersguide.htm#installation_methods), location of files can vary. See [where to find things](http://weewx.com/docs/usersguide.htm#Where_to_find_things) in the WeeWX [User's Guide](http://weewx.com/docs/usersguide.htm") for the definitive information. The following symbolic names are used to define the various locations:
 
 * *$DOWNLOAD_ROOT* - The directory containing the downloaded *MQTTSubscribe* extension.
