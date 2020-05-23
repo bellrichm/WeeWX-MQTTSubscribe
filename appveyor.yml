@@ -1,8 +1,14 @@
+branches:
+  only:
+    - master
+  # except:
+  #  - master
+
 image:
   # before enabling, need to manage code coverage better
   #- Ubuntu1604
-  - Ubuntu1804
-  #- Ubuntu2004
+  - Ubuntu
+  - Ubuntu2004
 
 environment:
   # common values

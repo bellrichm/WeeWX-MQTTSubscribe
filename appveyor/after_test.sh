@@ -4,6 +4,11 @@ if [ "$ENABLED" != "true" ]; then
   exit 0
 fi
 
+# only upload for one build image
+if [ "$APPVEYOR_BUILD_WORKER_IMAGE" != "Ubuntu" ]; then
+  exit 0
+fi
+
 # only upload once
 if [ "$CODECOVIO_UPLOAD" = "true" ]; then
   bash <(curl -s https://codecov.io/bash) -f coverage.xml -F unitests -n unitests-$PYTHON #>/dev/null
