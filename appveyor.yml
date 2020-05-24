@@ -1,14 +1,14 @@
 branches:
   only:
     - master
-  # except:
-  #  - master
+   #except:
+    #- master
 
 image:
   # before enabling, need to manage code coverage better
   #- Ubuntu1604
   - Ubuntu
-  - Ubuntu2004
+  #- Ubuntu2004
 
 environment:
   # common values
@@ -16,55 +16,53 @@ environment:
   SONAR_SCANNER_OPTS: -server
   # default values
   ENABLED: true
-  PYTHON: 3.6.10
-  WEEWX: 4.0.0
+  
   WEEWX_URL: http://www.weewx.com/downloads/released_versions/
 
   matrix:
-    - job_name: weewx4.0.0-py3.8.x
+    - PYTHON: 3.8
+      WEEWX: 4.0.0
       job_group: build  
       job_depends_on: initialize
-      PYTHON: 3.8
 
-    - job_name: weewx4.0.0-py3.7.x
+    - PYTHON: 3.7
+      WEEWX: 4.0.0
       job_group: build  
       job_depends_on: initialize
-      PYTHON: 3.7
 
-    - job_name: weewx4.0.0-py3.6.10
-      job_group: build
-      job_depends_on: initialize
+    - PYTHON: 3.6.10
+      WEEWX: 4.0.0
       CODECOVIO_UPLOAD: true
       COVERALLS_UPLOAD: true
       SONAR_UPLOAD: true
-
-    - job_name: weewx4.0.0-py3.5.9
-      job_group: build  
+      job_group: build
       job_depends_on: initialize
-      PYTHON: 3.5.9
 
-    - job_name: weewx4.0.0-py2.7.x
+    - PYTHON: 3.5.9
+      WEEWX: 4.0.0
       job_group: build  
-      job_depends_on: initialize
-      PYTHON: 2.7
+      job_depends_on: initialize      
+
+    - PYTHON: 2.7
+      WEEWX: 4.0.0
       CODECOVIO_UPLOAD: true
-
-    - job_name: weewx3.9.0-py2.7.x
-      job_group: build
-      job_depends_on: initialize
-      WEEWX: 3.9.0
-      PYTHON: 2.7
-
-    - job_name: weewx3.7.1-py2.7.x
-      job_group: build
-      job_depends_on: initialize
-      WEEWX: 3.7.1
-      PYTHON: 2.7 
-
-    - job_name: weewx4.0.0-py3.9
       job_group: build  
       job_depends_on: initialize
-      PYTHON: 3.9
+
+    - PYTHON: 2.7
+      WEEWX: 3.9.0 
+      job_group: build
+      job_depends_on: initialize
+
+    - PYTHON: 2.7 
+      WEEWX: 3.7.1
+      job_group: build
+      job_depends_on: initialize
+
+    - PYTHON: 3.9
+      WEEWX: 4.0.0
+      job_group: build  
+      job_depends_on: initialize
 
     - job_name: initialize
       WEEWX_URL: http://www.weewx.com/downloads/development_versions/
@@ -119,6 +117,7 @@ for:
 init:
   # This runs before the commit is even checked out
   - sh: echo "init"
+  - sh: echo "$APPVEYOR_BUILD_WORKER_IMAGE"
 
 install:
   - sh: echo "install"
