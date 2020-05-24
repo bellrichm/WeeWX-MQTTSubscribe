@@ -1,13 +1,13 @@
 branches:
-  #only:
-    #- master
-  except:
+  only:
     - master
+   #except:
+    #- master
 
 image:
-  #- Ubuntu1604
+  - Ubuntu1604
   - Ubuntu
-  #- Ubuntu2004
+  - Ubuntu2004
 
 environment:
   # common values
