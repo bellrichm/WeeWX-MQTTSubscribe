@@ -5,8 +5,8 @@ branches:
     #- master
 
 image:
-  - Ubuntu1604
   - Ubuntu
+  - Ubuntu1604
   - Ubuntu2004
 
 environment:
@@ -22,20 +22,16 @@ environment:
   matrix:
     - PYTHON: 3.8
       WEEWX: 4.0.0
-      job_group: build  
-      job_depends_on: initialize
-
-    - PYTHON: 3.7
-      WEEWX: 4.0.0
-      job_group: build  
-      job_depends_on: initialize
-
-    - PYTHON: 3.6.10
-      WEEWX: 4.0.0
       CODECOVIO_UPLOAD: true
       COVERALLS_UPLOAD: true
       SONAR_UPLOAD: true
-      job_group: build
+      job_group: build  
+      job_depends_on: initialize
+
+    - PYTHON: 2.7
+      WEEWX: 4.0.0
+      CODECOVIO_UPLOAD: true
+      job_group: build  
       job_depends_on: initialize
 
     - PYTHON: 3.5.9
@@ -43,9 +39,18 @@ environment:
       job_group: build  
       job_depends_on: initialize      
 
-    - PYTHON: 2.7
+    - PYTHON: 3.6.10
       WEEWX: 4.0.0
-      CODECOVIO_UPLOAD: true
+      job_group: build
+      job_depends_on: initialize
+
+    - PYTHON: 3.7
+      WEEWX: 4.0.0
+      job_group: build  
+      job_depends_on: initialize
+
+    - PYTHON: 3.9
+      WEEWX: 4.0.0
       job_group: build  
       job_depends_on: initialize
 
@@ -57,11 +62,6 @@ environment:
     - PYTHON: 2.7 
       WEEWX: 3.7.1
       job_group: build
-      job_depends_on: initialize
-
-    - PYTHON: 3.9
-      WEEWX: 4.0.0
-      job_group: build  
       job_depends_on: initialize
 
     - job_name: initialize
