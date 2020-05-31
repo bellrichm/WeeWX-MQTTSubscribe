@@ -1130,6 +1130,9 @@ class MQTTSubscribeService(StdService):
             self.logger.info("Not enabled, exiting.")
             return
 
+        if engine.stn_info.hardware == DRIVER_NAME:
+            self.logger.info("Running as both a driver and a service.")
+
         binding = service_dict.get('binding', 'loop')
 
         if 'archive_topic' in service_dict:
