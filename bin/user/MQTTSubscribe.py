@@ -497,6 +497,8 @@ class TopicManager(object):
         self.subscribed_topics[topic]['max_queue'] = max_queue
         self.subscribed_topics[topic]['queue'] = self.collected_queue
 
+        self.logger.debug("TopicManager self.subscribed_topics is %s" % self.subscribed_topics)
+
     def append_data(self, topic, in_data, fieldname=None):
         """ Add the MQTT data to the queue. """
         self.logger.debug("TopicManager data-> incoming %s: %s"
@@ -741,6 +743,8 @@ class MessageCallbackProvider(object):
 
         self.set_backwards_compatibility(label_map, orig_fields, contains_total)
         self.previous_values = {}
+
+        self.logger.debug("MessageCallbackProvider self.fields is %s" % self.fields)
 
     def set_backwards_compatibility(self, label_map, orig_fields, contains_total):
         """ Any config for backwards compatibility. """
