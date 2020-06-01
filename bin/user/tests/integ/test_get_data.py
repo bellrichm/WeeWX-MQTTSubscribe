@@ -18,7 +18,7 @@ class TestGetData(unittest.TestCase):
         config_dict = configobj.ConfigObj(test_data['config'])['MQTTSubscribeService']
         testruns = test_data['testruns']
 
-        logger = Logger()
+        logger = Logger('IntegTest')
         topics_dict = config_dict.get('topics', {})
         manager = TopicManager(topics_dict, logger)
 

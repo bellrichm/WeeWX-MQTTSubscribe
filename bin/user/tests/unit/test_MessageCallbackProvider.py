@@ -33,6 +33,8 @@ class Msg(object):
 
 class TestFieldsConfiguration(unittest.TestCase):
     def test_field_in_label_map(self):
+        mock_logger = mock.Mock(spec=Logger)
+        mock_logger = mock.Mock(spec=Logger)
         message_handler_config_dict = {}
         message_handler_config_dict['type'] = 'individual'
 
@@ -43,13 +45,14 @@ class TestFieldsConfiguration(unittest.TestCase):
         label_map[input_name] = output_name
         message_handler_config_dict['label_map'] = label_map
 
-        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), None, None)
+        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), mock_logger, None)
 
         self.assertIn(input_name, SUT.fields)
         self.assertIn('name', SUT.fields[input_name])
         self.assertEqual(SUT.fields[input_name]['name'], output_name)
 
     def test_field_in_label_map_and_fields_with_name(self):
+        mock_logger = mock.Mock(spec=Logger)
         message_handler_config_dict = {}
         message_handler_config_dict['type'] = 'individual'
 
@@ -67,13 +70,14 @@ class TestFieldsConfiguration(unittest.TestCase):
         fields[input_name] = field
         message_handler_config_dict['fields'] = fields
 
-        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), None, None)
+        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), mock_logger, None)
 
         self.assertIn(input_name, SUT.fields)
         self.assertIn('name', SUT.fields[input_name])
         self.assertEqual(SUT.fields[input_name]['name'], output_name)
 
     def test_field_in_label_map_and_fields_without_name(self):
+        mock_logger = mock.Mock(spec=Logger)
         message_handler_config_dict = {}
         message_handler_config_dict['type'] = 'individual'
 
@@ -90,7 +94,7 @@ class TestFieldsConfiguration(unittest.TestCase):
         fields[input_name] = field
         message_handler_config_dict['fields'] = fields
 
-        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), None, None)
+        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), mock_logger, None)
 
         self.assertIn(input_name, SUT.fields)
         self.assertIn('name', SUT.fields[input_name])
@@ -98,6 +102,7 @@ class TestFieldsConfiguration(unittest.TestCase):
 
 
     def test_field_in_label_map_and_fields_and_contains_total(self):
+        mock_logger = mock.Mock(spec=Logger)
         message_handler_config_dict = {}
         message_handler_config_dict['type'] = 'individual'
 
@@ -119,7 +124,7 @@ class TestFieldsConfiguration(unittest.TestCase):
         contains_total = [input_name]
         message_handler_config_dict['contains_total'] = contains_total
 
-        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), None, None)
+        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), mock_logger, None)
 
         self.assertIn(input_name, SUT.fields)
         self.assertIn('name', SUT.fields[input_name])
@@ -127,6 +132,7 @@ class TestFieldsConfiguration(unittest.TestCase):
         self.assertFalse(SUT.fields[input_name]['contains_total'])
 
     def test_field_in_label_map_and_contains_total(self):
+        mock_logger = mock.Mock(spec=Logger)
         message_handler_config_dict = {}
         message_handler_config_dict['type'] = 'individual'
 
@@ -139,7 +145,7 @@ class TestFieldsConfiguration(unittest.TestCase):
         contains_total = [input_name]
         message_handler_config_dict['contains_total'] = contains_total
 
-        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), None, None)
+        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), mock_logger, None)
 
         self.assertIn(input_name, SUT.fields)
         self.assertIn('name', SUT.fields[input_name])
@@ -147,6 +153,7 @@ class TestFieldsConfiguration(unittest.TestCase):
         self.assertTrue(SUT.fields[input_name]['contains_total'])
 
     def test_field_in_fields(self):
+        mock_logger = mock.Mock(spec=Logger)
         message_handler_config_dict = {}
         message_handler_config_dict['type'] = 'individual'
 
@@ -160,7 +167,7 @@ class TestFieldsConfiguration(unittest.TestCase):
         fields[input_name] = field
         message_handler_config_dict['fields'] = fields
 
-        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), None, None)
+        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), mock_logger, None)
 
         self.assertIn(input_name, SUT.fields)
         self.assertIn('name', SUT.fields[input_name])
@@ -168,6 +175,7 @@ class TestFieldsConfiguration(unittest.TestCase):
         self.assertFalse(SUT.fields[input_name]['contains_total'])
 
     def test_field_in_fields_and_contains_total(self):
+        mock_logger = mock.Mock(spec=Logger)
         message_handler_config_dict = {}
         message_handler_config_dict['type'] = 'individual'
 
@@ -184,7 +192,7 @@ class TestFieldsConfiguration(unittest.TestCase):
         contains_total = [input_name]
         message_handler_config_dict['contains_total'] = contains_total
 
-        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), None, None)
+        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), mock_logger, None)
 
         self.assertIn(input_name, SUT.fields)
         self.assertIn('name', SUT.fields[input_name])
@@ -192,6 +200,7 @@ class TestFieldsConfiguration(unittest.TestCase):
         self.assertFalse(SUT.fields[input_name]['contains_total'])
 
     def test_field_in_contains_total(self):
+        mock_logger = mock.Mock(spec=Logger)
         message_handler_config_dict = {}
         message_handler_config_dict['type'] = 'individual'
 
@@ -200,12 +209,13 @@ class TestFieldsConfiguration(unittest.TestCase):
         contains_total = [input_name]
         message_handler_config_dict['contains_total'] = contains_total
 
-        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), None, None)
+        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), mock_logger, None)
 
         self.assertNotIn('name', SUT.fields[input_name])
         self.assertTrue(SUT.fields[input_name]['contains_total'])
 
     def test_contains_total_is_bool(self):
+        mock_logger = mock.Mock(spec=Logger)
         message_handler_config_dict = {}
         message_handler_config_dict['type'] = 'individual'
 
@@ -217,13 +227,14 @@ class TestFieldsConfiguration(unittest.TestCase):
         fields[input_name] = field
         message_handler_config_dict['fields'] = fields
 
-        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), None, None)
+        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), mock_logger, None)
 
         self.assertIn(input_name, SUT.fields)
         self.assertIn('contains_total', SUT.fields[input_name])
         self.assertIsInstance(SUT.fields[input_name]['contains_total'], bool)
 
     def test_type_is_lowercase(self):
+        mock_logger = mock.Mock(spec=Logger)
         message_handler_config_dict = {}
         message_handler_config_dict['type'] = 'individual'
 
@@ -236,7 +247,7 @@ class TestFieldsConfiguration(unittest.TestCase):
         fields[input_name] = field
         message_handler_config_dict['fields'] = fields
 
-        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), None, None)
+        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), mock_logger, None)
 
         self.assertIn(input_name, SUT.fields)
         self.assertIn('conversion_type', SUT.fields[input_name])
@@ -244,44 +255,49 @@ class TestFieldsConfiguration(unittest.TestCase):
 
 class TestGetDefaultCallBacks(unittest.TestCase):
     def test_get_unknown_payload_type(self):
+        mock_logger = mock.Mock(spec=Logger)
         message_handler_config_dict = {}
         payload_type = 'foobar'
         message_handler_config_dict['type'] = payload_type
 
         with self.assertRaises(ValueError) as context:
-            MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), None, None)
+            MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), mock_logger, None)
 
         self.assertEqual(str(context.exception), "Invalid type configured: %s" % payload_type)
 
     def test_get_individual_payload_type(self):
+        mock_logger = mock.Mock(spec=Logger)
         message_handler_config_dict = {}
         message_handler_config_dict['type'] = 'individual'
 
-        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), None, None)
+        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), mock_logger, None)
 
         callback = SUT.get_callback()
         self.assertEqual(callback, SUT._on_message_individual)
 
     def test_get_json_payload_type(self):
+        mock_logger = mock.Mock(spec=Logger)
         message_handler_config_dict = {}
         message_handler_config_dict['type'] = 'json'
 
-        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), None, None)
+        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), mock_logger, None)
 
         callback = SUT.get_callback()
         self.assertEqual(callback, SUT._on_message_json)
 
     def test_get_keyword_payload_type(self):
+        mock_logger = mock.Mock(spec=Logger)
         message_handler_config_dict = {}
         message_handler_config_dict['type'] = 'keyword'
 
-        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), None, None)
+        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), mock_logger, None)
 
         callback = SUT.get_callback()
         self.assertEqual(callback, SUT._on_message_keyword)
 
 class TestConversionType(unittest.TestCase):
     def test_bool_conversion(self):
+        mock_logger = mock.Mock(spec=Logger)
         message_handler_config_dict = {}
         message_handler_config_dict['type'] = 'individual'
 
@@ -295,7 +311,7 @@ class TestConversionType(unittest.TestCase):
         fields[input_name] = field
         message_handler_config_dict['fields'] = fields
 
-        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), None, None)
+        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), mock_logger, None)
 
         new_value = SUT._convert_value(input_name, value)
 
@@ -303,6 +319,7 @@ class TestConversionType(unittest.TestCase):
         self.assertFalse(new_value)
 
     def test_float_conversion(self):
+        mock_logger = mock.Mock(spec=Logger)
         message_handler_config_dict = {}
         message_handler_config_dict['type'] = 'individual'
 
@@ -317,7 +334,7 @@ class TestConversionType(unittest.TestCase):
         fields[input_name] = field
         message_handler_config_dict['fields'] = fields
 
-        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), None, None)
+        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), mock_logger, None)
 
         new_value = SUT._convert_value(input_name, value)
 
@@ -325,6 +342,7 @@ class TestConversionType(unittest.TestCase):
         self.assertEqual(new_value, value_float)
 
     def test_int_conversion(self):
+        mock_logger = mock.Mock(spec=Logger)
         message_handler_config_dict = {}
         message_handler_config_dict['type'] = 'individual'
 
@@ -339,7 +357,7 @@ class TestConversionType(unittest.TestCase):
         fields[input_name] = field
         message_handler_config_dict['fields'] = fields
 
-        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), None, None)
+        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), mock_logger, None)
 
         new_value = SUT._convert_value(input_name, value)
 
@@ -347,6 +365,7 @@ class TestConversionType(unittest.TestCase):
         self.assertEqual(new_value, value_int)
 
     def test_default_conversion(self):
+        mock_logger = mock.Mock(spec=Logger)
         message_handler_config_dict = {}
         message_handler_config_dict['type'] = 'individual'
 
@@ -359,7 +378,7 @@ class TestConversionType(unittest.TestCase):
         fields[input_name] = field
         message_handler_config_dict['fields'] = fields
 
-        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), None, None)
+        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), mock_logger, None)
 
         new_value = SUT._convert_value(input_name, value)
 
@@ -367,6 +386,7 @@ class TestConversionType(unittest.TestCase):
         self.assertEqual(new_value, value_float)
 
     def test_no_conversion(self):
+        mock_logger = mock.Mock(spec=Logger)
         message_handler_config_dict = {}
         message_handler_config_dict['type'] = 'individual'
 
@@ -380,7 +400,7 @@ class TestConversionType(unittest.TestCase):
         fields[input_name] = field
         message_handler_config_dict['fields'] = fields
 
-        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), None, None)
+        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), mock_logger, None)
 
         new_value = SUT._convert_value(input_name, value)
 

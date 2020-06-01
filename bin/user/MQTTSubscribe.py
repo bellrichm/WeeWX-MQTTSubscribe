@@ -236,7 +236,8 @@ try: # pragma: no cover
 
     class Logger(object):
         """ The logging class. """
-        def __init__(self, level='NOTSET', filename=None, console=None):
+        def __init__(self, mode, level='NOTSET', filename=None, console=None):
+            self.mode = mode
             self.filename = filename
             self.console = console
             # Setup custom TRACE level
@@ -288,30 +289,30 @@ try: # pragma: no cover
             self.debug("Using Python %s" % sys.version)
             self.debug("Platform %s" % platform.platform())
             self.debug("Locale is '%s'" % locale.setlocale(locale.LC_ALL))
-            self.info("MQTTSubscribe version is %s" % VERSION)
-            self.info("MQTTSubscribe log level: %i" % self.trace_level)
-            self.info("MQTTSubscribe log debug setting: %i" % self.weewx_debug)
-            self.info("MQTTSubscribe log console: %s" % self.console)
-            self.info("MQTTSubscribe log file: %s" % self.filename)
+            self.info("Version is %s" % VERSION)
+            self.info("Log level: %i" % self.trace_level)
+            self.info("Log debug setting: %i" % self.weewx_debug)
+            self.info("Log console: %s" % self.console)
+            self.info("Log file: %s" % self.filename)
 
         def trace(self, msg):
             """ Log trace messages. """
             if self.weewx_debug > 1:
-                self._logmsg.debug(msg)
+                self._logmsg.debug("(%s) %s", self.mode, msg)
             else:
-                self._logmsg.log(self.trace_level, msg)
+                self._logmsg.log(self.trace_level, "(%s) %s", self.mode, msg)
 
         def debug(self, msg):
             """ Log debug messages. """
-            self._logmsg.debug(msg)
+            self._logmsg.debug("(%s) %s", self.mode, msg)
 
         def info(self, msg):
             """ Log informational messages. """
-            self._logmsg.info(msg)
+            self._logmsg.info("(%s) %s", self.mode, msg)
 
         def error(self, msg):
             """ Log error messages. """
-            self._logmsg.error(msg)
+            self._logmsg.error("(%s) %s", self.mode, msg)
 except ImportError: # pragma: no cover
     import syslog
     def setup_logging(logging_level, config_dict): # Need to match signature pylint: disable=unused-argument
@@ -324,7 +325,8 @@ except ImportError: # pragma: no cover
 
     class Logger(object):
         """ The logging class. """
-        def __init__(self, level='NOTSET', filename=None, console=None): # Need to match signature pylint: disable=unused-argument
+        def __init__(self, mode, level='NOTSET', filename=None, console=None): # Need to match signature pylint: disable=unused-argument
+            self.mode = mode
             self.filename = filename
             self.weewx_debug = weewx.debug
             # Setup custom TRACE level
@@ -346,11 +348,11 @@ except ImportError: # pragma: no cover
             self.debug("Using Python %s" % sys.version)
             self.debug("Platform %s" % platform.platform())
             self.debug("Locale is '%s'" % locale.setlocale(locale.LC_ALL))
-            self.info("MQTTSubscribe version is %s" % VERSION)
-            self.info("MQTTSubscribe log level: %i" % self.trace_level)
-            self.info("MQTTSubscribe log debug setting: %i" % self.weewx_debug)
-            self.info("MQTTSubscribe log console: %s" % self.console)
-            self.info("MQTTSubscribe log file: %s" % self.filename)
+            self.info("Version is %s" % VERSION)
+            self.info("Log level: %i" % self.trace_level)
+            self.info("Log debug setting: %i" % self.weewx_debug)
+            self.info("Log console: %s" % self.console)
+            self.info("Log file: %s" % self.filename)
 
         def trace(self, msg):
             """ Log trace messages. """
@@ -370,7 +372,7 @@ except ImportError: # pragma: no cover
             self._logmsg(syslog.LOG_ERR, msg)
 
         def _logmsg(self, dst, msg):
-            syslog.syslog(dst, '%s: %s' % (__name__, msg))
+            syslog.syslog(dst, '(%s) %s: %s' % (self.mode, __name__, msg))
             if self.console:
                 print('%s: %s' % (__name__, msg))
             if self.file:
@@ -420,7 +422,7 @@ class TopicManager(object):
         if not config.sections:
             raise ValueError("At least one topic must be configured.")
 
-        self.logger.info("TopicManager config is %s" % config)
+        self.logger.debug("TopicManager config is %s" % config)
 
         default_qos = to_int(config.get('qos', 0))
         default_use_server_datetime = to_bool(config.get('use_server_datetime', False))
@@ -494,6 +496,8 @@ class TopicManager(object):
         self.subscribed_topics[topic]['offset_format'] = default_offset_format
         self.subscribed_topics[topic]['max_queue'] = max_queue
         self.subscribed_topics[topic]['queue'] = self.collected_queue
+
+        self.logger.debug("TopicManager self.subscribed_topics is %s" % self.subscribed_topics)
 
     def append_data(self, topic, in_data, fieldname=None):
         """ Add the MQTT data to the queue. """
@@ -706,6 +710,7 @@ class MessageCallbackProvider(object):
     def __init__(self, config, logger, topic_manager):
         self.logger = logger
         self.topic_manager = topic_manager
+        self.logger.debug("MessageCallbackProvider config is %s" % config)
         self._setup_callbacks()
         self.type = config.get('type', None)
         self.flatten_delimiter = config.get('flatten_delimiter', '_')
@@ -738,6 +743,8 @@ class MessageCallbackProvider(object):
 
         self.set_backwards_compatibility(label_map, orig_fields, contains_total)
         self.previous_values = {}
+
+        self.logger.debug("MessageCallbackProvider self.fields is %s" % self.fields)
 
     def set_backwards_compatibility(self, label_map, orig_fields, contains_total):
         """ Any config for backwards compatibility. """
@@ -958,15 +965,16 @@ class MQTTSubscribe(object):
     def __init__(self, service_dict, logger):
         # pylint: disable=too-many-locals, too-many-statements
         self.logger = logger
+        self.logger.debug("service_dict is %s" % service_dict)
 
         if 'topic' in service_dict:
-            self.logger.info("MQTTSubscribe 'topic' is deprecated, use '[[topics]]'")
+            self.logger.info("'topic' is deprecated, use '[[topics]]'")
         if 'overlap' in service_dict:
-            self.logger.info("MQTTSubscribe 'overlap' is deprecated, use 'adjust_start_time'")
+            self.logger.info("'overlap' is deprecated, use 'adjust_start_time'")
         if 'contains_total' in service_dict['message_callback']:
-            self.logger.info("MQTTSubscribe 'contains_total' is deprecated use [[[fields]]] contains_total setting.")
+            self.logger.info("'contains_total' is deprecated use [[[fields]]] contains_total setting.")
         if 'label_map' in service_dict['message_callback']:
-            self.logger.info("MQTTSubscribe 'label_map' is deprecated use [[[fields]]] name setting.")
+            self.logger.info("'label_map' is deprecated use [[[fields]]] name setting.")
 
         message_callback_config = service_dict.get('message_callback', None)
         if message_callback_config is None:
@@ -974,7 +982,7 @@ class MQTTSubscribe(object):
 
         # For backwards compatibility
         overlap = to_float(service_dict.get('overlap', 0))
-        self.logger.info("MQTTSubscribe overlap is %s" % overlap)
+        self.logger.info("overlap is %s" % overlap)
         topics_dict = service_dict.get('topics', {})
         topics_dict['overlap'] = overlap
 
@@ -998,18 +1006,17 @@ class MQTTSubscribe(object):
         if self.archive_topic and self.archive_topic not in service_dict['topics']:
             raise ValueError("Archive topic %s must be in [[topics]]" % self.archive_topic)
 
-        self.logger.info("MQTTSubscribe message callback config is %s" % message_callback_config)
-        self.logger.info("MQTTSubscribe message callback provider is %s" % message_callback_provider_name)
-        self.logger.info("MQTTSubscribe client id is %s" % clientid)
-        self.logger.info("MQTTSubscribe client session is %s" % clean_session)
-        self.logger.info("MQTTSubscribe host is %s" % host)
-        self.logger.info("MQTTSubscribe port is %s" % port)
-        self.logger.info("MQTTSubscribe keep alive is %s" % keepalive)
-        self.logger.info("MQTTSubscribe username is %s" % username)
+        self.logger.info("message_callback_provider_name is %s" % message_callback_provider_name)
+        self.logger.info("clientid is %s" % clientid)
+        self.logger.info("client_session is %s" % clean_session)
+        self.logger.info("host is %s" % host)
+        self.logger.info("port is %s" % port)
+        self.logger.info("keepalive is %s" % keepalive)
+        self.logger.info("username is %s" % username)
         if password is not None:
-            self.logger.info("MQTTSubscribe password is set")
+            self.logger.info("password is set")
         else:
-            self.logger.info("MQTTSubscribe password is not set")
+            self.logger.info("password is not set")
         self.logger.info("Archive topic is %s" % self.archive_topic)
 
         self.mqtt_logger = {
@@ -1061,7 +1068,7 @@ class MQTTSubscribe(object):
 
     def start(self):
         """ start subscribing to the topics """
-        self.logger.debug("MQTTSubscribe starting loop")
+        self.logger.debug("Starting loop")
         self.client.loop_start()
 
         while not self.userdata['connect']:
@@ -1084,8 +1091,8 @@ class MQTTSubscribe(object):
         # 4: Connection refused - bad username or password
         # 5: Connection refused - not authorised
         # 6-255: Currently unused.
-        self.logger.debug("MQTTSubscribe connected with result code %i" % rc)
-        self.logger.debug("MQTTSubscribe connected flags %s" % str(flags))
+        self.logger.debug("Connected with result code %i" % rc)
+        self.logger.debug("Connected flags %s" % str(flags))
 
         userdata['connect'] = True
         userdata['connect_rc'] = rc
@@ -1093,13 +1100,13 @@ class MQTTSubscribe(object):
 
         for topic in self.manager.subscribed_topics:
             (result, mid) = client.subscribe(topic, self.manager.get_qos(topic))
-            self.logger.debug("MQTTSubscribe subscribe to %s has a mid %i and rc %i" %(topic, mid, result))
+            self.logger.debug("Subscribed to %s has a mid %i and rc %i" %(topic, mid, result))
 
     def _on_disconnect(self, client, userdata, rc): # (match callback signature) pylint: disable=unused-argument
-        self.logger.debug("MQTTSubscribe disconnected with result code %i" %rc)
+        self.logger.debug("Disconnected with result code %i" %rc)
 
     def _on_subscribe(self, client, userdata, mid, granted_qos): # (match callback signature) pylint: disable=unused-argument
-        self.logger.debug("MQTTSubscribe subscribed to topic mid: %i is size %i has a QOS of %i"
+        self.logger.debug("Subscribed to topic mid: %i is size %i has a QOS of %i"
                           %(mid, len(granted_qos), granted_qos[0]))
 
     def _on_log(self, client, userdata, level, msg): # (match callback signature) pylint: disable=unused-argument
@@ -1114,13 +1121,17 @@ class MQTTSubscribeService(StdService):
         logging_filename = service_dict.get('logging_filename', None)
         logging_level = service_dict.get('logging_level', 'NOTSET')
         console = to_bool(service_dict.get('console', False))
-        self.logger = Logger(level=logging_level, filename=logging_filename, console=console)
+        self.logger = Logger('Service', level=logging_level, filename=logging_filename, console=console)
         self.logger.log_environment()
+        self.logger.debug("service_dict is %s" % service_dict)
 
         self.enable = to_bool(service_dict.get('enable', True))
         if not self.enable:
-            self.logger.info("MQTTSubscribeService is not enabled, exiting.")
+            self.logger.info("Not enabled, exiting.")
             return
+
+        if engine.stn_info.hardware == DRIVER_NAME:
+            self.logger.info("Running as both a driver and a service.")
 
         binding = service_dict.get('binding', 'loop')
 
@@ -1131,7 +1142,7 @@ class MQTTSubscribeService(StdService):
 
         self.subscriber = MQTTSubscribe(service_dict, self.logger)
 
-        self.logger.info("MQTTSubscribeService binding is %s" % binding)
+        self.logger.info("binding is %s" % binding)
 
         self.subscriber.start()
 
@@ -1150,24 +1161,24 @@ class MQTTSubscribeService(StdService):
         """ Handle the new loop packet event. """
         # packet has traveled back in time
         if self.end_ts > event.packet['dateTime']:
-            self.logger.error("MQTTSubscribeService ignoring packet has dateTime of %f which is prior to previous packet %f"
+            self.logger.error("Ignoring packet has dateTime of %f which is prior to previous packet %f"
                               %(event.packet['dateTime'], self.end_ts))
         else:
             start_ts = self.end_ts
             self.end_ts = event.packet['dateTime']
 
             for topic in self.subscriber.subscribed_topics: # topics might not be cached.. therefore use subscribed?
-                self.logger.trace("MQTTSubscribeService packet prior to update is: %s %s"
+                self.logger.trace("Packet prior to update is: %s %s"
                                   % (weeutil.weeutil.timestamp_to_string(event.packet['dateTime']),
                                      to_sorted_string(event.packet)))
                 target_data = self.subscriber.get_accumulated_data(topic,
                                                                    start_ts, self.end_ts, event.packet['usUnits'])
                 event.packet.update(target_data)
-                self.logger.trace("MQTTSubscribeService packet after update is: %s %s"
+                self.logger.trace("Packet after update is: %s %s"
                                   % (weeutil.weeutil.timestamp_to_string(event.packet['dateTime']),
                                      to_sorted_string(event.packet)))
 
-            self.logger.debug("MQTTSubscribeService data-> final packet is %s: %s"
+            self.logger.debug("data-> final packet is %s: %s"
                               % (weeutil.weeutil.timestamp_to_string(event.packet['dateTime']),
                                  to_sorted_string(event.packet)))
 
@@ -1180,16 +1191,16 @@ class MQTTSubscribeService(StdService):
         start_ts = end_ts - event.record['interval'] * 60
 
         for topic in self.subscriber.subscribed_topics: # topics might not be cached.. therefore use subscribed?
-            self.logger.trace("MQTTSubscribeService record prior to update is: %s %s"
+            self.logger.trace("Record prior to update is: %s %s"
                               % (weeutil.weeutil.timestamp_to_string(event.record['dateTime']),
                                  to_sorted_string(event.record)))
             target_data = self.subscriber.get_accumulated_data(topic, start_ts, end_ts, event.record['usUnits'])
             event.record.update(target_data)
-            self.logger.trace("MQTTSubscribeService record after update is: %s %s"
+            self.logger.trace("Record after update is: %s %s"
                               % (weeutil.weeutil.timestamp_to_string(event.record['dateTime']),
                                  to_sorted_string(event.record)))
 
-        self.logger.debug("MQTTSubscribeService data-> final record is %s: %s"
+        self.logger.debug("data-> final record is %s: %s"
                           % (weeutil.weeutil.timestamp_to_string(event.record['dateTime']),
                              to_sorted_string(event.record)))
 
@@ -1208,8 +1219,9 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice): # (methods not used) py
         console = to_bool(stn_dict.get('console', False))
         logging_filename = stn_dict.get('logging_filename', None)
         logging_level = stn_dict.get('logging_level', 'NOTSET')
-        self.logger = Logger(level=logging_level, filename=logging_filename, console=console)
+        self.logger = Logger('Driver', level=logging_level, filename=logging_filename, console=console)
         self.logger.log_environment()
+        self.logger.debug("stn_dict is %s" % stn_dict)
 
         self.wait_before_retry = float(stn_dict.get('wait_before_retry', 2))
         self._archive_interval = to_int(stn_dict.get('archive_interval', 300))
@@ -1217,7 +1229,7 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice): # (methods not used) py
 
         self.subscriber = MQTTSubscribe(stn_dict, self.logger)
 
-        self.logger.info("MQTTSubscribeDriver wait before retry is %i" % self.wait_before_retry)
+        self.logger.info("Wait before retry is %i" % self.wait_before_retry)
         self.subscriber.start()
 
     @property
@@ -1229,7 +1241,7 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice): # (methods not used) py
     def archive_interval(self):
         """ The archive interval. """
         if not self.archive_topic:
-            self.logger.debug("MQTTSubscribeDriver no archive topic configured.")
+            self.logger.debug("No archive topic configured.")
             raise NotImplementedError
 
         return self._archive_interval
@@ -1247,25 +1259,25 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice): # (methods not used) py
 
                 for data in self.subscriber.get_data(topic):
                     if data:
-                        self.logger.debug("MQTTSubscribeDriver data-> final loop packet is %s %s: %s"
+                        self.logger.debug("data-> final loop packet is %s %s: %s"
                                           % (topic, weeutil.weeutil.timestamp_to_string(data['dateTime']), to_sorted_string(data)))
                         yield data
                     else:
                         break
 
-            self.logger.trace("MQTTSubscribeDriver queues are empty.")
+            self.logger.trace("Queues are empty.")
 
             time.sleep(self.wait_before_retry)
 
     def genArchiveRecords(self, lastgood_ts): # need to override parent - pylint: disable=invalid-name
         """ Called to generate the archive records. """
         if not self.archive_topic:
-            self.logger.debug("MQTTSubscribeDriver no archive topic configured.")
+            self.logger.debug("No archive topic configured.")
             raise NotImplementedError
 
         for data in self.subscriber.get_data(self.archive_topic, lastgood_ts):
             if data:
-                self.logger.debug("MQTTSubscribeDriver data-> final archive record is %s %s: %s"
+                self.logger.debug("data-> final archive record is %s %s: %s"
                                   % (self.archive_topic, weeutil.weeutil.timestamp_to_string(data['dateTime']), to_sorted_string(data)))
                 yield data
             else:
