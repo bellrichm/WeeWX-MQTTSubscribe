@@ -1,3 +1,23 @@
+V1.5.3
+Enhancements/Fixes
+- Added support for ignoring fields (#63).
+- Support mixed units in json and keyword payloads (#58).
+- Support for full_topic_fieldname with json payload (#71).
+- Support cacheing of archive record fields (service only) (#68)
+- Fixed bug with nested json (#60).
+- Fixed bug with wind data across multiple individual topics (#59).
+- Fix driver defaulting the archive inal to 300 (#64).
+- Cleaned up/improved logging.
+- Add support for python 3.5.
+- Add support back to WeeWX 3.7.1.
+
+Internal Improvements
+- Better identification ('naming') of build jobs.
+- Improved test infrastructure to make debugging tests easier.
+- Improved the integration test infrastructure.
+- Run tests against multiple versions of Ubuntu.
+- Fixed sonar build error.
+
 V1.5.2
 Internal Improvements
 - Improved log messages to easily differentiate between loop and archive processing.
