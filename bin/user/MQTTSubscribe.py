@@ -84,6 +84,27 @@ Configuration:
     # Only used by the driver.
     archive_topic = None
 
+    # Fields in this section will be cached.
+    # If the field is not in the current archive record, its value will be retrieved from the cache.
+    # Only used by the service.
+    # EXPERIMENTAL - may be removed
+    [[archive_field_cache]]
+        # The unit system of the cache.
+        # This must match the unit_system of the archive record.
+        # Default is US.
+        unit_system = US
+
+        # The WeeWX fields to cache.
+        [[[fields]]]
+            # The name of the field to cache.
+            [[[[fieldname]]]]
+                # In seconds how long the cache is valid.
+                # Value of 0 means the cache is always expired.
+                # Useful if missing fields should have a value of None instead of the previous value.
+                # Value of None means the cache never expires.
+                # Default is None.
+                expires_after = None
+
     # Configuration for the message callback.
     [[message_callback]]
         # The format of the MQTT payload.
@@ -217,6 +238,10 @@ import weewx.drivers
 from weewx.engine import StdService
 import weeutil
 from weeutil.weeutil import option_as_list, to_bool, to_float, to_int, to_sorted_string
+
+VERSION = '1.5.3-rc06b'
+DRIVER_NAME = 'MQTTSubscribeDriver'
+DRIVER_VERSION = VERSION
 
 # Stole from six module. Added to eliminate dependency on six when running under WeeWX 3.x
 PY2 = sys.version_info[0] == 2
@@ -378,11 +403,44 @@ except ImportError: # pragma: no cover
             if self.file:
                 self.file.write('%s: %s\n' % (__name__, msg))
 
-VERSION = '1.5.3-rc06a'
-DRIVER_NAME = 'MQTTSubscribeDriver'
-DRIVER_VERSION = VERSION
-
 # pylint: disable=fixme
+
+class RecordCache(object):
+    """ Manage the cache. """
+    def __init__(self, unit_system):
+        self.unit_system = unit_system
+        self.cached_values = {}
+
+    def get_value(self, key, timestamp, expires_after):
+        """ Get the cached value. """
+        if key in self.cached_values and \
+            (expires_after is None or timestamp - self.cached_values[key]['timestamp'] < expires_after):
+            return self.cached_values[key]['value']
+
+        return None
+
+    def update_value(self, key, value, unit_system, timestamp):
+        """ Update the cached value. """
+        if unit_system != self.unit_system:
+            raise ValueError("Unit system does not match unit system of the cache. %s vs %s"
+                             % (unit_system, self.unit_system))
+        self.cached_values[key] = {}
+        self.cached_values[key]['value'] = value
+        self.cached_values[key]['timestamp'] = timestamp
+
+    def update_timestamp(self, key, timestamp):
+        """ Update the ts. """
+        if key in self.cached_values:
+            self.cached_values[key]['timestamp'] = timestamp
+
+    def remove_value(self, key):
+        """ Remove a cached value. """
+        if key in self.cached_values:
+            del self.cached_values[key]
+
+    def clear_cache(self):
+        """ Clear the cache """
+        self.cached_values = {}
 
 class CollectData(object):
     """ Manage fields that are 'grouped together', like wind data. """
@@ -1133,7 +1191,7 @@ class MQTTSubscribeService(StdService):
         if engine.stn_info.hardware == DRIVER_NAME:
             self.logger.info("Running as both a driver and a service.")
 
-        binding = service_dict.get('binding', 'loop')
+        self.binding = service_dict.get('binding', 'loop')
 
         if 'archive_topic' in service_dict:
             raise ValueError("archive_topic, %s, is invalid when running as a service" % service_dict['archive_topic'])
@@ -1142,16 +1200,35 @@ class MQTTSubscribeService(StdService):
 
         self.subscriber = MQTTSubscribe(service_dict, self.logger)
 
-        self.logger.info("binding is %s" % binding)
+        self.logger.info("binding is %s" % self.binding)
+
+        archive_field_cache_dict = service_dict.get('archive_field_cache', None)
+        self.cached_fields = {}
+        if archive_field_cache_dict is not None:
+            unit_system_name = archive_field_cache_dict.get('unit_system', 'US').strip().upper()
+            if unit_system_name not in weewx.units.unit_constants:
+                raise ValueError("archive_field_cache: Unknown unit system: %s" % unit_system_name)
+            unit_system = weewx.units.unit_constants[unit_system_name]
+
+            fields_dict = archive_field_cache_dict.get('fields', {})
+            for field in archive_field_cache_dict.get('fields', {}):
+                self.cached_fields[field] = {}
+                self.cached_fields[field]['expires_after'] = to_float(fields_dict[field].get('expires_after', None))
+
+            self.cache = RecordCache(unit_system)
+
+        self.logger.info("archive_field_cache_dict is %s" % archive_field_cache_dict)
 
         self.subscriber.start()
 
-        if binding == 'archive':
+        if self.binding == 'archive':
             self.bind(weewx.NEW_ARCHIVE_RECORD, self.new_archive_record)
-        elif binding == 'loop':
+        elif self.binding == 'loop':
             self.bind(weewx.NEW_LOOP_PACKET, self.new_loop_packet)
+            if archive_field_cache_dict is not None:
+                self.bind(weewx.NEW_ARCHIVE_RECORD, self.new_archive_record)
         else:
-            raise ValueError("MQTTSubscribeService: Unknown binding: %s" % binding)
+            raise ValueError("MQTTSubscribeService: Unknown binding: %s" % self.binding)
 
     def shutDown(self): # need to override parent - pylint: disable=invalid-name
         """Run when an engine shutdown is requested."""
@@ -1187,19 +1264,38 @@ class MQTTSubscribeService(StdService):
     # If this is important, bind to the loop packet.
     def new_archive_record(self, event):
         """ Handle the new archive record event. """
-        end_ts = event.record['dateTime']
-        start_ts = end_ts - event.record['interval'] * 60
+        if self.binding == 'archive':
+            end_ts = event.record['dateTime']
+            start_ts = end_ts - event.record['interval'] * 60
 
-        for topic in self.subscriber.subscribed_topics: # topics might not be cached.. therefore use subscribed?
-            self.logger.trace("Record prior to update is: %s %s"
-                              % (weeutil.weeutil.timestamp_to_string(event.record['dateTime']),
-                                 to_sorted_string(event.record)))
-            target_data = self.subscriber.get_accumulated_data(topic, start_ts, end_ts, event.record['usUnits'])
-            event.record.update(target_data)
-            self.logger.trace("Record after update is: %s %s"
-                              % (weeutil.weeutil.timestamp_to_string(event.record['dateTime']),
-                                 to_sorted_string(event.record)))
+            for topic in self.subscriber.subscribed_topics: # topics might not be cached.. therefore use subscribed?
+                self.logger.trace("Record prior to update is: %s %s"
+                                  % (weeutil.weeutil.timestamp_to_string(event.record['dateTime']),
+                                     to_sorted_string(event.record)))
+                target_data = self.subscriber.get_accumulated_data(topic, start_ts, end_ts, event.record['usUnits'])
+                event.record.update(target_data)
+                self.logger.trace("Record after update is: %s %s"
+                                  % (weeutil.weeutil.timestamp_to_string(event.record['dateTime']),
+                                     to_sorted_string(event.record)))
 
+        target_data = {}
+        for field in self.cached_fields:
+            if field in event.record:
+                timestamp = time.time()
+                self.logger.trace("Update cache %s to %s with units of %i and timestamp of %i"
+                                  % (event.record[field], field, event.record['usUnits'], timestamp))
+                self.cache.update_value(field,
+                                        event.record[field],
+                                        event.record['usUnits'],
+                                        timestamp)
+            else:
+                target_data[field] = self.cache.get_value(field,
+                                                          time.time(),
+                                                          self.cached_fields[field]['expires_after'])
+                self.logger.trace("target_data after cache lookup is: %s"
+                                  % to_sorted_string(target_data))
+
+        event.record.update(target_data)
         self.logger.debug("data-> final record is %s: %s"
                           % (weeutil.weeutil.timestamp_to_string(event.record['dateTime']),
                              to_sorted_string(event.record)))

@@ -35,6 +35,11 @@ class weewx(object): # pylint: disable=invalid-name
     class NEW_LOOP_PACKET(object):
         """Event issued when a new LOOP packet is available. The event contains
         attribute 'packet', which is the new LOOP packet."""
+
+    class NEW_ARCHIVE_RECORD(object):
+        """Event issued when a new archive record is available. The event contains
+        attribute 'record', which is the new archive record."""
+
     class engine(object):
         class StdService(object):
             def __init__(self, engine, config_dict):
