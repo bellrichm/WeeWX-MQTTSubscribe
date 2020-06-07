@@ -127,7 +127,7 @@ def check(self, test_type, results, expected_results):
     self.assertEqual(len(results), len(expected_results), msg)
     i = 0
     for expected_result in expected_results:
-        print("testing %s %s" % (test_type, expected_result))
+        # print("testing %s %s" % (test_type, expected_result))
         msg = "\n\t%s\n\t%s" %(expected_result, results[i])
         self.assertEqual(len(expected_result), len(results[i]), msg)
         for field in expected_result:
