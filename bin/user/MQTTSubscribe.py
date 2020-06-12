@@ -1084,6 +1084,10 @@ class MQTTSubscribe(object):
                                                           'user.MQTTSubscribe.MessageCallbackProvider')
         self.manager = TopicManager(topics_dict, self.logger)
 
+        self.record_cache = None
+        if self.manager.managing_fields:
+            self.record_cache = self.manager.record_cache
+
         clientid = service_dict.get('clientid',
                                     'MQTTSubscribe-' + str(random.randint(1000, 9999)))
         clean_session = to_bool(service_dict.get('clean_session', True))
@@ -1314,8 +1318,14 @@ class MQTTSubscribeService(StdService):
                                   % (weeutil.weeutil.timestamp_to_string(event.record['dateTime']),
                                      to_sorted_string(event.record)))
 
+
+        if self.subscriber.record_cache is not None:
+            cached_fields = self.subscriber.record_cache
+        else:
+            cached_fields = self.cached_fields
+
         target_data = {}
-        for field in self.cached_fields:
+        for field in cached_fields:
             if field in event.record:
                 timestamp = time.time()
                 self.logger.trace("Update cache %s to %s with units of %i and timestamp of %i"
@@ -1327,7 +1337,7 @@ class MQTTSubscribeService(StdService):
             else:
                 target_data[field] = self.cache.get_value(field,
                                                           time.time(),
-                                                          self.cached_fields[field]['expires_after'])
+                                                          cached_fields[field]['expires_after'])
                 self.logger.trace("target_data after cache lookup is: %s"
                                   % to_sorted_string(target_data))
 
