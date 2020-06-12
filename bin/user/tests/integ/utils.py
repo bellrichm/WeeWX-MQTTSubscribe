@@ -49,11 +49,14 @@ def on_message(client, userdata, msg): # (match callback signature) pylint: disa
 
 def send_mqtt_msg(publisher, topic, payload, userdata, self):
     userdata['msg'] = False
+    max_msg_wait = 5
     mqtt_message_info = publisher(topic, payload)
     mqtt_message_info.wait_for_publish()
     i = 1
+    time.sleep(.5) # give it a bit of time before checking
     while not userdata['msg']:
-        if i > userdata['max_msg_wait']:
+        print("waiting for mqtt message %i" % i)        
+        if i > max_msg_wait:
             self.fail("Timed out waiting for MQTT message.")
         time.sleep(1)
         i += 1
