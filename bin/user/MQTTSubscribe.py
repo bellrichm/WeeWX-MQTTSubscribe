@@ -84,26 +84,27 @@ Configuration:
     # Only used by the driver.
     archive_topic = None
 
+    # DEPRECATED - move the expires_after under the [[topic]]/[[[topic name]]][[[[fieldname]]]]
     # Fields in this section will be cached.
     # If the field is not in the current archive record, its value will be retrieved from the cache.
     # Only used by the service.
     # EXPERIMENTAL - may be removed
-    [[archive_field_cache]]
-        # The unit system of the cache.
-        # This must match the unit_system of the archive record.
-        # Default is US.
-        unit_system = US
-
-        # The WeeWX fields to cache.
-        [[[fields]]]
-            # The name of the field to cache.
-            [[[[fieldname]]]]
-                # In seconds how long the cache is valid.
-                # Value of 0 means the cache is always expired.
-                # Useful if missing fields should have a value of None instead of the previous value.
-                # Value of None means the cache never expires.
-                # Default is None.
-                expires_after = None
+    # [[archive_field_cache]]
+    #     # The unit system of the cache.
+    #     # This must match the unit_system of the archive record.
+    #     # Default is US.
+    #     unit_system = US
+    #
+    #     # The WeeWX fields to cache.
+    #     [[[fields]]]
+    #         # The name of the field to cache.
+    #         [[[[fieldname]]]]
+    #             # In seconds how long the cache is valid.
+    #             # Value of 0 means the cache is always expired.
+    #             # Useful if missing fields should have a value of None instead of the previous value.
+    #             # Value of None means the cache never expires.
+    #             # Default is None.
+    #             expires_after = None
 
     # Configuration for the message callback.
     [[message_callback]]
@@ -142,33 +143,34 @@ Configuration:
         #     temp1 = extraTemp1
 
         # Information to map the MQTT data to WeeWX.
-        [[[fields]]]
-            # The incoming field name from MQTT.
-            [[[[temp1]]]
-                # The WeeWX name.
-                # Default is the name from MQTT.
-                name = extraTemp1
-
-                # The conversion type necessary for WeeWX compatibility
-                # Valid values: bool, float, int, none
-                # Default is float
-                conversion_type = float
-
-                # The units of the incoming data.
-                # Useful if this field's units differ from the topic's unit_system's units.
-                # Valid values: see, http://www.weewx.com/docs/customizing.htm#units
-                # Default is not set
-                # units = km_per_hour
-
-                # True if the incoming data is cumulative.
-                # Valid values: True, False
-                # Default is False
-                contains_total = False
-
-                # True if the incoming data should not be processed into WeeWX.
-                # Valid values: True, False
-                # Default is False
-                ignore = False
+        # DEPRECATED - move the fieldname under the [[topic]]/[[[topic name]]]
+        # [[[fields]]]
+        #     # The incoming field name from MQTT.
+        #     [[[[temp1]]]
+        #        # The WeeWX name.
+        #         # Default is the name from MQTT.
+        #         name = extraTemp1
+        #
+        #         # The conversion type necessary for WeeWX compatibility
+        #         # Valid values: bool, float, int, none
+        #         # Default is float
+        #         conversion_type = float
+        #
+        #         # The units of the incoming data.
+        #         # Useful if this field's units differ from the topic's unit_system's units.
+        #         # Valid values: see, http://www.weewx.com/docs/customizing.htm#units
+        #         # Default is not set
+        #         # units = km_per_hour
+        #
+        #         # True if the incoming data is cumulative.
+        #         # Valid values: True, False
+        #         # Default is False
+        #         contains_total = False
+        #
+        #         # True if the incoming data should not be processed into WeeWX.
+        #         # Valid values: True, False
+        #         # Default is False
+        #         ignore = False
 
     # The topics to subscribe to.
     [[topics]
@@ -213,7 +215,42 @@ Configuration:
         max_queue = MAXSIZE
 
         [[[first/topic]]]
-        [[[second/one]]]
+            # The incoming field name from MQTT.
+            [[[[temp1]]]
+                # The WeeWX name.
+                # Default is the name from MQTT.
+                name = extraTemp1
+
+                # The conversion type necessary for WeeWX compatibility
+                # Valid values: bool, float, int, none
+                # Default is float
+                conversion_type = float
+
+                # The units of the incoming data.
+                # Useful if this field's units differ from the topic's unit_system's units.
+                # Valid values: see, http://www.weewx.com/docs/customizing.htm#units
+                # Default is not set
+                # units = km_per_hour
+
+                # True if the incoming data is cumulative.
+                # Valid values: True, False
+                # Default is False
+                contains_total = False
+
+                # True if the incoming data should not be processed into WeeWX.
+                # Valid values: True, False
+                # Default is False
+                ignore = False
+
+                # In seconds how long the cache is valid.
+                # Value of 0 means the cache is always expired.
+                # Useful if missing fields should have a value of None instead of the previous value.
+                # Value of None means the cache never expires.
+                # Default is None.
+                # EXPERIMENTAL - may be removed
+                expires_after = None
+
+        [[[second/topic]]]
 """
 
 from __future__ import with_statement
