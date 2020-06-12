@@ -579,6 +579,7 @@ class TopicManager(object):
         self.subscribed_topics[topic]['queue'] = self.collected_queue
 
         self.logger.debug("TopicManager self.subscribed_topics is %s" % self.subscribed_topics)
+        self.logger.debug("TopicManager self.record_cache is %s" % self.record_cache)
 
     def append_data(self, topic, in_data, fieldname=None):
         """ Add the MQTT data to the queue. """
@@ -814,6 +815,10 @@ class MessageCallbackProvider(object):
         self.fields_ignore_default = to_bool(self.fields.get('ignore', False))
 
         if self.fields:
+            self.logger.info("'fields' is deprecated, use '[[topics]][[[topic name]]][[[[fieldname]]]]'")
+            if self.topic_manager.managing_fields:
+                self.logger.debug("MessageCallbackProvider ignoring fields configuration and using topics/fields configuration.")
+
             for field in self.fields.sections:
                 self.fields[field]['ignore'] = to_bool((self.fields[field]).get('ignore', self.fields_ignore_default))
                 if  'contains_total' in self.fields[field]:
@@ -1245,6 +1250,9 @@ class MQTTSubscribeService(StdService):
         archive_field_cache_dict = service_dict.get('archive_field_cache', None)
         self.cached_fields = {}
         if archive_field_cache_dict is not None:
+            self.logger.info("'archive_field_cache' is deprecated, use '[[topics]][[[topic name]]][[[[fieldname]]]]'")
+            if self.subscriber.record_cache is not None:
+                self.logger.trace("Ignoring archive_field_cache configration and using topics/fields configuration.")
             unit_system_name = archive_field_cache_dict.get('unit_system', 'US').strip().upper()
             if unit_system_name not in weewx.units.unit_constants:
                 raise ValueError("archive_field_cache: Unknown unit system: %s" % unit_system_name)
