@@ -313,7 +313,7 @@ class TestConversionType(unittest.TestCase):
 
         SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), mock_logger, None)
 
-        new_value = SUT._convert_value(input_name, value)
+        new_value = SUT._convert_value(fields, input_name, value)
 
         self.assertIsInstance(new_value, bool)
         self.assertFalse(new_value)
@@ -336,7 +336,7 @@ class TestConversionType(unittest.TestCase):
 
         SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), mock_logger, None)
 
-        new_value = SUT._convert_value(input_name, value)
+        new_value = SUT._convert_value(fields, input_name, value)
 
         self.assertIsInstance(new_value, float)
         self.assertEqual(new_value, value_float)
@@ -359,7 +359,7 @@ class TestConversionType(unittest.TestCase):
 
         SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), mock_logger, None)
 
-        new_value = SUT._convert_value(input_name, value)
+        new_value = SUT._convert_value(fields, input_name, value)
 
         self.assertIsInstance(new_value, int)
         self.assertEqual(new_value, value_int)
@@ -380,7 +380,7 @@ class TestConversionType(unittest.TestCase):
 
         SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), mock_logger, None)
 
-        new_value = SUT._convert_value(input_name, value)
+        new_value = SUT._convert_value(fields, input_name, value)
 
         self.assertIsInstance(new_value, float)
         self.assertEqual(new_value, value_float)
@@ -402,7 +402,7 @@ class TestConversionType(unittest.TestCase):
 
         SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), mock_logger, None)
 
-        new_value = SUT._convert_value(input_name, value)
+        new_value = SUT._convert_value(fields, input_name, value)
 
         self.assertIsInstance(new_value, str)
         self.assertEqual(new_value, value)
@@ -421,6 +421,7 @@ class TestKeywordload(unittest.TestCase):
     def test_payload_empty(self):
         mock_logger = mock.Mock(spec=Logger)
         mock_manager = mock.Mock(spec=TopicManager)
+        mock_manager.managing_fields = False
         SUT = MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
 
         payload = ''
@@ -452,6 +453,7 @@ class TestKeywordload(unittest.TestCase):
     def test_payload_missing_separator(self):
         mock_logger = mock.Mock(spec=Logger)
         mock_manager = mock.Mock(spec=TopicManager)
+        mock_manager.managing_fields = False
         SUT = MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
 
         payload = ' field:1'
@@ -465,6 +467,7 @@ class TestKeywordload(unittest.TestCase):
     def test_payload_missing_dateTime(self):
         mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
+        mock_manager.managing_fields = False
 
         SUT = MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
 
@@ -488,6 +491,7 @@ class TestKeywordload(unittest.TestCase):
     def test_payload_missing_units(self):
         mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
+        mock_manager.managing_fields = False
 
         SUT = MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
 
@@ -510,6 +514,7 @@ class TestKeywordload(unittest.TestCase):
     def test_payload_good(self):
         mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
+        mock_manager.managing_fields = False
 
         SUT = MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
 
@@ -533,6 +538,7 @@ class TestKeywordload(unittest.TestCase):
     def test_payload_no_previous_value(self):
         mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
+        mock_manager.managing_fields = False
 
         message_handler_config_dict = {}
         message_handler_config_dict['type'] = 'keyword'
@@ -565,6 +571,7 @@ class TestKeywordload(unittest.TestCase):
     def test_payload_larger_previous_value(self):
         mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
+        mock_manager.managing_fields = False
 
         message_handler_config_dict = {}
         message_handler_config_dict['type'] = 'keyword'
@@ -599,6 +606,7 @@ class TestKeywordload(unittest.TestCase):
     def test_payload_good_previous_value(self):
         mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
+        mock_manager.managing_fields = False
 
         message_handler_config_dict = {}
         message_handler_config_dict['type'] = 'keyword'
@@ -664,6 +672,7 @@ class TestKeywordload(unittest.TestCase):
     def test_ignore_default_true_ignore_field_false(self):
         mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
+        mock_manager.managing_fields = False
 
         message_handler_config_dict = {}
         message_handler_config_dict['type'] = 'keyword'
@@ -704,6 +713,7 @@ class TestKeywordload(unittest.TestCase):
     def test_ignore_field_true(self):
         mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
+        mock_manager.managing_fields = False
 
         message_handler_config_dict = {}
         message_handler_config_dict['type'] = 'keyword'
@@ -771,6 +781,7 @@ class TestJsonPayload(unittest.TestCase):
     def test_missing_dateTime(self):
         mock_manager = mock.Mock(spec=TopicManager)
         stub_logger = test_weewx_stubs.Logger(console=True)
+        mock_manager.managing_fields = False
 
         SUT = MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), stub_logger, mock_manager)
 
@@ -791,6 +802,7 @@ class TestJsonPayload(unittest.TestCase):
     def test_missing_units(self):
         mock_manager = mock.Mock(spec=TopicManager)
         stub_logger = test_weewx_stubs.Logger(console=True)
+        mock_manager.managing_fields = False
 
         SUT = MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), stub_logger, mock_manager)
 
@@ -811,6 +823,7 @@ class TestJsonPayload(unittest.TestCase):
     def test_payload_good(self):
         mock_manager = mock.Mock(spec=TopicManager)
         stub_logger = test_weewx_stubs.Logger(console=True)
+        mock_manager.managing_fields = False
 
         SUT = MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), stub_logger, mock_manager)
 
@@ -836,6 +849,7 @@ class TestJsonPayload(unittest.TestCase):
     def test_payload_no_previous_value(self):
         mock_manager = mock.Mock(spec=TopicManager)
         stub_logger = test_weewx_stubs.Logger(console=True)
+        mock_manager.managing_fields = False
 
         message_handler_config_dict = copy.deepcopy(self.message_handler_config_dict)
         message_handler_config_dict['contains_total'] = 'inTemp'
@@ -868,6 +882,7 @@ class TestJsonPayload(unittest.TestCase):
     def test_payload_larger_previous_value(self):
         mock_manager = mock.Mock(spec=TopicManager)
         stub_logger = test_weewx_stubs.Logger(console=True)
+        mock_manager.managing_fields = False
 
         message_handler_config_dict = copy.deepcopy(self.message_handler_config_dict)
         message_handler_config_dict['contains_total'] = 'inTemp'
@@ -902,6 +917,7 @@ class TestJsonPayload(unittest.TestCase):
     def test_payload_good_previous_value(self):
         mock_manager = mock.Mock(spec=TopicManager)
         stub_logger = test_weewx_stubs.Logger(console=True)
+        mock_manager.managing_fields = False
 
         message_handler_config_dict = copy.deepcopy(self.message_handler_config_dict)
         message_handler_config_dict['contains_total'] = 'inTemp'
@@ -936,6 +952,7 @@ class TestJsonPayload(unittest.TestCase):
     def test_payload_nested(self):
         mock_manager = mock.Mock(spec=TopicManager)
         stub_logger = test_weewx_stubs.Logger(console=True)
+        mock_manager.managing_fields = False
 
         SUT = MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), stub_logger, mock_manager)
 
@@ -970,6 +987,7 @@ class TestJsonPayload(unittest.TestCase):
     def test_payload_nested_rename(self):
         mock_manager = mock.Mock(spec=TopicManager)
         stub_logger = test_weewx_stubs.Logger(console=True)
+        mock_manager.managing_fields = False
 
         message_handler_config_dict = copy.deepcopy(self.message_handler_config_dict)
         message_handler_config_dict['fields'] = {}
@@ -1038,6 +1056,7 @@ class TestJsonPayload(unittest.TestCase):
     def test_ignore_default_true_ignore_field_false(self):
         mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
+        mock_manager.managing_fields = False
 
         message_handler_config_dict = {}
         message_handler_config_dict['type'] = 'json'
@@ -1079,6 +1098,7 @@ class TestJsonPayload(unittest.TestCase):
     def test_ignore_field_true(self):
         mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
+        mock_manager.managing_fields = False
 
         message_handler_config_dict = {}
         message_handler_config_dict['type'] = 'json'
@@ -1152,6 +1172,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
     def test_None_payload(self):
         mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
+        mock_manager.managing_fields = False
 
         SUT = MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
 
@@ -1165,6 +1186,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
     def test_unicode_topic(self):
         mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
+        mock_manager.managing_fields = False
         if PY2:
             topic = unicode(self.topic)  # (never called under python 3) pylint: disable=undefined-variable
         else:
@@ -1191,6 +1213,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
     def test_payload_no_previous_value(self):
         mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
+        mock_manager.managing_fields = False
 
         topic = 'inTemp'
         message_handler_config_dict = copy.deepcopy(self.message_handler_config_dict)
@@ -1213,6 +1236,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
     def test_payload_larger_previous_value(self):
         mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
+        mock_manager.managing_fields = False
 
         topic = 'inTemp'
         message_handler_config_dict = copy.deepcopy(self.message_handler_config_dict)
@@ -1238,6 +1262,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
     def test_payload_good_previous_value(self):
         mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
+        mock_manager.managing_fields = False
 
         topic = 'inTemp'
         message_handler_config_dict = copy.deepcopy(self.message_handler_config_dict)
@@ -1262,6 +1287,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
     def test_single_topic(self):
         mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
+        mock_manager.managing_fields = False
 
         SUT = MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
 
@@ -1279,6 +1305,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
     def test_multiple_topics(self):
         mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
+        mock_manager.managing_fields = False
 
         SUT = MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
 
@@ -1299,6 +1326,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
     def test_two_topics(self):
         mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
+        mock_manager.managing_fields = False
 
         SUT = MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
 
@@ -1344,6 +1372,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
     def test_ignore_default_true_ignore_field_false(self):
         mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
+        mock_manager.managing_fields = False
 
         message_handler_config_dict = {}
         message_handler_config_dict['type'] = 'individual'
@@ -1438,6 +1467,7 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
     def test_None_payload(self):
         mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
+        mock_manager.managing_fields = False
 
         message_handler_config_dict = dict(self.message_handler_config_dict)
         message_handler_config_dict['full_topic_fieldname'] = True
@@ -1452,6 +1482,7 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
     def test_single_topic(self):
         mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
+        mock_manager.managing_fields = False
 
         SUT = MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
 
@@ -1469,6 +1500,7 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
     def test_multiple_topics(self):
         mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
+        mock_manager.managing_fields = False
 
         message_handler_config_dict = dict(self.message_handler_config_dict)
         message_handler_config_dict['full_topic_fieldname'] = True
@@ -1489,6 +1521,7 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
     def test_two_topics(self):
         mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
+        mock_manager.managing_fields = False
 
         message_handler_config_dict = dict(self.message_handler_config_dict)
         message_handler_config_dict['full_topic_fieldname'] = True

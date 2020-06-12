@@ -491,6 +491,7 @@ class TopicManager(object):
         default_adjust_end_time = to_float(config.get('adjust_end_time', 0))
         default_datetime_format = config.get('datetime_format', None)
         default_offset_format = config.get('offset_format', None)
+        ignore_default = to_bool(config.get('ignore', False))
 
         default_unit_system_name = config.get('unit_system', 'US').strip().upper()
         if default_unit_system_name not in weewx.units.unit_constants:
@@ -500,6 +501,8 @@ class TopicManager(object):
 
         self.topics = {}
         self.subscribed_topics = {}
+        self.managing_fields = False
+        self.record_cache = {}
 
         for topic in config.sections:
             topic_dict = config.get(topic, {})
@@ -513,6 +516,8 @@ class TopicManager(object):
             adjust_end_time = to_float(topic_dict.get('adjust_end_time', default_adjust_end_time))
             datetime_format = topic_dict.get('datetime_format', default_datetime_format)
             offset_format = topic_dict.get('offset_format', default_offset_format)
+            fields_ignore_default = to_bool(topic_dict.get('ignore', ignore_default))
+
 
             unit_system_name = topic_dict.get('unit_system', default_unit_system_name).strip().upper()
             if unit_system_name not in weewx.units.unit_constants:
@@ -532,6 +537,24 @@ class TopicManager(object):
             self.subscribed_topics[topic]['offset_format'] = offset_format
             self.subscribed_topics[topic]['max_queue'] = topic_dict.get('max_queue', max_queue)
             self.subscribed_topics[topic]['queue'] = deque()
+
+            if topic_dict.sections:
+                self.managing_fields = True
+
+            self.subscribed_topics[topic]['fields'] = {}
+            for field in topic_dict.sections:
+                self.subscribed_topics[topic]['fields'][field] = {}
+                self.subscribed_topics[topic]['fields'][field]['ignore'] = to_bool((topic_dict[field]).get('ignore', fields_ignore_default))
+                if  'contains_total' in topic_dict[field]:
+                    self.subscribed_topics[topic]['fields'][field]['contains_total'] = to_bool(topic_dict[field]['contains_total'])
+                if 'conversion_type' in topic_dict[field]:
+                    self.subscribed_topics[topic]['fields'][field]['conversion_type'] = topic_dict[field]['conversion_type'].lower()
+                self.record_cache[field]['expires_after'] = to_float(topic_dict[field].get('expires_after', None))
+                if 'units' in topic_dict[field]:
+                    try:
+                        weewx.units.conversionDict[topic_dict[topic]['units']]
+                    except KeyError:
+                        raise ValueError("For %s invalid units, %s" % (field, topic_dict[field]['units']))
 
         # Add the collector queue as a subscribed topic so that data can retrieved from it
         # Yes, this is a bit of a hack.
@@ -705,6 +728,10 @@ class TopicManager(object):
             element = queue.popleft()
             self.logger.error("TopicManager queue limit %i reached. Removing: %s" %(max_queue, element))
 
+    def get_fields(self, topic):
+        """ Get the fields. """
+        return self._get_value('fields', topic)
+
     def get_qos(self, topic):
         """ Get the QOS. """
         return self._get_value('qos', topic)
@@ -834,8 +861,8 @@ class MessageCallbackProvider(object):
         self.callbacks['json'] = self._on_message_json
         self.callbacks['keyword'] = self._on_message_keyword
 
-    def _convert_value(self, field, value):
-        conversion_type = self.fields.get(field, {}).get('conversion_type', 'float')
+    def _convert_value(self, fields, field, value):
+        conversion_type = fields.get(field, {}).get('conversion_type', 'float')
         if conversion_type == 'bool':
             return to_bool(value)
         if conversion_type == 'float':
@@ -876,6 +903,12 @@ class MessageCallbackProvider(object):
 
         return dict(_items())
 
+    def _get_fields(self, topic):
+        if self.topic_manager.managing_fields:
+            return self.topic_manager.get_fields(topic)
+        else:
+            return self.fields
+
     def _calc_increment(self, observation, current_total, previous_total):
         self.logger.trace("MessageCallbackProvider _calc_increment calculating increment " \
                          "for %s with current: %f and previous %s values."
@@ -891,15 +924,15 @@ class MessageCallbackProvider(object):
 
         return None
 
-    def _update_data(self, orig_name, orig_value, unit_system):
-        value = self._convert_value(orig_name, orig_value)
-        fieldname = self.fields.get(orig_name, {}).get('name', orig_name)
+    def _update_data(self, fields, orig_name, orig_value, unit_system):
+        value = self._convert_value(fields, orig_name, orig_value)
+        fieldname = fields.get(orig_name, {}).get('name', orig_name)
 
-        if orig_name in self.fields and 'units' in self.fields[orig_name]: # TODO - simplify, if possible
+        if orig_name in fields and 'units' in fields[orig_name]: # TODO - simplify, if possible
             (to_units, to_group) = weewx.units.getStandardUnitType(unit_system, fieldname) # match signature pylint: disable=unused-variable
-            (value, new_units, new_group) = weewx.units.convert((value, self.fields[orig_name]['units'], None), to_units) # match signature pylint: disable=unused-variable
+            (value, new_units, new_group) = weewx.units.convert((value, fields[orig_name]['units'], None), to_units) # match signature pylint: disable=unused-variable
 
-        if self.fields.get(orig_name, {}).get('contains_total', False):
+        if fields.get(orig_name, {}).get('contains_total', False):
             current_value = value
             value = self._calc_increment(orig_name, current_value, self.previous_values.get(orig_name))
             self.previous_values[orig_name] = current_value
@@ -918,16 +951,17 @@ class MessageCallbackProvider(object):
         # Wrap all the processing in a try, so it doesn't crash and burn on any error
         try:
             self._log_message(msg)
+            fields = self._get_fields(msg.topic)
 
             if PY2:
                 payload_str = msg.payload
             else:
                 payload_str = msg.payload.decode('utf-8')
 
-            fields = payload_str.split(self.keyword_delimiter)
+            fielddata = payload_str.split(self.keyword_delimiter)
             data = {}
             unit_system = self.topic_manager.get_unit_system(msg.topic) # TODO - need public method
-            for field in fields:
+            for field in fielddata:
                 eq_index = field.find(self.keyword_separator)
                 # Ignore all fields that do not have the separator
                 if eq_index == -1:
@@ -937,8 +971,8 @@ class MessageCallbackProvider(object):
                     continue
 
                 key = field[:eq_index].strip()
-                if not self.fields.get(key, {}).get('ignore', self.fields_ignore_default):
-                    (fieldname, value) = self._update_data(key, field[eq_index + 1:].strip(), unit_system)
+                if not fields.get(key, {}).get('ignore', self.fields_ignore_default):
+                    (fieldname, value) = self._update_data(fields, key, field[eq_index + 1:].strip(), unit_system)
                     data[fieldname] = value
                 else:
                     self.logger.trace("MessageCallbackProvider on_message_keyword ignoring field: %s" % key)
@@ -956,6 +990,7 @@ class MessageCallbackProvider(object):
         # Wrap all the processing in a try, so it doesn't crash and burn on any error
         try:
             self._log_message(msg)
+            fields = self._get_fields(msg.topic)
 
             if PY2:
                 payload_str = msg.payload
@@ -976,8 +1011,8 @@ class MessageCallbackProvider(object):
                     lookup_key = topic_str + "/" + key # todo - cleanup and test unicode vs str stuff
                 else:
                     lookup_key = key
-                if not self.fields.get(lookup_key, {}).get('ignore', self.fields_ignore_default):
-                    (fieldname, value) = self._update_data(lookup_key, data_flattened[key], unit_system)
+                if not fields.get(lookup_key, {}).get('ignore', self.fields_ignore_default):
+                    (fieldname, value) = self._update_data(fields, lookup_key, data_flattened[key], unit_system)
                     data_final[fieldname] = value
                 else:
                     self.logger.trace("MessageCallbackProvider on_message_json ignoring field: %s" % lookup_key)
@@ -993,6 +1028,7 @@ class MessageCallbackProvider(object):
         # Wrap all the processing in a try, so it doesn't crash and burn on any error
         try:
             self._log_message(msg)
+            fields = self._get_fields(msg.topic)
 
             payload_str = msg.payload
             if not PY2:
@@ -1008,8 +1044,8 @@ class MessageCallbackProvider(object):
                 key = key.encode('utf-8')
 
             unit_system = self.topic_manager.get_unit_system(msg.topic) # TODO - need public method
-            if not self.fields.get(key, {}).get('ignore', self.fields_ignore_default):
-                (fieldname, value) = self._update_data(key, payload_str, unit_system)
+            if not fields.get(key, {}).get('ignore', self.fields_ignore_default):
+                (fieldname, value) = self._update_data(fields, key, payload_str, unit_system)
                 data = {}
                 data[fieldname] = value
                 self.topic_manager.append_data(msg.topic, data, fieldname)
