@@ -471,6 +471,7 @@ class CollectData(object):
         return self.data
 
 class TopicManager(object):
+    # pylint: disable=too-many-instance-attributes
     """ Manage the MQTT topic subscriptions. """
     def __init__(self, config, logger):
         # pylint: disable=too-many-locals
@@ -911,8 +912,8 @@ class MessageCallbackProvider(object):
     def _get_fields(self, topic):
         if self.topic_manager.managing_fields:
             return self.topic_manager.get_fields(topic)
-        else:
-            return self.fields
+
+        return self.fields
 
     def _calc_increment(self, observation, current_total, previous_total):
         self.logger.trace("MessageCallbackProvider _calc_increment calculating increment " \
@@ -992,6 +993,7 @@ class MessageCallbackProvider(object):
             self._log_exception('on_message_keyword', exception, msg)
 
     def _on_message_json(self, client, userdata, msg): # (match callback signature) pylint: disable=unused-argument
+        # pylint: disable=too-many-locals
         # Wrap all the processing in a try, so it doesn't crash and burn on any error
         try:
             self._log_message(msg)

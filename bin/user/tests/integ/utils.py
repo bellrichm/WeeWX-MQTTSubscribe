@@ -55,7 +55,7 @@ def send_mqtt_msg(publisher, topic, payload, userdata, self):
     i = 1
     time.sleep(.5) # give it a bit of time before checking
     while not userdata['msg']:
-        print("waiting for mqtt message %i" % i)        
+        print("waiting for mqtt message %i" % i)
         if i > max_msg_wait:
             self.fail("Timed out waiting for MQTT message.")
         time.sleep(1)
