@@ -246,9 +246,9 @@ Configuration:
                 # Value of 0 means the cache is always expired.
                 # Useful if missing fields should have a value of None instead of the previous value.
                 # Value of None means the cache never expires.
-                # Default is None.
+                # Default is not set.
                 # EXPERIMENTAL - may be removed
-                expires_after = None
+                # expires_after = None
 
         [[[second/topic]]]
 """
@@ -587,7 +587,9 @@ class TopicManager(object):
                     self.subscribed_topics[topic]['fields'][field]['contains_total'] = to_bool(topic_dict[field]['contains_total'])
                 if 'conversion_type' in topic_dict[field]:
                     self.subscribed_topics[topic]['fields'][field]['conversion_type'] = topic_dict[field]['conversion_type'].lower()
-                self.record_cache[field]['expires_after'] = to_float(topic_dict[field].get('expires_after', None))
+                if 'expires_after' in topic_dict[field]:
+                    self.record_cache[field] = {}
+                    self.record_cache[field]['expires_after'] = to_float(topic_dict[field]['expires_after'])
                 if 'units' in topic_dict[field]:
                     try:
                         weewx.units.conversionDict[topic_dict[topic]['units']]
@@ -904,7 +906,8 @@ class MessageCallbackProvider(object):
         self.callbacks['json'] = self._on_message_json
         self.callbacks['keyword'] = self._on_message_keyword
 
-    def _convert_value(self, fields, field, value):
+    @staticmethod
+    def _convert_value(fields, field, value):
         conversion_type = fields.get(field, {}).get('conversion_type', 'float')
         if conversion_type == 'bool':
             return to_bool(value)
