@@ -595,9 +595,9 @@ class TopicManager(object):
                     self.record_cache[field] = {}
                     self.record_cache[field]['expires_after'] = to_float(topic_dict[field]['expires_after'])
                 if 'units' in topic_dict[field]:
-                    try:
-                        weewx.units.conversionDict[topic_dict[topic]['units']]
-                    except KeyError:
+                    if topic_dict[field]['units'] in weewx.units.conversionDict:
+                        self.subscribed_topics[topic]['fields'][field]['units'] = topic_dict[field]['units']
+                    else:
                         raise ValueError("For %s invalid units, %s" % (field, topic_dict[field]['units']))
 
         # Add the collector queue as a subscribed topic so that data can retrieved from it
