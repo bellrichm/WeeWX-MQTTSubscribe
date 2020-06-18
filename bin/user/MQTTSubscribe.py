@@ -530,6 +530,8 @@ class TopicManager(object):
         default_datetime_format = config.get('datetime_format', None)
         default_offset_format = config.get('offset_format', None)
         ignore_default = to_bool(config.get('ignore', False))
+        contains_total_default = to_bool(config.get('contains_total', False))
+        conversion_type_default = config.get('conversion_type', 'float')
 
         default_unit_system_name = config.get('unit_system', 'US').strip().upper()
         if default_unit_system_name not in weewx.units.unit_constants:
@@ -555,7 +557,8 @@ class TopicManager(object):
             datetime_format = topic_dict.get('datetime_format', default_datetime_format)
             offset_format = topic_dict.get('offset_format', default_offset_format)
             fields_ignore_default = to_bool(topic_dict.get('ignore', ignore_default))
-
+            fields_contains_total_default = to_bool(topic_dict.get('contains_total', contains_total_default))
+            fields_conversion_type_default = topic_dict.get('conversion_type', conversion_type_default)
 
             unit_system_name = topic_dict.get('unit_system', default_unit_system_name).strip().upper()
             if unit_system_name not in weewx.units.unit_constants:
@@ -582,11 +585,12 @@ class TopicManager(object):
             self.subscribed_topics[topic]['fields'] = {}
             for field in topic_dict.sections:
                 self.subscribed_topics[topic]['fields'][field] = {}
+                self.subscribed_topics[topic]['fields'][field]['name'] = (topic_dict[field]).get('name', field)
                 self.subscribed_topics[topic]['fields'][field]['ignore'] = to_bool((topic_dict[field]).get('ignore', fields_ignore_default))
-                if  'contains_total' in topic_dict[field]:
-                    self.subscribed_topics[topic]['fields'][field]['contains_total'] = to_bool(topic_dict[field]['contains_total'])
-                if 'conversion_type' in topic_dict[field]:
-                    self.subscribed_topics[topic]['fields'][field]['conversion_type'] = topic_dict[field]['conversion_type'].lower()
+                self.subscribed_topics[topic]['fields'][field]['contains_total'] = \
+                    to_bool((topic_dict[field]).get('contains_total', fields_contains_total_default))
+                self.subscribed_topics[topic]['fields'][field]['conversion_type'] = \
+                    (topic_dict[field]).get('conversion_type', fields_conversion_type_default)
                 if 'expires_after' in topic_dict[field]:
                     self.record_cache[field] = {}
                     self.record_cache[field]['expires_after'] = to_float(topic_dict[field]['expires_after'])
