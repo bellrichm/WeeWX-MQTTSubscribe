@@ -34,7 +34,8 @@ class Msg(object):
 class TestFieldsConfiguration(unittest.TestCase):
     def test_field_in_label_map(self):
         mock_logger = mock.Mock(spec=Logger)
-        mock_logger = mock.Mock(spec=Logger)
+        mock_manager = mock.Mock(spec=TopicManager)
+        mock_manager.managing_fields = False
         message_handler_config_dict = {}
         message_handler_config_dict['type'] = 'individual'
 
@@ -45,7 +46,7 @@ class TestFieldsConfiguration(unittest.TestCase):
         label_map[input_name] = output_name
         message_handler_config_dict['label_map'] = label_map
 
-        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), mock_logger, None)
+        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), mock_logger, mock_manager)
 
         self.assertIn(input_name, SUT.fields)
         self.assertIn('name', SUT.fields[input_name])
@@ -139,6 +140,8 @@ class TestFieldsConfiguration(unittest.TestCase):
 
     def test_field_in_label_map_and_contains_total(self):
         mock_logger = mock.Mock(spec=Logger)
+        mock_manager = mock.Mock(spec=TopicManager)
+        mock_manager.managing_fields = False
         message_handler_config_dict = {}
         message_handler_config_dict['type'] = 'individual'
 
@@ -151,7 +154,7 @@ class TestFieldsConfiguration(unittest.TestCase):
         contains_total = [input_name]
         message_handler_config_dict['contains_total'] = contains_total
 
-        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), mock_logger, None)
+        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), mock_logger, mock_manager)
 
         self.assertIn(input_name, SUT.fields)
         self.assertIn('name', SUT.fields[input_name])
@@ -211,6 +214,8 @@ class TestFieldsConfiguration(unittest.TestCase):
 
     def test_field_in_contains_total(self):
         mock_logger = mock.Mock(spec=Logger)
+        mock_manager = mock.Mock(spec=TopicManager)
+        mock_manager.managing_fields = False
         message_handler_config_dict = {}
         message_handler_config_dict['type'] = 'individual'
 
@@ -219,7 +224,7 @@ class TestFieldsConfiguration(unittest.TestCase):
         contains_total = [input_name]
         message_handler_config_dict['contains_total'] = contains_total
 
-        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), mock_logger, None)
+        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), mock_logger, mock_manager)
 
         self.assertNotIn('name', SUT.fields[input_name])
         self.assertTrue(SUT.fields[input_name]['contains_total'])
@@ -281,20 +286,24 @@ class TestGetDefaultCallBacks(unittest.TestCase):
 
     def test_get_individual_payload_type(self):
         mock_logger = mock.Mock(spec=Logger)
+        mock_manager = mock.Mock(spec=TopicManager)
+        mock_manager.managing_fields = False
         message_handler_config_dict = {}
         message_handler_config_dict['type'] = 'individual'
 
-        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), mock_logger, None)
+        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), mock_logger, mock_manager)
 
         callback = SUT.get_callback()
         self.assertEqual(callback, SUT._on_message_individual)
 
     def test_get_json_payload_type(self):
         mock_logger = mock.Mock(spec=Logger)
+        mock_manager = mock.Mock(spec=TopicManager)
+        mock_manager.managing_fields = False
         message_handler_config_dict = {}
         message_handler_config_dict['type'] = 'json'
 
-        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), mock_logger, None)
+        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), mock_logger, mock_manager)
 
         callback = SUT.get_callback()
         self.assertEqual(callback, SUT._on_message_json)
@@ -306,7 +315,7 @@ class TestGetDefaultCallBacks(unittest.TestCase):
         message_handler_config_dict = {}
         message_handler_config_dict['type'] = 'keyword'
 
-        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), mock_logger, None)
+        SUT = MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), mock_logger, mock_manager)
 
         callback = SUT.get_callback()
         self.assertEqual(callback, SUT._on_message_keyword)
@@ -460,7 +469,9 @@ class TestKeywordload(unittest.TestCase):
 
     def test_payload_bad_data(self):
         mock_logger = mock.Mock(spec=Logger)
-        SUT = MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, None)
+        mock_manager = mock.Mock(spec=TopicManager)
+        mock_manager.managing_fields = False
+        SUT = MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
 
         msg = Msg(self.topic, 'field=value', 0, 0)
 
@@ -469,7 +480,9 @@ class TestKeywordload(unittest.TestCase):
 
     def test_payload_missing_delimiter(self):
         mock_logger = mock.Mock(spec=Logger)
-        SUT = MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, None)
+        mock_manager = mock.Mock(spec=TopicManager)
+        mock_manager.managing_fields = False
+        SUT = MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
 
         msg = Msg(self.topic, 'field1=1 field2=2', 0, 0)
 
@@ -786,7 +799,9 @@ class TestJsonPayload(unittest.TestCase):
 
     def test_invalid_json(self):
         mock_logger = mock.Mock(spec=Logger)
-        SUT = MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, None)
+        mock_manager = mock.Mock(spec=TopicManager)
+        mock_manager.managing_fields = False
+        SUT = MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
 
         msg = Msg(self.topic,
                   ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),  # pylint: disable=unused-variable
@@ -798,7 +813,9 @@ class TestJsonPayload(unittest.TestCase):
 
     def test_empty_payload(self):
         mock_logger = mock.Mock(spec=Logger)
-        SUT = MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, None)
+        mock_manager = mock.Mock(spec=TopicManager)
+        mock_manager.managing_fields = False
+        SUT = MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
 
         msg = Msg(self.topic, '', 0, 0)
 
@@ -1178,7 +1195,9 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
 
     def test_bad_payload(self):
         mock_logger = mock.Mock(spec=Logger)
-        SUT = MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, None)
+        mock_manager = mock.Mock(spec=TopicManager)
+        mock_manager.managing_fields = False
+        SUT = MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
 
         msg = Msg(self.topic,
                   ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),  # pylint: disable=unused-variable
@@ -1190,7 +1209,9 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
 
     def test_empty_payload(self):
         mock_logger = mock.Mock(spec=Logger)
-        SUT = MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, None)
+        mock_manager = mock.Mock(spec=TopicManager)
+        mock_manager.managing_fields = False
+        SUT = MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
 
         msg = Msg(self.topic, '', 0, 0)
 
@@ -1473,8 +1494,10 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
 
     def test_bad_payload(self):
         mock_logger = mock.Mock(spec=Logger)
+        mock_manager = mock.Mock(spec=TopicManager)
+        mock_manager.managing_fields = False
 
-        SUT = MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, None)
+        SUT = MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
 
         msg = Msg(self.topic,
                   ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),   # pylint: disable=unused-variable
@@ -1486,8 +1509,10 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
 
     def test_empty_payload(self):
         mock_logger = mock.Mock(spec=Logger)
+        mock_manager = mock.Mock(spec=TopicManager)
+        mock_manager.managing_fields = False
 
-        SUT = MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, None)
+        SUT = MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
 
         msg = Msg(self.topic, '', 0, 0)
 

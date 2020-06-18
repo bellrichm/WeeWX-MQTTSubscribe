@@ -576,6 +576,7 @@ class TopicManager(object):
             self.subscribed_topics[topic]['adjust_end_time'] = adjust_end_time
             self.subscribed_topics[topic]['datetime_format'] = datetime_format
             self.subscribed_topics[topic]['offset_format'] = offset_format
+            self.subscribed_topics[topic]['ignore'] = fields_contains_total_default
             self.subscribed_topics[topic]['max_queue'] = topic_dict.get('max_queue', max_queue)
             self.subscribed_topics[topic]['queue'] = deque()
 
@@ -850,35 +851,33 @@ class MessageCallbackProvider(object):
         label_map = config.get('label_map', {})
         self.full_topic_fieldname = to_bool(config.get('full_topic_fieldname', False))
 
-        self.fields = config.get('fields', {})
-        orig_fields = config.get('fields', {})
-
         if self.type not in self.callbacks:
             raise ValueError("Invalid type configured: %s" % self.type)
 
-        self.fields_ignore_default = to_bool(self.fields.get('ignore', False))
+        if self.topic_manager.managing_fields:
+            self.logger.debug("MessageCallbackProvider ignoring fields configuration and using topics/fields configuration.")
+        else:
+            self.fields = config.get('fields', {})
+            orig_fields = config.get('fields', {})
+            self.fields_ignore_default = to_bool(self.fields.get('ignore', False))
+            if self.fields:
+                self.logger.info("'fields' is deprecated, use '[[topics]][[[topic name]]][[[[fieldname]]]]'")
 
-        if self.fields:
-            self.logger.info("'fields' is deprecated, use '[[topics]][[[topic name]]][[[[fieldname]]]]'")
-            if self.topic_manager.managing_fields:
-                self.logger.debug("MessageCallbackProvider ignoring fields configuration and using topics/fields configuration.")
+                for field in self.fields.sections:
+                    self.fields[field]['ignore'] = to_bool((self.fields[field]).get('ignore', self.fields_ignore_default))
+                    if  'contains_total' in self.fields[field]:
+                        self.fields[field]['contains_total'] = to_bool(self.fields[field]['contains_total'])
+                    if 'conversion_type' in self.fields[field]:
+                        self.fields[field]['conversion_type'] = self.fields[field]['conversion_type'].lower()
+                    if 'units' in self.fields[field]:
+                        try:
+                            weewx.units.conversionDict[self.fields[field]['units']]
+                        except KeyError:
+                            raise ValueError("For %s invalid units, %s" % (field, self.fields[field]['units']))
+            self.set_backwards_compatibility(label_map, orig_fields, contains_total)
+            self.logger.debug("MessageCallbackProvider self.fields is %s" % self.fields)
 
-            for field in self.fields.sections:
-                self.fields[field]['ignore'] = to_bool((self.fields[field]).get('ignore', self.fields_ignore_default))
-                if  'contains_total' in self.fields[field]:
-                    self.fields[field]['contains_total'] = to_bool(self.fields[field]['contains_total'])
-                if 'conversion_type' in self.fields[field]:
-                    self.fields[field]['conversion_type'] = self.fields[field]['conversion_type'].lower()
-                if 'units' in self.fields[field]:
-                    try:
-                        weewx.units.conversionDict[self.fields[field]['units']]
-                    except KeyError:
-                        raise ValueError("For %s invalid units, %s" % (field, self.fields[field]['units']))
-
-        self.set_backwards_compatibility(label_map, orig_fields, contains_total)
         self.previous_values = {}
-
-        self.logger.debug("MessageCallbackProvider self.fields is %s" % self.fields)
 
     def set_backwards_compatibility(self, label_map, orig_fields, contains_total):
         """ Any config for backwards compatibility. """
@@ -959,6 +958,12 @@ class MessageCallbackProvider(object):
 
         return self.fields
 
+    def _get_ignore_default(self, topic):
+        if self.topic_manager.managing_fields:
+            return self.topic_manager.get_fields(topic)['topic']
+
+        return self.fields_ignore_default
+
     def _calc_increment(self, observation, current_total, previous_total):
         self.logger.trace("MessageCallbackProvider _calc_increment calculating increment " \
                          "for %s with current: %f and previous %s values."
@@ -1002,6 +1007,7 @@ class MessageCallbackProvider(object):
         try:
             self._log_message(msg)
             fields = self._get_fields(msg.topic)
+            fields_ignore_default = self._get_ignore_default(msg.topic)
 
             if PY2:
                 payload_str = msg.payload
@@ -1021,7 +1027,7 @@ class MessageCallbackProvider(object):
                     continue
 
                 key = field[:eq_index].strip()
-                if not fields.get(key, {}).get('ignore', self.fields_ignore_default):
+                if not fields.get(key, {}).get('ignore', fields_ignore_default):
                     (fieldname, value) = self._update_data(fields, key, field[eq_index + 1:].strip(), unit_system)
                     data[fieldname] = value
                 else:
@@ -1042,6 +1048,7 @@ class MessageCallbackProvider(object):
         try:
             self._log_message(msg)
             fields = self._get_fields(msg.topic)
+            fields_ignore_default = self._get_ignore_default(msg.topic)
 
             if PY2:
                 payload_str = msg.payload
@@ -1062,7 +1069,7 @@ class MessageCallbackProvider(object):
                     lookup_key = topic_str + "/" + key # todo - cleanup and test unicode vs str stuff
                 else:
                     lookup_key = key
-                if not fields.get(lookup_key, {}).get('ignore', self.fields_ignore_default):
+                if not fields.get(lookup_key, {}).get('ignore', fields_ignore_default):
                     (fieldname, value) = self._update_data(fields, lookup_key, data_flattened[key], unit_system)
                     data_final[fieldname] = value
                 else:
@@ -1080,6 +1087,7 @@ class MessageCallbackProvider(object):
         try:
             self._log_message(msg)
             fields = self._get_fields(msg.topic)
+            fields_ignore_default = self._get_ignore_default(msg.topic)
 
             payload_str = msg.payload
             if not PY2:
@@ -1095,7 +1103,7 @@ class MessageCallbackProvider(object):
                 key = key.encode('utf-8')
 
             unit_system = self.topic_manager.get_unit_system(msg.topic) # TODO - need public method
-            if not fields.get(key, {}).get('ignore', self.fields_ignore_default):
+            if not fields.get(key, {}).get('ignore', fields_ignore_default):
                 (fieldname, value) = self._update_data(fields, key, payload_str, unit_system)
                 data = {}
                 data[fieldname] = value
