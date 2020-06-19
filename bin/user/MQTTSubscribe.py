@@ -175,10 +175,24 @@ Configuration:
 
     # The topics to subscribe to.
     [[topics]
+        # The QOS level to subscribe to.
+        # Default is 0
+        qos = 0
+
         # Units for MQTT payloads without unit value.
         # Valid values: US, METRIC, METRICWX
         # Default is: US
         unit_system = US
+
+        # Formatting string for converting a timestamp to an epoch datetime.
+        # For additional information see, https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes
+        # Default is None
+        datetime_format = None
+
+        # Formatting string for converting time offset when converting a timestamp to an epoch datetime.
+        # Default is None
+        # Example values: -hhmm +hhmm hh:mm
+        offset_format = None
 
         # Even if the payload has a datetime, ignore it and use the server datetime
         # Default is False
