@@ -84,7 +84,7 @@ Configuration:
     # Only used by the driver.
     archive_topic = None
 
-    # DEPRECATED - move the expires_after under the [[topic]]/[[[topic name]]][[[[fieldname]]]]
+    # DEPRECATED - move the expires_after under the [[topics]]/[[[topic name]]][[[[field name]]]]
     # Fields in this section will be cached.
     # If the field is not in the current archive record, its value will be retrieved from the cache.
     # Only used by the service.
@@ -118,6 +118,7 @@ Configuration:
         # Valid values: True, False
         # Default is: False
         # Only used when type is 'individual'.
+        # DEPRECATED - use [[topics]]/[[[topic name]]]/[[[[field name]]]]
         full_topic_fieldname = False
 
         # When the json is nested, the delimiter between the hierarchies.
@@ -134,16 +135,16 @@ Configuration:
 
         # List of fields that are cumulative values
         # Default is: [] (empty list)
-        # DEPRECATED - use [[[fields]]] contains_total setting.
+        # DEPRECATED - use [[topics]]/[[[topic name]]]/[[[[field name]]]]
         # contains_total =
 
         # Mapping to WeeWX names.
-        # DEPRECATED - use [[[fields]]] name setting
+        # DEPRECATED - use [[topics]]/[[[topic name]]]/[[[[field name]]]]
         # [[[label_map]]]
         #     temp1 = extraTemp1
 
         # Information to map the MQTT data to WeeWX.
-        # DEPRECATED - move the fieldname under the [[topic]]/[[[topic name]]]
+        # DEPRECATED - move the fieldname under the [[topics]]/[[[topic name]]]
         # [[[fields]]]
         #     # The incoming field name from MQTT.
         #     [[[[temp1]]]
@@ -836,7 +837,7 @@ class TopicManager(object):
         return epoch
 
 class MessageCallbackProvider(object):
-    # pylint: disable=too-many-instance-attributes, too-few-public-methods
+    # pylint: disable=too-many-instance-attributes, too-few-public-methods, too-many-locals
     """ Provide the MQTT callback. """
     def __init__(self, config, logger, topic_manager):
         self.logger = logger
@@ -850,6 +851,8 @@ class MessageCallbackProvider(object):
         contains_total = option_as_list(config.get('contains_total', []))
         label_map = config.get('label_map', {})
         self.full_topic_fieldname = to_bool(config.get('full_topic_fieldname', False))
+        if self.full_topic_fieldname:
+            self.logger.info("'full_topic_fieldname' is deprecated, use '[[topics]][[[topic name]]][[[[field name]]]]'")
 
         if self.type not in self.callbacks:
             raise ValueError("Invalid type configured: %s" % self.type)
@@ -861,7 +864,7 @@ class MessageCallbackProvider(object):
             orig_fields = config.get('fields', {})
             self.fields_ignore_default = to_bool(self.fields.get('ignore', False))
             if self.fields:
-                self.logger.info("'fields' is deprecated, use '[[topics]][[[topic name]]][[[[fieldname]]]]'")
+                self.logger.info("'fields' is deprecated, use '[[topics]][[[topic name]]][[[[field name]]]]'")
 
                 for field in self.fields.sections:
                     self.fields[field]['ignore'] = to_bool((self.fields[field]).get('ignore', self.fields_ignore_default))
@@ -1121,13 +1124,13 @@ class MQTTSubscribe(object):
         self.logger.debug("service_dict is %s" % service_dict)
 
         if 'topic' in service_dict:
-            self.logger.info("'topic' is deprecated, use '[[topics]]'")
+            self.logger.info("'topic' is deprecated, use '[[topics]][[[topic name]]]'")
         if 'overlap' in service_dict:
             self.logger.info("'overlap' is deprecated, use 'adjust_start_time'")
         if 'contains_total' in service_dict['message_callback']:
-            self.logger.info("'contains_total' is deprecated use [[[fields]]] contains_total setting.")
+            self.logger.info("'contains_total' is deprecated use '[[topics]][[[topic name]]][[[[field name]]]]' contains_total setting.")
         if 'label_map' in service_dict['message_callback']:
-            self.logger.info("'label_map' is deprecated use [[[fields]]] name setting.")
+            self.logger.info("'label_map' is deprecated use '[[topics]][[[topic name]]][[[[field name]]]]' name setting.")
 
         message_callback_config = service_dict.get('message_callback', None)
         if message_callback_config is None:
@@ -1304,7 +1307,7 @@ class MQTTSubscribeService(StdService):
         archive_field_cache_dict = service_dict.get('archive_field_cache', None)
         self.cached_fields = {}
         if archive_field_cache_dict is not None:
-            self.logger.info("'archive_field_cache' is deprecated, use '[[topics]][[[topic name]]][[[[fieldname]]]]'")
+            self.logger.info("'archive_field_cache' is deprecated, use '[[topics]][[[topic name]]][[[[field name]]]]'")
             if self.subscriber.record_cache is not None:
                 self.logger.trace("Ignoring archive_field_cache configration and using topics/fields configuration.")
             unit_system_name = archive_field_cache_dict.get('unit_system', 'US').strip().upper()
