@@ -16,6 +16,10 @@ class weewx(object): # pylint: disable=invalid-name
         METRICWX = 0x11
         US = 0x01
 
+        conversionDict = {
+            'unit_name' : 'foobar'
+        }
+
         unit_constants = {
             'US'       : US,
             'METRIC'   : METRIC,
