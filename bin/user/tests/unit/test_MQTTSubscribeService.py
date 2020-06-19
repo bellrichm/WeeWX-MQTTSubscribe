@@ -208,8 +208,9 @@ class Testnew_archive_record(unittest.TestCase):
 
         config = configobj.ConfigObj(config_dict)
 
-        with mock.patch('user.MQTTSubscribe.MQTTSubscribe'):
+        with mock.patch('user.MQTTSubscribe.MQTTSubscribe') as mock_MQTTSubscribe:
             with mock.patch('user.MQTTSubscribe.RecordCache') as mock_cache:
+                type(mock_MQTTSubscribe.return_value).record_cache = mock.PropertyMock(return_value=None)
                 value = round(random.uniform(10, 100), 2)
                 type(mock_cache.return_value).get_value = mock.Mock(return_value=value)
                 # pylint: disable=no-member
@@ -243,9 +244,10 @@ class Testnew_archive_record(unittest.TestCase):
 
         config = configobj.ConfigObj(config_dict)
 
-        with mock.patch('user.MQTTSubscribe.MQTTSubscribe'):
+        with mock.patch('user.MQTTSubscribe.MQTTSubscribe') as mock_MQTTSubscribe:
             with mock.patch('user.MQTTSubscribe.RecordCache'):
                 # pylint: disable=no-member
+                type(mock_MQTTSubscribe.return_value).record_cache = mock.PropertyMock(return_value=None)
                 SUT = MQTTSubscribeService(self.mock_StdEngine, config)
 
                 record = {
