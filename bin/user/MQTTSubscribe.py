@@ -591,7 +591,8 @@ class TopicManager(object):
             self.subscribed_topics[topic]['adjust_end_time'] = adjust_end_time
             self.subscribed_topics[topic]['datetime_format'] = datetime_format
             self.subscribed_topics[topic]['offset_format'] = offset_format
-            self.subscribed_topics[topic]['ignore'] = fields_contains_total_default
+            self.subscribed_topics[topic]['ignore'] = fields_ignore_default
+            self.subscribed_topics[topic]['contains_total'] = fields_contains_total_default
             self.subscribed_topics[topic]['max_queue'] = topic_dict.get('max_queue', max_queue)
             self.subscribed_topics[topic]['queue'] = deque()
 
@@ -805,6 +806,10 @@ class TopicManager(object):
         """ Get the unit system """
         return self._get_value('unit_system', topic)
 
+    def get_ignore_value(self, topic):
+        """ Get the ignore value """
+        return self._get_value('ignore', topic)
+
     def _get_max_queue(self, topic):
         return self._get_value('max_queue', topic)
 
@@ -977,7 +982,7 @@ class MessageCallbackProvider(object):
 
     def _get_ignore_default(self, topic):
         if self.topic_manager.managing_fields:
-            return self.topic_manager.get_fields(topic)['topic']
+            return self.topic_manager.get_ignore_value(topic)
 
         return self.fields_ignore_default
 
