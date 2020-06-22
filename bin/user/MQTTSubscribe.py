@@ -230,11 +230,33 @@ Configuration:
         max_queue = MAXSIZE
 
         [[[first/topic]]]
+            # Specifies a field name in the mqtt message.
+            # The value of the field is appended to every field name in the mqtt message.
+            # This enables same formatted messages to map to different WeeWX fields.
+            # Default is None.
+            # Only used with json payloads.
+            msg_id_field = None
+
             # The incoming field name from MQTT.
             [[[[temp1]]]
                 # The WeeWX name.
                 # Default is the name from MQTT.
                 name = extraTemp1
+
+                # When True, the value in the field specified in msg_id_field is not appended to the fieldname in the mqtt message.
+                # Valid values: True, False
+                # Default is False
+                ignore_msg_id_field = False
+
+                # True if the incoming data should not be processed into WeeWX.
+                # Valid values: True, False
+                # Default is False
+                ignore = False
+
+                # True if the incoming data is cumulative.
+                # Valid values: True, False
+                # Default is False
+                contains_total = False
 
                 # The conversion type necessary for WeeWX compatibility
                 # Valid values: bool, float, int, none
@@ -247,15 +269,6 @@ Configuration:
                 # Default is not set
                 # units = km_per_hour
 
-                # True if the incoming data is cumulative.
-                # Valid values: True, False
-                # Default is False
-                contains_total = False
-
-                # True if the incoming data should not be processed into WeeWX.
-                # Valid values: True, False
-                # Default is False
-                ignore = False
 
                 # In seconds how long the cache is valid.
                 # Value of 0 means the cache is always expired.
@@ -291,7 +304,7 @@ from weewx.engine import StdService
 import weeutil
 from weeutil.weeutil import option_as_list, to_bool, to_float, to_int, to_sorted_string
 
-VERSION = '1.5.3'
+VERSION = '1.5.4-rc01'
 DRIVER_NAME = 'MQTTSubscribeDriver'
 DRIVER_VERSION = VERSION
 
@@ -459,8 +472,8 @@ except ImportError: # pragma: no cover
 
 class RecordCache(object):
     """ Manage the cache. """
-    def __init__(self, unit_system):
-        self.unit_system = unit_system
+    def __init__(self):
+        self.unit_system = None
         self.cached_values = {}
 
     def get_value(self, key, timestamp, expires_after):
@@ -473,6 +486,8 @@ class RecordCache(object):
 
     def update_value(self, key, value, unit_system, timestamp):
         """ Update the cached value. """
+        if self.unit_system is None:
+            self.unit_system = unit_system
         if unit_system != self.unit_system:
             raise ValueError("Unit system does not match unit system of the cache. %s vs %s"
                              % (unit_system, self.unit_system))
@@ -535,6 +550,8 @@ class TopicManager(object):
 
         self.logger.debug("TopicManager config is %s" % config)
 
+        default_msg_id_field = config.get('msg_id_field', None)
+        default_ignore_msg_id_field = config.get('ignore_msg_id_field', False)
         default_qos = to_int(config.get('qos', 0))
         default_use_server_datetime = to_bool(config.get('use_server_datetime', False))
         default_ignore_start_time = to_bool(config.get('ignore_start_time', False))
@@ -544,9 +561,9 @@ class TopicManager(object):
         default_adjust_end_time = to_float(config.get('adjust_end_time', 0))
         default_datetime_format = config.get('datetime_format', None)
         default_offset_format = config.get('offset_format', None)
-        ignore_default = to_bool(config.get('ignore', False))
-        contains_total_default = to_bool(config.get('contains_total', False))
-        conversion_type_default = config.get('conversion_type', 'float')
+        default_ignore = to_bool(config.get('ignore', False))
+        default_contains_total = to_bool(config.get('contains_total', False))
+        default_conversion_type = config.get('conversion_type', 'float')
 
         default_unit_system_name = config.get('unit_system', 'US').strip().upper()
         if default_unit_system_name not in weewx.units.unit_constants:
@@ -557,11 +574,13 @@ class TopicManager(object):
         self.topics = {}
         self.subscribed_topics = {}
         self.managing_fields = False
-        self.record_cache = {}
+        self.cached_fields = {}
 
         for topic in config.sections:
             topic_dict = config.get(topic, {})
 
+            msg_id_field = topic_dict.get('msg_id_field', default_msg_id_field)
+            ignore_msg_id_field = topic_dict.get('ignore_msg_id_field', default_ignore_msg_id_field)
             qos = to_int(topic_dict.get('qos', default_qos))
             use_server_datetime = to_bool(topic_dict.get('use_server_datetime',
                                                          default_use_server_datetime))
@@ -571,9 +590,9 @@ class TopicManager(object):
             adjust_end_time = to_float(topic_dict.get('adjust_end_time', default_adjust_end_time))
             datetime_format = topic_dict.get('datetime_format', default_datetime_format)
             offset_format = topic_dict.get('offset_format', default_offset_format)
-            fields_ignore_default = to_bool(topic_dict.get('ignore', ignore_default))
-            fields_contains_total_default = to_bool(topic_dict.get('contains_total', contains_total_default))
-            fields_conversion_type_default = topic_dict.get('conversion_type', conversion_type_default)
+            ignore = to_bool(topic_dict.get('ignore', default_ignore))
+            contains_total = to_bool(topic_dict.get('contains_total', default_contains_total))
+            conversion_type = topic_dict.get('conversion_type', default_conversion_type)
 
             unit_system_name = topic_dict.get('unit_system', default_unit_system_name).strip().upper()
             if unit_system_name not in weewx.units.unit_constants:
@@ -583,6 +602,7 @@ class TopicManager(object):
             self.subscribed_topics[topic] = {}
             self.subscribed_topics[topic]['type'] = 'normal'
             self.subscribed_topics[topic]['unit_system'] = unit_system
+            self.subscribed_topics[topic]['msg_id_field'] = msg_id_field
             self.subscribed_topics[topic]['qos'] = qos
             self.subscribed_topics[topic]['use_server_datetime'] = use_server_datetime
             self.subscribed_topics[topic]['ignore_start_time'] = ignore_start_time
@@ -591,8 +611,7 @@ class TopicManager(object):
             self.subscribed_topics[topic]['adjust_end_time'] = adjust_end_time
             self.subscribed_topics[topic]['datetime_format'] = datetime_format
             self.subscribed_topics[topic]['offset_format'] = offset_format
-            self.subscribed_topics[topic]['ignore'] = fields_ignore_default
-            self.subscribed_topics[topic]['contains_total'] = fields_contains_total_default
+            self.subscribed_topics[topic]['ignore'] = ignore
             self.subscribed_topics[topic]['max_queue'] = topic_dict.get('max_queue', max_queue)
             self.subscribed_topics[topic]['queue'] = deque()
 
@@ -600,22 +619,25 @@ class TopicManager(object):
                 self.managing_fields = True
 
             self.subscribed_topics[topic]['fields'] = {}
+            self.subscribed_topics[topic]['ignore_msg_id_field'] = []
             for field in topic_dict.sections:
                 self.subscribed_topics[topic]['fields'][field] = {}
                 self.subscribed_topics[topic]['fields'][field]['name'] = (topic_dict[field]).get('name', field)
-                self.subscribed_topics[topic]['fields'][field]['ignore'] = to_bool((topic_dict[field]).get('ignore', fields_ignore_default))
+                if to_bool((topic_dict[field]).get('ignore_msg_id_field', ignore_msg_id_field)):
+                    self.subscribed_topics[topic]['ignore_msg_id_field'].append(field)
+                self.subscribed_topics[topic]['fields'][field]['ignore'] = to_bool((topic_dict[field]).get('ignore', ignore))
                 self.subscribed_topics[topic]['fields'][field]['contains_total'] = \
-                    to_bool((topic_dict[field]).get('contains_total', fields_contains_total_default))
+                    to_bool((topic_dict[field]).get('contains_total', contains_total))
                 self.subscribed_topics[topic]['fields'][field]['conversion_type'] = \
-                    (topic_dict[field]).get('conversion_type', fields_conversion_type_default)
-                if 'expires_after' in topic_dict[field]:
-                    self.record_cache[field] = {}
-                    self.record_cache[field]['expires_after'] = to_float(topic_dict[field]['expires_after'])
+                    (topic_dict[field]).get('conversion_type', conversion_type)
                 if 'units' in topic_dict[field]:
                     if topic_dict[field]['units'] in weewx.units.conversionDict:
                         self.subscribed_topics[topic]['fields'][field]['units'] = topic_dict[field]['units']
                     else:
                         raise ValueError("For %s invalid units, %s" % (field, topic_dict[field]['units']))
+                if 'expires_after' in topic_dict[field]:
+                    self.cached_fields[field] = {}
+                    self.cached_fields[field]['expires_after'] = to_float(topic_dict[field]['expires_after'])
 
         # Add the collector queue as a subscribed topic so that data can retrieved from it
         # Yes, this is a bit of a hack.
@@ -640,7 +662,7 @@ class TopicManager(object):
         self.subscribed_topics[topic]['queue'] = self.collected_queue
 
         self.logger.debug("TopicManager self.subscribed_topics is %s" % self.subscribed_topics)
-        self.logger.debug("TopicManager self.record_cache is %s" % self.record_cache)
+        self.logger.debug("TopicManager self.cached_fields is %s" % self.cached_fields)
 
     def append_data(self, topic, in_data, fieldname=None):
         """ Add the MQTT data to the queue. """
@@ -806,9 +828,17 @@ class TopicManager(object):
         """ Get the unit system """
         return self._get_value('unit_system', topic)
 
+    def get_msg_id_field(self, topic):
+        """ Get the msg_id_field value """
+        return self._get_value('msg_id_field', topic)
+
     def get_ignore_value(self, topic):
         """ Get the ignore value """
         return self._get_value('ignore', topic)
+
+    def get_ignore_msg_id_field(self, topic):
+        """ Get the ignore_msg_id_field value """
+        return self._get_value('ignore_msg_id_field', topic)
 
     def _get_max_queue(self, topic):
         return self._get_value('max_queue', topic)
@@ -876,11 +906,11 @@ class MessageCallbackProvider(object):
         if self.type not in self.callbacks:
             raise ValueError("Invalid type configured: %s" % self.type)
 
-        if self.topic_manager.managing_fields:
+        self.fields = config.get('fields', {})
+        orig_fields = config.get('fields', {})
+        if self.topic_manager.managing_fields and self.fields:
             self.logger.debug("MessageCallbackProvider ignoring fields configuration and using topics/fields configuration.")
         else:
-            self.fields = config.get('fields', {})
-            orig_fields = config.get('fields', {})
             self.fields_ignore_default = to_bool(self.fields.get('ignore', False))
             if self.fields:
                 self.logger.info("'fields' is deprecated, use '[[topics]][[[topic name]]][[[[field name]]]]'")
@@ -980,6 +1010,12 @@ class MessageCallbackProvider(object):
 
         return self.fields
 
+    def _get_msg_id_field(self, topic):
+        return self.topic_manager.get_msg_id_field(topic)
+
+    def _get_ignore_msg_id_field(self, topic):
+        return self.topic_manager.get_ignore_msg_id_field(topic)
+
     def _get_ignore_default(self, topic):
         if self.topic_manager.managing_fields:
             return self.topic_manager.get_ignore_value(topic)
@@ -1071,6 +1107,8 @@ class MessageCallbackProvider(object):
             self._log_message(msg)
             fields = self._get_fields(msg.topic)
             fields_ignore_default = self._get_ignore_default(msg.topic)
+            msg_id_field = self._get_msg_id_field(msg.topic)
+            ignore_msg_id_field = self._get_ignore_msg_id_field(msg.topic)
 
             if PY2:
                 payload_str = msg.payload
@@ -1085,10 +1123,14 @@ class MessageCallbackProvider(object):
 
             unit_system = self.topic_manager.get_unit_system(msg.topic) # TODO - need public method
             data_final = {}
+            if msg_id_field:
+                msg_id = data_flattened[msg_id_field]
             # ToDo - if I have to loop, removes benefit of _bytefy, time to remove it?
             for key in data_flattened:
                 if self.full_topic_fieldname:
                     lookup_key = topic_str + "/" + key # todo - cleanup and test unicode vs str stuff
+                elif msg_id_field and key not in ignore_msg_id_field:
+                    lookup_key = key + "_" + str(msg_id) # todo - cleanup
                 else:
                     lookup_key = key
                 if not fields.get(lookup_key, {}).get('ignore', fields_ignore_default):
@@ -1165,9 +1207,9 @@ class MQTTSubscribe(object):
                                                           'user.MQTTSubscribe.MessageCallbackProvider')
         self.manager = TopicManager(topics_dict, self.logger)
 
-        self.record_cache = None
+        self.cached_fields = None
         if self.manager.managing_fields:
-            self.record_cache = self.manager.record_cache
+            self.cached_fields = self.manager.cached_fields
 
         clientid = service_dict.get('clientid',
                                     'MQTTSubscribe-' + str(random.randint(1000, 9999)))
@@ -1327,19 +1369,15 @@ class MQTTSubscribeService(StdService):
         self.cached_fields = {}
         if archive_field_cache_dict is not None:
             self.logger.info("'archive_field_cache' is deprecated, use '[[topics]][[[topic name]]][[[[field name]]]]'")
-            if self.subscriber.record_cache is not None:
+            if self.subscriber.cached_fields is not None:
                 self.logger.trace("Ignoring archive_field_cache configration and using topics/fields configuration.")
-            unit_system_name = archive_field_cache_dict.get('unit_system', 'US').strip().upper()
-            if unit_system_name not in weewx.units.unit_constants:
-                raise ValueError("archive_field_cache: Unknown unit system: %s" % unit_system_name)
-            unit_system = weewx.units.unit_constants[unit_system_name]
 
             fields_dict = archive_field_cache_dict.get('fields', {})
             for field in archive_field_cache_dict.get('fields', {}):
                 self.cached_fields[field] = {}
                 self.cached_fields[field]['expires_after'] = to_float(fields_dict[field].get('expires_after', None))
 
-            self.cache = RecordCache(unit_system)
+            self.cache = RecordCache()
 
         self.logger.info("archive_field_cache_dict is %s" % archive_field_cache_dict)
 
@@ -1403,8 +1441,8 @@ class MQTTSubscribeService(StdService):
                                      to_sorted_string(event.record)))
 
 
-        if self.subscriber.record_cache is not None:
-            cached_fields = self.subscriber.record_cache
+        if self.subscriber.cached_fields is not None:
+            cached_fields = self.subscriber.cached_fields
         else:
             cached_fields = self.cached_fields
 

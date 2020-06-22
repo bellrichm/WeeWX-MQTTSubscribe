@@ -106,7 +106,7 @@ class TestConfigureFields(unittest.TestCase):
         self.assertEqual(SUT.subscribed_topics[topic]['fields'][fieldname]['conversion_type'], 'int')
         self.assertEqual(SUT.subscribed_topics[topic]['fields'][fieldname]['name'], weewx_name)
         self.assertEqual(SUT.subscribed_topics[topic]['fields'][fieldname]['units'], unit_name)
-        self.assertIsNone(SUT.record_cache[fieldname]['expires_after'])
+        self.assertIsNone(SUT.cached_fields[fieldname]['expires_after'])
 
 class TestQueueSizeCheck(unittest.TestCase):
     topic = 'foo/bar'

@@ -13,7 +13,7 @@ from user.MQTTSubscribe import RecordCache
 class Test_clear_cache(unittest.TestCase):
     def test_cache_is_cleared(self):
         unit_system = random.randint(1, 10)
-        SUT = RecordCache(unit_system)
+        SUT = RecordCache()
 
         key = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
         value = round(random.uniform(1, 100), 2)
@@ -26,7 +26,7 @@ class Test_clear_cache(unittest.TestCase):
 class Test_update_value(unittest.TestCase):
     def test_value_is_updated(self):
         unit_system = random.randint(1, 10)
-        SUT = RecordCache(unit_system)
+        SUT = RecordCache()
 
         key = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
         value = round(random.uniform(1, 100), 2)
@@ -39,9 +39,12 @@ class Test_update_value(unittest.TestCase):
 
     def test_mismatch_unit_system(self):
         unit_system = random.randint(1, 10)
-        SUT = RecordCache(unit_system)
+        SUT = RecordCache()
 
         key = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+
+        SUT.update_value(key, unit_system, round(random.uniform(1, 100), 2), time.time())
+
         value = round(random.uniform(1, 100), 2)
         timestamp = time.time()
 
@@ -51,8 +54,7 @@ class Test_update_value(unittest.TestCase):
 
 class Test_get_value(unittest.TestCase):
     def test_key_not_in_cache(self):
-        unit_system = random.randint(1, 10)
-        SUT = RecordCache(unit_system)
+        SUT = RecordCache()
 
         value = SUT.get_value('foo', 0, None)
 
@@ -60,7 +62,7 @@ class Test_get_value(unittest.TestCase):
 
     def test_get_data_expiration_is_none(self):
         unit_system = random.randint(1, 10)
-        SUT = RecordCache(unit_system)
+        SUT = RecordCache()
 
         key = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
         value = round(random.uniform(1, 100), 2)
@@ -71,7 +73,7 @@ class Test_get_value(unittest.TestCase):
 
     def test_get_data_is_not_expired(self):
         unit_system = random.randint(1, 10)
-        SUT = RecordCache(unit_system)
+        SUT = RecordCache()
         key = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
         value = round(random.uniform(1, 100), 2)
         timestamp = time.time()
@@ -82,7 +84,7 @@ class Test_get_value(unittest.TestCase):
 
     def test_get_data_is_expired(self):
         unit_system = random.randint(1, 10)
-        SUT = RecordCache(unit_system)
+        SUT = RecordCache()
         key = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
         value = round(random.uniform(1, 100), 2)
         timestamp = time.time()
@@ -95,7 +97,7 @@ class Test_update_timestamp(unittest.TestCase):
     def test_key_does_not_exist(self):
         # somewhat silly test
         unit_system = random.randint(1, 10)
-        SUT = RecordCache(unit_system)
+        SUT = RecordCache()
         key = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
         value = round(random.uniform(1, 100), 2)
         SUT.update_value(key, value, unit_system, time.time())
@@ -106,7 +108,7 @@ class Test_update_timestamp(unittest.TestCase):
 
     def test_key_exists(self):
         unit_system = random.randint(1, 10)
-        SUT = RecordCache(unit_system)
+        SUT = RecordCache()
         key = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
         value = round(random.uniform(1, 100), 2)
         SUT.update_value(key, value, unit_system, 0)
@@ -119,7 +121,7 @@ class Test_remove_value(unittest.TestCase):
     def test_key_does_not_exist(self):
         # somewhat silly test
         unit_system = random.randint(1, 10)
-        SUT = RecordCache(unit_system)
+        SUT = RecordCache()
         key = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
         value = round(random.uniform(1, 100), 2)
         SUT.update_value(key, value, unit_system, time.time())
@@ -130,7 +132,7 @@ class Test_remove_value(unittest.TestCase):
 
     def test_key_exists(self):
         unit_system = random.randint(1, 10)
-        SUT = RecordCache(unit_system)
+        SUT = RecordCache()
         key = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
         value = round(random.uniform(1, 100), 2)
         SUT.update_value(key, value, unit_system, time.time())
