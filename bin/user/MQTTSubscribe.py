@@ -1312,8 +1312,8 @@ class MQTTSubscribe(object):
         # 4: Connection refused - bad username or password
         # 5: Connection refused - not authorised
         # 6-255: Currently unused.
-        self.logger.debug("Connected with result code %i" % rc)
-        self.logger.debug("Connected flags %s" % str(flags))
+        self.logger.info("Connected with result code %i" % rc)
+        self.logger.info("Connected flags %s" % str(flags))
 
         userdata['connect'] = True
         userdata['connect_rc'] = rc
@@ -1324,11 +1324,11 @@ class MQTTSubscribe(object):
             self.logger.debug("Subscribed to %s has a mid %i and rc %i" %(topic, mid, result))
 
     def _on_disconnect(self, client, userdata, rc): # (match callback signature) pylint: disable=unused-argument
-        self.logger.debug("Disconnected with result code %i" %rc)
+        self.logger.info("Disconnected with result code %i" %rc)
 
     def _on_subscribe(self, client, userdata, mid, granted_qos): # (match callback signature) pylint: disable=unused-argument
-        self.logger.debug("Subscribed to topic mid: %i is size %i has a QOS of %i"
-                          %(mid, len(granted_qos), granted_qos[0]))
+        self.logger.info("Subscribed to topic mid: %i is size %i has a QOS of %i"
+                         %(mid, len(granted_qos), granted_qos[0]))
 
     def _on_log(self, client, userdata, level, msg): # (match callback signature) pylint: disable=unused-argument
         self.mqtt_logger[level]("MQTTSubscribe MQTT msg:", msg)
