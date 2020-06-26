@@ -1181,7 +1181,7 @@ class MessageCallbackProvider(object):
             fields = self._get_fields(msg.topic)
             fields_ignore_default = self._get_ignore_default(msg.topic)
             if self.topic_manager.managing_fields and fields['use_topic_as_fieldname']:
-                    full_topic_fieldname = fields['use_topic_as_fieldname']
+                full_topic_fieldname = fields['use_topic_as_fieldname']
             elif self.full_topic_fieldname:
                 full_topic_fieldname = self.full_topic_fieldname
             else:
