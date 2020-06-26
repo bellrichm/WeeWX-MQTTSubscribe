@@ -945,22 +945,25 @@ class MessageCallbackProvider(object):
             self.fields_ignore_default = to_bool(self.fields.get('ignore', False))
             if self.fields:
                 self.logger.info("'fields' is deprecated, use '[[topics]][[[topic name]]][[[[field name]]]]'")
+                self._configure_fields()
 
-                for field in self.fields.sections:
-                    self.fields[field]['ignore'] = to_bool((self.fields[field]).get('ignore', self.fields_ignore_default))
-                    if  'contains_total' in self.fields[field]:
-                        self.fields[field]['contains_total'] = to_bool(self.fields[field]['contains_total'])
-                    if 'conversion_type' in self.fields[field]:
-                        self.fields[field]['conversion_type'] = self.fields[field]['conversion_type'].lower()
-                    if 'units' in self.fields[field]:
-                        try:
-                            weewx.units.conversionDict[self.fields[field]['units']]
-                        except KeyError:
-                            raise ValueError("For %s invalid units, %s" % (field, self.fields[field]['units']))
             self.set_backwards_compatibility(label_map, orig_fields, contains_total)
             self.logger.debug("MessageCallbackProvider self.fields is %s" % self.fields)
 
         self.previous_values = {}
+
+    def _configure_fields(self):
+        for field in self.fields.sections:
+            self.fields[field]['ignore'] = to_bool((self.fields[field]).get('ignore', self.fields_ignore_default))
+            if  'contains_total' in self.fields[field]:
+                self.fields[field]['contains_total'] = to_bool(self.fields[field]['contains_total'])
+            if 'conversion_type' in self.fields[field]:
+                self.fields[field]['conversion_type'] = self.fields[field]['conversion_type'].lower()
+            if 'units' in self.fields[field]:
+                try:
+                    weewx.units.conversionDict[self.fields[field]['units']]
+                except KeyError:
+                    raise ValueError("For %s invalid units, %s" % (field, self.fields[field]['units']))   
 
     def set_backwards_compatibility(self, label_map, orig_fields, contains_total):
         """ Any config for backwards compatibility. """
