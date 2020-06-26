@@ -320,6 +320,48 @@ if PY2:
 else:
     MAXSIZE = sys.maxsize
 
+class AbstractLogger(object):
+    """ The abstract logging class. """
+    def __init__(self, mode, level='NOTSET', filename=None, console=None):
+        self.console = console
+        self.mode = mode
+        self.filename = filename
+        self.weewx_debug = weewx.debug
+        self.level = logging._checkLevel(level) # not sure there is a better way pylint: disable=protected-access
+        # Setup custom TRACE level
+        self.trace_level = 5
+        if logging.getLevelName(self.trace_level) == 'Level 5':
+            logging.addLevelName(self.trace_level, "TRACE")
+
+    def log_environment(self):
+        """ Log the environment we are running in. """
+        # Since WeeWX logs this, only log it when debugging
+        self.debug("Using weewx version %s" % weewx.__version__)
+        self.debug("Using Python %s" % sys.version)
+        self.debug("Platform %s" % platform.platform())
+        self.debug("Locale is '%s'" % locale.setlocale(locale.LC_ALL))
+        self.info("Version is %s" % VERSION)
+        self.info("Log level: %i" % self.trace_level)
+        self.info("Log debug setting: %i" % self.weewx_debug)
+        self.info("Log console: %s" % self.console)
+        self.info("Log file: %s" % self.filename)
+
+    def trace(self, msg):
+        """ Log trace messages. """
+        raise NotImplementedError("Method 'trace' not implemented")
+
+    def debug(self, msg):
+        """ Log debug messages. """
+        raise NotImplementedError("Method 'debug' not implemented")
+
+    def info(self, msg):
+        """ Log info messages. """
+        raise NotImplementedError("Method 'info' not implemented")
+
+    def error(self, msg):
+        """ Log error messages. """
+        raise NotImplementedError("Method 'error' not implemented")
+
 try: # pragma: no cover
     import weeutil.logger
     def setup_logging(logging_level, config_dict):
@@ -329,22 +371,14 @@ try: # pragma: no cover
 
         weeutil.logger.setup('wee_MQTTSS', config_dict) # weewx3 false positive, code never reached pylint: disable=no-member
 
-    class Logger(object):
+    class Logger(AbstractLogger):
         """ The logging class. """
         def __init__(self, mode, level='NOTSET', filename=None, console=None):
-            self.mode = mode
-            self.filename = filename
-            self.console = console
-            # Setup custom TRACE level
-            self.trace_level = 5
-            if logging.getLevelName(self.trace_level) == 'Level 5':
-                logging.addLevelName(self.trace_level, "TRACE")
-
+            super(Logger, self).__init__(mode, level='NOTSET', filename=None, console=None)
             self._logmsg = logging.getLogger(__name__)
             if self.console:
                 self._logmsg.addHandler(logging.StreamHandler(sys.stdout))
 
-            self.level = logging._checkLevel(level) # not sure there is a better way pylint: disable=protected-access
             if self.level > 0:
                 self.weewx_debug = 0
                 self._logmsg.propagate = 0
@@ -377,19 +411,6 @@ try: # pragma: no cover
 
             return handlers
 
-        def log_environment(self):
-            """ Log the environment we are running in. """
-            # Since WeeWX logs this, only log it when debugging
-            self.debug("Using weewx version %s" % weewx.__version__)
-            self.debug("Using Python %s" % sys.version)
-            self.debug("Platform %s" % platform.platform())
-            self.debug("Locale is '%s'" % locale.setlocale(locale.LC_ALL))
-            self.info("Version is %s" % VERSION)
-            self.info("Log level: %i" % self.trace_level)
-            self.info("Log debug setting: %i" % self.weewx_debug)
-            self.info("Log console: %s" % self.console)
-            self.info("Log file: %s" % self.filename)
-
         def trace(self, msg):
             """ Log trace messages. """
             if self.weewx_debug > 1:
@@ -418,19 +439,14 @@ except ImportError: # pragma: no cover
         else:
             syslog.setlogmask(syslog.LOG_UPTO(syslog.LOG_INFO))
 
-    class Logger(object):
+    class Logger(AbstractLogger):
         """ The logging class. """
-        def __init__(self, mode, level='NOTSET', filename=None, console=None): # Need to match signature pylint: disable=unused-argument
-            self.mode = mode
-            self.filename = filename
-            self.weewx_debug = weewx.debug
+        def __init__(self, mode, level='NOTSET', filename=None, console=None):
+            super(Logger, self).__init__(mode, level='NOTSET', filename=None, console=None)
             # Setup custom TRACE level
             self.trace_level = 5
             if logging.getLevelName(self.trace_level) == 'Level 5':
                 logging.addLevelName(self.trace_level, "TRACE")
-
-            self.level = logging._checkLevel(level) # not sure there is a better way pylint: disable=protected-access
-            self.console = console
 
             self.file = None
             if self.filename is not None:
