@@ -373,6 +373,8 @@ try: # pragma: no cover
 
     class Logger(AbstractLogger):
         """ The logging class. """
+        MSG_FORMAT = "(%s) %s"
+
         def __init__(self, mode, level='NOTSET', filename=None, console=None):
             super(Logger, self).__init__(mode, level='NOTSET', filename=None, console=None)
             self._logmsg = logging.getLogger(__name__)
@@ -414,21 +416,21 @@ try: # pragma: no cover
         def trace(self, msg):
             """ Log trace messages. """
             if self.weewx_debug > 1:
-                self._logmsg.debug("(%s) %s", self.mode, msg)
+                self._logmsg.debug(self.MSG_FORMAT, self.mode, msg)
             else:
-                self._logmsg.log(self.trace_level, "(%s) %s", self.mode, msg)
+                self._logmsg.log(self.trace_level, self.MSG_FORMAT, self.mode, msg)
 
         def debug(self, msg):
             """ Log debug messages. """
-            self._logmsg.debug("(%s) %s", self.mode, msg)
+            self._logmsg.debug(self.MSG_FORMAT, self.mode, msg)
 
         def info(self, msg):
             """ Log informational messages. """
-            self._logmsg.info("(%s) %s", self.mode, msg)
+            self._logmsg.info(self.MSG_FORMAT, self.mode, msg)
 
         def error(self, msg):
             """ Log error messages. """
-            self._logmsg.error("(%s) %s", self.mode, msg)
+            self._logmsg.error(self.MSG_FORMAT, self.mode, msg)
 except ImportError: # pragma: no cover
     import syslog
     def setup_logging(logging_level, config_dict): # Need to match signature pylint: disable=unused-argument
