@@ -452,19 +452,6 @@ except ImportError: # pragma: no cover
             if self.filename is not None:
                 self.file = open(filename, 'w')
 
-        def log_environment(self):
-            """ Log the environment we are running in. """
-            # Since WeeWX logs this, only log it when debugging
-            self.debug("Using weewx version %s" % weewx.__version__)
-            self.debug("Using Python %s" % sys.version)
-            self.debug("Platform %s" % platform.platform())
-            self.debug("Locale is '%s'" % locale.setlocale(locale.LC_ALL))
-            self.info("Version is %s" % VERSION)
-            self.info("Log level: %i" % self.trace_level)
-            self.info("Log debug setting: %i" % self.weewx_debug)
-            self.info("Log console: %s" % self.console)
-            self.info("Log file: %s" % self.filename)
-
         def trace(self, msg):
             """ Log trace messages. """
             if self.level == self.trace_level or self.weewx_debug > 1:
