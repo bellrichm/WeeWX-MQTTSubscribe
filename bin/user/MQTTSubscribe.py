@@ -557,8 +557,9 @@ class TopicManager(object):
 
         self.logger.debug("TopicManager config is %s" % config)
 
+        defaults = {}
         default_msg_id_field = config.get('msg_id_field', None)
-        default_ignore_msg_id_field = config.get('ignore_msg_id_field', False)
+        defaults['ignore_msg_id_field'] = config.get('ignore_msg_id_field', False)
         default_qos = to_int(config.get('qos', 0))
         default_use_topic_as_fieldname = config.get('use_topic_as_fieldname', False)
         default_use_server_datetime = to_bool(config.get('use_server_datetime', False))
@@ -570,8 +571,8 @@ class TopicManager(object):
         default_datetime_format = config.get('datetime_format', None)
         default_offset_format = config.get('offset_format', None)
         default_ignore = to_bool(config.get('ignore', False))
-        default_contains_total = to_bool(config.get('contains_total', False))
-        default_conversion_type = config.get('conversion_type', 'float')
+        defaults['contains_total'] = to_bool(config.get('contains_total', False))
+        defaults['conversion_type'] = config.get('conversion_type', 'float')
 
         default_unit_system_name = config.get('unit_system', 'US').strip().upper()
         if default_unit_system_name not in weewx.units.unit_constants:
@@ -588,9 +589,9 @@ class TopicManager(object):
             topic_dict = config.get(topic, {})
 
             msg_id_field = topic_dict.get('msg_id_field', default_msg_id_field)
-            ignore_msg_id_field = topic_dict.get('ignore_msg_id_field', default_ignore_msg_id_field)
             qos = to_int(topic_dict.get('qos', default_qos))
             use_topic_as_fieldname = config.get('use_topic_as_fieldname', default_use_topic_as_fieldname)
+            defaults['use_topic_as_fieldname'] = use_topic_as_fieldname
             use_server_datetime = to_bool(topic_dict.get('use_server_datetime',
                                                          default_use_server_datetime))
             ignore_start_time = to_bool(topic_dict.get('ignore_start_time', default_ignore_start_time))
@@ -600,8 +601,7 @@ class TopicManager(object):
             datetime_format = topic_dict.get('datetime_format', default_datetime_format)
             offset_format = topic_dict.get('offset_format', default_offset_format)
             ignore = to_bool(topic_dict.get('ignore', default_ignore))
-            contains_total = to_bool(topic_dict.get('contains_total', default_contains_total))
-            conversion_type = topic_dict.get('conversion_type', default_conversion_type)
+            defaults['ignore'] = ignore
 
             unit_system_name = topic_dict.get('unit_system', default_unit_system_name).strip().upper()
             if unit_system_name not in weewx.units.unit_constants:
@@ -633,42 +633,16 @@ class TopicManager(object):
             self.subscribed_topics[topic]['ignore_msg_id_field'] = []
             if use_topic_as_fieldname:
                 self.managing_fields = True
-                self.subscribed_topics[topic]['fields'][topic] = {}
-                self.subscribed_topics[topic]['fields'][topic]['name'] = topic_dict.get('name', topic)
-                self.subscribed_topics[topic]['fields'][topic]['use_topic_as_field_name'] = use_topic_as_fieldname
-                if ignore_msg_id_field:
-                    self.subscribed_topics[topic]['ignore_msg_id_field'].append(topic)
-                self.subscribed_topics[topic]['fields'][topic]['ignore'] = ignore
-                self.subscribed_topics[topic]['fields'][topic]['contains_total'] = contains_total
-                self.subscribed_topics[topic]['fields'][topic]['conversion_type'] = conversion_type
-                if 'units' in topic_dict:
-                    if topic_dict['units'] in weewx.units.conversionDict:
-                        self.subscribed_topics[topic]['fields'][topic]['units'] = topic_dict['units']
-                    else:
-                        raise ValueError("For %s invalid units, %s" % (topic, topic_dict['units']))
                 if 'expires_after' in topic_dict:
                     self.cached_fields[topic] = {}
                     self.cached_fields[topic]['expires_after'] = to_float(topic_dict['expires_after'])
+                self.subscribed_topics[topic]['fields'][topic] = self._configure_field(topic_dict, topic_dict, topic, topic, defaults)
             else:
                 for field in topic_dict.sections:
-                    self.subscribed_topics[topic]['fields'][field] = {}
-                    self.subscribed_topics[topic]['fields'][field]['name'] = (topic_dict[field]).get('name', field)
-                    self.subscribed_topics[topic]['fields'][field]['use_topic_as_field_name'] = use_topic_as_fieldname
-                    if to_bool((topic_dict[field]).get('ignore_msg_id_field', ignore_msg_id_field)):
-                        self.subscribed_topics[topic]['ignore_msg_id_field'].append(field)
-                    self.subscribed_topics[topic]['fields'][field]['ignore'] = to_bool((topic_dict[field]).get('ignore', ignore))
-                    self.subscribed_topics[topic]['fields'][field]['contains_total'] = \
-                        to_bool((topic_dict[field]).get('contains_total', contains_total))
-                    self.subscribed_topics[topic]['fields'][field]['conversion_type'] = \
-                        (topic_dict[field]).get('conversion_type', conversion_type)
-                    if 'units' in topic_dict[field]:
-                        if topic_dict[field]['units'] in weewx.units.conversionDict:
-                            self.subscribed_topics[topic]['fields'][field]['units'] = topic_dict[field]['units']
-                        else:
-                            raise ValueError("For %s invalid units, %s" % (field, topic_dict[field]['units']))
                     if 'expires_after' in topic_dict[field]:
                         self.cached_fields[field] = {}
                         self.cached_fields[field]['expires_after'] = to_float(topic_dict[field]['expires_after'])
+                    self.subscribed_topics[topic]['fields'][field] = self._configure_field(topic_dict, topic_dict[field], topic, field, defaults)
 
         # Add the collector queue as a subscribed topic so that data can retrieved from it
         # Yes, this is a bit of a hack.
@@ -694,6 +668,26 @@ class TopicManager(object):
 
         self.logger.debug("TopicManager self.subscribed_topics is %s" % self.subscribed_topics)
         self.logger.debug("TopicManager self.cached_fields is %s" % self.cached_fields)
+
+    def _configure_field(self, topic_dict, field_dict, topic, fieldname, defaults): # pylint disable=too-many-arguments
+        ignore_msg_id_field = topic_dict.get('ignore_msg_id_field', defaults['ignore_msg_id_field'])
+        contains_total = to_bool(topic_dict.get('contains_total', defaults['contains_total']))
+        conversion_type = topic_dict.get('conversion_type', defaults['conversion_type'])
+        field = {}
+        field['name'] = (field_dict).get('name', fieldname)
+        field['use_topic_as_field_name'] = defaults['use_topic_as_fieldname']
+        if to_bool((field_dict).get('ignore_msg_id_field', ignore_msg_id_field)):
+            self.subscribed_topics[topic]['ignore_msg_id_field'].append(fieldname)
+        field['ignore'] = to_bool((field_dict).get('ignore', defaults['ignore']))
+        field['contains_total'] = to_bool((field_dict).get('contains_total', contains_total))
+        field['conversion_type'] = (field_dict).get('conversion_type', conversion_type)
+        if 'units' in field_dict:
+            if field_dict['units'] in weewx.units.conversionDict:
+                field['units'] = field_dict['units']
+            else:
+                raise ValueError("For %s invalid units, %s" % (field, field_dict['units']))
+
+        return field
 
     def append_data(self, topic, in_data, fieldname=None):
         """ Add the MQTT data to the queue. """
@@ -963,7 +957,7 @@ class MessageCallbackProvider(object):
                 try:
                     weewx.units.conversionDict[self.fields[field]['units']]
                 except KeyError:
-                    raise ValueError("For %s invalid units, %s" % (field, self.fields[field]['units']))   
+                    raise ValueError("For %s invalid units, %s" % (field, self.fields[field]['units']))
 
     def set_backwards_compatibility(self, label_map, orig_fields, contains_total):
         """ Any config for backwards compatibility. """
