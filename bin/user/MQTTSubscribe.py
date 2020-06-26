@@ -624,24 +624,18 @@ class TopicManager(object):
             self.subscribed_topics[topic]['max_queue'] = topic_dict.get('max_queue', max_queue)
             self.subscribed_topics[topic]['queue'] = deque()
 
-            if use_topic_as_fieldname and  topic_dict.sections:
-                raise ValueError("MQTTSubscribe: use_topic_as_fieldname is mutually exclusive with [[[[fieldname]]]] configuring")
             if topic_dict.sections:
                 self.managing_fields = True
+                if use_topic_as_fieldname:
+                    raise ValueError("MQTTSubscribe: use_topic_as_fieldname is mutually exclusive with [[[[fieldname]]]] configuring")
 
             self.subscribed_topics[topic]['fields'] = {}
             self.subscribed_topics[topic]['ignore_msg_id_field'] = []
             if use_topic_as_fieldname:
                 self.managing_fields = True
-                if 'expires_after' in topic_dict:
-                    self.cached_fields[topic] = {}
-                    self.cached_fields[topic]['expires_after'] = to_float(topic_dict['expires_after'])
                 self.subscribed_topics[topic]['fields'][topic] = self._configure_field(topic_dict, topic_dict, topic, topic, defaults)
             else:
                 for field in topic_dict.sections:
-                    if 'expires_after' in topic_dict[field]:
-                        self.cached_fields[field] = {}
-                        self.cached_fields[field]['expires_after'] = to_float(topic_dict[field]['expires_after'])
                     self.subscribed_topics[topic]['fields'][field] = self._configure_field(topic_dict, topic_dict[field], topic, field, defaults)
 
         # Add the collector queue as a subscribed topic so that data can retrieved from it
@@ -669,13 +663,15 @@ class TopicManager(object):
         self.logger.debug("TopicManager self.subscribed_topics is %s" % self.subscribed_topics)
         self.logger.debug("TopicManager self.cached_fields is %s" % self.cached_fields)
 
-    def _configure_field(self, topic_dict, field_dict, topic, fieldname, defaults): # pylint disable=too-many-arguments
+    def _configure_field(self, topic_dict, field_dict, topic, fieldname, defaults):
+        # pylint: disable=too-many-arguments
         ignore_msg_id_field = topic_dict.get('ignore_msg_id_field', defaults['ignore_msg_id_field'])
         contains_total = to_bool(topic_dict.get('contains_total', defaults['contains_total']))
         conversion_type = topic_dict.get('conversion_type', defaults['conversion_type'])
         field = {}
         field['name'] = (field_dict).get('name', fieldname)
         field['use_topic_as_field_name'] = defaults['use_topic_as_fieldname']
+        # ToDo - fix side effect
         if to_bool((field_dict).get('ignore_msg_id_field', ignore_msg_id_field)):
             self.subscribed_topics[topic]['ignore_msg_id_field'].append(fieldname)
         field['ignore'] = to_bool((field_dict).get('ignore', defaults['ignore']))
@@ -687,6 +683,10 @@ class TopicManager(object):
             else:
                 raise ValueError("For %s invalid units, %s" % (field, field_dict['units']))
 
+        # ToDo- fix side effect
+        if 'expires_after' in field_dict:
+            self.cached_fields[fieldname] = {}
+            self.cached_fields[fieldname]['expires_after'] = to_float(field_dict['expires_after'])
         return field
 
     def append_data(self, topic, in_data, fieldname=None):
