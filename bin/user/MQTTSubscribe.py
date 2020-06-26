@@ -181,8 +181,13 @@ Configuration:
 
         # Units for MQTT payloads without unit value.
         # Valid values: US, METRIC, METRICWX
-        # Default is: US
+        # Default is US
         unit_system = US
+
+        # When true, the fieldname is set to the topic and therefore [[[[fieldname]]]] cannot be used.
+        # This allows the [[[[fieldname]]]] configuration to be specified directly under the [[[topic]]].
+        # Default is False
+        use_topic_as_fieldname = False
 
         # Formatting string for converting a timestamp to an epoch datetime.
         # For additional information see, https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes
@@ -304,7 +309,7 @@ from weewx.engine import StdService
 import weeutil
 from weeutil.weeutil import option_as_list, to_bool, to_float, to_int, to_sorted_string
 
-VERSION = '1.5.4-rc01'
+VERSION = '1.5.4-rc02'
 DRIVER_NAME = 'MQTTSubscribeDriver'
 DRIVER_VERSION = VERSION
 
@@ -541,8 +546,7 @@ class TopicManager(object):
     # pylint: disable=too-many-instance-attributes
     """ Manage the MQTT topic subscriptions. """
     def __init__(self, config, logger):
-        # pylint: disable=too-many-locals
-        # pylint: disable=too-many-statements
+        # pylint: disable=too-many-locals, too-many-statements, too-many-branches
         self.logger = logger
 
         if not config.sections:
@@ -553,6 +557,7 @@ class TopicManager(object):
         default_msg_id_field = config.get('msg_id_field', None)
         default_ignore_msg_id_field = config.get('ignore_msg_id_field', False)
         default_qos = to_int(config.get('qos', 0))
+        default_use_topic_as_fieldname = config.get('use_topic_as_fieldname', False)
         default_use_server_datetime = to_bool(config.get('use_server_datetime', False))
         default_ignore_start_time = to_bool(config.get('ignore_start_time', False))
         default_ignore_end_time = to_bool(config.get('ignore_end_time', False))
@@ -582,6 +587,7 @@ class TopicManager(object):
             msg_id_field = topic_dict.get('msg_id_field', default_msg_id_field)
             ignore_msg_id_field = topic_dict.get('ignore_msg_id_field', default_ignore_msg_id_field)
             qos = to_int(topic_dict.get('qos', default_qos))
+            use_topic_as_fieldname = config.get('use_topic_as_fieldname', default_use_topic_as_fieldname)
             use_server_datetime = to_bool(topic_dict.get('use_server_datetime',
                                                          default_use_server_datetime))
             ignore_start_time = to_bool(topic_dict.get('ignore_start_time', default_ignore_start_time))
@@ -615,29 +621,51 @@ class TopicManager(object):
             self.subscribed_topics[topic]['max_queue'] = topic_dict.get('max_queue', max_queue)
             self.subscribed_topics[topic]['queue'] = deque()
 
+            if use_topic_as_fieldname and  topic_dict.sections:
+                raise ValueError("MQTTSubscribe: use_topic_as_fieldname is mutually exclusive with [[[[fieldname]]]] configuring")
             if topic_dict.sections:
                 self.managing_fields = True
 
             self.subscribed_topics[topic]['fields'] = {}
             self.subscribed_topics[topic]['ignore_msg_id_field'] = []
-            for field in topic_dict.sections:
-                self.subscribed_topics[topic]['fields'][field] = {}
-                self.subscribed_topics[topic]['fields'][field]['name'] = (topic_dict[field]).get('name', field)
-                if to_bool((topic_dict[field]).get('ignore_msg_id_field', ignore_msg_id_field)):
-                    self.subscribed_topics[topic]['ignore_msg_id_field'].append(field)
-                self.subscribed_topics[topic]['fields'][field]['ignore'] = to_bool((topic_dict[field]).get('ignore', ignore))
-                self.subscribed_topics[topic]['fields'][field]['contains_total'] = \
-                    to_bool((topic_dict[field]).get('contains_total', contains_total))
-                self.subscribed_topics[topic]['fields'][field]['conversion_type'] = \
-                    (topic_dict[field]).get('conversion_type', conversion_type)
-                if 'units' in topic_dict[field]:
-                    if topic_dict[field]['units'] in weewx.units.conversionDict:
-                        self.subscribed_topics[topic]['fields'][field]['units'] = topic_dict[field]['units']
+            if use_topic_as_fieldname:
+                self.managing_fields = True
+                self.subscribed_topics[topic]['fields'][topic] = {}
+                self.subscribed_topics[topic]['fields'][topic]['name'] = topic_dict.get('name', topic)
+                self.subscribed_topics[topic]['fields'][topic]['use_topic_as_field_name'] = use_topic_as_fieldname
+                if ignore_msg_id_field:
+                    self.subscribed_topics[topic]['ignore_msg_id_field'].append(topic)
+                self.subscribed_topics[topic]['fields'][topic]['ignore'] = ignore
+                self.subscribed_topics[topic]['fields'][topic]['contains_total'] = contains_total
+                self.subscribed_topics[topic]['fields'][topic]['conversion_type'] = conversion_type
+                if 'units' in topic_dict:
+                    if topic_dict['units'] in weewx.units.conversionDict:
+                        self.subscribed_topics[topic]['fields'][topic]['units'] = topic_dict['units']
                     else:
-                        raise ValueError("For %s invalid units, %s" % (field, topic_dict[field]['units']))
-                if 'expires_after' in topic_dict[field]:
-                    self.cached_fields[field] = {}
-                    self.cached_fields[field]['expires_after'] = to_float(topic_dict[field]['expires_after'])
+                        raise ValueError("For %s invalid units, %s" % (topic, topic_dict['units']))
+                if 'expires_after' in topic_dict:
+                    self.cached_fields[topic] = {}
+                    self.cached_fields[topic]['expires_after'] = to_float(topic_dict['expires_after'])
+            else:
+                for field in topic_dict.sections:
+                    self.subscribed_topics[topic]['fields'][field] = {}
+                    self.subscribed_topics[topic]['fields'][field]['name'] = (topic_dict[field]).get('name', field)
+                    self.subscribed_topics[topic]['fields'][field]['use_topic_as_field_name'] = use_topic_as_fieldname
+                    if to_bool((topic_dict[field]).get('ignore_msg_id_field', ignore_msg_id_field)):
+                        self.subscribed_topics[topic]['ignore_msg_id_field'].append(field)
+                    self.subscribed_topics[topic]['fields'][field]['ignore'] = to_bool((topic_dict[field]).get('ignore', ignore))
+                    self.subscribed_topics[topic]['fields'][field]['contains_total'] = \
+                        to_bool((topic_dict[field]).get('contains_total', contains_total))
+                    self.subscribed_topics[topic]['fields'][field]['conversion_type'] = \
+                        (topic_dict[field]).get('conversion_type', conversion_type)
+                    if 'units' in topic_dict[field]:
+                        if topic_dict[field]['units'] in weewx.units.conversionDict:
+                            self.subscribed_topics[topic]['fields'][field]['units'] = topic_dict[field]['units']
+                        else:
+                            raise ValueError("For %s invalid units, %s" % (field, topic_dict[field]['units']))
+                    if 'expires_after' in topic_dict[field]:
+                        self.cached_fields[field] = {}
+                        self.cached_fields[field]['expires_after'] = to_float(topic_dict[field]['expires_after'])
 
         # Add the collector queue as a subscribed topic so that data can retrieved from it
         # Yes, this is a bit of a hack.
@@ -1152,13 +1180,19 @@ class MessageCallbackProvider(object):
             self._log_message(msg)
             fields = self._get_fields(msg.topic)
             fields_ignore_default = self._get_ignore_default(msg.topic)
+            if self.topic_manager.managing_fields and fields['use_topic_as_fieldname']:
+                    full_topic_fieldname = fields['use_topic_as_fieldname']
+            elif self.full_topic_fieldname:
+                full_topic_fieldname = self.full_topic_fieldname
+            else:
+                full_topic_fieldname = False
 
             payload_str = msg.payload
             if not PY2:
                 if msg.payload is not None:
                     payload_str = msg.payload.decode('utf-8')
 
-            if self.full_topic_fieldname:
+            if full_topic_fieldname:
                 key = msg.topic
             else:
                 key = msg.topic.rpartition('/')[2]

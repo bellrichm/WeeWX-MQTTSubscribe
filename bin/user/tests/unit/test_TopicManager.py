@@ -108,6 +108,35 @@ class TestConfigureFields(unittest.TestCase):
         self.assertEqual(SUT.subscribed_topics[topic]['fields'][fieldname]['units'], unit_name)
         self.assertIsNone(SUT.cached_fields[fieldname]['expires_after'])
 
+    def test_use_topic_as_fieldname(self):
+        mock_logger = mock.Mock(spec=Logger)
+
+        topic = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+        config_dict = {}
+
+        config_dict[topic] = {}
+        config_dict['use_topic_as_fieldname'] = 'true'
+
+        config_dict[topic]['ignore'] = 'true'
+        config_dict[topic]['contains_total'] = 'true'
+        config_dict[topic]['conversion_type'] = 'int'
+        weewx_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+        config_dict[topic]['name'] = weewx_name
+        config_dict[topic]['expires_after'] = 'none'
+        unit_name = 'unit_name'
+        config_dict[topic]['units'] = 'unit_name'
+
+        config = configobj.ConfigObj(config_dict)
+
+        SUT = TopicManager(config, mock_logger)
+
+        self.assertTrue(SUT.subscribed_topics[topic]['fields'][topic]['ignore'])
+        self.assertTrue(SUT.subscribed_topics[topic]['fields'][topic]['contains_total'])
+        self.assertEqual(SUT.subscribed_topics[topic]['fields'][topic]['conversion_type'], 'int')
+        self.assertEqual(SUT.subscribed_topics[topic]['fields'][topic]['name'], weewx_name)
+        self.assertEqual(SUT.subscribed_topics[topic]['fields'][topic]['units'], unit_name)
+        self.assertIsNone(SUT.cached_fields[topic]['expires_after'])
+
 class TestQueueSizeCheck(unittest.TestCase):
     topic = 'foo/bar'
     config_dict = {}
@@ -642,4 +671,8 @@ class TestAccumulatedData(unittest.TestCase):
                 self.assertDictEqual(accumulated_data, final_record_data)
 
 if __name__ == '__main__':
-    unittest.main(exit=False)
+    test_suite = unittest.TestSuite()
+    test_suite.addTest(TestConfigureFields('test_use_topic_as_fieldname'))
+    unittest.TextTestRunner().run(test_suite)
+
+    # unittest.main(exit=False)
