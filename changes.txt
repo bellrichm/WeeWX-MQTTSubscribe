@@ -1,3 +1,11 @@
+V1.6.0
+Enhancements/Fixes
+- Move the configuration of fields under the [[topics]] section (#72)
+  This also deprecates the [[archive_field_cache]], full_topic_fieldname, and contains_total.
+  Note, the existing configuration options can still be used; but they will be removed in a future release.
+- Enable mapping the same incoming fieldname to a different WeeWX field based on MQTT message content.(#80)
+- Log MQTT connect, disconnect, and subscription API information at the info level instead debug level.
+
 V1.5.3
 Enhancements/Fixes
 - Added support for ignoring fields (#63).

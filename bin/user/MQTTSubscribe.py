@@ -309,7 +309,7 @@ from weewx.engine import StdService
 import weeutil
 from weeutil.weeutil import option_as_list, to_bool, to_float, to_int, to_sorted_string
 
-VERSION = '1.5.4-rc02'
+VERSION = '1.6.0-rc01'
 DRIVER_NAME = 'MQTTSubscribeDriver'
 DRIVER_VERSION = VERSION
 
