@@ -40,17 +40,25 @@ MQTTSUBSCRIBESERVICE_CONFIG = """
     enable = %s
 
     # The MQTT server.
-    # Default is: localhost
+    # Default is localhost.
     host = localhost
 
     # The port to connect to.
-    # Default is: 1883
+    # Default is 1883.
     port = 1883
 
     # Maximum period in seconds allowed between communications with the broker.
-    # Default is: 60
+    # Default is 60.
     keepalive = 60
+    
+    # username for broker authentication.
+    # Default is None.
+    # username = None
 
+    # password for broker authentication.
+    # Default is None.
+    # password = None
+    
     # The binding, loop or archive.
     # Default is: loop
     # Only used by the service.

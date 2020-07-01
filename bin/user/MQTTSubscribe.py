@@ -3,10 +3,11 @@ WeeWX driver and service that subscribes to MQTT topics and
 creates/updates loop packets/archive records.
 
 Installation:
-    Put this file in the bin/user directory.
-    Update weewx.conf [MQTTSubscribeService] as needed to configure the service.
+    1. Put this file in the bin/user directory.
+    2. Update weewx.conf [MQTTSubscribeService] as needed to configure the service.
+    OR
     Update weewx.conf [MQTTSubscribeDriver] as needed to configure the driver.
-    Update weewx.conf [Accumulator] for any custom fields.
+    3. Update weewx.conf [Accumulator] for any custom fields.
 
 Overview:
     The MQTT loop_start is used to run a separate thread to manage the MQTT subscriptions.
@@ -21,33 +22,33 @@ Overview:
 Configuration:
 [MQTTSubscribeService] or [MQTTSubscribeDriver]
     # The MQTT server.
-    # Default is: localhost
+    # Default is localhost.
     host = localhost
 
     # The port to connect to.
-    # Default is: 1883
+    # Default is 1883.
     port = 1883
 
     # Maximum period in seconds allowed between communications with the broker.
-    # Default is: 60
+    # Default is 60.
     keepalive = 60
 
     # username for broker authentication.
-    # Default is: None
+    # Default is None.
     username = None
 
     # password for broker authentication.
-    # Default is: None
+    # Default is None.
     password = None
 
     # Controls the MQTT logging.
-    # Default is: false
+    # Default is false.
     log = false
 
     # The clientid to connect with.
-    # Service default is: MQTTSubscribeService-xxxx
-    # Driver default is: MQTTSubscribeDriver-xxxx
-    #    where xxxx is a random number between 1000 and 9999
+    # Service default is MQTTSubscribeService-xxxx.
+    # Driver default is MQTTSubscribeDriver-xxxx.
+    #    Where xxxx is a random number between 1000 and 9999.
     clientid =
 
     # The topic to subscribe to.
@@ -55,7 +56,7 @@ Configuration:
     # topic =
 
     # Turn the service on and off.
-    # Default is: true
+    # Default is true.
     # Only used by the service.
     enable = false
 
@@ -63,24 +64,24 @@ Configuration:
     # When the time of the MQTT payload is less than the end time of the previous packet/record,
     # the MQTT payload is ignored. When overlap is set, MQTT payloads within this number of seconds
     # of the previous end time will be processed.
-    # Default is: 0
+    # Default is 0.
     # Only used by the service.
     # DEPRECATED  - use adjust_start_time
     # overlap = 0
 
     # The binding, loop or archive.
-    # Default is: loop
+    # Default is loop.
     # Only used by the service.
     binding = loop
 
     # When the MQTT queue has no data, the amount of time in seconds to wait
     # before checking again.
-    # Default is: 2
+    # Default is 2.
     # Only used by the driver
     wait_before_retry = 2
 
     # Payload in this topic is processed like an archive record.
-    # Default is: None
+    # Default is None.
     # Only used by the driver.
     archive_topic = None
 
@@ -109,32 +110,32 @@ Configuration:
     # Configuration for the message callback.
     [[message_callback]]
         # The format of the MQTT payload.
-        # Currently support: individual, json, keyword
+        # Currently support: individual, json, keyword.
         # Must be specified.
         type = REPLACE_ME
 
         # When True, the full topic (weather/outTemp) is used as the fieldname.
         # When false, the topic furthest to the right is used.
-        # Valid values: True, False
-        # Default is: False
+        # Valid values: True, False.
+        # Default is False.
         # Only used when type is 'individual'.
         # DEPRECATED - use [[topics]]/[[[topic name]]]/[[[[field name]]]]
         full_topic_fieldname = False
 
         # When the json is nested, the delimiter between the hierarchies.
-        # Default is: _
+        # Default is _.
         flatten_delimiter = _
 
         # The delimiter between fieldname and value pairs. (field1=value1, field2=value2).
-        # Default is: ,
+        # Default is is ",".
         keyword_delimiter = ","
 
         # The separator between fieldname and value pairs. (field1=value1, field2=value2).
-        # Default is: =
-        keyword_separator = =
+        # Default is "=".
+        keyword_separator = "="
 
-        # List of fields that are cumulative values
-        # Default is: [] (empty list)
+        # List of fields that are cumulative values.
+        # Default is: [] (empty list).
         # DEPRECATED - use [[topics]]/[[[topic name]]]/[[[[field name]]]]
         # contains_total =
 
@@ -152,41 +153,41 @@ Configuration:
         #         # Default is the name from MQTT.
         #         name = extraTemp1
         #
-        #         # The conversion type necessary for WeeWX compatibility
-        #         # Valid values: bool, float, int, none
-        #         # Default is float
+        #         # The conversion type necessary for WeeWX compatibility.
+        #         # Valid values: bool, float, int, none.
+        #         # Default is float.
         #         conversion_type = float
         #
         #         # The units of the incoming data.
         #         # Useful if this field's units differ from the topic's unit_system's units.
         #         # Valid values: see, http://www.weewx.com/docs/customizing.htm#units
-        #         # Default is not set
+        #         # Default is not set.
         #         # units = km_per_hour
         #
         #         # True if the incoming data is cumulative.
-        #         # Valid values: True, False
-        #         # Default is False
+        #         # Valid values: True, False.
+        #         # Default is False.
         #         contains_total = False
         #
         #         # True if the incoming data should not be processed into WeeWX.
-        #         # Valid values: True, False
-        #         # Default is False
+        #         # Valid values: True, False.
+        #         # Default is False.
         #         ignore = False
 
-    # The topics to subscribe to.
     [[topics]
         # The QOS level to subscribe to.
         # Default is 0
         qos = 0
 
         # Units for MQTT payloads without unit value.
-        # Valid values: US, METRIC, METRICWX
-        # Default is US
+        # Valid values: US, METRIC, METRICWX.
+        # For more information see, http://weewx.com/docs/customizing.htm#units
+        # Default is US.
         unit_system = US
 
         # When true, the fieldname is set to the topic and therefore [[[[fieldname]]]] cannot be used.
         # This allows the [[[[fieldname]]]] configuration to be specified directly under the [[[topic]]].
-        # Default is False
+        # Default is False.
         use_topic_as_fieldname = False
 
         # Formatting string for converting a timestamp to an epoch datetime.
@@ -195,33 +196,33 @@ Configuration:
         datetime_format = None
 
         # Formatting string for converting time offset when converting a timestamp to an epoch datetime.
-        # Default is None
+        # Default is None.
         # Example values: -hhmm +hhmm hh:mm
         offset_format = None
 
-        # Even if the payload has a datetime, ignore it and use the server datetime
-        # Default is False
+        # Even if the payload has a datetime, ignore it and use the server datetime.
+        # Default is False.
         use_server_datetime = False
 
         # When True, the MQTT datetime will be not be checked that is greater than the last packet processed.
-        # Default is False
+        # Default is False.
         # Only used by the service.
         ignore_start_time = False
 
         # When the True, the MQTT data will continue to be processed even if its datetime is greater than the packet's datetime.
-        # Default is False
+        # Default is False.
         # Only used by the service.
         ignore_end_time = False
 
-        # Allow MQTT data with a datetime this many seconds prior to the previous packet's datetime
+        # Allow MQTT data with a datetime this many seconds prior to the previous packet's datetime.
         # to be added to the current packet.
-        # Default is 0
+        # Default is 0.
         # Only used by the service.
         adjust_start_time = 0
 
-        # Allow MQTT data with a datetime this many seconds after the current packet's datetime
+        # Allow MQTT data with a datetime this many seconds after the current packet's datetime.
         # to be added to the current packet.
-        # Default is 0
+        # Default is 0.
         # Only used by the service.
         adjust_end_time = 0
 
@@ -231,9 +232,10 @@ Configuration:
         # between the driver creating packets is large and the MQTT broker publishes frequently.
         # Or if subscribing to 'individual' payloads with wildcards. This results in many topic
         # in a single queue.
-        # Default is: sys.maxsize for python 3 and sys.maxint for python 2
+        # Default is: sys.maxsize for python 3 and sys.maxint for python 2.
         max_queue = MAXSIZE
 
+        # The first topic to subscribe to
         [[[first/topic]]]
             # Specifies a field name in the mqtt message.
             # The value of the field is appended to every field name in the mqtt message.
@@ -249,31 +251,30 @@ Configuration:
                 name = extraTemp1
 
                 # When True, the value in the field specified in msg_id_field is not appended to the fieldname in the mqtt message.
-                # Valid values: True, False
+                # Valid values: True, False.
                 # Default is False
                 ignore_msg_id_field = False
 
                 # True if the incoming data should not be processed into WeeWX.
-                # Valid values: True, False
-                # Default is False
+                # Valid values: True, False.
+                # Default is False.
                 ignore = False
 
                 # True if the incoming data is cumulative.
-                # Valid values: True, False
-                # Default is False
+                # Valid values: True, False.
+                # Default is False.
                 contains_total = False
 
-                # The conversion type necessary for WeeWX compatibility
-                # Valid values: bool, float, int, none
-                # Default is float
+                # The conversion type necessary for WeeWX compatibility.
+                # Valid values: bool, float, int, none.
+                # Default is float.
                 conversion_type = float
 
                 # The units of the incoming data.
                 # Useful if this field's units differ from the topic's unit_system's units.
                 # Valid values: see, http://www.weewx.com/docs/customizing.htm#units
-                # Default is not set
-                # units = km_per_hour
-
+                # Default is not set.
+                # units = degree_C
 
                 # In seconds how long the cache is valid.
                 # Value of 0 means the cache is always expired.
@@ -282,7 +283,8 @@ Configuration:
                 # Default is not set.
                 # EXPERIMENTAL - may be removed
                 # expires_after = None
-
+        
+        # The second topic to subscribe to
         [[[second/topic]]]
 """
 
@@ -1596,16 +1598,24 @@ class MQTTSubscribeDriverConfEditor(weewx.drivers.AbstractConfEditor): # pragma:
     driver = user.MQTTSubscribe
 
     # The MQTT server.
-    # Default is: localhost
+    # Default is localhost.
     host = localhost
 
     # The port to connect to.
-    # Default is: 1883
+    # Default is 1883.
     port = 1883
 
     # Maximum period in seconds allowed between communications with the broker.
-    # Default is: 60
+    # Default is 60.
     keepalive = 60
+    
+    # username for broker authentication.
+    # Default is None.
+    # username = None
+
+    # password for broker authentication.
+    # Default is None.
+    # password = None
 
     # Configuration for the message callback.
     [[message_callback]]
