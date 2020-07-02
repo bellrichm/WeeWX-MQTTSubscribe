@@ -283,7 +283,7 @@ Configuration:
                 # Default is not set.
                 # EXPERIMENTAL - may be removed
                 # expires_after = None
-        
+
         # The second topic to subscribe to
         [[[second/topic]]]
 """
@@ -311,7 +311,7 @@ from weewx.engine import StdService
 import weeutil
 from weeutil.weeutil import option_as_list, to_bool, to_float, to_int, to_sorted_string
 
-VERSION = '1.6.0-rc01'
+VERSION = '1.6.0'
 DRIVER_NAME = 'MQTTSubscribeDriver'
 DRIVER_VERSION = VERSION
 
@@ -1611,11 +1611,11 @@ class MQTTSubscribeDriverConfEditor(weewx.drivers.AbstractConfEditor): # pragma:
     
     # username for broker authentication.
     # Default is None.
-    # username = None
+    username = None
 
     # password for broker authentication.
     # Default is None.
-    # password = None
+    password = None
 
     # Configuration for the message callback.
     [[message_callback]]

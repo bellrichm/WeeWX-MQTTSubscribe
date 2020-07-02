@@ -28,7 +28,7 @@ if PY2:
 else:
     from io import StringIO
 
-VERSION = '1.6.0-rc01'
+VERSION = '1.6.0'
 
 MQTTSUBSCRIBESERVICE_CONFIG = """
 [MQTTSubscribeService]
@@ -53,11 +53,11 @@ MQTTSUBSCRIBESERVICE_CONFIG = """
     
     # username for broker authentication.
     # Default is None.
-    # username = None
+    username = None
 
     # password for broker authentication.
     # Default is None.
-    # password = None
+    password = None
     
     # The binding, loop or archive.
     # Default is: loop
