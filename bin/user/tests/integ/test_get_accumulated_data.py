@@ -37,6 +37,11 @@ class TestAccumulatedData(unittest.TestCase):
                     utils.send_msg(utils.send_direct_msg, payload, on_message, topic, topic_info)
 
             end_ts = time.time()
+            records = []
+            for topic in sorted(manager.subscribed_topics): # todo - dependent on topic names - not great
+                data = manager.get_accumulated_data(topic, start_ts, end_ts, unit_system)
+                records.append(data)
+
             results = testrun['results']
             result = {}
             found = False
@@ -45,13 +50,7 @@ class TestAccumulatedData(unittest.TestCase):
                     if payload in result['payloads']:
                         found = True
                         break
-
             self.assertTrue(found, "No results for %s" %payload)
-
-            records = []
-            for topic in sorted(manager.subscribed_topics): # todo - dependent on topic names - not great
-                data = manager.get_accumulated_data(topic, start_ts, end_ts, unit_system)
-                records.append(data)
 
             utils.check(self, payload, records, result['records'])
 
