@@ -87,17 +87,6 @@ class TestDriver(unittest.TestCase):
             records = []
             gen = driver.genLoopPackets()
 
-            results = testrun['results']
-            result = {}
-            found = False
-            for result in results:
-                if 'driver' in result['test']:
-                    if payload in result['payloads']:
-                        found = True
-                        break
-
-            self.assertTrue(found, "No results for %s" %payload)
-
             more_data = False
             # hack to check if there is more data in the queues
             for topics in testrun['messages']:
@@ -114,6 +103,16 @@ class TestDriver(unittest.TestCase):
                     for topic in driver.subscriber.subscribed_topics:
                         if driver.subscriber.manager.has_data(topic):
                             more_data = True
+
+            results = testrun['results']
+            result = {}
+            found = False
+            for result in results:
+                if 'driver' in result['test']:
+                    if payload in result['payloads']:
+                        found = True
+                        break
+            self.assertTrue(found, "No results for %s" %payload)
 
             utils.check(self, payload, records, result['records'])
 
