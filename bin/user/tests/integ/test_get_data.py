@@ -46,8 +46,8 @@ class TestGetData(unittest.TestCase):
                     if payload in result['payloads']:
                         found = True
                         break
-
             self.assertTrue(found, "No results for %s" %payload)
+
             utils.check(self, payload, records, result['records'])
 
 class TestAccumulatedRain(TestGetData):

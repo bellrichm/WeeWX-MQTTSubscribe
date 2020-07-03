@@ -98,17 +98,6 @@ class TestService(unittest.TestCase):
                     msg_count = utils.send_msg(utils.send_mqtt_msg, payload, client.publish, topic, topic_info, userdata2, self)
                     utils.wait_on_queue(service, msg_count, max_waits, 1)
 
-            results = testrun['results']
-            result = {}
-            found = False
-            for result in results:
-                if 'service' in result['test']:
-                    if payload in result['payloads']:
-                        found = True
-                        break
-
-            self.assertTrue(found, "No results for %s" %payload)
-
             record = {}
             interval = 300
             current_time = int(time.time() + 0.5)
@@ -120,6 +109,17 @@ class TestService(unittest.TestCase):
             service.new_loop_packet(new_loop_packet_event)
 
             records = [record]
+
+            results = testrun['results']
+            result = {}
+            found = False
+            for result in results:
+                if 'service' in result['test']:
+                    if payload in result['payloads']:
+                        found = True
+                        break
+            self.assertTrue(found, "No results for %s" %payload)
+
             utils.check(self, payload, records, result['records'])
 
         service.shutDown()
