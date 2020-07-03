@@ -16,7 +16,7 @@
         {
           "test": ["accumulate"],
           "payloads": ["json", "keyword", "individual"],
-          "units": 17,
+          "units": 1,
           "records": [
             {
             },
@@ -27,10 +27,10 @@
         {
           "test": ["service"],
           "payloads": ["json", "keyword", "individual"],
-          "units": 17,
+          "units": 1,
           "records": [
             {
-              "usUnits": 17,
+              "usUnits": 1,
               "dateTime": null
             }
           ]
@@ -39,7 +39,7 @@
         {
           "test": ["single", "driver"],
           "payloads": ["json", "keyword", "individual"],
-          "units": 17,
+          "units": 1,
           "records": []
         }
         ]

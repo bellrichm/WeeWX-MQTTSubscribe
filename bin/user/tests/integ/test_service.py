@@ -26,6 +26,11 @@ class TestService(unittest.TestCase):
         if not 'message_callback' in config_dict['MQTTSubscribeService']:
             config_dict['MQTTSubscribeService']['message_callback'] = {}
         config_dict['MQTTSubscribeService']['message_callback']['type'] = payload
+        
+        unit_system_name = cdict['topics'].get('unit_system', 'US').strip().upper()
+        if unit_system_name not in weewx.units.unit_constants:
+            raise ValueError("MQTTSubscribe: Unknown unit system: %s" % unit_system_name)
+        unit_system = weewx.units.unit_constants[unit_system_name]
 
         min_config_dict = {
             'Station': {
@@ -111,7 +116,7 @@ class TestService(unittest.TestCase):
             end_period_ts = (int(current_time / interval) + 1) * interval
 
             record['dateTime'] = end_period_ts
-            record['usUnits'] = units
+            record['usUnits'] = unit_system
             new_loop_packet_event = weewx.Event(weewx.NEW_LOOP_PACKET, packet=record)
             service.new_loop_packet(new_loop_packet_event)
 
