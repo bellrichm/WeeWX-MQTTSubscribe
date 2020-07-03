@@ -17,7 +17,7 @@ from user.MQTTSubscribe import MQTTSubscribeDriver
 from user.MQTTSubscribe import setup_logging
 
 class TestDriver(unittest.TestCase):
-    def runit(self, payload, file_pointer):
+    def runit(self, payload, file_pointer, check_results=True):
         test_data = json.load(file_pointer, object_hook=utils.byteify)
         config_dict = configobj.ConfigObj(test_data['config'])
         testruns = test_data['testruns']
@@ -104,17 +104,18 @@ class TestDriver(unittest.TestCase):
                         if driver.subscriber.manager.has_data(topic):
                             more_data = True
 
-            results = testrun['results']
-            result = {}
-            found = False
-            for result in results:
-                if 'driver' in result['test']:
-                    if payload in result['payloads']:
-                        found = True
-                        break
-            self.assertTrue(found, "No results for %s" %payload)
+            if check_results:
+                results = testrun['results']
+                result = {}
+                found = False
+                for result in results:
+                    if 'driver' in result['test']:
+                        if payload in result['payloads']:
+                            found = True
+                            break
+                self.assertTrue(found, "No results for %s" %payload)
 
-            utils.check(self, payload, records, result['records'])
+                utils.check(self, payload, records, result['records'])
 
         driver.closePort()
         client.disconnect()

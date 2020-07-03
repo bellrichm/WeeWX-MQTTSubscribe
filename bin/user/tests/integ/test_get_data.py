@@ -13,7 +13,7 @@ from user.MQTTSubscribe import TopicManager, Logger
 
 
 class TestGetData(unittest.TestCase):
-    def runit(self, payload, file_pointer):
+    def runit(self, payload, file_pointer, check_results=True):
         test_data = json.load(file_pointer, object_hook=utils.byteify)
         config_dict = configobj.ConfigObj(test_data['config'])['MQTTSubscribeService']
         testruns = test_data['testruns']
@@ -38,17 +38,18 @@ class TestGetData(unittest.TestCase):
                     else:
                         break
 
-            results = testrun['results']
-            result = {}
-            found = False
-            for result in results:
-                if 'single' in result['test']:
-                    if payload in result['payloads']:
-                        found = True
-                        break
-            self.assertTrue(found, "No results for %s" %payload)
+            if check_results:
+                results = testrun['results']
+                result = {}
+                found = False
+                for result in results:
+                    if 'single' in result['test']:
+                        if payload in result['payloads']:
+                            found = True
+                            break
+                self.assertTrue(found, "No results for %s" %payload)
 
-            utils.check(self, payload, records, result['records'])
+                utils.check(self, payload, records, result['records'])
 
 class TestAccumulatedRain(TestGetData):
     #@unittest.skip("")
