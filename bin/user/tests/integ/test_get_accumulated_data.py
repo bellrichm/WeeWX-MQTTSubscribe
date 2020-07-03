@@ -10,6 +10,7 @@ import configobj
 
 import utils
 
+import weewx
 from user.MQTTSubscribe import TopicManager, Logger
 
 class TestAccumulatedData(unittest.TestCase):
@@ -21,6 +22,11 @@ class TestAccumulatedData(unittest.TestCase):
         logger = Logger('IntegTest')
         topics_dict = config_dict.get('topics', {})
         manager = TopicManager(topics_dict, logger)
+
+        unit_system_name = topics_dict.get('unit_system', 'US').strip().upper()
+        if unit_system_name not in weewx.units.unit_constants:
+            raise ValueError("MQTTSubscribe: Unknown unit system: %s" % unit_system_name)
+        unit_system = weewx.units.unit_constants[unit_system_name]
 
         on_message = utils.get_callback(payload, config_dict, manager, logger)
         for testrun in testruns:
@@ -44,7 +50,7 @@ class TestAccumulatedData(unittest.TestCase):
 
             records = []
             for topic in sorted(manager.subscribed_topics): # todo - dependent on topic names - not great
-                data = manager.get_accumulated_data(topic, start_ts, end_ts, result['units'])
+                data = manager.get_accumulated_data(topic, start_ts, end_ts, unit_system)
                 records.append(data)
 
             utils.check(self, payload, records, result['records'])

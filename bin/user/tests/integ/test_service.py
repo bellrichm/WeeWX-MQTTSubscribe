@@ -26,7 +26,7 @@ class TestService(unittest.TestCase):
         if not 'message_callback' in config_dict['MQTTSubscribeService']:
             config_dict['MQTTSubscribeService']['message_callback'] = {}
         config_dict['MQTTSubscribeService']['message_callback']['type'] = payload
-        
+
         unit_system_name = cdict['topics'].get('unit_system', 'US').strip().upper()
         if unit_system_name not in weewx.units.unit_constants:
             raise ValueError("MQTTSubscribe: Unknown unit system: %s" % unit_system_name)
@@ -110,7 +110,6 @@ class TestService(unittest.TestCase):
             self.assertTrue(found, "No results for %s" %payload)
 
             record = {}
-            units = result['units']
             interval = 300
             current_time = int(time.time() + 0.5)
             end_period_ts = (int(current_time / interval) + 1) * interval
