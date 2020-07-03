@@ -98,14 +98,22 @@ class TestDriver(unittest.TestCase):
 
             self.assertTrue(found, "No results for %s" %payload)
 
-            i = 0
-            # ToDo not great, but no way to know if more records
-            # could possibly check the queues..
-            # Todo this needs to be fixed for new debug code
-            while i < len(result['records']):
+            more_data = False
+            # hack to check if there is more data in the queues
+            for topics in testrun['messages']:
+                for topic in driver.subscriber.subscribed_topics:
+                    if driver.subscriber.manager.has_data(topic):
+                        more_data = True
+
+            while more_data:
                 data = next(gen, None)
                 records.append(data)
-                i += 1
+                more_data = False
+                # hack to check if there is more data in the queues
+                for topics in testrun['messages']:
+                    for topic in driver.subscriber.subscribed_topics:
+                        if driver.subscriber.manager.has_data(topic):
+                            more_data = True
 
             utils.check(self, payload, records, result['records'])
 
