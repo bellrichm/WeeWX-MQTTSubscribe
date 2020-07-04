@@ -1,0 +1,146 @@
+{
+  "comments": [
+    ""
+  ],
+  "config": [
+    "[MQTTSubscribeService]",
+    "    message_callback_provider = user.ExampleMessageCallbackProvider.MessageCallbackProvider",
+    "    # The topics to subscribe to.",
+    "    [[topics]]",
+    "        ignore_start_time = True",
+    "        ignore_end_time = True",
+    "        adjust_start_time = 5",
+    "        adjust_end_time = 5",
+    "        use_sever_datetime = True",
+    "        [[[weewx/#]]]",
+    
+    "    # Configuration for the message callback.",
+		"    [[message_callback]]",
+    "  [[[fields]]]",
+    "    # The incoming field name from MQTT.",
+    "    #[[[[barometer]]]]",
+    "    # The WeeWX name.",
+    "    # Default is the name from MQTT.",
+    "    #    name = pressure",
+    "    ",
+    "    # The conversion type necessary for WeeWX compatibility",
+    "    # Valid values: bool, float, int, none",
+    "    # Default is float",
+    "    #    conversion_type = float",
+    "    ",
+    "    # True if the incoming data is cumulative.",
+    "    # Valid values: True, False",
+    "    # Default is False",
+    "    #     contains_total = False",
+    "    [[[[BME280_Pressure]]]]",
+    "        name = pressure",
+    "        conversion_type = float",
+    "        contains_total = False",
+    "    [[[[PressureUnit]]]]",
+    "        conversion_type = None",
+    "    [[[[TempUnit]]]]",
+    "        conversion_type = None  "
+    
+  ],
+  "testruns": [
+    {
+			"messages": [
+				{
+					"weewx": {
+						"separator": ",",
+						"delimiter": "=",
+						"data": {
+							"Time":1588436135,
+							"BME280_Temperature":23.7,
+							"BME280_Humidity":42.7,
+							"BME280_DewPoint":10.3,
+							"BME280_Pressure":1013.0,
+							"PressureUnit":"hPa",
+							"TempUnit":"C"
+            },
+            "msg": [
+              "<current>",
+                "<!-- <lastupdate> 2016-11-15 10:48:27</lastupdate> -->",
+                "<temperature>18.9</temperature>",
+                "<pressure>1001</pressure>",
+                "<humidity>87</humidity>",
+                "<dewpoint>11.4</dewpoint>",
+                "<windchill>18.9</windchill>",
+                "<wind>",
+                  "<direction>288</direction>",
+                  "<speed>0.4</speed>",
+                  "<foo>",
+                    "<bar>9</bar>",
+                  "</foo>",
+                "</wind>",
+                "<gust>",
+                  "<direction>125</direction>",
+                  "<speed>0.6</speed>",
+                "</gust>",
+                "<rain>",
+                  "<rainrate>0.26</rainrate>",
+                  "<rain>0.00</rain>",
+                "</rain>",
+                "<test1><test attval='99'></test></test1>",
+              "</current>"
+            ]
+					}
+				}
+			],
+	      
+      "results": [
+          {
+              "test": ["single", "service", "driver"],
+              "payloads": ["xml"],
+              "units": 1,
+              "records": [
+                {
+                  "dateTime": null,
+                  "usUnits": 1,
+                  "rain/rainrate": 0.26,
+                  "windchill": 18.9,
+                  "dewpoint": 11.4, 
+                  "rain/rain": 0.0, 
+                  "gust/direction": 125.0, 
+                  "humidity": 87.0, 
+                  "wind/speed": 0.4, 
+                  "pressure": 1001.0, 
+                  "test1/test": 99.0, 
+                  "wind/foo/bar": 9.0, 
+                  "wind/direction": 288.0, 
+                  "gust/speed": 0.6,
+                  "temperature": 18.9            
+                }
+              ]
+          },
+          {
+            "test": ["accumulate"],
+            "payloads": ["xml"],
+            "units": 1,
+            "records": [
+              {
+
+              },
+              {
+                "dateTime": null,
+                "usUnits": 1,
+                "rain/rainrate": 0.26,
+                "windchill": 18.9,
+                "dewpoint": 11.4, 
+                "rain/rain": 0.0, 
+                "gust/direction": 125.0, 
+                "humidity": 87.0, 
+                "wind/speed": 0.4, 
+                "pressure": 1001.0, 
+                "test1/test": 99.0, 
+                "wind/foo/bar": 9.0, 
+                "wind/direction": 288.0, 
+                "gust/speed": 0.6,
+                "temperature": 18.9            
+              }
+            ]
+        }
+        ]
+      }
+    ]
+  }
