@@ -4,6 +4,8 @@
 # pylint: disable=too-many-statements
 # pylint: disable=too-many-branches
 
+from __future__ import print_function
+
 import json
 import time
 import unittest
@@ -118,7 +120,7 @@ class TestDriver(unittest.TestCase):
                 utils.check(self, payload, records, result['records'])
             else:
                 for record in records:
-                    print(record)                
+                    print(record)
 
         driver.closePort()
         client.disconnect()

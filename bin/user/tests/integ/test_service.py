@@ -2,6 +2,7 @@
 # pylint: disable=wrong-import-order
 # pylint: disable=too-many-locals
 # pylint: disable=too-many-statements
+# pylint: disable=too-many-branches
 
 from __future__ import print_function
 
