@@ -1,32 +1,14 @@
 """
-
-
 Configuration:
 [MQTTSubscribeService] or [MQTTSubscribeDriver]
 
     # The message callback provider.
     message_callback_provider = user.ExampleMessageCallbackProvider.MessageCallbackProvider
 
-    # Configuration for the message callback.
-    [[message_callback]]
-        # The delimiter between fieldname and value pairs. (field1=value1, field2=value2).
-        # Default is: ,
-        keyword_delimiter = ,
-
-        # The separator between fieldname and value pairs. (field1=value1, field2=value2).
-        # Default is: =
-        keyword_separator = =
-
-        # Mapping to WeeWX names.
-        [[[label_map]]]
-            temp1 = extraTemp1
 """
 
-from __future__ import print_function
 import xml.etree.ElementTree
-#from weeutil.weeutil import to_float
 import user.MQTTSubscribe
-#import user.MQTTSubscribe.MessageCallbackProvider
 
 class MessageCallbackProvider(user.MQTTSubscribe.MessageCallbackProvider):
     # pylint: disable=too-few-public-methods
@@ -35,11 +17,6 @@ class MessageCallbackProvider(user.MQTTSubscribe.MessageCallbackProvider):
         # ToDo call base class init when an abstract class exists
         self.logger = logger
         self.topic_manager = topic_manager
-        self.keyword_delimiter = config.get('keyword_delimiter', ',')
-        self.keyword_separator = config.get('keyword_separator', '=')
-        self.label_map = config.get('label_map', {})
-
-        self.fields = config.get('fields', {}) # hack, in case no fields are set
 
     def get_callback(self):
         """ Get the MQTT callback. """
@@ -69,7 +46,7 @@ class MessageCallbackProvider(user.MQTTSubscribe.MessageCallbackProvider):
         # Wrap all the processing in a try, so it doesn't crash and burn on any error
         try:
             self.logger.debug("MessageCallbackProvider For %s received: %s" %(msg.topic, msg.payload))
-            fields = self._get_fields(msg.topic)
+            fields = self.topic_manager.get_fields(msg.topic)
             unit_system = self.topic_manager.get_unit_system(msg.topic) # TODO - need public method
             root = xml.etree.ElementTree.fromstring(msg.payload)
             observations = self.get_observations(root, "", fields, unit_system)
