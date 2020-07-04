@@ -3,6 +3,8 @@
 # pylint: disable=too-many-locals
 # pylint: disable=too-many-statements
 
+from __future__ import print_function
+
 import json
 import unittest
 import configobj
@@ -50,6 +52,9 @@ class TestGetData(unittest.TestCase):
                 self.assertTrue(found, "No results for %s" %payload)
 
                 utils.check(self, payload, records, result['records'])
+            else:
+                for record in records:
+                    print(record)
 
 class TestAccumulatedRain(TestGetData):
     #@unittest.skip("")

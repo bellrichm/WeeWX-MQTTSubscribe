@@ -116,6 +116,9 @@ class TestDriver(unittest.TestCase):
                 self.assertTrue(found, "No results for %s" %payload)
 
                 utils.check(self, payload, records, result['records'])
+            else:
+                for record in records:
+                    print(record)                
 
         driver.closePort()
         client.disconnect()
