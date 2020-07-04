@@ -914,12 +914,64 @@ class TopicManager(object):
 
         return epoch
 
-class MessageCallbackProvider(object):
+class AbstractMessageCallbackProvider(object): # pylint: disable=too-few-public-methods
+    """ The abstract MessageCallbackProvider. """
+    def __init__(self, logger, topic_manager):
+        self.logger = logger
+        self.topic_manager = topic_manager
+        self.previous_values = {}
+
+    def get_callback(self):
+        """ Get the MQTT callback. """
+        raise NotImplementedError("Method 'get_callback' not implemented")
+
+    def _update_data(self, fields, orig_name, orig_value, unit_system):
+        value = self._convert_value(fields, orig_name, orig_value)
+        fieldname = fields.get(orig_name, {}).get('name', orig_name)
+
+        if orig_name in fields and 'units' in fields[orig_name]: # TODO - simplify, if possible
+            (to_units, to_group) = weewx.units.getStandardUnitType(unit_system, fieldname) # match signature pylint: disable=unused-variable
+            (value, new_units, new_group) = weewx.units.convert((value, fields[orig_name]['units'], None), to_units) # match signature pylint: disable=unused-variable
+
+        if fields.get(orig_name, {}).get('contains_total', False):
+            current_value = value
+            value = self._calc_increment(orig_name, current_value, self.previous_values.get(orig_name))
+            self.previous_values[orig_name] = current_value
+
+        return fieldname, value
+
+    def _calc_increment(self, observation, current_total, previous_total):
+        self.logger.trace("MessageCallbackProvider _calc_increment calculating increment " \
+                         "for %s with current: %f and previous %s values."
+                          % (observation, current_total, (previous_total is None and 'None' or str(previous_total))))
+
+        if current_total is not None and previous_total is not None:
+            if current_total >= previous_total:
+                return current_total - previous_total
+
+            self.logger.trace("MessageCallbackProvider _calc_increment skipping calculating increment " \
+                             "for %s with current: %f and previous %f values."
+                              % (observation, current_total, previous_total))
+
+        return None
+
+    @staticmethod
+    def _convert_value(fields, field, value):
+        conversion_type = fields.get(field, {}).get('conversion_type', 'float')
+        if conversion_type == 'bool':
+            return to_bool(value)
+        if conversion_type == 'float':
+            return to_float(value)
+        if conversion_type == 'int':
+            return to_int(value)
+
+        return value
+
+class MessageCallbackProvider(AbstractMessageCallbackProvider):
     # pylint: disable=too-many-instance-attributes, too-few-public-methods, too-many-locals
     """ Provide the MQTT callback. """
     def __init__(self, config, logger, topic_manager):
-        self.logger = logger
-        self.topic_manager = topic_manager
+        super(MessageCallbackProvider, self).__init__(logger, topic_manager)
         self.logger.debug("MessageCallbackProvider config is %s" % config)
         self._setup_callbacks()
         self.type = config.get('type', None)
@@ -947,8 +999,6 @@ class MessageCallbackProvider(object):
 
             self.set_backwards_compatibility(label_map, orig_fields, contains_total)
             self.logger.debug("MessageCallbackProvider self.fields is %s" % self.fields)
-
-        self.previous_values = {}
 
     def _configure_fields(self):
         for field in self.fields.sections:
@@ -992,18 +1042,6 @@ class MessageCallbackProvider(object):
         self.callbacks['individual'] = self._on_message_individual
         self.callbacks['json'] = self._on_message_json
         self.callbacks['keyword'] = self._on_message_keyword
-
-    @staticmethod
-    def _convert_value(fields, field, value):
-        conversion_type = fields.get(field, {}).get('conversion_type', 'float')
-        if conversion_type == 'bool':
-            return to_bool(value)
-        if conversion_type == 'float':
-            return to_float(value)
-        if conversion_type == 'int':
-            return to_int(value)
-
-        return value
 
     def _byteify(self, data, ignore_dicts=False):
         if PY2:
@@ -1053,36 +1091,6 @@ class MessageCallbackProvider(object):
             return self.topic_manager.get_ignore_value(topic)
 
         return self.fields_ignore_default
-
-    def _calc_increment(self, observation, current_total, previous_total):
-        self.logger.trace("MessageCallbackProvider _calc_increment calculating increment " \
-                         "for %s with current: %f and previous %s values."
-                          % (observation, current_total, (previous_total is None and 'None' or str(previous_total))))
-
-        if current_total is not None and previous_total is not None:
-            if current_total >= previous_total:
-                return current_total - previous_total
-
-            self.logger.trace("MessageCallbackProvider _calc_increment skipping calculating increment " \
-                             "for %s with current: %f and previous %f values."
-                              % (observation, current_total, previous_total))
-
-        return None
-
-    def _update_data(self, fields, orig_name, orig_value, unit_system):
-        value = self._convert_value(fields, orig_name, orig_value)
-        fieldname = fields.get(orig_name, {}).get('name', orig_name)
-
-        if orig_name in fields and 'units' in fields[orig_name]: # TODO - simplify, if possible
-            (to_units, to_group) = weewx.units.getStandardUnitType(unit_system, fieldname) # match signature pylint: disable=unused-variable
-            (value, new_units, new_group) = weewx.units.convert((value, fields[orig_name]['units'], None), to_units) # match signature pylint: disable=unused-variable
-
-        if fields.get(orig_name, {}).get('contains_total', False):
-            current_value = value
-            value = self._calc_increment(orig_name, current_value, self.previous_values.get(orig_name))
-            self.previous_values[orig_name] = current_value
-
-        return fieldname, value
 
     def _log_message(self, msg):
         self.logger.debug("MessageCallbackProvider data-> incoming topic: %s, QOS: %i, retain: %s, payload: %s"

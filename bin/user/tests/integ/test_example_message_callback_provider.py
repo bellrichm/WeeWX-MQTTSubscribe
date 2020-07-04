@@ -1,4 +1,5 @@
 # pylint: disable=missing-docstring
+# pylint: disable=invalid-name
 
 from __future__ import print_function
 

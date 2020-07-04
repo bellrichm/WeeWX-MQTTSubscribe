@@ -10,13 +10,11 @@ Configuration:
 import xml.etree.ElementTree
 import user.MQTTSubscribe
 
-class MessageCallbackProvider(user.MQTTSubscribe.MessageCallbackProvider):
+class MessageCallbackProvider(user.MQTTSubscribe.AbstractMessageCallbackProvider):
     # pylint: disable=too-few-public-methods
     """ Provide the MQTT callback. """
-    def __init__(self, config, logger, topic_manager): # pylint: disable=super-init-not-called
-        # ToDo call base class init when an abstract class exists
-        self.logger = logger
-        self.topic_manager = topic_manager
+    def __init__(self, config, logger, topic_manager): # need to match signature pylint: disable=unused-argument
+        super(MessageCallbackProvider, self).__init__(logger, topic_manager)
 
     def get_callback(self):
         """ Get the MQTT callback. """
