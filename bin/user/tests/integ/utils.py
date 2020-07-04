@@ -90,6 +90,10 @@ def send_msg(sender, msg_type, publisher, topic, topic_info, userdata=None, self
         msg = msg.encode("utf-8")
         sender(publisher, topic, msg, userdata, self)
         i += 1
+    else:
+        separator = '\n'
+        msg = separator.join(topic_info['msg'])
+        sender(publisher, topic, msg, userdata, self)
 
     return i
 
