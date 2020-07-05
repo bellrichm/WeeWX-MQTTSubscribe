@@ -1377,7 +1377,7 @@ class MQTTSubscribe(object):
                          %(mid, len(granted_qos), granted_qos[0]))
 
     def _on_log(self, client, userdata, level, msg): # (match callback signature) pylint: disable=unused-argument
-        self.mqtt_logger[level]("MQTTSubscribe MQTT msg:", msg)
+        self.mqtt_logger[level]("MQTTSubscribe MQTT: %s" %msg)
 
 class MQTTSubscribeService(StdService):
     """ The MQTT subscribe service. """
