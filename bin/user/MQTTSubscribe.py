@@ -345,7 +345,7 @@ class AbstractLogger(object):
         self.debug("Platform %s" % platform.platform())
         self.debug("Locale is '%s'" % locale.setlocale(locale.LC_ALL))
         self.info("Version is %s" % VERSION)
-        self.info("Log level: %i" % self.trace_level)
+        self.info("Log level: %i" % self.level)
         self.info("Log debug setting: %i" % self.weewx_debug)
         self.info("Log console: %s" % self.console)
         self.info("Log file: %s" % self.filename)
@@ -449,10 +449,6 @@ except ImportError: # pragma: no cover
         """ The logging class. """
         def __init__(self, mode, level='NOTSET', filename=None, console=None):
             super(Logger, self).__init__(mode, level, filename=None, console=None)
-            # Setup custom TRACE level
-            self.trace_level = 5
-            if logging.getLevelName(self.trace_level) == 'Level 5':
-                logging.addLevelName(self.trace_level, "TRACE")
 
             self.file = None
             if self.filename is not None:
@@ -465,15 +461,18 @@ except ImportError: # pragma: no cover
 
         def debug(self, msg):
             """ Log debug messages. """
-            self._logmsg(syslog.LOG_DEBUG, msg)
+            if self.level <= 10:
+                self._logmsg(syslog.LOG_DEBUG, msg)
 
         def info(self, msg):
             """ Log informational messages. """
-            self._logmsg(syslog.LOG_INFO, msg)
+            if self.level <= 20:
+                self._logmsg(syslog.LOG_INFO, msg)
 
         def error(self, msg):
             """ Log error messages. """
-            self._logmsg(syslog.LOG_ERR, msg)
+            if self.level <= 40:
+                self._logmsg(syslog.LOG_ERR, msg)
 
         def _logmsg(self, dst, msg):
             syslog.syslog(dst, '(%s) %s: %s' % (self.mode, __name__, msg))
