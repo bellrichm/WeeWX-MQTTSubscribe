@@ -329,11 +329,13 @@ class AbstractLogger(object):
         self.mode = mode
         self.filename = filename
         self.weewx_debug = weewx.debug
-        self.level = logging._checkLevel(level) # not sure there is a better way pylint: disable=protected-access
+
         # Setup custom TRACE level
         self.trace_level = 5
         if logging.getLevelName(self.trace_level) == 'Level 5':
             logging.addLevelName(self.trace_level, "TRACE")
+
+        self.level = logging._checkLevel(level) # not sure there is a better way pylint: disable=protected-access
 
     def log_environment(self):
         """ Log the environment we are running in. """
@@ -378,7 +380,7 @@ try: # pragma: no cover
         MSG_FORMAT = "(%s) %s"
 
         def __init__(self, mode, level='NOTSET', filename=None, console=None):
-            super(Logger, self).__init__(mode, level='NOTSET', filename=None, console=None)
+            super(Logger, self).__init__(mode, level, filename=None, console=None)
             self._logmsg = logging.getLogger(__name__)
             if self.console:
                 self._logmsg.addHandler(logging.StreamHandler(sys.stdout))
@@ -446,7 +448,7 @@ except ImportError: # pragma: no cover
     class Logger(AbstractLogger):
         """ The logging class. """
         def __init__(self, mode, level='NOTSET', filename=None, console=None):
-            super(Logger, self).__init__(mode, level='NOTSET', filename=None, console=None)
+            super(Logger, self).__init__(mode, level, filename=None, console=None)
             # Setup custom TRACE level
             self.trace_level = 5
             if logging.getLevelName(self.trace_level) == 'Level 5':
@@ -1528,7 +1530,7 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice): # (methods not used) py
     def __init__(self, **stn_dict):
         console = to_bool(stn_dict.get('console', False))
         logging_filename = stn_dict.get('logging_filename', None)
-        logging_level = stn_dict.get('logging_level', 'NOTSET')
+        logging_level = stn_dict.get('logging_level', 'NOTSET').upper()
         self.logger = Logger('Driver', level=logging_level, filename=logging_filename, console=console)
         self.logger.log_environment()
         self.logger.debug("stn_dict is %s" % stn_dict)
