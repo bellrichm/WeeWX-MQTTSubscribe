@@ -1198,7 +1198,7 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
             fields = self._get_fields(msg.topic)
             fields_ignore_default = self._get_ignore_default(msg.topic)
             if self.topic_manager.managing_fields:
-                fields_full_topic_fieldname = False
+                fields_full_topic_fieldname = True
             else:
                 fields_full_topic_fieldname = self.full_topic_fieldname
 
