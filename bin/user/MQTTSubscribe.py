@@ -576,7 +576,6 @@ class TopicManager(object):
         default_datetime_format = config.get('datetime_format', None)
         default_offset_format = config.get('offset_format', None)
         default_ignore = to_bool(config.get('ignore', False))
-        default_full_topic_fieldname = to_bool(config.get('full_topic_fieldname', False))
         defaults['contains_total'] = to_bool(config.get('contains_total', False))
         defaults['conversion_type'] = config.get('conversion_type', 'float')
 
@@ -608,8 +607,6 @@ class TopicManager(object):
             offset_format = topic_dict.get('offset_format', default_offset_format)
             ignore = to_bool(topic_dict.get('ignore', default_ignore))
             defaults['ignore'] = ignore
-            full_topic_fieldname = to_bool(topic_dict.get('full_topic_fieldname', default_full_topic_fieldname))
-            defaults['full_topic_fieldname'] = full_topic_fieldname
 
             unit_system_name = topic_dict.get('unit_system', default_unit_system_name).strip().upper()
             if unit_system_name not in weewx.units.unit_constants:
@@ -629,7 +626,6 @@ class TopicManager(object):
             self.subscribed_topics[topic]['datetime_format'] = datetime_format
             self.subscribed_topics[topic]['offset_format'] = offset_format
             self.subscribed_topics[topic]['ignore'] = ignore
-            self.subscribed_topics[topic]['full_topic_fieldname'] = full_topic_fieldname
             self.subscribed_topics[topic]['max_queue'] = topic_dict.get('max_queue', max_queue)
             self.subscribed_topics[topic]['queue'] = deque()
 
@@ -675,7 +671,6 @@ class TopicManager(object):
     def _configure_field(self, topic_dict, field_dict, topic, fieldname, defaults):
         # pylint: disable=too-many-arguments
         ignore_msg_id_field = topic_dict.get('ignore_msg_id_field', defaults['ignore_msg_id_field'])
-        full_topic_fieldname = to_bool(topic_dict.get('full_topic_fieldname', defaults['full_topic_fieldname']))
         contains_total = to_bool(topic_dict.get('contains_total', defaults['contains_total']))
         conversion_type = topic_dict.get('conversion_type', defaults['conversion_type'])
         field = {}
@@ -685,7 +680,6 @@ class TopicManager(object):
         if to_bool((field_dict).get('ignore_msg_id_field', ignore_msg_id_field)):
             self.subscribed_topics[topic]['ignore_msg_id_field'].append(fieldname)
         field['ignore'] = to_bool((field_dict).get('ignore', defaults['ignore']))
-        field['full_topic_fieldname'] = to_bool((field_dict).get('full_topic_fieldname', full_topic_fieldname))
         field['contains_total'] = to_bool((field_dict).get('contains_total', contains_total))
         field['conversion_type'] = (field_dict).get('conversion_type', conversion_type)
         if 'units' in field_dict:
@@ -871,10 +865,6 @@ class TopicManager(object):
     def get_ignore_value(self, topic):
         """ Get the ignore value """
         return self._get_value('ignore', topic)
-
-    def get_full_topic_fieldname(self, topic):
-        """ Get the ignore value """
-        return self._get_value('full_topic_fieldname', topic)
 
     def get_ignore_msg_id_field(self, topic):
         """ Get the ignore_msg_id_field value """
@@ -1103,12 +1093,6 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
 
         return self.fields_ignore_default
 
-    def _get_full_topic_fieldname(self, topic):
-        if self.topic_manager.managing_fields:
-            return self.topic_manager.get_full_topic_fieldname(topic)
-
-        return self.full_topic_fieldname
-
     def _log_message(self, msg):
         self.logger.debug("MessageCallbackProvider data-> incoming topic: %s, QOS: %i, retain: %s, payload: %s"
                           %(msg.topic, msg.qos, msg.retain, msg.payload))
@@ -1158,7 +1142,7 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
             self._log_exception('on_message_keyword', exception, msg)
 
     def _on_message_json(self, client, userdata, msg): # (match callback signature) pylint: disable=unused-argument
-        # pylint: disable=too-many-locals
+        # pylint: disable=too-many-locals, too-many-branches
         # Wrap all the processing in a try, so it doesn't crash and burn on any error
         try:
             self._log_message(msg)
@@ -1166,7 +1150,10 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
             fields_ignore_default = self._get_ignore_default(msg.topic)
             msg_id_field = self._get_msg_id_field(msg.topic)
             ignore_msg_id_field = self._get_ignore_msg_id_field(msg.topic)
-            fields_full_topic_fieldname = self._get_full_topic_fieldname(msg.topic)
+            if self.topic_manager.managing_fields:
+                fields_full_topic_fieldname = False
+            else:
+                fields_full_topic_fieldname = self.full_topic_fieldname
 
             if PY2:
                 payload_str = msg.payload
@@ -1210,7 +1197,10 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
             self._log_message(msg)
             fields = self._get_fields(msg.topic)
             fields_ignore_default = self._get_ignore_default(msg.topic)
-            fields_full_topic_fieldname = self._get_full_topic_fieldname(msg.topic)
+            if self.topic_manager.managing_fields:
+                fields_full_topic_fieldname = False
+            else:
+                fields_full_topic_fieldname = self.full_topic_fieldname
 
             payload_str = msg.payload
             if not PY2:
