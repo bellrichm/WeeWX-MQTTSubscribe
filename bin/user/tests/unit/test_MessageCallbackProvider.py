@@ -995,6 +995,7 @@ class TestJsonPayload(unittest.TestCase):
         mock_manager.get_msg_id_field.return_value = msg_id_field
         mock_manager.get_fields.return_value = {}
         mock_manager.get_ignore_value.return_value = False
+        mock_manager.get_full_topic_fieldname.return_value = False
         mock_manager.get_ignore_msg_id_field.return_value = []
 
         SUT = MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), stub_logger, mock_manager)
@@ -1033,6 +1034,7 @@ class TestJsonPayload(unittest.TestCase):
         msg_id_field = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])  # pylint: disable=unused-variable
         mock_manager.get_msg_id_field.return_value = msg_id_field
         mock_manager.get_fields.return_value = {}
+        mock_manager.get_full_topic_fieldname.return_value = False
         mock_manager.get_ignore_value.return_value = False
 
         SUT = MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), stub_logger, mock_manager)
@@ -1830,7 +1832,7 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
 if __name__ == '__main__':
     test_suite = unittest.TestSuite()
     test_suite.addTest(TestJsonPayload('test_msg_id_set'))
-    test_suite.addTest(TestJsonPayload('test_ignore_msg_id_field_set'))
+    # test_suite.addTest(TestJsonPayload('test_ignore_msg_id_field_set'))
     unittest.TextTestRunner().run(test_suite)
 
     #unittest.main(exit=False)

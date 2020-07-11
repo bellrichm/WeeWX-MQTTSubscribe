@@ -576,6 +576,7 @@ class TopicManager(object):
         default_datetime_format = config.get('datetime_format', None)
         default_offset_format = config.get('offset_format', None)
         default_ignore = to_bool(config.get('ignore', False))
+        default_full_topic_fieldname = to_bool(config.get('full_topic_fieldname', False))
         defaults['contains_total'] = to_bool(config.get('contains_total', False))
         defaults['conversion_type'] = config.get('conversion_type', 'float')
 
@@ -607,6 +608,8 @@ class TopicManager(object):
             offset_format = topic_dict.get('offset_format', default_offset_format)
             ignore = to_bool(topic_dict.get('ignore', default_ignore))
             defaults['ignore'] = ignore
+            full_topic_fieldname = to_bool(topic_dict.get('full_topic_fieldname', default_full_topic_fieldname))
+            defaults['full_topic_fieldname'] = full_topic_fieldname
 
             unit_system_name = topic_dict.get('unit_system', default_unit_system_name).strip().upper()
             if unit_system_name not in weewx.units.unit_constants:
@@ -626,6 +629,7 @@ class TopicManager(object):
             self.subscribed_topics[topic]['datetime_format'] = datetime_format
             self.subscribed_topics[topic]['offset_format'] = offset_format
             self.subscribed_topics[topic]['ignore'] = ignore
+            self.subscribed_topics[topic]['full_topic_fieldname'] = full_topic_fieldname
             self.subscribed_topics[topic]['max_queue'] = topic_dict.get('max_queue', max_queue)
             self.subscribed_topics[topic]['queue'] = deque()
 
@@ -671,6 +675,7 @@ class TopicManager(object):
     def _configure_field(self, topic_dict, field_dict, topic, fieldname, defaults):
         # pylint: disable=too-many-arguments
         ignore_msg_id_field = topic_dict.get('ignore_msg_id_field', defaults['ignore_msg_id_field'])
+        full_topic_fieldname = to_bool(topic_dict.get('full_topic_fieldname', defaults['full_topic_fieldname']))
         contains_total = to_bool(topic_dict.get('contains_total', defaults['contains_total']))
         conversion_type = topic_dict.get('conversion_type', defaults['conversion_type'])
         field = {}
@@ -680,6 +685,7 @@ class TopicManager(object):
         if to_bool((field_dict).get('ignore_msg_id_field', ignore_msg_id_field)):
             self.subscribed_topics[topic]['ignore_msg_id_field'].append(fieldname)
         field['ignore'] = to_bool((field_dict).get('ignore', defaults['ignore']))
+        field['full_topic_fieldname'] = to_bool((field_dict).get('full_topic_fieldname', full_topic_fieldname))
         field['contains_total'] = to_bool((field_dict).get('contains_total', contains_total))
         field['conversion_type'] = (field_dict).get('conversion_type', conversion_type)
         if 'units' in field_dict:
@@ -865,6 +871,10 @@ class TopicManager(object):
     def get_ignore_value(self, topic):
         """ Get the ignore value """
         return self._get_value('ignore', topic)
+
+    def get_full_topic_fieldname(self, topic):
+        """ Get the ignore value """
+        return self._get_value('full_topic_fieldname', topic)
 
     def get_ignore_msg_id_field(self, topic):
         """ Get the ignore_msg_id_field value """
@@ -1093,6 +1103,12 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
 
         return self.fields_ignore_default
 
+    def _get_full_topic_fieldname(self, topic):
+        if self.topic_manager.managing_fields:
+            return self.topic_manager.get_full_topic_fieldname(topic)
+
+        return self.full_topic_fieldname
+
     def _log_message(self, msg):
         self.logger.debug("MessageCallbackProvider data-> incoming topic: %s, QOS: %i, retain: %s, payload: %s"
                           %(msg.topic, msg.qos, msg.retain, msg.payload))
@@ -1150,6 +1166,7 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
             fields_ignore_default = self._get_ignore_default(msg.topic)
             msg_id_field = self._get_msg_id_field(msg.topic)
             ignore_msg_id_field = self._get_ignore_msg_id_field(msg.topic)
+            fields_full_topic_fieldname = self._get_full_topic_fieldname(msg.topic)
 
             if PY2:
                 payload_str = msg.payload
@@ -1168,7 +1185,7 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
                 msg_id = data_flattened[msg_id_field]
             # ToDo - if I have to loop, removes benefit of _bytefy, time to remove it?
             for key in data_flattened:
-                if self.full_topic_fieldname:
+                if fields_full_topic_fieldname:
                     lookup_key = topic_str + "/" + key # todo - cleanup and test unicode vs str stuff
                 elif msg_id_field and key not in ignore_msg_id_field:
                     lookup_key = key + "_" + str(msg_id) # todo - cleanup
@@ -1193,19 +1210,14 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
             self._log_message(msg)
             fields = self._get_fields(msg.topic)
             fields_ignore_default = self._get_ignore_default(msg.topic)
-            if self.topic_manager.managing_fields:
-                full_topic_fieldname = True
-            elif self.full_topic_fieldname:
-                full_topic_fieldname = self.full_topic_fieldname
-            else:
-                full_topic_fieldname = False
+            fields_full_topic_fieldname = self._get_full_topic_fieldname(msg.topic)
 
             payload_str = msg.payload
             if not PY2:
                 if msg.payload is not None:
                     payload_str = msg.payload.decode('utf-8')
 
-            if full_topic_fieldname:
+            if fields_full_topic_fieldname:
                 key = msg.topic
             else:
                 key = msg.topic.rpartition('/')[2]
