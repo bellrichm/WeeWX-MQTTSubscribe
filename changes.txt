@@ -1,3 +1,16 @@
+V1.6.1
+Enhancements/Fixes
+- Fixed the cacheing of archive record fields when using the new field configuration.
+- Fixed the lookup of individual payloads when using the new field configuration. 
+  It will always use the full topic and the 'name = 'option must be used if only a portion is the WeeWX name.
+- Fixed the MQTT native logging.
+- Changed the example MessageCallbackProvider to be a simple XML parser.
+- Added some unit tests for the example MessageCallbackProvider.
+
+Internal Improvements
+- Improved the integration test environment.
+- Improved the debugging environment.
+
 V1.6.0
 Enhancements/Fixes
 - Move the configuration of fields under the [[topics]] section (#72)
