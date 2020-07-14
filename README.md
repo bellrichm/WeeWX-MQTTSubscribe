@@ -158,8 +158,7 @@ Paho MQTT python client.
     ``` 
     sudo systemctl restart weewx
     ```
-
-[![Build status](https://ci.appveyor.com/api/projects/status/3j9pagnyahpiw93r/branch/master?svg=true)](https://ci.appveyor.com/project/bellrichm/weewx-mqttsubscribe/branch/master)
+[![Build status](https://ci.appveyor.com/api/projects/status/r0e08p7qt278thax?svg=true)](https://ci.appveyor.com/project/bellrichm/weewx-mqttsubscribe-master)
 
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=bellrichm_WeeWX-MQTTSubscribe&metric=alert_status)](https://sonarcloud.io/dashboard?id=bellrichm_WeeWX-MQTTSubscribe)
 
