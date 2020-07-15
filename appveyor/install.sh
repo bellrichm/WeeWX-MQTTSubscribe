@@ -22,7 +22,7 @@
     pip install coverage --quiet --no-python-version-warning
 
     echo "Running weewx install"
-    if [ "$WEEWX" != "master" ]; then
+    if [ "$WEEWX" = "master" ]; then
       git clone https://github.com/weewx/weewx.git weewx
     else
       wget  $WEEWX_URL/weewx-$WEEWX.tar.gz
