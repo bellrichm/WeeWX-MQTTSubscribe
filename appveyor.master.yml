@@ -64,6 +64,11 @@ environment:
       job_group: build
       job_depends_on: initialize
 
+    - PYTHON: 3.8
+      WEEWX: master
+      job_group: build  
+      job_depends_on: initialize      
+
     - job_name: initialize
       WEEWX_URL: http://www.weewx.com/downloads/development_versions/
 
