@@ -24,6 +24,7 @@
     echo "Running weewx install"
     if [ "$WEEWX" = "master" ]; then
       git clone https://github.com/weewx/weewx.git weewx
+      cd weewx
       git show --oneline -s | tee master.txt
       detail=`cat master.txt`
       appveyor AddMessage "Testing against master " -Category Information -Details "$detail"
