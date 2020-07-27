@@ -1321,7 +1321,11 @@ class MQTTSubscribe(object):
         if username is not None and password is not None:
             self.client.username_pw_set(username, password)
 
-        self.client.connect(host, port, keepalive)
+        try:
+            self.client.connect(host, port, keepalive)
+        except Exception as exception: # (want to catch all) pylint: disable=broad-except
+            self.logger.error("Failed to connect to %s at %i. '%s'" %(host, port, exception))
+            raise weewx.WeeWxIOError(exception)
 
     @property
     def subscribed_topics(self):
