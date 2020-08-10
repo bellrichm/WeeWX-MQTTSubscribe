@@ -375,7 +375,7 @@ indent-string='    '
 max-line-length=145
 
 # Maximum number of lines in a module
-max-module-lines=2000
+max-module-lines=2100
 
 # List of optional constructs for which whitespace checking is disabled. `dict-
 # separator` is used to allow tabulation in dicts, etc.: {1  : 1,\n222: 2}.
