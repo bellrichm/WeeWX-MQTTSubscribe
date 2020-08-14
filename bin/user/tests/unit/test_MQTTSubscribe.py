@@ -337,6 +337,55 @@ class Testtls_configuration(unittest.TestCase):
                     MQTTSubscribe(config, mock_logger)
                 self.assertEqual(error.exception.args[0], "Invalid 'tls_version'., %s" % tls_version)
 
+    def test_invalid_certs_required(self):
+        certs_required = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+        config_dict = {
+            'message_callback': {},
+            'tls': {
+                'ca_certs': ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),
+                'certs_required': certs_required
+                },
+            'topics': {
+                ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]): {}
+            }
+        }
+        config = configobj.ConfigObj(config_dict)
+        mock_logger = mock.Mock(spec=Logger)
+
+        with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client):
+            with mock.patch('user.MQTTSubscribe.MessageCallbackProvider'):
+                try:
+                    del ssl.PROTOCOL_SSLv3
+                except AttributeError:
+                    pass
+                with self.assertRaises(ValueError) as error:
+                    MQTTSubscribe(config, mock_logger)
+                self.assertEqual(error.exception.args[0], "Invalid 'certs_required'., %s" % certs_required)
+
+    def test_missing_ca_certs(self):
+        config_dict = {
+            'message_callback': {},
+            'tls': {
+                ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]): \
+                     ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+            },
+            'topics': {
+                ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]): {}
+            }
+        }
+        config = configobj.ConfigObj(config_dict)
+        mock_logger = mock.Mock(spec=Logger)
+
+        with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client):
+            with mock.patch('user.MQTTSubscribe.MessageCallbackProvider'):
+                try:
+                    del ssl.PROTOCOL_SSLv3
+                except AttributeError:
+                    pass
+                with self.assertRaises(ValueError) as error:
+                    MQTTSubscribe(config, mock_logger)
+                self.assertEqual(error.exception.args[0], "'ca_certs' is required.")
+
 class Teston_connect(unittest.TestCase):
     unit_system_name = 'US'
     unit_system = test_weewx_stubs.UNITS_CONSTANTS[unit_system_name]
