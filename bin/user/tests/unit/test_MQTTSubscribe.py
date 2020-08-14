@@ -167,11 +167,11 @@ class Testtls_configuration(unittest.TestCase):
         config_dict = {
             'message_callback': {},
             'tls': {
-                'ca_certs': 'foo/bar',
+                'ca_certs': ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),
                 'tls_version': tls_version
             },
             'topics': {
-                'foobar': {}
+                ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]): {}
             }
         }
         config = configobj.ConfigObj(config_dict)
@@ -182,7 +182,7 @@ class Testtls_configuration(unittest.TestCase):
                 try:
                     del ssl.PROTOCOL_TLS
                 except AttributeError:
-                    pass                   
+                    pass
                 with self.assertRaises(ValueError) as error:
                     MQTTSubscribe(config, mock_logger)
                 self.assertEqual(error.exception.args[0], "Invalid 'tls_version'., %s" % tls_version)
@@ -192,11 +192,11 @@ class Testtls_configuration(unittest.TestCase):
         config_dict = {
             'message_callback': {},
             'tls': {
-                'ca_certs': 'foo/bar',
+                'ca_certs': ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),
                 'tls_version': tls_version
             },
             'topics': {
-                'foobar': {}
+                ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]): {}
             }
         }
         config = configobj.ConfigObj(config_dict)
@@ -207,7 +207,7 @@ class Testtls_configuration(unittest.TestCase):
                 try:
                     del ssl.PROTOCOL_TLSv1
                 except AttributeError:
-                    pass                                      
+                    pass
                 with self.assertRaises(ValueError) as error:
                     MQTTSubscribe(config, mock_logger)
                 self.assertEqual(error.exception.args[0], "Invalid 'tls_version'., %s" % tls_version)
@@ -217,11 +217,11 @@ class Testtls_configuration(unittest.TestCase):
         config_dict = {
             'message_callback': {},
             'tls': {
-                'ca_certs': 'foo/bar',
+                'ca_certs': ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),
                 'tls_version': tls_version
             },
             'topics': {
-                'foobar': {}
+                ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]): {}
             }
         }
         config = configobj.ConfigObj(config_dict)
@@ -232,7 +232,7 @@ class Testtls_configuration(unittest.TestCase):
                 try:
                     del ssl.PROTOCOL_TLSv1_1
                 except AttributeError:
-                    pass                                       
+                    pass
                 with self.assertRaises(ValueError) as error:
                     MQTTSubscribe(config, mock_logger)
                 self.assertEqual(error.exception.args[0], "Invalid 'tls_version'., %s" % tls_version)
@@ -242,11 +242,11 @@ class Testtls_configuration(unittest.TestCase):
         config_dict = {
             'message_callback': {},
             'tls': {
-                'ca_certs': 'foo/bar',
+                'ca_certs': ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),
                 'tls_version': tls_version
             },
             'topics': {
-                'foobar': {}
+                ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]): {}
             }
         }
         config = configobj.ConfigObj(config_dict)
@@ -257,7 +257,7 @@ class Testtls_configuration(unittest.TestCase):
                 try:
                     del ssl.PROTOCOL_TLSv1_2
                 except AttributeError:
-                    pass                                      
+                    pass
                 with self.assertRaises(ValueError) as error:
                     MQTTSubscribe(config, mock_logger)
                 self.assertEqual(error.exception.args[0], "Invalid 'tls_version'., %s" % tls_version)
@@ -267,11 +267,11 @@ class Testtls_configuration(unittest.TestCase):
         config_dict = {
             'message_callback': {},
             'tls': {
-                'ca_certs': 'foo/bar',
+                'ca_certs': ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),
                 'tls_version': tls_version
             },
             'topics': {
-                'foobar': {}
+                ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]): {}
             }
         }
         config = configobj.ConfigObj(config_dict)
@@ -282,7 +282,7 @@ class Testtls_configuration(unittest.TestCase):
                 try:
                     del ssl.PROTOCOL_SSLv2
                 except AttributeError:
-                    pass                                      
+                    pass
                 with self.assertRaises(ValueError) as error:
                     MQTTSubscribe(config, mock_logger)
                 self.assertEqual(error.exception.args[0], "Invalid 'tls_version'., %s" % tls_version)
@@ -292,11 +292,11 @@ class Testtls_configuration(unittest.TestCase):
         config_dict = {
             'message_callback': {},
             'tls': {
-                'ca_certs': 'foo/bar',
+                'ca_certs': ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),
                 'tls_version': tls_version
             },
             'topics': {
-                'foobar': {}
+                ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]): {}
             }
         }
         config = configobj.ConfigObj(config_dict)
@@ -307,7 +307,7 @@ class Testtls_configuration(unittest.TestCase):
                 try:
                     del ssl.PROTOCOL_SSLv23
                 except AttributeError:
-                    pass                                       
+                    pass
                 with self.assertRaises(ValueError) as error:
                     MQTTSubscribe(config, mock_logger)
                 self.assertEqual(error.exception.args[0], "Invalid 'tls_version'., %s" % tls_version)
@@ -317,11 +317,11 @@ class Testtls_configuration(unittest.TestCase):
         config_dict = {
             'message_callback': {},
             'tls': {
-                'ca_certs': 'foo/bar',
+                'ca_certs': ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),
                 'tls_version': tls_version
             },
             'topics': {
-                'foobar': {}
+                ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]): {}
             }
         }
         config = configobj.ConfigObj(config_dict)
@@ -332,7 +332,7 @@ class Testtls_configuration(unittest.TestCase):
                 try:
                     del ssl.PROTOCOL_SSLv3
                 except AttributeError:
-                    pass                                       
+                    pass
                 with self.assertRaises(ValueError) as error:
                     MQTTSubscribe(config, mock_logger)
                 self.assertEqual(error.exception.args[0], "Invalid 'tls_version'., %s" % tls_version)
