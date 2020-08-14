@@ -10,6 +10,7 @@ import mock
 import configobj
 import paho.mqtt.client
 import random
+import ssl
 import string
 
 import test_weewx_stubs
@@ -160,6 +161,181 @@ class TestInitialization(unittest.TestCase):
                 SUT.client.username_pw_set.assert_called_once_with(username, password)
                 SUT.client.connect.assert_called_once_with(host, port, keepalive)
 
+class Testtls_configuration(unittest.TestCase):
+    def test_missing_PROTOCOL_TLS(self):
+        tls_version = 'tls'
+        config_dict = {
+            'message_callback': {},
+            'tls': {
+                'ca_certs': 'foo/bar',
+                'tls_version': tls_version
+            },
+            'topics': {
+                'foobar': {}
+            }
+        }
+        config = configobj.ConfigObj(config_dict)
+        mock_logger = mock.Mock(spec=Logger)
+
+        with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client):
+            with mock.patch('user.MQTTSubscribe.MessageCallbackProvider'):
+                try:
+                    del ssl.PROTOCOL_TLS
+                except AttributeError:
+                    pass                   
+                with self.assertRaises(ValueError) as error:
+                    MQTTSubscribe(config, mock_logger)
+                self.assertEqual(error.exception.args[0], "Invalid 'tls_version'., %s" % tls_version)
+
+    def test_missing_PROTOCOL_TLSv1(self):
+        tls_version = 'tlsv1'
+        config_dict = {
+            'message_callback': {},
+            'tls': {
+                'ca_certs': 'foo/bar',
+                'tls_version': tls_version
+            },
+            'topics': {
+                'foobar': {}
+            }
+        }
+        config = configobj.ConfigObj(config_dict)
+        mock_logger = mock.Mock(spec=Logger)
+
+        with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client):
+            with mock.patch('user.MQTTSubscribe.MessageCallbackProvider'):
+                try:
+                    del ssl.PROTOCOL_TLSv1
+                except AttributeError:
+                    pass                                      
+                with self.assertRaises(ValueError) as error:
+                    MQTTSubscribe(config, mock_logger)
+                self.assertEqual(error.exception.args[0], "Invalid 'tls_version'., %s" % tls_version)
+
+    def test_missing_PROTOCOL_TLSv1_1(self):
+        tls_version = 'tlsv1_1'
+        config_dict = {
+            'message_callback': {},
+            'tls': {
+                'ca_certs': 'foo/bar',
+                'tls_version': tls_version
+            },
+            'topics': {
+                'foobar': {}
+            }
+        }
+        config = configobj.ConfigObj(config_dict)
+        mock_logger = mock.Mock(spec=Logger)
+
+        with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client):
+            with mock.patch('user.MQTTSubscribe.MessageCallbackProvider'):
+                try:
+                    del ssl.PROTOCOL_TLSv1_1
+                except AttributeError:
+                    pass                                       
+                with self.assertRaises(ValueError) as error:
+                    MQTTSubscribe(config, mock_logger)
+                self.assertEqual(error.exception.args[0], "Invalid 'tls_version'., %s" % tls_version)
+
+    def test_missing_PROTOCOL_TLSv1_2(self):
+        tls_version = 'tlsv1_2'
+        config_dict = {
+            'message_callback': {},
+            'tls': {
+                'ca_certs': 'foo/bar',
+                'tls_version': tls_version
+            },
+            'topics': {
+                'foobar': {}
+            }
+        }
+        config = configobj.ConfigObj(config_dict)
+        mock_logger = mock.Mock(spec=Logger)
+
+        with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client):
+            with mock.patch('user.MQTTSubscribe.MessageCallbackProvider'):
+                try:
+                    del ssl.PROTOCOL_TLSv1_2
+                except AttributeError:
+                    pass                                      
+                with self.assertRaises(ValueError) as error:
+                    MQTTSubscribe(config, mock_logger)
+                self.assertEqual(error.exception.args[0], "Invalid 'tls_version'., %s" % tls_version)
+
+    def test_missing_PROTOCOL_SSLv2(self):
+        tls_version = 'sslv2'
+        config_dict = {
+            'message_callback': {},
+            'tls': {
+                'ca_certs': 'foo/bar',
+                'tls_version': tls_version
+            },
+            'topics': {
+                'foobar': {}
+            }
+        }
+        config = configobj.ConfigObj(config_dict)
+        mock_logger = mock.Mock(spec=Logger)
+
+        with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client):
+            with mock.patch('user.MQTTSubscribe.MessageCallbackProvider'):
+                try:
+                    del ssl.PROTOCOL_SSLv2
+                except AttributeError:
+                    pass                                      
+                with self.assertRaises(ValueError) as error:
+                    MQTTSubscribe(config, mock_logger)
+                self.assertEqual(error.exception.args[0], "Invalid 'tls_version'., %s" % tls_version)
+
+    def test_missing_PROTOCOL_SSLv23(self):
+        tls_version = 'sslv23'
+        config_dict = {
+            'message_callback': {},
+            'tls': {
+                'ca_certs': 'foo/bar',
+                'tls_version': tls_version
+            },
+            'topics': {
+                'foobar': {}
+            }
+        }
+        config = configobj.ConfigObj(config_dict)
+        mock_logger = mock.Mock(spec=Logger)
+
+        with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client):
+            with mock.patch('user.MQTTSubscribe.MessageCallbackProvider'):
+                try:
+                    del ssl.PROTOCOL_SSLv23
+                except AttributeError:
+                    pass                                       
+                with self.assertRaises(ValueError) as error:
+                    MQTTSubscribe(config, mock_logger)
+                self.assertEqual(error.exception.args[0], "Invalid 'tls_version'., %s" % tls_version)
+
+    def test_missing_PROTOCOL_SSLv3(self):
+        tls_version = 'sslv3'
+        config_dict = {
+            'message_callback': {},
+            'tls': {
+                'ca_certs': 'foo/bar',
+                'tls_version': tls_version
+            },
+            'topics': {
+                'foobar': {}
+            }
+        }
+        config = configobj.ConfigObj(config_dict)
+        mock_logger = mock.Mock(spec=Logger)
+
+        with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client):
+            with mock.patch('user.MQTTSubscribe.MessageCallbackProvider'):
+                try:
+                    del ssl.PROTOCOL_SSLv3
+                except AttributeError:
+                    pass                                       
+                with self.assertRaises(ValueError) as error:
+                    MQTTSubscribe(config, mock_logger)
+                self.assertEqual(error.exception.args[0], "Invalid 'tls_version'., %s" % tls_version)
 
 class Teston_connect(unittest.TestCase):
     unit_system_name = 'US'
