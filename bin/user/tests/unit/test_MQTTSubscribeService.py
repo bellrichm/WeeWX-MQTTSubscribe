@@ -17,6 +17,53 @@ import test_weewx_stubs
 
 from user.MQTTSubscribe import MQTTSubscribeService
 
+class atestInitialization(unittest.TestCase):
+    def test_invalid_binding(self):
+        mock_StdEngine = mock.Mock()
+
+        binding = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+        config_dict = {
+            'MQTTSubscribeService': {
+                'binding': binding
+            }
+        }
+
+        with mock.patch('user.MQTTSubscribe.MQTTSubscribe'):
+            with self.assertRaises(ValueError) as error:
+                MQTTSubscribeService(mock_StdEngine, config_dict)
+
+            self.assertEqual(error.exception.args[0], "MQTTSubscribeService: Unknown binding: %s" % binding)
+
+    def test_not_enable(self):
+        mock_StdEngine = mock.Mock()
+
+        config_dict = {
+            'MQTTSubscribeService': {
+                'enable': False
+            }
+        }
+
+        with mock.patch('user.MQTTSubscribe.MQTTSubscribe'):
+            with mock.patch('user.MQTTSubscribe.Logger'):
+                # pylint: disable=no-member
+                SUT = MQTTSubscribeService(mock_StdEngine, config_dict)
+                SUT.logger.info.assert_called_once()
+                SUT.logger.info.assert_called_once_with("Not enabled, exiting.")
+
+    def test_runing_as_service_and_driver_check(self):
+        mock_StdEngine = mock.Mock()
+        mock_StdEngine.stn_info.hardware = 'MQTTSubscribeDriver'
+
+        config_dict = {
+            'MQTTSubscribeService': {}
+        }
+
+        with mock.patch('user.MQTTSubscribe.MQTTSubscribe'):
+            with mock.patch('user.MQTTSubscribe.Logger'):
+                # pylint: disable=no-member
+                SUT = MQTTSubscribeService(mock_StdEngine, config_dict)
+                self.assertEqual(SUT.logger.info.call_count, 3)
+                SUT.logger.info.assert_any_call('Running as both a driver and a service.')
 
 class Testnew_loop_packet(unittest.TestCase):
     mock_StdEngine = mock.Mock()

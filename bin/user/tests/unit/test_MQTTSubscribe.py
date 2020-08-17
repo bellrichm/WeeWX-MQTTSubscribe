@@ -39,7 +39,7 @@ class TestInitialization(unittest.TestCase):
             'archive_topic': archive_topic,  # pylint: disable=unused-variable
             'message_callback': {},
             'topics': {
-               ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]): {}  # pylint: disable=unused-variable
+                ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]): {}  # pylint: disable=unused-variable
             }
         }
         config = configobj.ConfigObj(config_dict)
