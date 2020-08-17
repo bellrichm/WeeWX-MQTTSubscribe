@@ -19,6 +19,95 @@ import test_weewx_stubs
 
 from user.MQTTSubscribe import TopicManager, Logger
 
+class TestInit(unittest.TestCase):
+    def test_missing_topic(self):
+        mock_logger = mock.Mock(spec=Logger)
+
+        config_dict = {}
+
+        config = configobj.ConfigObj(config_dict)
+
+        with self.assertRaises(ValueError) as error:
+            TopicManager(config, mock_logger)
+
+        self.assertEqual(error.exception.args[0], "At least one topic must be configured.")
+
+    def test_invalid_unit_system_default(self):
+        mock_logger = mock.Mock(spec=Logger)
+
+        config_dict = {}
+
+        topic = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+        unit_system_name =  ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+        config_dict[topic] = {}
+        config_dict['unit_system'] = unit_system_name
+
+        config = configobj.ConfigObj(config_dict)
+
+        with self.assertRaises(ValueError) as error:
+            TopicManager(config, mock_logger)
+
+        self.assertEqual(error.exception.args[0], "MQTTSubscribe: Unknown unit system: %s" % unit_system_name.upper())
+
+    def test_invalid_unit_system_topic(self):
+        mock_logger = mock.Mock(spec=Logger)
+
+        config_dict = {}
+
+        topic = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+        unit_system_name =  ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+        config_dict[topic] = {}
+        config_dict[topic]['unit_system'] = unit_system_name
+
+        config = configobj.ConfigObj(config_dict)
+
+        with self.assertRaises(ValueError) as error:
+            TopicManager(config, mock_logger)
+
+        self.assertEqual(error.exception.args[0], "MQTTSubscribe: Unknown unit system: %s" % unit_system_name.upper())
+
+    def test_invalid_units(self):
+        mock_logger = mock.Mock(spec=Logger)
+
+        config_dict = {}
+
+        topic = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+        field = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+        config_dict[topic] = {}
+        config_dict[topic][field] = {}
+        config_dict[topic][field]['units'] = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+        field_dict = {}
+        field_dict['name'] = field
+        field_dict['use_topic_as_field_name'] = False
+        field_dict['ignore'] = False
+        field_dict['contains_total'] = False
+        field_dict['conversion_type'] = 'float'
+
+        config = configobj.ConfigObj(config_dict)
+
+        with self.assertRaises(ValueError) as error:
+            TopicManager(config, mock_logger)
+
+        self.assertEqual(error.exception.args[0], "For %s invalid units, %s" % (field_dict, config_dict[topic][field]['units']))
+
+    def test_mutually_exclusive(self):
+        mock_logger = mock.Mock(spec=Logger)
+
+        config_dict = {}
+
+        topic = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+        field = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+        config_dict['use_topic_as_fieldname'] = True
+        config_dict[topic] = {}
+        config_dict[topic][field] = {}
+
+        config = configobj.ConfigObj(config_dict)
+
+        with self.assertRaises(ValueError) as error:
+            TopicManager(config, mock_logger)
+
+        self.assertEqual(error.exception.args[0], "MQTTSubscribe: use_topic_as_fieldname is mutually exclusive with [[[[fieldname]]]] configuring")
+
 class TestConfigureFields(unittest.TestCase):
     def test_no_field_configuration(self):
         mock_logger = mock.Mock(spec=Logger)
@@ -671,8 +760,8 @@ class TestAccumulatedData(unittest.TestCase):
                 self.assertDictEqual(accumulated_data, final_record_data)
 
 if __name__ == '__main__':
-    test_suite = unittest.TestSuite()
-    test_suite.addTest(TestConfigureFields('test_use_topic_as_fieldname'))
-    unittest.TextTestRunner().run(test_suite)
+    # test_suite = unittest.TestSuite()
+    # test_suite.addTest(TestConfigureFields('test_use_topic_as_fieldname'))
+    # unittest.TextTestRunner().run(test_suite)
 
-    # unittest.main(exit=False)
+    unittest.main(exit=False)
