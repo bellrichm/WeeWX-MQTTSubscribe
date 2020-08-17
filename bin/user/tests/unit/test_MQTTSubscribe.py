@@ -23,6 +23,33 @@ class Msg(object):
         pass
 
 class TestInitialization(unittest.TestCase):
+    def test_missing_callback(self):
+        config_dict = {}
+        config = configobj.ConfigObj(config_dict)
+
+        mock_logger = mock.Mock(spec=Logger)
+        with self.assertRaises(ValueError) as error:
+            MQTTSubscribe(config, mock_logger)
+
+        self.assertEqual(error.exception.args[0], "[[message_callback]] is required.")
+
+    def test_missing_archive_topic_in_topics(self):
+        archive_topic = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+        config_dict = {
+            'archive_topic': archive_topic,  # pylint: disable=unused-variable
+            'message_callback': {},
+            'topics': {
+               ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]): {}  # pylint: disable=unused-variable
+            }
+        }
+        config = configobj.ConfigObj(config_dict)
+
+        mock_logger = mock.Mock(spec=Logger)
+        with self.assertRaises(ValueError) as error:
+            MQTTSubscribe(config, mock_logger)
+
+        self.assertEqual(error.exception.args[0], ("Archive topic %s must be in [[topics]]" % archive_topic))
+
     @staticmethod
     def test_username_None():
         host = 'host'

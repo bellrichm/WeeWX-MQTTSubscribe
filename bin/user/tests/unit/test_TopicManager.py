@@ -38,7 +38,7 @@ class TestInit(unittest.TestCase):
         config_dict = {}
 
         topic = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
-        unit_system_name =  ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+        unit_system_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
         config_dict[topic] = {}
         config_dict['unit_system'] = unit_system_name
 
@@ -55,7 +55,7 @@ class TestInit(unittest.TestCase):
         config_dict = {}
 
         topic = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
-        unit_system_name =  ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+        unit_system_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
         config_dict[topic] = {}
         config_dict[topic]['unit_system'] = unit_system_name
 
@@ -106,7 +106,8 @@ class TestInit(unittest.TestCase):
         with self.assertRaises(ValueError) as error:
             TopicManager(config, mock_logger)
 
-        self.assertEqual(error.exception.args[0], "MQTTSubscribe: use_topic_as_fieldname is mutually exclusive with [[[[fieldname]]]] configuring")
+        self.assertEqual(error.exception.args[0],
+                         "MQTTSubscribe: use_topic_as_fieldname is mutually exclusive with [[[[fieldname]]]] configuring")
 
 class TestConfigureFields(unittest.TestCase):
     def test_no_field_configuration(self):

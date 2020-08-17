@@ -1262,6 +1262,10 @@ class MQTTSubscribe(object):
         self.logger = logger
         self.logger.debug("service_dict is %s" % service_dict)
 
+        message_callback_config = service_dict.get('message_callback', None)
+        if message_callback_config is None:
+            raise ValueError("[[message_callback]] is required.")
+
         if 'topic' in service_dict:
             self.logger.info("'topic' is deprecated, use '[[topics]][[[topic name]]]'")
         if 'overlap' in service_dict:
@@ -1270,10 +1274,6 @@ class MQTTSubscribe(object):
             self.logger.info("'contains_total' is deprecated use '[[topics]][[[topic name]]][[[[field name]]]]' contains_total setting.")
         if 'label_map' in service_dict['message_callback']:
             self.logger.info("'label_map' is deprecated use '[[topics]][[[topic name]]][[[[field name]]]]' name setting.")
-
-        message_callback_config = service_dict.get('message_callback', None)
-        if message_callback_config is None:
-            raise ValueError("[[message_callback]] is required.")
 
         # For backwards compatibility
         overlap = to_float(service_dict.get('overlap', 0))
