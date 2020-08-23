@@ -2,9 +2,14 @@ if [ "$ENABLED" != "true" ]; then
   exit 0
 fi
 
-PYTHONPATH=../weewx/bin pylint ./bin/user/MQTTSubscribe.py -r n --msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}" | tee pylint.txt
+if [ "$BUILDTYPE" = "LOCAL" ]; then
+  PPATH="../weewx/bin/"
+else
+  PPATH="./weewx/bin/"  
+fi
 
-#PYTHONPATH=./weewx/bin pylint ./bin/user/MQTTSubscribe.py -r n --msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}" | tee pylint.txt
+PYTHONPATH=$PPATH pylint ./bin/user/MQTTSubscribe.py -r n --msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}" | tee pylint.txt
+
 rc=${PIPESTATUS[0]}
 detail=`cat pylint.txt`
 
@@ -19,6 +24,8 @@ else
   build_rc=1
 fi
 
-# appveyor AddMessage "pylint weewx=$WEEWX python=$PYTHON rc=$rc " -Category $category -Details "$detail"
+if [ "$BUILDTYPE" != "LOCAL" ]; then
+ appveyor AddMessage "pylint weewx=$WEEWX python=$PYTHON rc=$rc " -Category $category -Details "$detail"
+fi
 
 exit $build_rc
