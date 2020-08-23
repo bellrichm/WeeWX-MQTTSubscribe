@@ -13,3 +13,4 @@ nosetests.xml
 nosetests2.html
 nosetests2.xml
 pylint.txt
+localtools/
