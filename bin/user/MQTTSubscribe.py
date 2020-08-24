@@ -667,10 +667,14 @@ class TopicManager(object):
             self.subscribed_topics[topic]['ignore_msg_id_field'] = []
             if use_topic_as_fieldname:
                 self.managing_fields = True
-                self.subscribed_topics[topic]['fields'][topic] = self._configure_field(topic_dict, topic_dict, topic, topic, defaults)
+                self.subscribed_topics[topic]['fields'][topic] = self._configure_field(topic_dict, topic_dict, topic, defaults)
+                self._configure_ignore_fields(topic_dict, topic_dict, topic, topic, defaults)
+                self._configure_cached_fields(topic_dict, topic)
             else:
                 for field in topic_dict.sections:
-                    self.subscribed_topics[topic]['fields'][field] = self._configure_field(topic_dict, topic_dict[field], topic, field, defaults)
+                    self.subscribed_topics[topic]['fields'][field] = self._configure_field(topic_dict, topic_dict[field], field, defaults)
+                    self._configure_ignore_fields(topic_dict, topic_dict[field], topic, field, defaults)
+                    self._configure_cached_fields(topic_dict[field], field)
 
         # Add the collector queue as a subscribed topic so that data can retrieved from it
         # Yes, this is a bit of a hack.
@@ -697,17 +701,13 @@ class TopicManager(object):
         self.logger.debug("TopicManager self.subscribed_topics is %s" % self.subscribed_topics)
         self.logger.debug("TopicManager self.cached_fields is %s" % self.cached_fields)
 
-    def _configure_field(self, topic_dict, field_dict, topic, fieldname, defaults):
-        # pylint: disable=too-many-arguments
-        ignore_msg_id_field = topic_dict.get('ignore_msg_id_field', defaults['ignore_msg_id_field'])
+    @staticmethod
+    def _configure_field(topic_dict, field_dict, fieldname, defaults):
         contains_total = to_bool(topic_dict.get('contains_total', defaults['contains_total']))
         conversion_type = topic_dict.get('conversion_type', defaults['conversion_type'])
         field = {}
         field['name'] = (field_dict).get('name', fieldname)
         field['use_topic_as_field_name'] = defaults['use_topic_as_fieldname']
-        # ToDo - fix side effect
-        if to_bool((field_dict).get('ignore_msg_id_field', ignore_msg_id_field)):
-            self.subscribed_topics[topic]['ignore_msg_id_field'].append(fieldname)
         field['ignore'] = to_bool((field_dict).get('ignore', defaults['ignore']))
         field['contains_total'] = to_bool((field_dict).get('contains_total', contains_total))
         field['conversion_type'] = (field_dict).get('conversion_type', conversion_type)
@@ -717,11 +717,18 @@ class TopicManager(object):
             else:
                 raise ValueError("For %s invalid units, %s" % (field, field_dict['units']))
 
-        # ToDo- fix side effect
+        return field
+
+    def _configure_ignore_fields(self, topic_dict, field_dict, topic, fieldname, defaults):
+        # pylint: disable=too-many-arguments
+        ignore_msg_id_field = topic_dict.get('ignore_msg_id_field', defaults['ignore_msg_id_field'])
+        if to_bool((field_dict).get('ignore_msg_id_field', ignore_msg_id_field)):
+            self.subscribed_topics[topic]['ignore_msg_id_field'].append(fieldname)
+
+    def _configure_cached_fields(self, field_dict, fieldname):
         if 'expires_after' in field_dict:
             self.cached_fields[fieldname] = {}
             self.cached_fields[fieldname]['expires_after'] = to_float(field_dict['expires_after'])
-        return field
 
     def append_data(self, topic, in_data, fieldname=None):
         """ Add the MQTT data to the queue. """
@@ -1046,7 +1053,7 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
     def set_backwards_compatibility(self, label_map, orig_fields, contains_total):
         """ Any config for backwards compatibility. """
         # backwards compatible, add the label map
-        # ToDo - fix side affect of setting self.fields
+        # side affect of setting self.fields will be fixed in v 2.0
         for field in label_map:
             if not field in orig_fields:
                 self.fields[field] = {}
@@ -1144,7 +1151,7 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
 
             fielddata = payload_str.split(self.keyword_delimiter)
             data = {}
-            unit_system = self.topic_manager.get_unit_system(msg.topic) # TODO - need public method
+            unit_system = self.topic_manager.get_unit_system(msg.topic)
             for field in fielddata:
                 eq_index = field.find(self.keyword_separator)
                 # Ignore all fields that do not have the separator
@@ -1195,7 +1202,7 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
 
             data_flattened = self._flatten_dict(data, self.flatten_delimiter)
 
-            unit_system = self.topic_manager.get_unit_system(msg.topic) # TODO - need public method
+            unit_system = self.topic_manager.get_unit_system(msg.topic)
             data_final = {}
             if msg_id_field:
                 msg_id = data_flattened[msg_id_field]
@@ -1244,7 +1251,7 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
             if PY2:
                 key = key.encode('utf-8')
 
-            unit_system = self.topic_manager.get_unit_system(msg.topic) # TODO - need public method
+            unit_system = self.topic_manager.get_unit_system(msg.topic)
             if not fields.get(key, {}).get('ignore', fields_ignore_default):
                 (fieldname, value) = self._update_data(fields, key, payload_str, unit_system)
                 data = {}
