@@ -1239,9 +1239,6 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
                 fields_full_topic_fieldname = self.full_topic_fieldname
 
             payload_str = msg.payload
-            if not PY2:
-                if msg.payload is not None:
-                    payload_str = msg.payload.decode('utf-8')
 
             if fields_full_topic_fieldname:
                 key = msg.topic
@@ -1250,6 +1247,9 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
 
             if PY2:
                 key = key.encode('utf-8')
+            else:
+                if msg.payload is not None:
+                    payload_str = msg.payload.decode('utf-8')
 
             unit_system = self.topic_manager.get_unit_system(msg.topic)
             if not fields.get(key, {}).get('ignore', fields_ignore_default):
