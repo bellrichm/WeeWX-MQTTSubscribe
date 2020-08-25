@@ -1,10 +1,5 @@
 #! /bin/bash
-
-if [ -z "$1" ]
-then
-    COVERAGE=coverage2
-else
-    COVERAGE=$1
-fi
-
-PYTHONPATH=bin $COVERAGE run  -m unittest discover bin/user/tests/unit; $COVERAGE html --include bin/user/MQTTSubscribe.py
+PYTHONPATH=bin coverage3 run -p --branch -m unittest discover bin/user/tests/unit; 
+PYTHONPATH=bin coverage2 run -p --branch -m unittest discover bin/user/tests/unit; 
+coverage combine
+coverage html --include bin/user/MQTTSubscribe.py
