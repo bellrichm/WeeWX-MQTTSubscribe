@@ -1,4 +1,10 @@
 [report]
 exclude_lines = 
+    # default 
     pragma: no cover
+
+    # guard condition
     raise NotImplementedError
+
+    # essentially a getter
+    return self._get_value
