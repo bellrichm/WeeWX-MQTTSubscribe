@@ -1273,13 +1273,13 @@ class MQTTSubscribe(object):
         if message_callback_config is None:
             raise ValueError("[[message_callback]] is required.")
 
-        if 'topic' in service_dict:
+        if 'topic' in service_dict: # removed in v2.0 pragma: no cover
             self.logger.info("'topic' is deprecated, use '[[topics]][[[topic name]]]'")
-        if 'overlap' in service_dict:
+        if 'overlap' in service_dict: # removed in v2.0 pragma: no cover
             self.logger.info("'overlap' is deprecated, use 'adjust_start_time'")
-        if 'contains_total' in service_dict['message_callback']:
+        if 'contains_total' in service_dict['message_callback']: # removed in v2.0 pragma: no cover
             self.logger.info("'contains_total' is deprecated use '[[topics]][[[topic name]]][[[[field name]]]]' contains_total setting.")
-        if 'label_map' in service_dict['message_callback']:
+        if 'label_map' in service_dict['message_callback']: # removed in v2.0 pragma: no cover
             self.logger.info("'label_map' is deprecated use '[[topics]][[[topic name]]][[[[field name]]]]' name setting.")
 
         # For backwards compatibility
@@ -1520,7 +1520,7 @@ class MQTTSubscribeService(StdService):
         self.cached_fields = {}
         if archive_field_cache_dict is not None:
             self.logger.info("'archive_field_cache' is deprecated, use '[[topics]][[[topic name]]][[[[field name]]]]'")
-            if self.subscriber.cached_fields is not None:
+            if self.subscriber.cached_fields is not None: # removed in v2.0 pragma: no cover
                 self.logger.trace("Ignoring archive_field_cache configration and using topics/fields configuration.")
 
             fields_dict = archive_field_cache_dict.get('fields', {})
