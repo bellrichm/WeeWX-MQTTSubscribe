@@ -65,6 +65,24 @@ class atestInitialization(unittest.TestCase):
                 self.assertEqual(SUT.logger.info.call_count, 3)
                 SUT.logger.info.assert_any_call('Running as both a driver and a service.')
 
+    def test_archive_topic_specified(self):
+        mock_StdEngine = mock.Mock()
+        #mock_StdEngine.stn_info.hardware = 'MQTTSubscribeDriver'
+        archive_topic = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+
+        config_dict = {
+            'MQTTSubscribeService': {
+                'archive_topic': archive_topic
+            }
+        }
+
+        with mock.patch('user.MQTTSubscribe.MQTTSubscribe'):
+            with mock.patch('user.MQTTSubscribe.Logger'):
+                with self.assertRaises(ValueError) as error:
+                    MQTTSubscribeService(mock_StdEngine, config_dict)
+
+            self.assertEqual(error.exception.args[0], "archive_topic, %s, is invalid when running as a service" % archive_topic)
+
 class Testnew_loop_packet(unittest.TestCase):
     mock_StdEngine = mock.Mock()
 

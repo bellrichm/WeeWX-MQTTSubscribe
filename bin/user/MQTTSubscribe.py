@@ -1230,14 +1230,14 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
             self._log_message(msg)
             fields = self._get_fields(msg.topic)
             fields_ignore_default = self._get_ignore_default(msg.topic)
-            if self.topic_manager.managing_fields:
+            if self.topic_manager.managing_fields:  # removed in v2.0 pragma: no cover
                 fields_full_topic_fieldname = True
             else:
                 fields_full_topic_fieldname = self.full_topic_fieldname
 
             payload_str = msg.payload
 
-            if fields_full_topic_fieldname:  # removed in v2.0 pragma: no cover
+            if fields_full_topic_fieldname:
                 key = msg.topic
             else:
                 key = msg.topic.rpartition('/')[2]
