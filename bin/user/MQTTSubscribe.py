@@ -1041,7 +1041,7 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
                 self.fields[field]['contains_total'] = to_bool(self.fields[field]['contains_total'])
             if 'conversion_type' in self.fields[field]:
                 self.fields[field]['conversion_type'] = self.fields[field]['conversion_type'].lower()
-            if 'units' in self.fields[field]:
+            if 'units' in self.fields[field]:  # removed in v2.0 pragma: no cover
                 try:
                     weewx.units.conversionDict[self.fields[field]['units']]
                 except KeyError:
@@ -1237,7 +1237,7 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
 
             payload_str = msg.payload
 
-            if fields_full_topic_fieldname:
+            if fields_full_topic_fieldname:  # removed in v2.0 pragma: no cover
                 key = msg.topic
             else:
                 key = msg.topic.rpartition('/')[2]
