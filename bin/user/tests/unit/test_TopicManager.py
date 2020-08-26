@@ -130,6 +130,7 @@ class TestConfigureFields(unittest.TestCase):
         topic = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
         config_dict = {}
         config_dict['ignore'] = 'true'
+        config_dict['ignore_msg_id_field'] = 'true'
         config_dict['contains_total'] = 'true'
         config_dict['conversion_type'] = 'int'
 
@@ -143,6 +144,7 @@ class TestConfigureFields(unittest.TestCase):
         SUT = TopicManager(config, mock_logger)
 
         self.assertTrue(SUT.subscribed_topics[topic]['fields'][fieldname]['ignore'])
+        self.assertEqual(SUT.subscribed_topics[topic]['ignore_msg_id_field'], [fieldname])
         self.assertTrue(SUT.subscribed_topics[topic]['fields'][fieldname]['contains_total'])
         self.assertEqual(SUT.subscribed_topics[topic]['fields'][fieldname]['conversion_type'], 'int')
 
@@ -154,6 +156,7 @@ class TestConfigureFields(unittest.TestCase):
 
         config_dict[topic] = {}
         config_dict[topic]['ignore'] = 'true'
+        config_dict[topic]['ignore_msg_id_field'] = 'true'
         config_dict[topic]['contains_total'] = 'true'
         config_dict[topic]['conversion_type'] = 'int'
 
@@ -165,6 +168,7 @@ class TestConfigureFields(unittest.TestCase):
         SUT = TopicManager(config, mock_logger)
 
         self.assertTrue(SUT.subscribed_topics[topic]['fields'][fieldname]['ignore'])
+        self.assertEqual(SUT.subscribed_topics[topic]['ignore_msg_id_field'], [fieldname])
         self.assertTrue(SUT.subscribed_topics[topic]['fields'][fieldname]['contains_total'])
         self.assertEqual(SUT.subscribed_topics[topic]['fields'][fieldname]['conversion_type'], 'int')
 
@@ -179,6 +183,7 @@ class TestConfigureFields(unittest.TestCase):
         fieldname = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
         config_dict[topic][fieldname] = {}
         config_dict[topic][fieldname]['ignore'] = 'true'
+        config_dict[topic][fieldname]['ignore_msg_id_field'] = 'true'
         config_dict[topic][fieldname]['contains_total'] = 'true'
         config_dict[topic][fieldname]['conversion_type'] = 'int'
         weewx_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
@@ -192,6 +197,7 @@ class TestConfigureFields(unittest.TestCase):
         SUT = TopicManager(config, mock_logger)
 
         self.assertTrue(SUT.subscribed_topics[topic]['fields'][fieldname]['ignore'])
+        self.assertEqual(SUT.subscribed_topics[topic]['ignore_msg_id_field'], [fieldname])
         self.assertTrue(SUT.subscribed_topics[topic]['fields'][fieldname]['contains_total'])
         self.assertEqual(SUT.subscribed_topics[topic]['fields'][fieldname]['conversion_type'], 'int')
         self.assertEqual(SUT.subscribed_topics[topic]['fields'][fieldname]['name'], weewx_name)
