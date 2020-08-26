@@ -843,16 +843,13 @@ class TopicManager(object):
         accumulator = weewx.accum.Accum(weeutil.weeutil.TimeSpan(start_ts, end_ts))
 
         for data in self.get_data(topic, end_ts):
-            if data:
-                try:
-                    self.logger.trace("TopicManager input to accumulate %s %s: %s"
-                                      % (topic, weeutil.weeutil.timestamp_to_string(data['dateTime']), to_sorted_string(data)))
-                    accumulator.addRecord(data)
-                except weewx.accum.OutOfSpan:
-                    self.logger.info("TopicManager ignoring record outside of interval %f %f %f %s"
-                                     %(start_ts, end_ts, data['dateTime'], (to_sorted_string(data))))
-            else:
-                break
+            try:
+                self.logger.trace("TopicManager input to accumulate %s %s: %s"
+                                  % (topic, weeutil.weeutil.timestamp_to_string(data['dateTime']), to_sorted_string(data)))
+                accumulator.addRecord(data)
+            except weewx.accum.OutOfSpan:
+                self.logger.info("TopicManager ignoring record outside of interval %f %f %f %s"
+                                 %(start_ts, end_ts, data['dateTime'], (to_sorted_string(data))))
 
         target_data = {}
         if not accumulator.isEmpty:
@@ -925,7 +922,7 @@ class TopicManager(object):
                 self.topics[topic] = subscribed_topic
                 return subscribed_topic
 
-        return None
+        raise ValueError("Did not find topic, %s." % topic)
 
     def _to_epoch(self, datetime_input, datetime_format, offset_format=None):
         self.logger.trace("TopicManager datetime conversion datetime_input:%s datetime_format:%s offset_format:%s"
@@ -1026,7 +1023,7 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
 
         self.fields = config.get('fields', {})
         orig_fields = config.get('fields', {})
-        if self.topic_manager.managing_fields and self.fields:
+        if self.topic_manager.managing_fields and self.fields:  # removed in v2.0 pragma: no cover
             self.logger.debug("MessageCallbackProvider ignoring fields configuration and using topics/fields configuration.")
         else:
             self.fields_ignore_default = to_bool(self.fields.get('ignore', False))

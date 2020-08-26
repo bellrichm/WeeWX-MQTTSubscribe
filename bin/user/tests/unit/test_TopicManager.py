@@ -520,6 +520,21 @@ class TestGetQueueData(unittest.TestCase):
             'dateTime': time.time()
         }
 
+    def test_queue_topic_not_found(self):
+        mock_logger = mock.Mock(spec=Logger)
+
+        missing_topic = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+
+        with mock.patch('user.MQTTSubscribe.CollectData'):
+            with self.assertRaises(ValueError) as error:
+                SUT = TopicManager(self.config, mock_logger)
+
+                gen = SUT.get_data(missing_topic)
+                next(gen, None)
+
+            self.assertEqual(error.exception.args[0], "Did not find topic, %s." % missing_topic)
+
+
     def test_queue_empty(self):
         mock_logger = mock.Mock(spec=Logger)
 
