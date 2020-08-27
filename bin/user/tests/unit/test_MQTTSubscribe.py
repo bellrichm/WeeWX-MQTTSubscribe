@@ -23,6 +23,45 @@ class Msg(object):
         pass
 
 class TestInitialization(unittest.TestCase):
+    def test_mqtt_log_set(self):
+        mock_logger = mock.Mock(spec=Logger)
+
+        config_dict = {
+            'message_callback': {},
+            'topics': {
+                'foo/bar': {}
+            },
+            'log': True
+        }
+
+        config = configobj.ConfigObj(config_dict)
+
+        with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client):
+            with mock.patch('user.MQTTSubscribe.MessageCallbackProvider'):
+                # pylint: disable=protected-access
+                SUT = MQTTSubscribe(config, mock_logger)
+
+                self.assertEqual(SUT.client.on_log, SUT._on_log)
+
+    def test_mqtt_log_not_set(self):
+        mock_logger = mock.Mock(spec=Logger)
+
+        config_dict = {
+            'message_callback': {},
+            'topics': {
+                'foo/bar': {}
+            }
+        }
+
+        config = configobj.ConfigObj(config_dict)
+
+        with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client):
+            with mock.patch('user.MQTTSubscribe.MessageCallbackProvider'):
+                # pylint: disable=protected-access
+                SUT = MQTTSubscribe(config, mock_logger)
+
+                self.assertNotEqual(SUT.client.on_log, SUT._on_log)
+
     def test_missing_callback(self):
         config_dict = {}
         config = configobj.ConfigObj(config_dict)
@@ -412,6 +451,85 @@ class Testtls_configuration(unittest.TestCase):
                 with self.assertRaises(ValueError) as error:
                     MQTTSubscribe(config, mock_logger)
                 self.assertEqual(error.exception.args[0], "'ca_certs' is required.")
+
+class Test_disconnect(unittest.TestCase):
+    def test_disconnect(self):
+        mock_logger = mock.Mock(spec=Logger)
+
+        config_dict = {}
+        config_dict['message_callback'] = {}
+        config = configobj.ConfigObj(config_dict)
+
+        with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client):
+            with mock.patch('user.MQTTSubscribe.MessageCallbackProvider'):
+                with mock.patch('user.MQTTSubscribe.TopicManager'):
+                    # pylint: disable=no-member
+                    SUT = MQTTSubscribe(config, mock_logger)
+
+                    SUT.disconnect()
+
+                    SUT.client.disconnect.assert_called_once()
+
+class TestCallbacks(unittest.TestCase):
+    def test_on_disconnect(self):
+        mock_logger = mock.Mock(spec=Logger)
+
+        config_dict = {}
+        config_dict['message_callback'] = {}
+        config = configobj.ConfigObj(config_dict)
+
+        rc = random.randint(1, 10)
+
+        with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client):
+            with mock.patch('user.MQTTSubscribe.MessageCallbackProvider'):
+                with mock.patch('user.MQTTSubscribe.TopicManager'):
+                    # pylint: disable=no-member, protected-access
+                    SUT = MQTTSubscribe(config, mock_logger)
+
+                    SUT._on_disconnect(None, None, rc)
+
+                    SUT.logger.info.assert_called_with("Disconnected with result code %i" % rc)
+
+    def test_on_subscribe(self):
+        mock_logger = mock.Mock(spec=Logger)
+
+        config_dict = {}
+        config_dict['message_callback'] = {}
+        config = configobj.ConfigObj(config_dict)
+
+        mid = random.randint(1, 10)
+        granted_qos = [random.randint(1, 10)]
+
+        with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client):
+            with mock.patch('user.MQTTSubscribe.MessageCallbackProvider'):
+                with mock.patch('user.MQTTSubscribe.TopicManager'):
+                    # pylint: disable=no-member, protected-access
+                    SUT = MQTTSubscribe(config, mock_logger)
+
+                    SUT._on_subscribe(None, None, mid, granted_qos)
+
+                    SUT.logger.info.assert_called_with("Subscribed to topic mid: %i is size %i has a QOS of %i" \
+                                                        %(mid, len(granted_qos), granted_qos[0]))
+
+    def test_on_log(self):
+        mock_logger = mock.Mock(spec=Logger)
+
+        config_dict = {}
+        config_dict['message_callback'] = {}
+        config = configobj.ConfigObj(config_dict)
+
+        level = 1
+        msg = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+
+        with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client):
+            with mock.patch('user.MQTTSubscribe.MessageCallbackProvider'):
+                with mock.patch('user.MQTTSubscribe.TopicManager'):
+                    # pylint: disable=no-member, protected-access
+                    SUT = MQTTSubscribe(config, mock_logger)
+
+                    SUT._on_log(None, None, level, msg)
+
+                    SUT.logger.info.assert_called_with("MQTTSubscribe MQTT: %s" % msg)
 
 class Teston_connect(unittest.TestCase):
     unit_system_name = 'US'
