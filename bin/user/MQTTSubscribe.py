@@ -1206,7 +1206,7 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
             # ToDo - if I have to loop, removes benefit of _bytefy, time to remove it?
             for key in data_flattened:
                 if fields_full_topic_fieldname:
-                    lookup_key = topic_str + "/" + key # todo - cleanup and test unicode vs str stuff
+                    lookup_key = topic_str + "/" + key # removed in v2.0 pragma: no cover
                 elif msg_id_field and key not in ignore_msg_id_field:
                     lookup_key = key + "_" + str(msg_id) # todo - cleanup
                 else:
@@ -1444,7 +1444,8 @@ class MQTTSubscribe(object):
             time.sleep(1)
 
         if self.userdata['connect_rc'] > 0:
-            raise weewx.WeeWxIOError("Unable to connect. Return code is %i flags are %s." % (self.userdata['rc'], self.userdata['flags']))
+            raise weewx.WeeWxIOError("Unable to connect. Return code is %i flags are %s."
+                                     % (self.userdata['connect_rc'], self.userdata['flags']))
 
     def disconnect(self):
         """ shut it down """

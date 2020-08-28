@@ -11,6 +11,10 @@ class weewx(object): # pylint: disable=invalid-name
     __version__ = "unknown"
     debug = 2
 
+    class WeeWxIOError(IOError):
+        """Base class of exceptions thrown when encountering an input/output error
+        with the hardware."""
+
     class units(object):
         METRIC = 0x10
         METRICWX = 0x11
