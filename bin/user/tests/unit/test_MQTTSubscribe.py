@@ -253,7 +253,8 @@ class TestInitialization(unittest.TestCase):
                 SUT.client.connect.assert_called_once_with(host, port, keepalive)
 
 class Testtls_configuration(unittest.TestCase):
-    def test_(self):
+    @staticmethod
+    def test_tls_configuration_good():
         ca_certs = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
         config_dict = {
             'message_callback': {},
@@ -296,11 +297,14 @@ class Testtls_configuration(unittest.TestCase):
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client):
             with mock.patch('user.MQTTSubscribe.MessageCallbackProvider'):
                 try:
+                    saved_version = ssl.PROTOCOL_TLS
                     del ssl.PROTOCOL_TLS
                 except AttributeError:
-                    pass
+                    saved_version = None
                 with self.assertRaises(ValueError) as error:
                     MQTTSubscribe(config, mock_logger)
+                if saved_version:
+                    ssl.PROTOCOL_TLS = saved_version
                 self.assertEqual(error.exception.args[0], "Invalid 'tls_version'., %s" % tls_version)
 
     def test_missing_PROTOCOL_TLSv1(self):
@@ -321,11 +325,14 @@ class Testtls_configuration(unittest.TestCase):
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client):
             with mock.patch('user.MQTTSubscribe.MessageCallbackProvider'):
                 try:
+                    saved_version = ssl.PROTOCOL_TLSv1
                     del ssl.PROTOCOL_TLSv1
                 except AttributeError:
-                    pass
+                    saved_version = None
                 with self.assertRaises(ValueError) as error:
                     MQTTSubscribe(config, mock_logger)
+                if saved_version:
+                    ssl.PROTOCOL_TLSv1 = saved_version
                 self.assertEqual(error.exception.args[0], "Invalid 'tls_version'., %s" % tls_version)
 
     def test_missing_PROTOCOL_TLSv1_1(self):
@@ -346,11 +353,14 @@ class Testtls_configuration(unittest.TestCase):
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client):
             with mock.patch('user.MQTTSubscribe.MessageCallbackProvider'):
                 try:
+                    saved_version = ssl.PROTOCOL_TLSv1_1
                     del ssl.PROTOCOL_TLSv1_1
                 except AttributeError:
-                    pass
+                    saved_version = None
                 with self.assertRaises(ValueError) as error:
                     MQTTSubscribe(config, mock_logger)
+                if saved_version:
+                    ssl.PROTOCOL_TLSv1_1 = saved_version
                 self.assertEqual(error.exception.args[0], "Invalid 'tls_version'., %s" % tls_version)
 
     def test_missing_PROTOCOL_TLSv1_2(self):
@@ -371,11 +381,14 @@ class Testtls_configuration(unittest.TestCase):
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client):
             with mock.patch('user.MQTTSubscribe.MessageCallbackProvider'):
                 try:
+                    saved_version = ssl.PROTOCOL_TLSv1_2
                     del ssl.PROTOCOL_TLSv1_2
                 except AttributeError:
-                    pass
+                    saved_version = None
                 with self.assertRaises(ValueError) as error:
                     MQTTSubscribe(config, mock_logger)
+                if saved_version:
+                    ssl.PROTOCOL_TLSv1_2 = saved_version
                 self.assertEqual(error.exception.args[0], "Invalid 'tls_version'., %s" % tls_version)
 
     def test_missing_PROTOCOL_SSLv2(self):
@@ -396,11 +409,14 @@ class Testtls_configuration(unittest.TestCase):
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client):
             with mock.patch('user.MQTTSubscribe.MessageCallbackProvider'):
                 try:
+                    saved_version = ssl.PROTOCOL_SSLv2
                     del ssl.PROTOCOL_SSLv2
                 except AttributeError:
-                    pass
+                    saved_version = None
                 with self.assertRaises(ValueError) as error:
                     MQTTSubscribe(config, mock_logger)
+                if saved_version:
+                    ssl.PROTOCOL_SSLv2 = saved_version
                 self.assertEqual(error.exception.args[0], "Invalid 'tls_version'., %s" % tls_version)
 
     def test_missing_PROTOCOL_SSLv23(self):
@@ -421,11 +437,14 @@ class Testtls_configuration(unittest.TestCase):
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client):
             with mock.patch('user.MQTTSubscribe.MessageCallbackProvider'):
                 try:
+                    saved_version = ssl.PROTOCOL_SSLv23
                     del ssl.PROTOCOL_SSLv23
                 except AttributeError:
-                    pass
+                    saved_version = None
                 with self.assertRaises(ValueError) as error:
                     MQTTSubscribe(config, mock_logger)
+                if saved_version:
+                    ssl.PROTOCOL_SSLv23 = saved_version
                 self.assertEqual(error.exception.args[0], "Invalid 'tls_version'., %s" % tls_version)
 
     def test_missing_PROTOCOL_SSLv3(self):
@@ -446,11 +465,14 @@ class Testtls_configuration(unittest.TestCase):
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client):
             with mock.patch('user.MQTTSubscribe.MessageCallbackProvider'):
                 try:
+                    saved_version = ssl.PROTOCOL_SSLv3
                     del ssl.PROTOCOL_SSLv3
                 except AttributeError:
-                    pass
+                    saved_version = None
                 with self.assertRaises(ValueError) as error:
                     MQTTSubscribe(config, mock_logger)
+                if saved_version:
+                    ssl.PROTOCOL_SSLv3 = saved_version
                 self.assertEqual(error.exception.args[0], "Invalid 'tls_version'., %s" % tls_version)
 
     def test_invalid_certs_required(self):
@@ -471,11 +493,14 @@ class Testtls_configuration(unittest.TestCase):
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client):
             with mock.patch('user.MQTTSubscribe.MessageCallbackProvider'):
                 try:
+                    saved_version = ssl.PROTOCOL_SSLv3
                     del ssl.PROTOCOL_SSLv3
                 except AttributeError:
-                    pass
+                    saved_version = None
                 with self.assertRaises(ValueError) as error:
                     MQTTSubscribe(config, mock_logger)
+                if saved_version:
+                    ssl.PROTOCOL_SSLv3 = saved_version
                 self.assertEqual(error.exception.args[0], "Invalid 'certs_required'., %s" % certs_required)
 
     def test_missing_ca_certs(self):
@@ -495,11 +520,14 @@ class Testtls_configuration(unittest.TestCase):
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client):
             with mock.patch('user.MQTTSubscribe.MessageCallbackProvider'):
                 try:
+                    saved_version = ssl.PROTOCOL_SSLv3
                     del ssl.PROTOCOL_SSLv3
                 except AttributeError:
-                    pass
+                    saved_version = None
                 with self.assertRaises(ValueError) as error:
                     MQTTSubscribe(config, mock_logger)
+                if saved_version:
+                    ssl.PROTOCOL_SSLv3 = saved_version
                 self.assertEqual(error.exception.args[0], "'ca_certs' is required.")
 
 class TestStart(unittest.TestCase):
@@ -533,7 +561,8 @@ class TestStart(unittest.TestCase):
                         SUT.client.loop_start.assert_called_once()
                         self.assertEqual(error.exception.args[0], "Unable to connect. Return code is %i flags are %s." % (connect_rc, flags))
 
-    def test_immediate_connection(self):
+    @staticmethod
+    def test_immediate_connection():
         mock_logger = mock.Mock(spec=Logger)
 
         config_dict = {}
@@ -580,7 +609,8 @@ class TestStart(unittest.TestCase):
                         mock_time.sleep.assert_called_once()
 
 class Test_disconnect(unittest.TestCase):
-    def test_disconnect(self):
+    @staticmethod
+    def test_disconnect():
         mock_logger = mock.Mock(spec=Logger)
 
         config_dict = {}
@@ -598,7 +628,8 @@ class Test_disconnect(unittest.TestCase):
                     SUT.client.disconnect.assert_called_once()
 
 class TestCallbacks(unittest.TestCase):
-    def test_on_disconnect(self):
+    @staticmethod
+    def test_on_disconnect():
         mock_logger = mock.Mock(spec=Logger)
 
         config_dict = {}
@@ -617,7 +648,8 @@ class TestCallbacks(unittest.TestCase):
 
                     SUT.logger.info.assert_called_with("Disconnected with result code %i" % rc)
 
-    def test_on_subscribe(self):
+    @staticmethod
+    def test_on_subscribe():
         mock_logger = mock.Mock(spec=Logger)
 
         config_dict = {}
@@ -638,7 +670,8 @@ class TestCallbacks(unittest.TestCase):
                     SUT.logger.info.assert_called_with("Subscribed to topic mid: %i is size %i has a QOS of %i" \
                                                         %(mid, len(granted_qos), granted_qos[0]))
 
-    def test_on_log(self):
+    @staticmethod
+    def test_on_log():
         mock_logger = mock.Mock(spec=Logger)
 
         config_dict = {}
