@@ -15,7 +15,8 @@ import test_weewx_stubs # used to set up stubs - pylint: disable=unused-import
 from user.MQTTSubscribe import MQTTSubscribeDriver
 
 class TestclosePort(unittest.TestCase):
-    def test_close_port(self):
+    @staticmethod
+    def test_close_port():
         config_dict = {}
         config_dict['topic'] = 'foo/bar'
 

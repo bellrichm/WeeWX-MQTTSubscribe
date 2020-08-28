@@ -34,7 +34,8 @@ class atestInitialization(unittest.TestCase):
 
             self.assertEqual(error.exception.args[0], "MQTTSubscribeService: Unknown binding: %s" % binding)
 
-    def test_not_enable(self):
+    @staticmethod
+    def test_not_enable():
         mock_StdEngine = mock.Mock()
 
         config_dict = {
