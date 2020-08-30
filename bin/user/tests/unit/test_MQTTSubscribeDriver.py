@@ -77,7 +77,28 @@ class TestgenLoopPackets(unittest.TestCase):
         for data in test_data:
             yield data
 
+    @staticmethod
+    def empty_generator():
+        return
+        yield # needed to make this a generator # pylint: disable=unreachable
+
     def test_queue_empty(self):
+        topic = 'foo/bar'
+        self.setup_queue_tests(topic)
+
+        with mock.patch('user.MQTTSubscribe.MQTTSubscribe') as mock_manager:
+            with mock.patch('user.MQTTSubscribe.time') as mock_time:
+                type(mock_manager.return_value).subscribed_topics = mock.PropertyMock(return_value=[topic])
+                type(mock_manager.return_value).get_data = mock.Mock(side_effect=[self.empty_generator(), self.generator([self.queue_data])])
+
+                SUT = MQTTSubscribeDriver(**self.config_dict)
+                gen = SUT.genLoopPackets()
+                next(gen, None)
+
+                mock_time.sleep.assert_called_once()
+                self.assertEqual(mock_manager.return_value.get_data.call_count, 2)
+
+    def test_queue_returns_none(self):
         topic = 'foo/bar'
         self.setup_queue_tests(topic)
 
@@ -167,7 +188,25 @@ class TestgenArchiveRecords(unittest.TestCase):
         for data in test_data:
             yield data
 
+    @staticmethod
+    def empty_generator():
+        return
+        yield # needed to make this a generator # pylint: disable=unreachable
+
     def test_empty_queue(self):
+        archive_topic = 'archive'
+        self.setup_archive_queue_tests(archive_topic)
+
+        with mock.patch('user.MQTTSubscribe.MQTTSubscribe') as mock_manager:
+            type(mock_manager.return_value).get_data = mock.Mock(return_value=self.empty_generator())
+
+            SUT = MQTTSubscribeDriver(**self.config_dict)
+            gen = SUT.genArchiveRecords(0)
+            data = next(gen, None)
+
+            self.assertIsNone(data)
+
+    def test_queuereturns_none(self):
         archive_topic = 'archive'
         self.setup_archive_queue_tests(archive_topic)
 
