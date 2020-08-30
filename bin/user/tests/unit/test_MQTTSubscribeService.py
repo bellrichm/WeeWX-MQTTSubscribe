@@ -59,9 +59,10 @@ class atestInitialization(unittest.TestCase):
             'MQTTSubscribeService': {}
         }
 
-        with mock.patch('user.MQTTSubscribe.MQTTSubscribe'):
+        with mock.patch('user.MQTTSubscribe.MQTTSubscribe') as mock_MQTTSubscribe:
             with mock.patch('user.MQTTSubscribe.Logger'):
                 # pylint: disable=no-member
+                type(mock_MQTTSubscribe.return_value).cached_fields = mock.PropertyMock(return_value=None)
                 SUT = MQTTSubscribeService(mock_StdEngine, config_dict)
                 self.assertEqual(SUT.logger.info.call_count, 3)
                 SUT.logger.info.assert_any_call('Running as both a driver and a service.')
@@ -144,9 +145,10 @@ class Testnew_loop_packet(unittest.TestCase):
         new_loop_packet_event = test_weewx_stubs.Event(test_weewx_stubs.NEW_LOOP_PACKET,
                                                        packet=self.packet_data)
 
-        with mock.patch('user.MQTTSubscribe.MQTTSubscribe') as mock_manager:
-            type(mock_manager.return_value).subscribed_topics = mock.PropertyMock(return_value=[topic])
-            type(mock_manager.return_value).get_accumulated_data = mock.Mock(return_value=self.target_data)
+        with mock.patch('user.MQTTSubscribe.MQTTSubscribe') as mock_MQTTSubscribe:
+            type(mock_MQTTSubscribe.return_value).subscribed_topics = mock.PropertyMock(return_value=[topic])
+            type(mock_MQTTSubscribe.return_value).get_accumulated_data = mock.Mock(return_value=self.target_data)
+            type(mock_MQTTSubscribe.return_value).cached_fields = mock.PropertyMock(return_value=None)
 
             SUT = MQTTSubscribeService(self.mock_StdEngine, self.config_dict)
             SUT.end_ts = start_ts
@@ -168,11 +170,12 @@ class Testnew_loop_packet(unittest.TestCase):
         new_loop_packet_event = test_weewx_stubs.Event(test_weewx_stubs.NEW_LOOP_PACKET,
                                                        packet=self.packet_data)
 
-        with mock.patch('user.MQTTSubscribe.MQTTSubscribe') as mock_manager:
+        with mock.patch('user.MQTTSubscribe.MQTTSubscribe') as mock_MQTTSubscribe:
             with mock.patch('user.MQTTSubscribe.Logger'):
                 # pylint: disable=no-member
-                type(mock_manager.return_value).subscribed_topics = mock.PropertyMock(return_value=[topic])
-                type(mock_manager.return_value).get_accumulated_data = mock.Mock(return_value=self.target_data)
+                type(mock_MQTTSubscribe.return_value).subscribed_topics = mock.PropertyMock(return_value=[topic])
+                type(mock_MQTTSubscribe.return_value).get_accumulated_data = mock.Mock(return_value=self.target_data)
+                type(mock_MQTTSubscribe.return_value).cached_fields = mock.PropertyMock(return_value=None)
 
                 SUT = MQTTSubscribeService(self.mock_StdEngine, self.config_dict)
                 SUT.end_ts = end_period_ts + 10
