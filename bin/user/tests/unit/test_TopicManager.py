@@ -581,6 +581,36 @@ class TestGetQueueData(unittest.TestCase):
             self.assertDictEqual(elements[1], elem_two)
             self.assertDictEqual(elements[2], elem_three)
 
+    def test_wind_queue_good(self):
+        mock_logger = mock.Mock(spec=Logger)
+
+        with mock.patch('user.MQTTSubscribe.CollectData') as mock_CollectData:
+            type(mock_CollectData.return_value).add_data = mock.Mock(return_value={})
+            type(mock_CollectData.return_value).get_data = mock.Mock(return_value={})
+
+            SUT = TopicManager(self.config, mock_logger)
+
+            collector_topic = ""
+            for topic in SUT.subscribed_topics:
+                print(topic)
+                if SUT.subscribed_topics[topic]['type'] == 'collector':
+                    collector_topic = topic
+                    break
+
+            fieldname = 'windSpeed'
+            data = {
+                fieldname: random.uniform(1, 100),
+                'usUnits': 1,
+                'dateTime': time.time()
+            }
+
+            SUT.append_data(collector_topic, data, fieldname)
+
+            elements = []
+            for data in SUT.get_data(collector_topic):
+                elements.append(data)
+
+            self.assertEqual(len(elements), 0)
 
 class TestGetWindQueueData(unittest.TestCase):
     topic = 'foo/bar'
