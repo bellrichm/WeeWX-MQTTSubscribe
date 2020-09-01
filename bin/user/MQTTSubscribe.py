@@ -364,6 +364,7 @@ class AbstractLogger(object):
         if logging.getLevelName(self.trace_level) == 'Level 5':
             logging.addLevelName(self.trace_level, "TRACE")
 
+        # check that the level configured is valid
         self.level = logging._checkLevel(level) # not sure there is a better way pylint: disable=protected-access
 
     def log_environment(self):
@@ -395,7 +396,7 @@ class AbstractLogger(object):
         """ Log error messages. """
         raise NotImplementedError("Method 'error' not implemented")
 
-try: # pragma: no cover
+try:
     import weeutil.logger
     def setup_logging(logging_level, config_dict):
         """ Setup logging for running in standalone mode."""
@@ -409,7 +410,7 @@ try: # pragma: no cover
         MSG_FORMAT = "(%s) %s"
 
         def __init__(self, mode, level='NOTSET', filename=None, console=None):
-            super(Logger, self).__init__(mode, level, filename=None, console=None)
+            super(Logger, self).__init__(mode, level, filename=filename, console=console)
             self._logmsg = logging.getLogger(__name__)
             if self.console:
                 self._logmsg.addHandler(logging.StreamHandler(sys.stdout))
@@ -464,7 +465,7 @@ try: # pragma: no cover
         def error(self, msg):
             """ Log error messages. """
             self._logmsg.error(self.MSG_FORMAT, self.mode, msg)
-except ImportError: # pragma: no cover
+except ImportError:
     import syslog
     def setup_logging(logging_level, config_dict): # Need to match signature pylint: disable=unused-argument
         """ Setup logging for running in standalone mode."""
