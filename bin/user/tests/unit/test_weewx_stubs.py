@@ -61,6 +61,8 @@ class weewx(object): # pylint: disable=invalid-name
             pass
 
 class weeutil(object):
+    class logger(object):
+        pass
     class weeutil(object):
         class TimeSpan(tuple):
             """Represents a time span, exclusive on the left, inclusive on the right."""
@@ -216,3 +218,5 @@ sys.modules['weewx.drivers'] = weewx.drivers
 sys.modules['weewx.engine'] = weewx.engine
 sys.modules['weeutil'] = weeutil
 sys.modules['weeutil.weeutil'] = weeutil.weeutil
+sys.modules['weeutil.logger'] = weeutil.logger
+#del weeutil.logger
