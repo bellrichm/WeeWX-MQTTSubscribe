@@ -18,6 +18,31 @@ from test_weewx_stubs import weeutil
 PY2 = sys.version_info[0] == 2
 
 class TestV3Logging(unittest.TestCase):
+    def test_init_filename(self):
+        with mock.patch.dict(sys.modules, {'weeutil.logger':None}):
+            import user.MQTTSubscribe
+            if PY2:
+                reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
+            else:
+                import importlib
+                importlib.reload(user.MQTTSubscribe)
+            with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
+                with mock.patch('user.MQTTSubscribe.open') as mock_open:
+                    from user.MQTTSubscribe import Logger
+                    mode = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+                    filename = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+
+                    mock_logging._checkLevel.return_value = 0 # pylint: disable=protected-access
+                    Logger(mode, filename=filename)
+
+                    self.assertEqual(mock_open.call_count, 1)
+                    mock_open.assert_called_once_with(filename, 'w')
+
+            if PY2:
+                reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
+            else:
+                importlib.reload(user.MQTTSubscribe)
+
     def test_base(self):
         print("start base v3")
         with mock.patch.dict(sys.modules, {'weeutil.logger':None}):
@@ -28,51 +53,33 @@ class TestV3Logging(unittest.TestCase):
                 import importlib
                 importlib.reload(user.MQTTSubscribe)
             with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
-                with mock.patch('user.MQTTSubscribe.open') as m2:
-                    from user.MQTTSubscribe import Logger
-                    mode = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
-                    filename = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+                with mock.patch('user.MQTTSubscribe.open') as mock_open:
+                    with mock.patch('user.MQTTSubscribe.syslog') as mock_syslog:
+                        with mock.patch('user.MQTTSubscribe.print') as mock_print:
+                            from user.MQTTSubscribe import Logger
+                            mock_file = mock.Mock()
+                            mock_open.return_value = mock_file
+                            log_level = random.randint(1, 99)
+                            mode = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+                            message = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+                            filename = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
 
-                    mock_logging._checkLevel.return_value = 0 # pylint: disable=protected-access
-                    SUT = Logger(mode, filename=filename)
+                            mock_logging._checkLevel.return_value = 0 # pylint: disable=protected-access
+                            type(mock_syslog).LOG_ERR = mock.PropertyMock(return_value=log_level)
 
-                    self.assertEqual(m2.call_count, 1)
-                    m2.assert_called_once_with(filename, 'w')
+                            SUT = Logger(mode, filename=filename, console=True)
+
+                            SUT.error(message)
+
+                            mock_syslog.syslog.assert_called_once_with(log_level, '(%s) user.MQTTSubscribe: %s' % (mode, message))
+                            mock_file.write.assert_called_once_with('user.MQTTSubscribe: %s\n' % message)
+                            mock_print.assert_called_once_with('user.MQTTSubscribe: %s' % message)
 
             if PY2:
                 reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
             else:
                 importlib.reload(user.MQTTSubscribe)
         print("done")
-
-"""
-    def test_test(self):
-        print("start")
-        m = mock.mock_open()
-
-        with mock.patch.dict(sys.modules, {'weeutil.logger':None}):
-            with mock.patch('user.MQTTSubscribe.open', m) as m2:
-            #with mock.patch.object(user.MQTTSubscribe, 'open', m):
-                with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
-                #with mock.patch('user.MQTTSubscribe.RecordCache') as mock_open:
-
-                    import user.MQTTSubscribe
-                    from user.MQTTSubscribe import Logger
-
-                    mode = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
-                    filename = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
-
-                    mock_logging._checkLevel.return_value = 0 # pylint: disable=protected-access
-                    print("v3 test")
-                    SUT = Logger(mode, filename=filename)
-                    #SUT = Logger(mode)
-                    # print(SUT)
-                    # SUT.info("foo/bar v3")
-                self.assertEqual(m2.call_count, 1)
-                m2.assert_called_once_with(filename, 'w')
-                    
-        print("done")
-"""
 
 class TestV4Logging(unittest.TestCase):
     def test_init_set_trace_log_level(self):
