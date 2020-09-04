@@ -478,7 +478,7 @@ except ImportError:
     class Logger(AbstractLogger):
         """ The logging class. """
         def __init__(self, mode, level='NOTSET', filename=None, console=None):
-            super(Logger, self).__init__(mode, level, filename=None, console=None)
+            super(Logger, self).__init__(mode, level, filename=filename, console=None)
 
             self.file = None
             if self.filename is not None:
@@ -1260,7 +1260,7 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
         except Exception as exception: # (want to catch all) pylint: disable=broad-except
             self._log_exception('on_message_individual', exception, msg)
 
-class MQTTSubscribe(object):
+class MQTTSubscriber(object):
     """ Manage MQTT sunscriptions. """
     def __init__(self, service_dict, logger):
         # pylint: disable=too-many-locals, too-many-statements, too-many-branches
@@ -1511,7 +1511,7 @@ class MQTTSubscribeService(StdService):
 
         self.end_ts = 0 # prime for processing loop packet
 
-        self.subscriber = MQTTSubscribe(service_dict, self.logger)
+        self.subscriber = MQTTSubscriber(service_dict, self.logger)
 
         self.logger.info("binding is %s" % self.binding)
 
@@ -1640,7 +1640,7 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice): # (methods not used) py
         self._archive_interval = to_int(stn_dict.get('archive_interval', 300))
         self.archive_topic = stn_dict.get('archive_topic', None)
 
-        self.subscriber = MQTTSubscribe(stn_dict, self.logger)
+        self.subscriber = MQTTSubscriber(stn_dict, self.logger)
 
         self.logger.info("Wait before retry is %i" % self.wait_before_retry)
         self.subscriber.start()
