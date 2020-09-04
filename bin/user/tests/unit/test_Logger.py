@@ -98,6 +98,69 @@ class TestV3Logging(unittest.TestCase):
             else:
                 importlib.reload(user.MQTTSubscribe)
 
+    def test_error_logged_to_file(self):
+        with mock.patch.dict(sys.modules, {'weeutil.logger':None}):
+            import user.MQTTSubscribe
+            if PY2:
+                reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
+            else:
+                import importlib
+                importlib.reload(user.MQTTSubscribe)
+            with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
+                with mock.patch('user.MQTTSubscribe.open') as mock_open:
+                    with mock.patch('user.MQTTSubscribe.syslog') as mock_syslog:
+                        from user.MQTTSubscribe import Logger
+                        mock_file = mock.Mock()
+                        mock_open.return_value = mock_file
+                        log_level = random.randint(1, 99)
+                        mode = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+                        message = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+                        filename = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+                        mock_logging._checkLevel.return_value = random.randint(1, 40) # pylint: disable=protected-access
+                        type(mock_syslog).LOG_ERR = mock.PropertyMock(return_value=log_level)
+
+                        SUT = Logger(mode, filename=filename)
+
+                        SUT.error(message)
+
+                        mock_syslog.syslog.assert_called_once_with(log_level, '(%s) user.MQTTSubscribe: %s' % (mode, message))
+                        mock_file.write.assert_called_once_with('user.MQTTSubscribe: %s\n' % message)
+
+            if PY2:
+                reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
+            else:
+                importlib.reload(user.MQTTSubscribe)
+
+    def test_error_logged_to_console(self):
+        with mock.patch.dict(sys.modules, {'weeutil.logger':None}):
+            import user.MQTTSubscribe
+            if PY2:
+                reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
+            else:
+                import importlib
+                importlib.reload(user.MQTTSubscribe)
+            with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
+                with mock.patch('user.MQTTSubscribe.print') as mock_print:
+                    with mock.patch('user.MQTTSubscribe.syslog') as mock_syslog:
+                        from user.MQTTSubscribe import Logger
+                        log_level = random.randint(1, 99)
+                        mode = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+                        message = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+                        mock_logging._checkLevel.return_value = random.randint(1, 40) # pylint: disable=protected-access
+                        type(mock_syslog).LOG_ERR = mock.PropertyMock(return_value=log_level)
+
+                        SUT = Logger(mode, console=True)
+
+                        SUT.error(message)
+
+                        mock_syslog.syslog.assert_called_once_with(log_level, '(%s) user.MQTTSubscribe: %s' % (mode, message))
+                        mock_print.assert_called_once_with('user.MQTTSubscribe: %s' % message)
+
+            if PY2:
+                reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
+            else:
+                importlib.reload(user.MQTTSubscribe)
+
     def test_info_not_logged(self):
         with mock.patch.dict(sys.modules, {'weeutil.logger':None}):
             import user.MQTTSubscribe
@@ -147,6 +210,69 @@ class TestV3Logging(unittest.TestCase):
                     SUT.info(message)
 
                     mock_syslog.syslog.assert_called_once_with(log_level, '(%s) user.MQTTSubscribe: %s' % (mode, message))
+
+            if PY2:
+                reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
+            else:
+                importlib.reload(user.MQTTSubscribe)
+
+    def test_info_logged_to_file(self):
+        with mock.patch.dict(sys.modules, {'weeutil.logger':None}):
+            import user.MQTTSubscribe
+            if PY2:
+                reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
+            else:
+                import importlib
+                importlib.reload(user.MQTTSubscribe)
+            with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
+                with mock.patch('user.MQTTSubscribe.open') as mock_open:
+                    with mock.patch('user.MQTTSubscribe.syslog') as mock_syslog:
+                        from user.MQTTSubscribe import Logger
+                        mock_file = mock.Mock()
+                        mock_open.return_value = mock_file
+                        log_level = random.randint(1, 99)
+                        mode = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+                        message = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+                        filename = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+                        mock_logging._checkLevel.return_value = random.randint(1, 20) # pylint: disable=protected-access
+                        type(mock_syslog).LOG_INFO = mock.PropertyMock(return_value=log_level)
+
+                        SUT = Logger(mode, filename=filename)
+
+                        SUT.info(message)
+
+                        mock_syslog.syslog.assert_called_once_with(log_level, '(%s) user.MQTTSubscribe: %s' % (mode, message))
+                        mock_file.write.assert_called_once_with('user.MQTTSubscribe: %s\n' % message)
+
+            if PY2:
+                reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
+            else:
+                importlib.reload(user.MQTTSubscribe)
+
+    def test_info_logged_to_console(self):
+        with mock.patch.dict(sys.modules, {'weeutil.logger':None}):
+            import user.MQTTSubscribe
+            if PY2:
+                reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
+            else:
+                import importlib
+                importlib.reload(user.MQTTSubscribe)
+            with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
+                with mock.patch('user.MQTTSubscribe.print') as mock_print:
+                    with mock.patch('user.MQTTSubscribe.syslog') as mock_syslog:
+                        from user.MQTTSubscribe import Logger
+                        log_level = random.randint(1, 99)
+                        mode = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+                        message = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+                        mock_logging._checkLevel.return_value = random.randint(1, 20) # pylint: disable=protected-access
+                        type(mock_syslog).LOG_INFO = mock.PropertyMock(return_value=log_level)
+
+                        SUT = Logger(mode, console=True)
+
+                        SUT.info(message)
+
+                        mock_syslog.syslog.assert_called_once_with(log_level, '(%s) user.MQTTSubscribe: %s' % (mode, message))
+                        mock_print.assert_called_once_with('user.MQTTSubscribe: %s' % message)
 
             if PY2:
                 reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
@@ -208,6 +334,69 @@ class TestV3Logging(unittest.TestCase):
             else:
                 importlib.reload(user.MQTTSubscribe)
 
+    def test_debug_logged_to_file(self):
+        with mock.patch.dict(sys.modules, {'weeutil.logger':None}):
+            import user.MQTTSubscribe
+            if PY2:
+                reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
+            else:
+                import importlib
+                importlib.reload(user.MQTTSubscribe)
+            with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
+                with mock.patch('user.MQTTSubscribe.open') as mock_open:
+                    with mock.patch('user.MQTTSubscribe.syslog') as mock_syslog:
+                        from user.MQTTSubscribe import Logger
+                        mock_file = mock.Mock()
+                        mock_open.return_value = mock_file
+                        log_level = random.randint(1, 99)
+                        mode = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+                        message = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+                        filename = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+                        mock_logging._checkLevel.return_value = random.randint(1, 10) # pylint: disable=protected-access
+                        type(mock_syslog).LOG_DEBUG = mock.PropertyMock(return_value=log_level)
+
+                        SUT = Logger(mode, filename=filename)
+
+                        SUT.debug(message)
+
+                        mock_syslog.syslog.assert_called_once_with(log_level, '(%s) user.MQTTSubscribe: %s' % (mode, message))
+                        mock_file.write.assert_called_once_with('user.MQTTSubscribe: %s\n' % message)
+
+            if PY2:
+                reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
+            else:
+                importlib.reload(user.MQTTSubscribe)
+
+    def test_debug_logged_to_console(self):
+        with mock.patch.dict(sys.modules, {'weeutil.logger':None}):
+            import user.MQTTSubscribe
+            if PY2:
+                reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
+            else:
+                import importlib
+                importlib.reload(user.MQTTSubscribe)
+            with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
+                with mock.patch('user.MQTTSubscribe.print') as mock_print:
+                    with mock.patch('user.MQTTSubscribe.syslog') as mock_syslog:
+                        from user.MQTTSubscribe import Logger
+                        log_level = random.randint(1, 99)
+                        mode = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+                        message = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+                        mock_logging._checkLevel.return_value = random.randint(1, 10) # pylint: disable=protected-access
+                        type(mock_syslog).LOG_DEBUG = mock.PropertyMock(return_value=log_level)
+
+                        SUT = Logger(mode, console=True)
+
+                        SUT.debug(message)
+
+                        mock_syslog.syslog.assert_called_once_with(log_level, '(%s) user.MQTTSubscribe: %s' % (mode, message))
+                        mock_print.assert_called_once_with('user.MQTTSubscribe: %s' % message)
+
+            if PY2:
+                reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
+            else:
+                importlib.reload(user.MQTTSubscribe)
+
     def test_trace_not_logged(self):
         with mock.patch.dict(sys.modules, {'weeutil.logger':None}):
             import user.MQTTSubscribe
@@ -236,7 +425,6 @@ class TestV3Logging(unittest.TestCase):
                 importlib.reload(user.MQTTSubscribe)
 
     def test_trace_logged(self):
-        print("start base v3")
         with mock.patch.dict(sys.modules, {'weeutil.logger':None}):
             import user.MQTTSubscribe
             if PY2:
@@ -264,8 +452,7 @@ class TestV3Logging(unittest.TestCase):
             else:
                 importlib.reload(user.MQTTSubscribe)
 
-    def test_base(self):
-        print("start base v3")
+    def test_trace_logged_to_file(self):
         with mock.patch.dict(sys.modules, {'weeutil.logger':None}):
             import user.MQTTSubscribe
             if PY2:
@@ -276,31 +463,57 @@ class TestV3Logging(unittest.TestCase):
             with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
                 with mock.patch('user.MQTTSubscribe.open') as mock_open:
                     with mock.patch('user.MQTTSubscribe.syslog') as mock_syslog:
-                        with mock.patch('user.MQTTSubscribe.print') as mock_print:
-                            from user.MQTTSubscribe import Logger
-                            mock_file = mock.Mock()
-                            mock_open.return_value = mock_file
-                            log_level = random.randint(1, 99)
-                            mode = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
-                            message = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
-                            filename = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+                        from user.MQTTSubscribe import Logger
+                        mock_file = mock.Mock()
+                        mock_open.return_value = mock_file
+                        log_level = random.randint(1, 99)
+                        mode = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+                        message = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+                        filename = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+                        mock_logging._checkLevel.return_value = random.randint(1, 10) # pylint: disable=protected-access
+                        type(mock_syslog).LOG_DEBUG = mock.PropertyMock(return_value=log_level)
 
-                            mock_logging._checkLevel.return_value = 0 # pylint: disable=protected-access
-                            type(mock_syslog).LOG_ERR = mock.PropertyMock(return_value=log_level)
+                        SUT = Logger(mode, filename=filename)
 
-                            SUT = Logger(mode, filename=filename, console=True)
+                        SUT.trace(message)
 
-                            SUT.error(message)
-
-                            mock_syslog.syslog.assert_called_once_with(log_level, '(%s) user.MQTTSubscribe: %s' % (mode, message))
-                            mock_file.write.assert_called_once_with('user.MQTTSubscribe: %s\n' % message)
-                            mock_print.assert_called_once_with('user.MQTTSubscribe: %s' % message)
+                        mock_syslog.syslog.assert_called_once_with(log_level, '(%s) user.MQTTSubscribe: %s' % (mode, message))
+                        mock_file.write.assert_called_once_with('user.MQTTSubscribe: %s\n' % message)
 
             if PY2:
                 reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
             else:
                 importlib.reload(user.MQTTSubscribe)
-        print("done")
+
+    def test_trace_logged_to_console(self):
+        with mock.patch.dict(sys.modules, {'weeutil.logger':None}):
+            import user.MQTTSubscribe
+            if PY2:
+                reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
+            else:
+                import importlib
+                importlib.reload(user.MQTTSubscribe)
+            with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
+                with mock.patch('user.MQTTSubscribe.print') as mock_print:
+                    with mock.patch('user.MQTTSubscribe.syslog') as mock_syslog:
+                        from user.MQTTSubscribe import Logger
+                        log_level = random.randint(1, 99)
+                        mode = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+                        message = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+                        mock_logging._checkLevel.return_value = random.randint(1, 10) # pylint: disable=protected-access
+                        type(mock_syslog).LOG_DEBUG = mock.PropertyMock(return_value=log_level)
+
+                        SUT = Logger(mode, console=True)
+
+                        SUT.trace(message)
+
+                        mock_syslog.syslog.assert_called_once_with(log_level, '(%s) user.MQTTSubscribe: %s' % (mode, message))
+                        mock_print.assert_called_once_with('user.MQTTSubscribe: %s' % message)
+
+            if PY2:
+                reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
+            else:
+                importlib.reload(user.MQTTSubscribe)
 
 class TestV4Logging(unittest.TestCase):
     def test_init_set_trace_log_level(self):
