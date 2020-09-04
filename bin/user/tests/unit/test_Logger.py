@@ -43,7 +43,8 @@ class TestV3Logging(unittest.TestCase):
             else:
                 importlib.reload(user.MQTTSubscribe)
 
-    def test_error_not_logged(self):
+    @staticmethod
+    def test_error_not_logged():
         with mock.patch.dict(sys.modules, {'weeutil.logger':None}):
             import user.MQTTSubscribe
             if PY2:
@@ -70,7 +71,8 @@ class TestV3Logging(unittest.TestCase):
             else:
                 importlib.reload(user.MQTTSubscribe)
 
-    def test_error_logged(self):
+    @staticmethod
+    def test_error_logged():
         with mock.patch.dict(sys.modules, {'weeutil.logger':None}):
             import user.MQTTSubscribe
             if PY2:
@@ -98,7 +100,8 @@ class TestV3Logging(unittest.TestCase):
             else:
                 importlib.reload(user.MQTTSubscribe)
 
-    def test_error_logged_to_file(self):
+    @staticmethod
+    def test_error_logged_to_file():
         with mock.patch.dict(sys.modules, {'weeutil.logger':None}):
             import user.MQTTSubscribe
             if PY2:
@@ -131,7 +134,8 @@ class TestV3Logging(unittest.TestCase):
             else:
                 importlib.reload(user.MQTTSubscribe)
 
-    def test_error_logged_to_console(self):
+    @staticmethod
+    def test_error_logged_to_console():
         with mock.patch.dict(sys.modules, {'weeutil.logger':None}):
             import user.MQTTSubscribe
             if PY2:
@@ -161,7 +165,8 @@ class TestV3Logging(unittest.TestCase):
             else:
                 importlib.reload(user.MQTTSubscribe)
 
-    def test_info_not_logged(self):
+    @staticmethod
+    def test_info_not_logged():
         with mock.patch.dict(sys.modules, {'weeutil.logger':None}):
             import user.MQTTSubscribe
             if PY2:
@@ -188,7 +193,8 @@ class TestV3Logging(unittest.TestCase):
             else:
                 importlib.reload(user.MQTTSubscribe)
 
-    def test_info_logged(self):
+    @staticmethod
+    def test_info_logged():
         with mock.patch.dict(sys.modules, {'weeutil.logger':None}):
             import user.MQTTSubscribe
             if PY2:
@@ -216,7 +222,8 @@ class TestV3Logging(unittest.TestCase):
             else:
                 importlib.reload(user.MQTTSubscribe)
 
-    def test_info_logged_to_file(self):
+    @staticmethod
+    def test_info_logged_to_file():
         with mock.patch.dict(sys.modules, {'weeutil.logger':None}):
             import user.MQTTSubscribe
             if PY2:
@@ -249,7 +256,8 @@ class TestV3Logging(unittest.TestCase):
             else:
                 importlib.reload(user.MQTTSubscribe)
 
-    def test_info_logged_to_console(self):
+    @staticmethod
+    def test_info_logged_to_console():
         with mock.patch.dict(sys.modules, {'weeutil.logger':None}):
             import user.MQTTSubscribe
             if PY2:
@@ -279,7 +287,8 @@ class TestV3Logging(unittest.TestCase):
             else:
                 importlib.reload(user.MQTTSubscribe)
 
-    def test_debug_not_logged(self):
+    @staticmethod
+    def test_debug_not_logged():
         with mock.patch.dict(sys.modules, {'weeutil.logger':None}):
             import user.MQTTSubscribe
             if PY2:
@@ -306,7 +315,8 @@ class TestV3Logging(unittest.TestCase):
             else:
                 importlib.reload(user.MQTTSubscribe)
 
-    def test_debug_logged(self):
+    @staticmethod
+    def test_debug_logged():
         with mock.patch.dict(sys.modules, {'weeutil.logger':None}):
             import user.MQTTSubscribe
             if PY2:
@@ -334,7 +344,8 @@ class TestV3Logging(unittest.TestCase):
             else:
                 importlib.reload(user.MQTTSubscribe)
 
-    def test_debug_logged_to_file(self):
+    @staticmethod
+    def test_debug_logged_to_file():
         with mock.patch.dict(sys.modules, {'weeutil.logger':None}):
             import user.MQTTSubscribe
             if PY2:
@@ -367,7 +378,8 @@ class TestV3Logging(unittest.TestCase):
             else:
                 importlib.reload(user.MQTTSubscribe)
 
-    def test_debug_logged_to_console(self):
+    @staticmethod
+    def test_debug_logged_to_console():
         with mock.patch.dict(sys.modules, {'weeutil.logger':None}):
             import user.MQTTSubscribe
             if PY2:
@@ -397,7 +409,8 @@ class TestV3Logging(unittest.TestCase):
             else:
                 importlib.reload(user.MQTTSubscribe)
 
-    def test_trace_not_logged(self):
+    @staticmethod
+    def test_trace_not_logged():
         with mock.patch.dict(sys.modules, {'weeutil.logger':None}):
             import user.MQTTSubscribe
             if PY2:
@@ -424,7 +437,8 @@ class TestV3Logging(unittest.TestCase):
             else:
                 importlib.reload(user.MQTTSubscribe)
 
-    def test_trace_logged(self):
+    @staticmethod
+    def test_trace_logged():
         with mock.patch.dict(sys.modules, {'weeutil.logger':None}):
             import user.MQTTSubscribe
             if PY2:
@@ -452,7 +466,8 @@ class TestV3Logging(unittest.TestCase):
             else:
                 importlib.reload(user.MQTTSubscribe)
 
-    def test_trace_logged_to_file(self):
+    @staticmethod
+    def test_trace_logged_to_file():
         with mock.patch.dict(sys.modules, {'weeutil.logger':None}):
             import user.MQTTSubscribe
             if PY2:
@@ -485,7 +500,8 @@ class TestV3Logging(unittest.TestCase):
             else:
                 importlib.reload(user.MQTTSubscribe)
 
-    def test_trace_logged_to_console(self):
+    @staticmethod
+    def test_trace_logged_to_console():
         with mock.patch.dict(sys.modules, {'weeutil.logger':None}):
             import user.MQTTSubscribe
             if PY2:
@@ -552,7 +568,8 @@ class TestV4Logging(unittest.TestCase):
                 SUT._logmsg.addHandler.called_once_with(mock_grandparent_handler) # pylint: disable=protected-access
                 SUT._logmsg.addHandler.called_once_with(mock_parent_handler) # pylint: disable=protected-access
 
-    def test_init_filename_set(self):
+    @staticmethod
+    def test_init_filename_set():
         with mock.patch.dict(sys.modules, {'weeutil.logger':weeutil.logger}):
             with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
                 from user.MQTTSubscribe import Logger
@@ -572,7 +589,8 @@ class TestV4Logging(unittest.TestCase):
                 mock_file_handler.setFormatter.assert_called_once()
                 SUT._logmsg.addHandler.assert_called_once() # pylint: disable=protected-access
 
-    def test_init_console_set(self):
+    @staticmethod
+    def test_init_console_set():
         with mock.patch.dict(sys.modules, {'weeutil.logger':weeutil.logger}):
             import user.MQTTSubscribe
             if PY2:
@@ -595,7 +613,8 @@ class TestV4Logging(unittest.TestCase):
             else:
                 importlib.reload(user.MQTTSubscribe)
 
-    def test_error_logged(self):
+    @staticmethod
+    def test_error_logged():
         with mock.patch.dict(sys.modules, {'weeutil.logger':weeutil.logger}):
             import user.MQTTSubscribe
             if PY2:
@@ -621,7 +640,8 @@ class TestV4Logging(unittest.TestCase):
             else:
                 importlib.reload(user.MQTTSubscribe)
 
-    def test_info_logged(self):
+    @staticmethod
+    def test_info_logged():
         with mock.patch.dict(sys.modules, {'weeutil.logger':weeutil.logger}):
             import user.MQTTSubscribe
             if PY2:
@@ -647,7 +667,8 @@ class TestV4Logging(unittest.TestCase):
             else:
                 importlib.reload(user.MQTTSubscribe)
 
-    def test_debug_logged(self):
+    @staticmethod
+    def test_debug_logged():
         with mock.patch.dict(sys.modules, {'weeutil.logger':weeutil.logger}):
             import user.MQTTSubscribe
             if PY2:
@@ -673,7 +694,8 @@ class TestV4Logging(unittest.TestCase):
             else:
                 importlib.reload(user.MQTTSubscribe)
 
-    def test_trace_logged_with_debug_set(self):
+    @staticmethod
+    def test_trace_logged_with_debug_set():
         with mock.patch.dict(sys.modules, {'weeutil.logger':weeutil.logger}):
             import user.MQTTSubscribe
             if PY2:
@@ -700,7 +722,8 @@ class TestV4Logging(unittest.TestCase):
             else:
                 importlib.reload(user.MQTTSubscribe)
 
-    def test_trace_logged_with_debug_not_set(self):
+    @staticmethod
+    def test_trace_logged_with_debug_not_set():
         with mock.patch.dict(sys.modules, {'weeutil.logger':weeutil.logger}):
             import user.MQTTSubscribe
             if PY2:
