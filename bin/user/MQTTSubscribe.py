@@ -478,7 +478,7 @@ except ImportError:
     class Logger(AbstractLogger):
         """ The logging class. """
         def __init__(self, mode, level='NOTSET', filename=None, console=None):
-            super(Logger, self).__init__(mode, level, filename=filename, console=None)
+            super(Logger, self).__init__(mode, level, filename=filename, console=console)
 
             self.file = None
             if self.filename is not None:
