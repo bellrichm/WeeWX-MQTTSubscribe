@@ -1805,203 +1805,223 @@ if __name__ == '__main__': # pragma: no cover
     CONFIG_FILE = The WeeWX configuration file, typically weewx.conf.
     """
 
-    def main():
-        # pylint: disable=too-many-locals, too-many-statements
-        """ Prepare and run MQTTSubscribe in simulation mode. """
-        parser = argparse.ArgumentParser(usage=USAGE)
-        parser.add_argument('--version', action='version', version="MQTTSubscribe version is %s" % VERSION)
-        parser.add_argument('--records', dest='record_count', type=int,
-                            help='The number of archive records to create.',
-                            default=2)
-        parser.add_argument('--interval', dest='interval', type=int,
-                            help='The archive interval in seconds.',
-                            default=300)
-        parser.add_argument('--delay', dest='delay', type=int,
-                            help='The archive delay in seconds.',
-                            default=15)
-        parser.add_argument("--units", choices=["US", "METRIC", "METRICWX"],
-                            help="The default units if not in MQTT payload.",
-                            default="US")
-        parser.add_argument("--binding", choices=["archive", "loop"],
-                            help="The type of binding.",
-                            default="archive")
-        parser.add_argument("--type", choices=["driver", "service"],
-                            help="The simulation type.",
-                            default="driver")
-        parser.add_argument("--verbose", action="store_true", dest="verbose",
-                            help="Log extra output (debug=1).")
-        parser.add_argument("--console", action="store_true", dest="console",
-                            help="Log to console in addition to syslog.")
-        parser.add_argument("--host",
-                            help="The MQTT server.")
-        parser.add_argument("--topics",
-                            help="Comma separated list of topics to subscribe to.")
-        parser.add_argument("--callback",
-                            help="The callback type.")
-        parser.add_argument("config_file")
+    class Simulator(object):
+        """ Run the service or driver. """
+        def __init__(self):
+            """ Initialize the new instance. """
+            parser = argparse.ArgumentParser(usage=USAGE)
+            parser.add_argument('--version', action='version', version="MQTTSubscribe version is %s" % VERSION)
+            parser.add_argument('--records', dest='record_count', type=int,
+                                help='The number of archive records to create.',
+                                default=2)
+            parser.add_argument('--interval', dest='interval', type=int,
+                                help='The archive interval in seconds.',
+                                default=300)
+            parser.add_argument('--delay', dest='delay', type=int,
+                                help='The archive delay in seconds.',
+                                default=15)
+            parser.add_argument("--units", choices=["US", "METRIC", "METRICWX"],
+                                help="The default units if not in MQTT payload.",
+                                default="US")
+            parser.add_argument("--binding", choices=["archive", "loop"],
+                                help="The type of binding.",
+                                default="archive")
+            parser.add_argument("--type", choices=["driver", "service"],
+                                help="The simulation type.",
+                                default="driver")
+            parser.add_argument("--verbose", action="store_true", dest="verbose",
+                                help="Log extra output (debug=1).")
+            parser.add_argument("--console", action="store_true", dest="console",
+                                help="Log to console in addition to syslog.")
+            parser.add_argument("--host",
+                                help="The MQTT server.")
+            parser.add_argument("--topics",
+                                help="Comma separated list of topics to subscribe to.")
+            parser.add_argument("--callback",
+                                help="The callback type.")
+            parser.add_argument("config_file")
 
-        options = parser.parse_args()
+            options = parser.parse_args()
 
-        simulation_type = options.type
-        binding = options.binding
-        record_count = options.record_count
-        interval = options.interval
-        delay = options.delay
-        units = weewx.units.unit_constants[options.units]
+            self.simulation_type = options.type
+            self.binding = options.binding
+            self.record_count = options.record_count
+            self.interval = options.interval
+            self.delay = options.delay
+            self.callback = options.callback
+            self.topics = options.topics
+            self.host = options.host
+            self.console = options.console
+            self.config_file = options.config_file
+            self.units = options.units
+            self.verbose = options.verbose
 
-        config_path = os.path.abspath(options.config_file)
+            self.engine = None
+            self.config_dict = None
 
-        config_dict = configobj.ConfigObj(config_path, file_error=True)
+            print("Simulation is %s" % self.simulation_type)
+            print("Creating %i %s records" % (self.record_count, self.binding))
+            print("Interval is %i seconds" % self.interval)
+            print("Delay is %i seconds" % self.delay)
 
-        setup_logging(options.verbose, config_dict)
+        def init_configuration(self):
+            """ Initialuze the configuration object. """
+            config_path = os.path.abspath(self.config_file)
 
-        config_topics(config_dict, options.topics)
+            self.config_dict = configobj.ConfigObj(config_path, file_error=True)
+            setup_logging(self.verbose, self.config_dict)
 
-        config_host(config_dict, options.host)
+            # override the configured binding with the parameter value
+            merge_config(self.config_dict, {'MQTTSubscribeService': {'binding': self.binding}})
 
-        config_callback(config_dict, options.callback)
+        def config_topics(self):
+            """ Configure the topics. """
+            if self.topics:
+                topics = self.topics.split(',')
+                if 'MQTTSubscribeService' in self.config_dict and 'topics' in self.config_dict['MQTTSubscribeService']:
+                    self.config_dict['MQTTSubscribeService']['topics'] = {}
+                if 'MQTTSubscribeDriver' in self.config_dict and 'topics' in self.config_dict['MQTTSubscribeDriver']:
+                    self.config_dict['MQTTSubscribeDriver']['topics'] = {}
+                for topic in topics:
+                    merge_config(self.config_dict, {'MQTTSubscribeService': {'topics': {topic:{}}}})
+                    merge_config(self.config_dict, {'MQTTSubscribeDriver': {'topics': {topic:{}}}})
 
-        min_config_dict = {
-            'Station': {
-                'altitude': [0, 'foot'],
-                'latitude': 0,
-                'station_type': 'Simulator',
-                'longitude': 0
-            },
-            'Simulator': {
-                'driver': 'weewx.drivers.simulator',
-            },
-            'Engine': {
-                'Services': {}
+        def config_host(self):
+            """ Configure the host. """
+            if self.host:
+                merge_config(self.config_dict, {'MQTTSubscribeService': {'host': self.host}})
+                merge_config(self.config_dict, {'MQTTSubscribeDriver': {'host': self.host}})
+
+        def config_callback(self):
+            """ Configure the callback. """
+            if self.callback:
+                merge_config(self.config_dict, {'MQTTSubscribeService': {'message_callback': {'type': self.callback}}})
+                merge_config(self.config_dict, {'MQTTSubscribeDriver': {'message_callback': {'type': self.callback}}})
+
+        def config_console(self):
+            """ If specified, override the console logging. """
+            if self.console:
+                merge_config(self.config_dict, {'MQTTSubscribeService': {'console': True}})
+                merge_config(self.config_dict, {'MQTTSubscribeDriver': {'console': True}})
+
+        def init_weewx(self):
+            """ Perform the necessary WeeWX initialization. """
+            min_config_dict = {
+                'Station': {
+                    'altitude': [0, 'foot'],
+                    'latitude': 0,
+                    'station_type': 'Simulator',
+                    'longitude': 0
+                },
+                'Simulator': {
+                    'driver': 'weewx.drivers.simulator',
+                },
+                'Engine': {
+                    'Services': {}
+                }
             }
-        }
 
-        print("Simulation is %s" % simulation_type)
-        print("Creating %i %s records" % (record_count, binding))
-        print("Interval is %i seconds" % interval)
-        print("Delay is %i seconds" % delay)
+            self.engine = StdEngine(min_config_dict)
 
-        engine = StdEngine(min_config_dict)
+            weewx.accum.initialize(self.config_dict)
 
-        weewx.accum.initialize(config_dict)
+        def simulate_driver_archive(self, driver):
+            """ Simulate running MQTTSubscribe as a driver that generates archive records. """
+            i = 0
+            while i < self.record_count:
+                current_time = int(time.time() + 0.5)
+                end_period_ts = (int(current_time / self.interval) + 1) * self.interval
+                end_delay_ts = end_period_ts + self.delay
+                sleep_amount = end_delay_ts - current_time
+                print("Sleeping %i seconds" % sleep_amount)
+                time.sleep(sleep_amount)
 
-        # override the configured binding with the parameter value
-        merge_config(config_dict, {'MQTTSubscribeService': {'binding': binding}})
+                for record in driver.genArchiveRecords(end_period_ts):
+                    print("Record is: %s %s"
+                          % (weeutil.weeutil.timestamp_to_string(record['dateTime']), to_sorted_string(record)))
 
-        config_console(config_dict, options.console)
+                    i += 1
 
-        if simulation_type == "service":
-            simulate_service(engine, config_dict, binding, record_count, interval, delay, units)
-        elif simulation_type == "driver":
-            driver = "user.MQTTSubscribe"
-            __import__(driver)
-            # This is a bit of Python wizardry. First, find the driver module
-            # in sys.modules.
-            driver_module = sys.modules[driver]
-            # Find the function 'loader' within the module:
-            loader_function = getattr(driver_module, 'loader')
-            driver = loader_function(config_dict, engine)
+        def simulate_driver_packet(self, driver):
+            """ Simulate running MQTTSubscribe as a driver that generates loop packets. """
+            i = 0
+            for packet in driver.genLoopPackets():
+                print("Packet is: %s %s"
+                      % (weeutil.weeutil.timestamp_to_string(packet['dateTime']),
+                         to_sorted_string(packet)))
+                i += 1
+                if i >= self.record_count:
+                    break
 
-            if binding == "archive":
-                simulate_driver_archive(driver, record_count, interval, delay)
-            elif binding == "loop":
-                simulate_driver_packet(driver, record_count)
+        def simulate_service(self):
+            """ Simulate running MQTTSubscribe as a service. """
+            service = MQTTSubscribeService(self.engine, self.config_dict)
+            units = weewx.units.unit_constants[self.units]
+            i = 0
+            while i < self.record_count:
+                current_time = int(time.time() + 0.5)
+                end_period_ts = (int(current_time /self.interval) + 1) * self.interval
+                end_delay_ts = end_period_ts + self.delay
+                sleep_amount = end_delay_ts - current_time
 
-    def config_topics(config_dict, topic_option):
-        """ Configure the topics. """
-        if topic_option:
-            topics = topic_option.split(',')
-            if 'MQTTSubscribeService' in config_dict and 'topics' in config_dict['MQTTSubscribeService']:
-                config_dict['MQTTSubscribeService']['topics'] = {}
-            if 'MQTTSubscribeDriver' in config_dict and 'topics' in config_dict['MQTTSubscribeDriver']:
-                config_dict['MQTTSubscribeDriver']['topics'] = {}
-            for topic in topics:
-                merge_config(config_dict, {'MQTTSubscribeService': {'topics': {topic:{}}}})
-                merge_config(config_dict, {'MQTTSubscribeDriver': {'topics': {topic:{}}}})
+                print("Sleeping %i seconds" % sleep_amount)
+                time.sleep(sleep_amount)
 
-    def config_host(config_dict, host_option):
-        """ Configure the host. """
-        if host_option:
-            merge_config(config_dict, {'MQTTSubscribeService': {'host': host_option}})
-            merge_config(config_dict, {'MQTTSubscribeDriver': {'host': host_option}})
+                data = {}
+                data['dateTime'] = end_period_ts
+                data['usUnits'] = units
 
-    def config_callback(config_dict, callback_option):
-        """ Configure the callback. """
-        if callback_option:
-            merge_config(config_dict, {'MQTTSubscribeService': {'message_callback': {'type': callback_option}}})
-            merge_config(config_dict, {'MQTTSubscribeDriver': {'message_callback': {'type': callback_option}}})
+                if self.binding == 'archive':
+                    data['interval'] = self.interval / 60
+                    new_archive_record_event = weewx.Event(weewx.NEW_ARCHIVE_RECORD,
+                                                           record=data,
+                                                           origin='hardware')
+                    self.engine.dispatchEvent(new_archive_record_event)
+                    print("Archive Record is: %s %s"
+                          % (weeutil.weeutil.timestamp_to_string(new_archive_record_event.record['dateTime']),
+                             to_sorted_string(new_archive_record_event.record)))
+                elif self.binding == 'loop':
+                    new_loop_packet_event = weewx.Event(weewx.NEW_LOOP_PACKET,
+                                                        packet=data)
+                    self.engine.dispatchEvent(new_loop_packet_event)
+                    print("Loop packet is: %s %s"
+                          % (weeutil.weeutil.timestamp_to_string(new_loop_packet_event.packet['dateTime']),
+                             to_sorted_string(new_loop_packet_event.packet)))
 
-    def config_console(config_dict, console_option):
-        """ If specified, override the console logging. """
-        if console_option:
-            merge_config(config_dict, {'MQTTSubscribeService': {'console': True}})
-            merge_config(config_dict, {'MQTTSubscribeDriver': {'console': True}})
+                i += 1
 
-    def simulate_driver_archive(driver, record_count, interval, delay):
-        """ Simulate running MQTTSubscribe as a driver that generates archive records. """
-        i = 0
-        while i < record_count:
-            current_time = int(time.time() + 0.5)
-            end_period_ts = (int(current_time / interval) + 1) * interval
-            end_delay_ts = end_period_ts + delay
-            sleep_amount = end_delay_ts - current_time
-            print("Sleeping %i seconds" % sleep_amount)
-            time.sleep(sleep_amount)
+            service.shutDown()
 
-            for record in driver.genArchiveRecords(end_period_ts):
-                print("Record is: %s %s"
-                      % (weeutil.weeutil.timestamp_to_string(record['dateTime']), to_sorted_string(record)))
+        def run(self):
+            """ Run the driver or service in standalone mode. """
+            if self.simulation_type == "service":
+                self.simulate_service()
+            elif self.simulation_type == "driver":
+                driver = "user.MQTTSubscribe"
+                __import__(driver)
+                # This is a bit of Python wizardry. First, find the driver module
+                # in sys.modules.
+                driver_module = sys.modules[driver]
+                # Find the function 'loader' within the module:
+                loader_function = getattr(driver_module, 'loader')
+                driver = loader_function(self.config_dict, self.engine)
 
-            i += 1
+                if self.binding == "archive":
+                    self.simulate_driver_archive(driver)
+                elif self.binding == "loop":
+                    self.simulate_driver_packet(driver)
 
-    def simulate_driver_packet(driver, record_count):
-        """ Simulate running MQTTSubscribe as a driver that generates loop packets. """
-        i = 0
-        for packet in driver.genLoopPackets():
-            print("Packet is: %s %s"
-                  % (weeutil.weeutil.timestamp_to_string(packet['dateTime']),
-                     to_sorted_string(packet)))
-            i += 1
-            if i >= record_count:
-                break
-
-    def simulate_service(engine, config_dict, binding, record_count, interval, delay, units):
-        # pylint: disable=too-many-arguments, too-many-locals
-        """ Simulate running MQTTSubscribe as a service. """
-        service = MQTTSubscribeService(engine, config_dict)
-        i = 0
-        while i < record_count:
-            current_time = int(time.time() + 0.5)
-            end_period_ts = (int(current_time / interval) + 1) * interval
-            end_delay_ts = end_period_ts + delay
-            sleep_amount = end_delay_ts - current_time
-
-            print("Sleeping %i seconds" % sleep_amount)
-            time.sleep(sleep_amount)
-
-            data = {}
-            data['dateTime'] = end_period_ts
-            data['usUnits'] = units
-
-            if binding == 'archive':
-                data['interval'] = interval / 60
-                new_archive_record_event = weewx.Event(weewx.NEW_ARCHIVE_RECORD,
-                                                       record=data,
-                                                       origin='hardware')
-                engine.dispatchEvent(new_archive_record_event)
-                print("Archive Record is: %s %s"
-                      % (weeutil.weeutil.timestamp_to_string(new_archive_record_event.record['dateTime']),
-                         to_sorted_string(new_archive_record_event.record)))
-            elif binding == 'loop':
-                new_loop_packet_event = weewx.Event(weewx.NEW_LOOP_PACKET,
-                                                    packet=data)
-                engine.dispatchEvent(new_loop_packet_event)
-                print("Loop packet is: %s %s"
-                      % (weeutil.weeutil.timestamp_to_string(new_loop_packet_event.packet['dateTime']),
-                         to_sorted_string(new_loop_packet_event.packet)))
-
-            i += 1
-
-        service.shutDown()
+    def main():
+        """ Run it."""
+        print("start")
+        simulator = Simulator()
+        simulator.init_configuration()
+        simulator.config_topics()
+        simulator.config_host()
+        simulator.config_callback()
+        simulator.config_console()
+        simulator.init_weewx()
+        simulator.run()
+        print("done")
 
     main()
