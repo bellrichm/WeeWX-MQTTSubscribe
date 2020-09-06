@@ -318,11 +318,13 @@ Configuration:
 
 from __future__ import with_statement
 from __future__ import print_function
+import argparse
 import copy
 import datetime
 import json
 import locale
 import logging
+import os
 import platform
 import random
 import re
@@ -336,9 +338,14 @@ import paho.mqtt.client as mqtt
 
 import weewx
 import weewx.drivers
-from weewx.engine import StdService
+from weewx.engine import StdEngine, StdService
 import weeutil
 from weeutil.weeutil import option_as_list, to_bool, to_float, to_int, to_sorted_string
+
+try:
+    from weeutil.config import merge_config
+except ImportError:
+    from weecfg import merge_config # pre WeeWX 3.9
 
 VERSION = '1.6.2-rc01'
 DRIVER_NAME = 'MQTTSubscribeDriver'
@@ -397,7 +404,7 @@ class AbstractLogger(object):
         raise NotImplementedError("Method 'error' not implemented")
 
 try:
-    import weeutil.logger
+    import weeutil.logger # pylint: disable=ungrouped-imports
     def setup_logging(logging_level, config_dict):
         """ Setup logging for running in standalone mode."""
         if logging_level:
@@ -1776,18 +1783,9 @@ class MQTTSubscribeDriverConfEditor(weewx.drivers.AbstractConfEditor): # pragma:
 
         return settings
 
-import argparse
-import os
-from weewx.engine import StdEngine # pylint: disable=ungrouped-imports
-try:
-    from weeutil.config import merge_config
-except ImportError:
-    from weecfg import merge_config # pre WeeWX 3.9
-
-
-
 class Simulator(object):
     """ Run the service or driver. """
+    # pylint: disable=too-many-instance-attributes
     def __init__(self):
         """ Initialize the new instance. """
         usage = """MQTTSubscribeService --help
@@ -1870,8 +1868,6 @@ class Simulator(object):
         # override the configured binding with the parameter value
         merge_config(self.config_dict, {'MQTTSubscribeService': {'binding': self.binding}})
 
-    def config_topics(self):
-        """ Configure the topics. """
         if self.topics:
             topics = self.topics.split(',')
             if 'MQTTSubscribeService' in self.config_dict and 'topics' in self.config_dict['MQTTSubscribeService']:
@@ -1882,20 +1878,14 @@ class Simulator(object):
                 merge_config(self.config_dict, {'MQTTSubscribeService': {'topics': {topic:{}}}})
                 merge_config(self.config_dict, {'MQTTSubscribeDriver': {'topics': {topic:{}}}})
 
-    def config_host(self):
-        """ Configure the host. """
         if self.host:
             merge_config(self.config_dict, {'MQTTSubscribeService': {'host': self.host}})
             merge_config(self.config_dict, {'MQTTSubscribeDriver': {'host': self.host}})
 
-    def config_callback(self):
-        """ Configure the callback. """
         if self.callback:
             merge_config(self.config_dict, {'MQTTSubscribeService': {'message_callback': {'type': self.callback}}})
             merge_config(self.config_dict, {'MQTTSubscribeDriver': {'message_callback': {'type': self.callback}}})
 
-    def config_console(self):
-        """ If specified, override the console logging. """
         if self.console:
             merge_config(self.config_dict, {'MQTTSubscribeService': {'console': True}})
             merge_config(self.config_dict, {'MQTTSubscribeDriver': {'console': True}})
@@ -2007,7 +1997,6 @@ class Simulator(object):
             elif self.binding == "loop":
                 self.simulate_driver_packet(driver)
 
-
 # To Run
 # setup.py install:
 # PYTHONPATH=/home/weewx/bin python /home/weewx/bin/user/MQTTSubscribe.py
@@ -2015,18 +2004,11 @@ class Simulator(object):
 # rpm or deb package install:
 # PYTHONPATH=/usr/share/weewx python /usr/share/weewx/user/MQTTSubscribe.py
 if __name__ == '__main__': # pragma: no cover
-    #
-
-
     def main():
         """ Run it."""
         print("start")
         simulator = Simulator()
         simulator.init_configuration()
-        simulator.config_topics()
-        simulator.config_host()
-        simulator.config_callback()
-        simulator.config_console()
         simulator.init_weewx()
         simulator.run()
         print("done")

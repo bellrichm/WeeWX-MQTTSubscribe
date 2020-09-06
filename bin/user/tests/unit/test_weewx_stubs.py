@@ -49,6 +49,8 @@ class weewx(object): # pylint: disable=invalid-name
         attribute 'record', which is the new archive record."""
 
     class engine(object):
+        class StdEngine:
+            pass
         class StdService(object):
             def __init__(self, engine, config_dict):
                 pass
@@ -61,6 +63,9 @@ class weewx(object): # pylint: disable=invalid-name
             pass
 
 class weeutil(object):
+    class config(object):
+        def merge_config(self):
+            pass
     class logger(object):
         pass
     class weeutil(object):
@@ -217,6 +222,6 @@ sys.modules['weewx'] = weewx
 sys.modules['weewx.drivers'] = weewx.drivers
 sys.modules['weewx.engine'] = weewx.engine
 sys.modules['weeutil'] = weeutil
+sys.modules['weeutil.config'] = weeutil.config
 sys.modules['weeutil.weeutil'] = weeutil.weeutil
 sys.modules['weeutil.logger'] = weeutil.logger
-#del weeutil.logger
