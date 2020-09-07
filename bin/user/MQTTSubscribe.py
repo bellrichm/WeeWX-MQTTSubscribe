@@ -1835,7 +1835,6 @@ class Simulator(object):
         parser.add_argument("config_file")
 
         options = parser.parse_args()
-        print(options)
 
         self.simulation_type = options.type
         self.binding = options.binding
@@ -1927,6 +1926,8 @@ class Simulator(object):
                       % (weeutil.weeutil.timestamp_to_string(record['dateTime']), to_sorted_string(record)))
 
                 i += 1
+                if i >= self.record_count:
+                    break
 
     def simulate_driver_packet(self, driver):
         """ Simulate running MQTTSubscribe as a driver that generates loop packets. """

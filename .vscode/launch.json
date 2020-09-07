@@ -29,7 +29,7 @@
                 //"--topics", "test-topic",
                 //"--callback", "keyword",                
                 "--verbose",
-                "--console",
+                //"--console",
                 "${workspaceFolder}/weewx.loop.conf"
             ],            
             "console": "integratedTerminal"
@@ -42,11 +42,11 @@
             "args": [
                 "--type", "service",
                 "--binding", "archive",
-                "--interval", "60",
+                "--interval", "300",
                 "--delay", "5",
                 "--records", "1",
                 "--verbose",
-                "--console",
+                //"--console",
                 "${workspaceFolder}/weewx.archive.conf"
             ],            
             "console": "integratedTerminal"
@@ -63,7 +63,7 @@
                 "--delay", "0",
                 "--records", "1",
                 "--verbose",
-                "--console",
+                //"--console",
                 "${workspaceFolder}/weewx.loop.conf"
             ],            
             "console": "integratedTerminal"
@@ -80,7 +80,7 @@
                 "--delay", "5",
                 "--records", "1",
                 "--verbose",
-                "--console",
+                //"--console",
                 "${workspaceFolder}/weewx.archive.conf"
             ],            
             "console": "integratedTerminal"
