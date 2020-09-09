@@ -1,6 +1,7 @@
 # pylint: disable=wrong-import-order
 # pylint: disable=missing-docstring
 # pylint: disable=invalid-name
+# need to be python 2 compatible pylint: disable=bad-option-value, super-with-arguments
 
 from __future__ import with_statement
 
@@ -297,7 +298,8 @@ class Testnew_archive_record(unittest.TestCase):
                 SUT.cache.get_value.assert_called_once()
                 self.assertEqual(record, updated_record)
 
-    def test_field_exists(self):
+    @staticmethod
+    def test_field_exists():
         mock_StdEngine = mock.Mock()
         unit_system = random.randint(1, 10)
         fieldname = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
