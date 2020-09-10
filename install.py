@@ -22,6 +22,7 @@ import configobj
 from weecfg.extension import ExtensionInstaller
 
 # need to be python 2 compatible pylint: disable=bad-option-value, super-with-arguments
+# pylint: enable=bad-option-value
 
 # Stole from six module. Added to eliminate dependency on six when running under WeeWX 3.x
 PY2 = sys.version_info[0] == 2
