@@ -1345,7 +1345,7 @@ class MQTTSubscriber(object):
         self.userdata = {}
         self.userdata['connect'] = False
         self.userdata['connect_rc'] = None
-        self.userdata['connect_flags'] = None
+        self.userdata['connect_flags'] = 0
         self.client = mqtt.Client(client_id=clientid, userdata=self.userdata, clean_session=clean_session)
 
         if log_mqtt:
@@ -1457,7 +1457,7 @@ class MQTTSubscriber(object):
 
         if self.userdata['connect_rc'] > 0:
             raise weewx.WeeWxIOError("Unable to connect. Return code is %i flags are %s."
-                                     % (self.userdata['connect_rc'], self.userdata['flags']))
+                                     % (self.userdata['connect_rc'], self.userdata['connect_flags']))
 
     def disconnect(self):
         """ shut it down """

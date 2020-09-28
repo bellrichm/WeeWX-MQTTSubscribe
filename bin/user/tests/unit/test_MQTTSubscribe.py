@@ -554,7 +554,7 @@ class TestStart(unittest.TestCase):
                             SUT.userdata = {}
                             SUT.userdata['connect'] = True
                             SUT.userdata['connect_rc'] = connect_rc
-                            SUT.userdata['flags'] = flags
+                            SUT.userdata['connect_flags'] = flags
 
                             SUT.start()
 
