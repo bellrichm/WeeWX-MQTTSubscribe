@@ -31,7 +31,7 @@ if PY2:
 else:
     from io import StringIO
 
-VERSION = '1.6.2-rc01'
+VERSION = '1.6.2-rc02'
 
 MQTTSUBSCRIBESERVICE_CONFIG = """
 [MQTTSubscribeService]
@@ -102,7 +102,7 @@ class MQTTSubscribeServiceInstaller(ExtensionInstaller):
         install_dict = {
             'version': VERSION,
             'name': 'MQTTSubscribe',
-            'description': 'Augment WeeWX records or packets with data MQTT',
+            'description': 'Augment WeeWX records or packets with MQTT data.',
             'author': "Rich Bell",
             'author_email': "bellrichm@gmail.com",
             'files': [('bin/user', ['bin/user/MQTTSubscribe.py'])]

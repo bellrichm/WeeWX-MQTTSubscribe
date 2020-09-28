@@ -1,3 +1,16 @@
+V1.6.2
+Enhancements/Fixes
+- Catch and log connection exceptions.
+- Fix bug when logging connection failures.
+- Add TLS support.
+- Fixed console and file logging bug.
+
+Internal Improvements
+= Run tests against WeeWX master.
+- Additional tests.
+- Remove dependency on WeeWX when running unit tests. (Still necessary for integration tests.)
+- Ability to run build locally.
+
 V1.6.1
 Enhancements/Fixes
 - Fixed the cacheing of archive record fields when using the new field configuration.
