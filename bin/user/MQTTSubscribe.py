@@ -612,7 +612,10 @@ class TopicManager(object):
         default_ignore_start_time = to_bool(config.get('ignore_start_time', False))
         default_ignore_end_time = to_bool(config.get('ignore_end_time', False))
         overlap = to_float(config.get('overlap', 0)) # Backwards compatibility
-        default_adjust_start_time = to_float(config.get('adjust_start_time', overlap))
+        if default_ignore_start_time:
+            default_adjust_start_time = to_float(config.get('adjust_start_time', 1))
+        else:
+            default_adjust_start_time = to_float(config.get('adjust_start_time', overlap))
         default_adjust_end_time = to_float(config.get('adjust_end_time', 0))
         default_datetime_format = config.get('datetime_format', None)
         default_offset_format = config.get('offset_format', None)

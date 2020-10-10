@@ -4,6 +4,7 @@ Enhancements/Fixes
 - Fix bug when logging connection failures.
 - Add TLS support.
 - Fixed console and file logging bug.
+- Fixed bug ehen ignore_start_time is true (#92).
 
 Internal Improvements
 = Run tests against WeeWX master.

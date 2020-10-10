@@ -704,6 +704,7 @@ class TestAccumulatedData(unittest.TestCase):
 
         start_ts = time.time()
         end_ts = time.time()
+        adjust_start_time = 1
 
         config = copy.deepcopy(self.config)
         config['ignore_start_time'] = True
@@ -718,7 +719,39 @@ class TestAccumulatedData(unittest.TestCase):
 
                 accumulated_data = SUT.get_accumulated_data(self.topic, 0, end_ts, 0)
 
-                mock_Accum.assert_called_once_with(test_weewx_stubs.weeutil.weeutil.TimeSpan(start_ts, end_ts))
+                mock_Accum.assert_called_once_with(test_weewx_stubs.weeutil.weeutil.TimeSpan(start_ts - adjust_start_time, end_ts))
+                self.assertDictEqual(accumulated_data, final_record_data)
+
+    def test_ignore_start_set_and_adjusted(self):
+        mock_logger = mock.Mock(spec=Logger)
+
+        final_record_data = {
+            'inTemp': random.uniform(1, 100),
+            'outTemp': random.uniform(1, 100),
+            'usUnits': random.uniform(0, 2),
+            'interval': 5,
+            'dateTime': time.time()
+        }
+
+        start_ts = time.time()
+        end_ts = time.time()
+        adjust_start_time = random.randint(2, 9)
+
+        config = copy.deepcopy(self.config)
+        config['ignore_start_time'] = True
+        config['adjust_start_time'] = adjust_start_time
+
+        with mock.patch('user.MQTTSubscribe.weewx.accum.Accum') as mock_Accum:
+            with mock.patch('user.MQTTSubscribe.weewx.units.to_std_system') as mock_to_std_system:
+                type(mock_Accum.return_value).isEmpty = mock.PropertyMock(return_value=False)
+                mock_to_std_system.return_value = final_record_data
+
+                SUT = TopicManager(config, mock_logger)
+                SUT.append_data(self.topic, {'dateTime': start_ts})
+
+                accumulated_data = SUT.get_accumulated_data(self.topic, 0, end_ts, 0)
+
+                mock_Accum.assert_called_once_with(test_weewx_stubs.weeutil.weeutil.TimeSpan(start_ts - adjust_start_time, end_ts))
                 self.assertDictEqual(accumulated_data, final_record_data)
 
     def test_ignore_end_set(self):
