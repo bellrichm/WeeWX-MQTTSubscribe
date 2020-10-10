@@ -667,7 +667,7 @@ class TestCallbacks(unittest.TestCase):
 
                     SUT._on_subscribe(None, None, mid, granted_qos)
 
-                    SUT.logger.info.assert_called_with("Subscribed to topic mid: %i is size %i has a QOS of %i" \
+                    SUT.logger.info.assert_called_with("Subscribed to mid: %i is size %i has a QOS of %i" \
                                                         %(mid, len(granted_qos), granted_qos[0]))
 
     @staticmethod

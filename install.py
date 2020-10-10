@@ -31,7 +31,7 @@ if PY2:
 else:
     from io import StringIO
 
-VERSION = '1.6.2-rc02'
+VERSION = '1.6.2-rc03'
 
 MQTTSUBSCRIBESERVICE_CONFIG = """
 [MQTTSubscribeService]

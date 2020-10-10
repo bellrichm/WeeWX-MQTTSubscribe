@@ -351,7 +351,7 @@ import weewx
 import weewx.drivers
 from weewx.engine import StdEngine, StdService
 
-VERSION = '1.6.2-rc02'
+VERSION = '1.6.2-rc03'
 DRIVER_NAME = 'MQTTSubscribeDriver'
 DRIVER_VERSION = VERSION
 
@@ -1482,13 +1482,13 @@ class MQTTSubscriber(object):
 
         for topic in self.manager.subscribed_topics:
             (result, mid) = client.subscribe(topic, self.manager.get_qos(topic))
-            self.logger.debug("Subscribed to %s has a mid %i and rc %i" %(topic, mid, result))
+            self.logger.debug("Subscribing to %s has a mid %i and rc %i" %(topic, mid, result))
 
     def _on_disconnect(self, client, userdata, rc): # (match callback signature) pylint: disable=unused-argument
         self.logger.info("Disconnected with result code %i" %rc)
 
     def _on_subscribe(self, client, userdata, mid, granted_qos): # (match callback signature) pylint: disable=unused-argument
-        self.logger.info("Subscribed to topic mid: %i is size %i has a QOS of %i"
+        self.logger.info("Subscribed to mid: %i is size %i has a QOS of %i"
                          %(mid, len(granted_qos), granted_qos[0]))
 
     def _on_log(self, client, userdata, level, msg): # (match callback signature) pylint: disable=unused-argument
