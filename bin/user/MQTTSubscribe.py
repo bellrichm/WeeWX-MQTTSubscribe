@@ -351,7 +351,7 @@ import weewx
 import weewx.drivers
 from weewx.engine import StdEngine, StdService
 
-VERSION = '1.6.2-rc03'
+VERSION = '1.6.2-rc04'
 DRIVER_NAME = 'MQTTSubscribeDriver'
 DRIVER_VERSION = VERSION
 
@@ -600,8 +600,6 @@ class TopicManager(object):
 
         if not config.sections:
             raise ValueError("At least one topic must be configured.")
-
-        self.logger.debug("TopicManager config is %s" % config)
 
         defaults = {}
         default_msg_id_field = config.get('msg_id_field', None)
@@ -1021,7 +1019,6 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
     """ Provide the MQTT callback. """
     def __init__(self, config, logger, topic_manager):
         super(MessageCallbackProvider, self).__init__(logger, topic_manager)
-        self.logger.debug("MessageCallbackProvider config is %s" % config)
         self._setup_callbacks()
         self.type = config.get('type', None)
         self.flatten_delimiter = config.get('flatten_delimiter', '_')
@@ -1279,7 +1276,11 @@ class MQTTSubscriber(object):
     def __init__(self, service_dict, logger):
         # pylint: disable=too-many-locals, too-many-statements, too-many-branches
         self.logger = logger
-        self.logger.debug("service_dict is %s" % service_dict)
+
+        exclude_keys = ['password']
+        sanitized_service_dict = {k: service_dict[k] for k in set(list(service_dict.keys())) - set(exclude_keys)}
+        self.logger.debug("sanitized configuration removed %s" % exclude_keys)
+        self.logger.debug("MQTTSUBscriber sanitized_service_dict is %s" % sanitized_service_dict)
 
         message_callback_config = service_dict.get('message_callback', None)
         if message_callback_config is None:
@@ -1508,7 +1509,6 @@ class MQTTSubscribeService(StdService):
         console = to_bool(service_dict.get('console', False))
         self.logger = Logger('Service', level=logging_level, filename=logging_filename, console=console)
         self.logger.log_environment()
-        self.logger.debug("service_dict is %s" % service_dict)
 
         self.enable = to_bool(service_dict.get('enable', True))
         if not self.enable:
@@ -1648,7 +1648,6 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice): # (methods not used) py
         logging_level = stn_dict.get('logging_level', 'NOTSET').upper()
         self.logger = Logger('Driver', level=logging_level, filename=logging_filename, console=console)
         self.logger.log_environment()
-        self.logger.debug("stn_dict is %s" % stn_dict)
 
         self.wait_before_retry = float(stn_dict.get('wait_before_retry', 2))
         self._archive_interval = to_int(stn_dict.get('archive_interval', 300))
