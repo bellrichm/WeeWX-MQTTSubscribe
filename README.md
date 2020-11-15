@@ -140,7 +140,7 @@ Paho MQTT python client.
             [[Services]]
                 data_services = user.MQTTSubscribe.MQTTSubscribeService
          ```
-             
+        See, [configuring MQTTSubscribe](https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/Configuring)
 5. Restart WeeWX 
 
     ```
