@@ -85,6 +85,11 @@ Configuration:
     # Only used by the driver.
     archive_topic = None
 
+    # The WeeWX archive interval.
+    # The default is 300.
+    # Only used when the archive_topic is set and MQTTSubscribe is running in 'hardware generation' mode.
+    archive_interval = 300
+
     # The TLS options that are passed to tls_set method of the MQTT client.
     # For additional information see, https://eclipse.org/paho/clients/python/docs/strptime-format-codes
     [[tls]]
@@ -674,7 +679,10 @@ class TopicManager(object):
             if topic_dict.sections:
                 self.managing_fields = True
                 if use_topic_as_fieldname:
-                    raise ValueError("MQTTSubscribe: use_topic_as_fieldname is mutually exclusive with [[[[fieldname]]]] configuring")
+                    field_configs = ""
+                    for fieldname in topic_dict.sections:
+                        field_configs = "%s [[[[%s]]]]" %(field_configs, fieldname)
+                    raise ValueError("MQTTSubscribe: use_topic_as_fieldname is mutually exclusive with %s sections." % field_configs)
 
             self.subscribed_topics[topic]['fields'] = {}
             self.subscribed_topics[topic]['ignore_msg_id_field'] = []
