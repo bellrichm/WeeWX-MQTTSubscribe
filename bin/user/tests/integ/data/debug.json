@@ -38,7 +38,10 @@
     "    [[[[PressureUnit]]]]",
     "        conversion_type = None",
     "    [[[[TempUnit]]]]",
-    "        conversion_type = None  "
+    "        conversion_type = None  ",
+    "    [[[[snowDepth]]]]",
+    "        unitsX = inch  "
+    
     
   ],
   "testruns": [
@@ -49,13 +52,12 @@
 						"separator": ",",
 						"delimiter": "=",
 						"data": {
-							"Time":1588436135,
-							"BME280_Temperature":23.7,
-							"BME280_Humidity":42.7,
-							"BME280_DewPoint":10.3,
-							"BME280_Pressure":1013.0,
-							"PressureUnit":"hPa",
-							"TempUnit":"C"
+							"snowDepth":"23.7",
+							"xBME280_Humidity":42.7,
+							"xBME280_DewPoint":10.3,
+							"xBME280_Pressure":1013.0,
+							"xPressureUnit":"hPa",
+							"xTempUnit":"C"
 						}
 					}
 				}
