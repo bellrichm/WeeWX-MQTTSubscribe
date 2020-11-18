@@ -32,6 +32,10 @@ class weewx(object): # pylint: disable=invalid-name
             'METRICWX' : METRICWX
         }
 
+        obs_group_dict = {
+            'barfoo' : {}
+        }
+
         def to_std_system(self):
             pass
 

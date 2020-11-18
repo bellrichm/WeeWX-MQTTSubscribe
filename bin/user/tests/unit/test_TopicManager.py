@@ -88,7 +88,7 @@ class TestInit(unittest.TestCase):
         with self.assertRaises(ValueError) as error:
             TopicManager(config, mock_logger)
 
-        self.assertEqual(error.exception.args[0], "For %s invalid units, %s" % (field_dict, config_dict[topic][field]['units']))
+        self.assertEqual(error.exception.args[0], "For %s invalid units, %s." % (field, config_dict[topic][field]['units']))
 
     def test_mutually_exclusive(self):
         mock_logger = mock.Mock(spec=Logger)
@@ -186,11 +186,11 @@ class TestConfigureFields(unittest.TestCase):
         config_dict[topic][fieldname]['ignore_msg_id_field'] = 'true'
         config_dict[topic][fieldname]['contains_total'] = 'true'
         config_dict[topic][fieldname]['conversion_type'] = 'int'
-        weewx_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+        weewx_name = 'barfoo'
         config_dict[topic][fieldname]['name'] = weewx_name
         config_dict[topic][fieldname]['expires_after'] = 'none'
         unit_name = 'unit_name'
-        config_dict[topic][fieldname]['units'] = 'unit_name'
+        config_dict[topic][fieldname]['units'] = unit_name
 
         config = configobj.ConfigObj(config_dict)
 
@@ -216,7 +216,7 @@ class TestConfigureFields(unittest.TestCase):
         config_dict[topic]['ignore'] = 'true'
         config_dict[topic]['contains_total'] = 'true'
         config_dict[topic]['conversion_type'] = 'int'
-        weewx_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+        weewx_name = 'barfoo'
         config_dict[topic]['name'] = weewx_name
         config_dict[topic]['expires_after'] = 'none'
         unit_name = 'unit_name'

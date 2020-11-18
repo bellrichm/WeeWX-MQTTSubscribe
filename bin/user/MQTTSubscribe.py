@@ -733,10 +733,10 @@ class TopicManager(object):
         field['contains_total'] = to_bool((field_dict).get('contains_total', contains_total))
         field['conversion_type'] = (field_dict).get('conversion_type', conversion_type)
         if 'units' in field_dict:
-            if field_dict['units'] in weewx.units.conversionDict:
+            if field_dict['units'] in weewx.units.conversionDict and field['name'] in weewx.units.obs_group_dict:
                 field['units'] = field_dict['units']
             else:
-                raise ValueError("For %s invalid units, %s" % (field, field_dict['units']))
+                raise ValueError("For %s invalid units, %s." % (field['name'], field_dict['units']))
 
         return field
 
