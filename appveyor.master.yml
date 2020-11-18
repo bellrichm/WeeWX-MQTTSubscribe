@@ -14,7 +14,7 @@ environment:
   SONAR_SCANNER_VERSION: 4.2.0.1873
   SONAR_SCANNER_OPTS: -server
   # default values
-  PYTHON: 3.6.10
+  PYTHON: 3.6
   ENABLED: true
   
   WEEWX_URL: http://www.weewx.com/downloads/released_versions/
@@ -39,7 +39,7 @@ environment:
       job_group: build  
       job_depends_on: initialize      
 
-    - PYTHON: 3.6.10
+    - PYTHON: 3.6
       WEEWX: 4.1.1
       job_group: build
       job_depends_on: initialize
