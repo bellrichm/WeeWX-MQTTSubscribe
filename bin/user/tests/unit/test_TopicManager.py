@@ -107,7 +107,7 @@ class TestInit(unittest.TestCase):
             TopicManager(config, mock_logger)
 
         self.assertEqual(error.exception.args[0],
-                         "MQTTSubscribe: use_topic_as_fieldname is mutually exclusive with [[[[fieldname]]]] configuring")
+                         "MQTTSubscribe: use_topic_as_fieldname is mutually exclusive with  [[[[%s]]]] sections." % field)
 
 class TestConfigureFields(unittest.TestCase):
     def test_no_field_configuration(self):
