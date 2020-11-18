@@ -1,0 +1,40 @@
+
+2020-10-11 13:42:15 DEBUG (Driver) Using weewx version 4.1.0
+2020-10-11 13:42:15 DEBUG (Driver) Using Python 3.6.9 (default, Apr 13 2020, 16:41:22) 
+[GCC 7.5.0]
+2020-10-11 13:42:15 DEBUG (Driver) Platform Linux-5.4.0-48-generic-x86_64-with-debian-buster-sid
+2020-10-11 13:42:15 DEBUG (Driver) Locale is 'LC_CTYPE=en_US.UTF-8;LC_NUMERIC=C;LC_TIME=C;LC_COLLATE=C;LC_MONETARY=C;LC_MESSAGES=C;LC_PAPER=C;LC_NAME=C;LC_ADDRESS=C;LC_TELEPHONE=C;LC_MEASUREMENT=C;LC_IDENTIFICATION=C'
+2020-10-11 13:42:15 INFO (Driver) Version is 1.6.2-rc03
+2020-10-11 13:42:15 INFO (Driver) Log level: 0
+2020-10-11 13:42:15 INFO (Driver) Log debug setting: 1
+2020-10-11 13:42:15 INFO (Driver) Log console: False
+2020-10-11 13:42:15 INFO (Driver) Log file: temp.txt
+2020-10-11 13:42:15 INFO (Driver) overlap is 0.0
+2020-10-11 13:42:15 DEBUG (Driver) TopicManager config is {'overlap': 0.0, 'weather/loop': {}}
+2020-10-11 13:42:15 DEBUG (Driver) TopicManager config is:
+ {'overlap': 0.0, 'weather/loop': {}}
+2020-10-11 13:42:15 DEBUG (Driver) TopicManager self.subscribed_topics is {'weather/loop': {'type': 'normal', 'unit_system': 1, 'msg_id_field': None, 'qos': 0, 'use_server_datetime': False, 'ignore_start_time': False, 'ignore_end_time': False, 'adjust_start_time': 0.0, 'adjust_end_time': 0.0, 'datetime_format': None, 'offset_format': None, 'ignore': False, 'max_queue': 9223372036854775807, 'queue': deque([]), 'fields': {}, 'ignore_msg_id_field': []}, '1602438135.551966-windGust-windGustDir-windDir-windSpeed': {'type': 'collector', 'unit_system': 1, 'qos': 0, 'use_server_datetime': False, 'ignore_start_time': False, 'ignore_end_time': False, 'adjust_start_time': 0.0, 'adjust_end_time': 0.0, 'datetime_format': None, 'offset_format': None, 'max_queue': 9223372036854775807, 'queue': deque([])}}
+2020-10-11 13:42:15 DEBUG (Driver) TopicManager self.cached_fields is {}
+2020-10-11 13:42:15 INFO (Driver) message_callback_provider_name is user.MQTTSubscribe.MessageCallbackProvider
+2020-10-11 13:42:15 INFO (Driver) clientid is MQTTSubscribe-6785
+2020-10-11 13:42:15 INFO (Driver) client_session is True
+2020-10-11 13:42:15 INFO (Driver) host is weather-data.local
+2020-10-11 13:42:15 INFO (Driver) port is 1883
+2020-10-11 13:42:15 INFO (Driver) keepalive is 60
+2020-10-11 13:42:15 INFO (Driver) username is None
+2020-10-11 13:42:15 INFO (Driver) password is not set
+2020-10-11 13:42:15 INFO (Driver) Archive topic is None
+2020-10-11 13:42:15 DEBUG (Driver) MessageCallbackProvider config is {'type': 'json'}
+2020-10-11 13:42:15 DEBUG (Driver) MessageCallbackProvider self.fields is {}
+2020-10-11 13:42:16 INFO (Driver) Wait before retry is 2
+2020-10-11 13:42:16 DEBUG (Driver) Starting loop
+2020-10-11 13:42:16 INFO (Driver) Connected with result code 0
+2020-10-11 13:42:16 INFO (Driver) Connected flags {'session present': 0}
+2020-10-11 13:42:16 DEBUG (Driver) Subscribing to weather/loop has a mid 1 and rc 0
+2020-10-11 13:42:16 DEBUG (Driver) Subscribing to 1602438135.551966-windGust-windGustDir-windDir-windSpeed has a mid 2 and rc 0
+2020-10-11 13:42:16 INFO (Driver) Subscribed to mid: 1 is size 1 has a QOS of 0
+2020-10-11 13:42:16 INFO (Driver) Subscribed to mid: 2 is size 1 has a QOS of 0
+2020-10-11 13:42:17 DEBUG (Driver) MessageCallbackProvider data-> incoming topic: weather/loop, QOS: 0, retain: 0, payload: b'{"monthET": "0.57", "heatindex": "49.8", "outHumidity": "47.0", "dayET": "0.046", "maxSolarRad": "559.285873957", "consBatteryVoltage": "4.54", "monthRain": "0.97", "insideAlarm": "0.0", "barometer": "29.708", "dayRain": "0.0", "stormRain": "0.39", "sunrise": "1602414780.0", "windchill": "49.8", "dewpoint": "30.3896396162", "outsideAlarm1": "0.0", "soilLeafAlarm2": "0.0", "outsideAlarm2": "0.0", "radiation": "624.0", "forecastRule": "190.0", "rainAlarm": "0.0", "stormStart": "1602302400.0", "inTemp": "81.7", "inHumidity": "41.0", "windSpeed10": "3.0", "yearRain": "19.58", "windGustDir": "9.0", "extraAlarm1": "0.0", "extraAlarm2": "0.0", "extraAlarm3": "0.0", "extraAlarm4": "0.0", "extraAlarm5": "0.0", "extraAlarm6": "0.0", "extraAlarm7": "0.0", "extraAlarm8": "0.0", "rainRate": "0.0", "rain": "0.0", "humidex": "49.8", "forecastIcon": "6.0", "pressure": "29.17985717", "soilLeafAlarm4": "0.0", "trendIcon": "0.0", "altimeter": "29.6940076215", "soilLeafAlarm3": "0.0", "usUnits": "1.0", "soilLeafAlarm1": "0.0", "leafWet4": "0.0", "yearET": "23.22", "txBatteryStatus": "0.0", "appTemp": "45.9973187708", "inDewpoint": "55.6804532288", "UV": "2.5", "dateTime": "1602438138.0", "outTemp": "49.8", "windSpeed": "0.0", "sunset": "1602455760.0", "windGust": "7.0", "cloudbase": "4901.44554178"}'
+2020-10-11 13:42:17 DEBUG (Driver) TopicManager data-> incoming weather/loop: UV: 2.5, altimeter: 29.6940076215, appTemp: 45.9973187708, barometer: 29.708, cloudbase: 4901.44554178, consBatteryVoltage: 4.54, dateTime: 1602438138.0, dayET: 0.046, dayRain: 0.0, dewpoint: 30.3896396162, extraAlarm1: 0.0, extraAlarm2: 0.0, extraAlarm3: 0.0, extraAlarm4: 0.0, extraAlarm5: 0.0, extraAlarm6: 0.0, extraAlarm7: 0.0, extraAlarm8: 0.0, forecastIcon: 6.0, forecastRule: 190.0, heatindex: 49.8, humidex: 49.8, inDewpoint: 55.6804532288, inHumidity: 41.0, inTemp: 81.7, insideAlarm: 0.0, leafWet4: 0.0, maxSolarRad: 559.285873957, monthET: 0.57, monthRain: 0.97, outHumidity: 47.0, outTemp: 49.8, outsideAlarm1: 0.0, outsideAlarm2: 0.0, pressure: 29.17985717, radiation: 624.0, rain: 0.0, rainAlarm: 0.0, rainRate: 0.0, soilLeafAlarm1: 0.0, soilLeafAlarm2: 0.0, soilLeafAlarm3: 0.0, soilLeafAlarm4: 0.0, stormRain: 0.39, stormStart: 1602302400.0, sunrise: 1602414780.0, sunset: 1602455760.0, trendIcon: 0.0, txBatteryStatus: 0.0, usUnits: 1.0, windGust: 7.0, windGustDir: 9.0, windSpeed: 0.0, windSpeed10: 3.0, windchill: 49.8, yearET: 23.22, yearRain: 19.58
+2020-10-11 13:42:19 DEBUG (Driver) TopicManager data-> outgoing weather/loop: UV: 2.5, altimeter: 29.6940076215, appTemp: 45.9973187708, barometer: 29.708, cloudbase: 4901.44554178, consBatteryVoltage: 4.54, dateTime: 1602438138.0, dayET: 0.046, dayRain: 0.0, dewpoint: 30.3896396162, extraAlarm1: 0.0, extraAlarm2: 0.0, extraAlarm3: 0.0, extraAlarm4: 0.0, extraAlarm5: 0.0, extraAlarm6: 0.0, extraAlarm7: 0.0, extraAlarm8: 0.0, forecastIcon: 6.0, forecastRule: 190.0, heatindex: 49.8, humidex: 49.8, inDewpoint: 55.6804532288, inHumidity: 41.0, inTemp: 81.7, insideAlarm: 0.0, leafWet4: 0.0, maxSolarRad: 559.285873957, monthET: 0.57, monthRain: 0.97, outHumidity: 47.0, outTemp: 49.8, outsideAlarm1: 0.0, outsideAlarm2: 0.0, pressure: 29.17985717, radiation: 624.0, rain: 0.0, rainAlarm: 0.0, rainRate: 0.0, soilLeafAlarm1: 0.0, soilLeafAlarm2: 0.0, soilLeafAlarm3: 0.0, soilLeafAlarm4: 0.0, stormRain: 0.39, stormStart: 1602302400.0, sunrise: 1602414780.0, sunset: 1602455760.0, trendIcon: 0.0, txBatteryStatus: 0.0, usUnits: 1.0, windGust: 7.0, windGustDir: 9.0, windSpeed: 0.0, windSpeed10: 3.0, windchill: 49.8, yearET: 23.22, yearRain: 19.58
+2020-10-11 13:42:19 DEBUG (Driver) data-> final loop packet is weather/loop 2020-10-11 13:42:18 EDT (1602438138): UV: 2.5, altimeter: 29.6940076215, appTemp: 45.9973187708, barometer: 29.708, cloudbase: 4901.44554178, consBatteryVoltage: 4.54, dateTime: 1602438138.0, dayET: 0.046, dayRain: 0.0, dewpoint: 30.3896396162, extraAlarm1: 0.0, extraAlarm2: 0.0, extraAlarm3: 0.0, extraAlarm4: 0.0, extraAlarm5: 0.0, extraAlarm6: 0.0, extraAlarm7: 0.0, extraAlarm8: 0.0, forecastIcon: 6.0, forecastRule: 190.0, heatindex: 49.8, humidex: 49.8, inDewpoint: 55.6804532288, inHumidity: 41.0, inTemp: 81.7, insideAlarm: 0.0, leafWet4: 0.0, maxSolarRad: 559.285873957, monthET: 0.57, monthRain: 0.97, outHumidity: 47.0, outTemp: 49.8, outsideAlarm1: 0.0, outsideAlarm2: 0.0, pressure: 29.17985717, radiation: 624.0, rain: 0.0, rainAlarm: 0.0, rainRate: 0.0, soilLeafAlarm1: 0.0, soilLeafAlarm2: 0.0, soilLeafAlarm3: 0.0, soilLeafAlarm4: 0.0, stormRain: 0.39, stormStart: 1602302400.0, sunrise: 1602414780.0, sunset: 1602455760.0, trendIcon: 0.0, txBatteryStatus: 0.0, usUnits: 1.0, windGust: 7.0, windGustDir: 9.0, windSpeed: 0.0, windSpeed10: 3.0, windchill: 49.8, yearET: 23.22, yearRain: 19.58

@@ -2,6 +2,6 @@
     "python.linting.pylintEnabled": true,
     "python.linting.pycodestyleEnabled": false,
     "python.envFile": "${workspaceFolder}/.env",
-    "python.pythonPath": "/home/richbell/.pyenv/versions/3.6.9/bin/python3.6",
+    "python.pythonPath": "/home/richbell/.pyenv/shims/python2",
     "python.linting.enabled": true
 }
