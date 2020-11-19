@@ -138,6 +138,7 @@ Configuration:
         # When true, the fieldname is set to the topic and therefore [[[[fieldname]]]] cannot be used.
         # This allows the [[[[fieldname]]]] configuration to be specified directly under the [[[topic]]].
         # Default is False.
+        # DEPRECATED - no longer needed
         use_topic_as_fieldname = False
 
         # Formatting string for converting a timestamp to an epoch datetime.
@@ -527,7 +528,8 @@ class TopicManager(object):
         default_msg_id_field = config.get('msg_id_field', None)
         defaults['ignore_msg_id_field'] = config.get('ignore_msg_id_field', False)
         default_qos = to_int(config.get('qos', 0))
-        default_use_topic_as_fieldname = config.get('use_topic_as_fieldname', False)
+        if config.get('use_topic_as_fieldname', False):
+            self.logger.info("'use_topic_as_fieldname' option is no longer needed and can be removed.")
         default_use_server_datetime = to_bool(config.get('use_server_datetime', False))
         default_ignore_start_time = to_bool(config.get('ignore_start_time', False))
         default_ignore_end_time = to_bool(config.get('ignore_end_time', False))
@@ -557,8 +559,6 @@ class TopicManager(object):
 
             msg_id_field = topic_dict.get('msg_id_field', default_msg_id_field)
             qos = to_int(topic_dict.get('qos', default_qos))
-            use_topic_as_fieldname = config.get('use_topic_as_fieldname', default_use_topic_as_fieldname)
-            defaults['use_topic_as_fieldname'] = use_topic_as_fieldname
             use_server_datetime = to_bool(topic_dict.get('use_server_datetime',
                                                          default_use_server_datetime))
             ignore_start_time = to_bool(topic_dict.get('ignore_start_time', default_ignore_start_time))
@@ -590,26 +590,18 @@ class TopicManager(object):
             self.subscribed_topics[topic]['ignore'] = ignore
             self.subscribed_topics[topic]['max_queue'] = topic_dict.get('max_queue', max_queue)
             self.subscribed_topics[topic]['queue'] = deque()
+            self.subscribed_topics[topic]['ignore_msg_id_field'] = []
+            self.subscribed_topics[topic]['fields'] = {}
 
             if topic_dict.sections:
-                if use_topic_as_fieldname:
-                    field_configs = ""
-                    for fieldname in topic_dict.sections:
-                        field_configs = "%s [[[[%s]]]]" %(field_configs, fieldname)
-                    raise ValueError("MQTTSubscribe: use_topic_as_fieldname is mutually exclusive with %s sections." % field_configs)
-
-            self.subscribed_topics[topic]['fields'] = {}
-            self.subscribed_topics[topic]['ignore_msg_id_field'] = []
-            if use_topic_as_fieldname:
-                self.managing_fields = True
-                self.subscribed_topics[topic]['fields'][topic] = self._configure_field(topic_dict, topic_dict, topic, defaults)
-                self._configure_ignore_fields(topic_dict, topic_dict, topic, topic, defaults)
-                self._configure_cached_fields(topic_dict, topic)
-            else:
                 for field in topic_dict.sections:
                     self.subscribed_topics[topic]['fields'][field] = self._configure_field(topic_dict, topic_dict[field], field, defaults)
                     self._configure_ignore_fields(topic_dict, topic_dict[field], topic, field, defaults)
                     self._configure_cached_fields(topic_dict[field], field)
+            else:
+                self.subscribed_topics[topic]['fields'][topic] = self._configure_field(topic_dict, topic_dict, topic, defaults)
+                self._configure_ignore_fields(topic_dict, topic_dict, topic, topic, defaults)
+                self._configure_cached_fields(topic_dict, topic)
 
         # Add the collector queue as a subscribed topic so that data can retrieved from it
         # Yes, this is a bit of a hack.
@@ -642,7 +634,6 @@ class TopicManager(object):
         conversion_type = topic_dict.get('conversion_type', defaults['conversion_type'])
         field = {}
         field['name'] = (field_dict).get('name', fieldname)
-        field['use_topic_as_field_name'] = defaults['use_topic_as_fieldname']
         field['ignore'] = to_bool((field_dict).get('ignore', defaults['ignore']))
         field['contains_total'] = to_bool((field_dict).get('contains_total', contains_total))
         field['conversion_type'] = (field_dict).get('conversion_type', conversion_type)
