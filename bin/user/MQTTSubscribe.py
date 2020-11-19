@@ -524,6 +524,10 @@ class TopicManager(object):
         if not config.sections:
             raise ValueError("At least one topic must be configured.")
 
+        topic_options = ['unit_system', 'msg_id_field', 'qos', 'use_server_datetime', 'ignore_start_time',
+                         'ignore_end_time', 'adjust_start_time', 'adjust_end_time', 'datetime_format',
+                         'offset_format', 'max_queue']
+
         defaults = {}
         default_msg_id_field = config.get('msg_id_field', None)
         defaults['ignore_msg_id_field'] = config.get('ignore_msg_id_field', False)
@@ -599,9 +603,14 @@ class TopicManager(object):
                     self._configure_ignore_fields(topic_dict, topic_dict[field], topic, field, defaults)
                     self._configure_cached_fields(topic_dict[field], field)
             else:
-                self.subscribed_topics[topic]['fields'][topic] = self._configure_field(topic_dict, topic_dict, topic, defaults)
-                self._configure_ignore_fields(topic_dict, topic_dict, topic, topic, defaults)
-                self._configure_cached_fields(topic_dict, topic)
+                # See if any field options are directly under the topic.
+                # And if so, use the topic as the field name.
+                for (key, value) in topic_dict.items():
+                    if key not in topic_options:
+                        self.subscribed_topics[topic]['fields'][topic] = self._configure_field(topic_dict, topic_dict, topic, defaults)
+                        self._configure_ignore_fields(topic_dict, topic_dict, topic, topic, defaults)
+                        self._configure_cached_fields(topic_dict, topic)
+                        break
 
         # Add the collector queue as a subscribed topic so that data can retrieved from it
         # Yes, this is a bit of a hack.

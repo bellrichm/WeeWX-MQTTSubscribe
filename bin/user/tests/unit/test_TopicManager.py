@@ -98,12 +98,12 @@ class TestConfigureFields(unittest.TestCase):
         configured_field = {}
         configured_field[topic] = {}
         configured_field[topic]['name'] = topic
-        configured_field[topic]['contains_total'] = False
+        configured_field[topic]['contains_total'] = True
         configured_field[topic]['ignore'] = False
         configured_field[topic]['conversion_type'] = 'float'
         config_dict = {}
 
-        config_dict[topic] = {}
+        config_dict[topic] = {'contains_total': True}
 
         config = configobj.ConfigObj(config_dict)
 
