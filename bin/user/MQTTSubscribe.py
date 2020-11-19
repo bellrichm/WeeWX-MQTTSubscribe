@@ -51,23 +51,10 @@ Configuration:
     #    Where xxxx is a random number between 1000 and 9999.
     clientid =
 
-    # The topic to subscribe to.
-    # DEPRECATED - use [[topics]]
-    # topic =
-
     # Turn the service on and off.
     # Default is true.
     # Only used by the service.
     enable = false
-
-    # The amount of time in seconds to overlap the start time when processing the MQTT queue.
-    # When the time of the MQTT payload is less than the end time of the previous packet/record,
-    # the MQTT payload is ignored. When overlap is set, MQTT payloads within this number of seconds
-    # of the previous end time will be processed.
-    # Default is 0.
-    # Only used by the service.
-    # DEPRECATED  - use adjust_start_time
-    # overlap = 0
 
     # The binding, loop or archive.
     # Default is loop.
@@ -118,42 +105,12 @@ Configuration:
         # Default is None.
         ciphers = None
 
-    # DEPRECATED - move the expires_after under the [[topics]]/[[[topic name]]][[[[field name]]]]
-    # Fields in this section will be cached.
-    # If the field is not in the current archive record, its value will be retrieved from the cache.
-    # Only used by the service.
-    # EXPERIMENTAL - may be removed
-    # [[archive_field_cache]]
-    #     # The unit system of the cache.
-    #     # This must match the unit_system of the archive record.
-    #     # Default is US.
-    #     unit_system = US
-    #
-    #     # The WeeWX fields to cache.
-    #     [[[fields]]]
-    #         # The name of the field to cache.
-    #         [[[[fieldname]]]]
-    #             # In seconds how long the cache is valid.
-    #             # Value of 0 means the cache is always expired.
-    #             # Useful if missing fields should have a value of None instead of the previous value.
-    #             # Value of None means the cache never expires.
-    #             # Default is None.
-    #             expires_after = None
-
     # Configuration for the message callback.
     [[message_callback]]
         # The format of the MQTT payload.
         # Currently support: individual, json, keyword.
         # Must be specified.
         type = REPLACE_ME
-
-        # When True, the full topic (weather/outTemp) is used as the fieldname.
-        # When false, the topic furthest to the right is used.
-        # Valid values: True, False.
-        # Default is False.
-        # Only used when type is 'individual'.
-        # DEPRECATED - use [[topics]]/[[[topic name]]]/[[[[field name]]]]
-        full_topic_fieldname = False
 
         # When the json is nested, the delimiter between the hierarchies.
         # Default is _.
@@ -166,46 +123,6 @@ Configuration:
         # The separator between fieldname and value pairs. (field1=value1, field2=value2).
         # Default is "=".
         keyword_separator = "="
-
-        # List of fields that are cumulative values.
-        # Default is: [] (empty list).
-        # DEPRECATED - use [[topics]]/[[[topic name]]]/[[[[field name]]]]
-        # contains_total =
-
-        # Mapping to WeeWX names.
-        # DEPRECATED - use [[topics]]/[[[topic name]]]/[[[[field name]]]]
-        # [[[label_map]]]
-        #     temp1 = extraTemp1
-
-        # Information to map the MQTT data to WeeWX.
-        # DEPRECATED - move the fieldname under the [[topics]]/[[[topic name]]]
-        # [[[fields]]]
-        #     # The incoming field name from MQTT.
-        #     [[[[temp1]]]
-        #        # The WeeWX name.
-        #         # Default is the name from MQTT.
-        #         name = extraTemp1
-        #
-        #         # The conversion type necessary for WeeWX compatibility.
-        #         # Valid values: bool, float, int, none.
-        #         # Default is float.
-        #         conversion_type = float
-        #
-        #         # The units of the incoming data.
-        #         # Useful if this field's units differ from the topic's unit_system's units.
-        #         # Valid values: see, http://www.weewx.com/docs/customizing.htm#units
-        #         # Default is not set.
-        #         # units = km_per_hour
-        #
-        #         # True if the incoming data is cumulative.
-        #         # Valid values: True, False.
-        #         # Default is False.
-        #         contains_total = False
-        #
-        #         # True if the incoming data should not be processed into WeeWX.
-        #         # Valid values: True, False.
-        #         # Default is False.
-        #         ignore = False
 
     [[topics]
         # The QOS level to subscribe to.
@@ -345,7 +262,7 @@ import configobj
 import paho.mqtt.client as mqtt
 
 import weeutil
-from weeutil.weeutil import option_as_list, to_bool, to_float, to_int, to_sorted_string
+from weeutil.weeutil import to_bool, to_float, to_int, to_sorted_string
 
 try:
     from weeutil.config import merge_config
@@ -356,7 +273,7 @@ import weewx
 import weewx.drivers
 from weewx.engine import StdEngine, StdService
 
-VERSION = '1.6.2'
+VERSION = '2.0.0-rc01'
 DRIVER_NAME = 'MQTTSubscribeDriver'
 DRIVER_VERSION = VERSION
 
@@ -614,11 +531,10 @@ class TopicManager(object):
         default_use_server_datetime = to_bool(config.get('use_server_datetime', False))
         default_ignore_start_time = to_bool(config.get('ignore_start_time', False))
         default_ignore_end_time = to_bool(config.get('ignore_end_time', False))
-        overlap = to_float(config.get('overlap', 0)) # Backwards compatibility
         if default_ignore_start_time:
             default_adjust_start_time = to_float(config.get('adjust_start_time', 1))
         else:
-            default_adjust_start_time = to_float(config.get('adjust_start_time', overlap))
+            default_adjust_start_time = to_float(config.get('adjust_start_time', 0))
         default_adjust_end_time = to_float(config.get('adjust_end_time', 0))
         default_datetime_format = config.get('datetime_format', None)
         default_offset_format = config.get('offset_format', None)
@@ -634,7 +550,6 @@ class TopicManager(object):
 
         self.topics = {}
         self.subscribed_topics = {}
-        self.managing_fields = False
         self.cached_fields = {}
 
         for topic in config.sections:
@@ -677,7 +592,6 @@ class TopicManager(object):
             self.subscribed_topics[topic]['queue'] = deque()
 
             if topic_dict.sections:
-                self.managing_fields = True
                 if use_topic_as_fieldname:
                     field_configs = ""
                     for fieldname in topic_dict.sections:
@@ -1032,60 +946,9 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
         self.flatten_delimiter = config.get('flatten_delimiter', '_')
         self.keyword_delimiter = config.get('keyword_delimiter', ',')
         self.keyword_separator = config.get('keyword_separator', '=')
-        contains_total = option_as_list(config.get('contains_total', []))
-        label_map = config.get('label_map', {})
-        self.full_topic_fieldname = to_bool(config.get('full_topic_fieldname', False))
-        if self.full_topic_fieldname:
-            self.logger.info("'full_topic_fieldname' is deprecated, use '[[topics]][[[topic name]]][[[[field name]]]]'")
 
         if self.type not in self.callbacks:
             raise ValueError("Invalid type configured: %s" % self.type)
-
-        self.fields = config.get('fields', {})
-        orig_fields = config.get('fields', {})
-        if self.topic_manager.managing_fields and self.fields:  # removed in v2.0 pragma: no cover
-            self.logger.debug("MessageCallbackProvider ignoring fields configuration and using topics/fields configuration.")
-        else:
-            self.fields_ignore_default = to_bool(self.fields.get('ignore', False))
-            if self.fields:
-                self.logger.info("'fields' is deprecated, use '[[topics]][[[topic name]]][[[[field name]]]]'")
-                self._configure_fields()
-
-            self.set_backwards_compatibility(label_map, orig_fields, contains_total)
-            self.logger.debug("MessageCallbackProvider self.fields is %s" % self.fields)
-
-    def _configure_fields(self):
-        for field in self.fields.sections:
-            self.fields[field]['ignore'] = to_bool((self.fields[field]).get('ignore', self.fields_ignore_default))
-            if  'contains_total' in self.fields[field]:
-                self.fields[field]['contains_total'] = to_bool(self.fields[field]['contains_total'])
-            if 'conversion_type' in self.fields[field]:
-                self.fields[field]['conversion_type'] = self.fields[field]['conversion_type'].lower()
-            if 'units' in self.fields[field]:  # removed in v2.0 pragma: no cover
-                try:
-                    weewx.units.conversionDict[self.fields[field]['units']]
-                except KeyError:
-                    raise ValueError("For %s invalid units, %s" % (field, self.fields[field]['units']))
-
-    def set_backwards_compatibility(self, label_map, orig_fields, contains_total):
-        """ Any config for backwards compatibility. """
-        # backwards compatible, add the label map
-        # side affect of setting self.fields will be fixed in v 2.0
-        for field in label_map:
-            if not field in orig_fields:
-                self.fields[field] = {}
-            if not 'name' in self.fields[field]:
-                self.fields[field]['name'] = label_map[field]
-
-        # backwards compatible, add the cumulative fields
-        for field in contains_total:
-            if not field in orig_fields:
-                if not field in self.fields:
-                    value = {}
-                    value['contains_total'] = True
-                    self.fields[field] = value
-                else:
-                    self.fields[field]['contains_total'] = True
 
     def get_callback(self):
         """ Get the MQTT callback. """
@@ -1128,24 +991,6 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
 
         return dict(_items())
 
-    def _get_fields(self, topic):
-        if self.topic_manager.managing_fields:
-            return self.topic_manager.get_fields(topic)
-
-        return self.fields
-
-    def _get_msg_id_field(self, topic):
-        return self.topic_manager.get_msg_id_field(topic)
-
-    def _get_ignore_msg_id_field(self, topic):
-        return self.topic_manager.get_ignore_msg_id_field(topic)
-
-    def _get_ignore_default(self, topic):
-        if self.topic_manager.managing_fields:
-            return self.topic_manager.get_ignore_value(topic)
-
-        return self.fields_ignore_default
-
     def _log_message(self, msg):
         self.logger.debug("MessageCallbackProvider data-> incoming topic: %s, QOS: %i, retain: %s, payload: %s"
                           %(msg.topic, msg.qos, msg.retain, msg.payload))
@@ -1158,8 +1003,8 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
         # Wrap all the processing in a try, so it doesn't crash and burn on any error
         try:
             self._log_message(msg)
-            fields = self._get_fields(msg.topic)
-            fields_ignore_default = self._get_ignore_default(msg.topic)
+            fields = self.topic_manager.get_fields(msg.topic)
+            fields_ignore_default = self.topic_manager.get_ignore_value(msg.topic)
 
             if PY2:
                 payload_str = msg.payload
@@ -1195,25 +1040,19 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
             self._log_exception('on_message_keyword', exception, msg)
 
     def _on_message_json(self, client, userdata, msg): # (match callback signature) pylint: disable=unused-argument
-        # pylint: disable=too-many-locals, too-many-branches
+        # pylint: disable=too-many-locals
         # Wrap all the processing in a try, so it doesn't crash and burn on any error
         try:
             self._log_message(msg)
-            fields = self._get_fields(msg.topic)
-            fields_ignore_default = self._get_ignore_default(msg.topic)
-            msg_id_field = self._get_msg_id_field(msg.topic)
-            ignore_msg_id_field = self._get_ignore_msg_id_field(msg.topic)
-            if self.topic_manager.managing_fields:
-                fields_full_topic_fieldname = False
-            else:
-                fields_full_topic_fieldname = self.full_topic_fieldname
+            fields = self.topic_manager.get_fields(msg.topic)
+            fields_ignore_default = self.topic_manager.get_ignore_value(msg.topic)
+            msg_id_field = self.topic_manager.get_msg_id_field(msg.topic)
+            ignore_msg_id_field = self.topic_manager.get_ignore_msg_id_field(msg.topic)
 
             if PY2:
                 payload_str = msg.payload
-                topic_str = msg.topic.encode('utf-8')
             else:
                 payload_str = msg.payload.decode('utf-8')
-                topic_str = msg.topic
 
             data = self._byteify(json.loads(payload_str, object_hook=self._byteify), ignore_dicts=True)
 
@@ -1225,9 +1064,7 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
                 msg_id = data_flattened[msg_id_field]
             # ToDo - if I have to loop, removes benefit of _bytefy, time to remove it?
             for key in data_flattened:
-                if fields_full_topic_fieldname:
-                    lookup_key = topic_str + "/" + key # removed in v2.0 pragma: no cover
-                elif msg_id_field and key not in ignore_msg_id_field:
+                if msg_id_field and key not in ignore_msg_id_field:
                     lookup_key = key + "_" + str(msg_id) # todo - cleanup
                 else:
                     lookup_key = key
@@ -1248,19 +1085,12 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
         # Wrap all the processing in a try, so it doesn't crash and burn on any error
         try:
             self._log_message(msg)
-            fields = self._get_fields(msg.topic)
-            fields_ignore_default = self._get_ignore_default(msg.topic)
-            if self.topic_manager.managing_fields:  # removed in v2.0 pragma: no cover
-                fields_full_topic_fieldname = True
-            else:
-                fields_full_topic_fieldname = self.full_topic_fieldname
+            fields = self.topic_manager.get_fields(msg.topic)
+            fields_ignore_default = self.topic_manager.get_ignore_value(msg.topic)
 
             payload_str = msg.payload
 
-            if fields_full_topic_fieldname:
-                key = msg.topic
-            else:
-                key = msg.topic.rpartition('/')[2]
+            key = msg.topic
 
             if PY2:
                 key = key.encode('utf-8')
@@ -1294,28 +1124,29 @@ class MQTTSubscriber(object):
         if message_callback_config is None:
             raise ValueError("[[message_callback]] is required.")
 
-        if 'topic' in service_dict: # removed in v2.0 pragma: no cover
-            self.logger.info("'topic' is deprecated, use '[[topics]][[[topic name]]]'")
-        if 'overlap' in service_dict: # removed in v2.0 pragma: no cover
-            self.logger.info("'overlap' is deprecated, use 'adjust_start_time'")
-        if 'contains_total' in service_dict['message_callback']: # removed in v2.0 pragma: no cover
-            self.logger.info("'contains_total' is deprecated use '[[topics]][[[topic name]]][[[[field name]]]]' contains_total setting.")
-        if 'label_map' in service_dict['message_callback']: # removed in v2.0 pragma: no cover
-            self.logger.info("'label_map' is deprecated use '[[topics]][[[topic name]]][[[[field name]]]]' name setting.")
+        if 'topic' in service_dict:
+            raise ValueError("'topic' is deprecated, use '[[topics]][[[topic name]]]'")
+        if 'overlap' in service_dict:
+            raise ValueError("'overlap' is deprecated, use 'adjust_start_time'")
+        if 'archive_field_cache' in service_dict:
+            raise ValueError("'archive_field_cache' is deprecated, use '[[topics]][[[topic name]]][[[[field name]]]]'")
+        if 'full_topic_fieldname' in service_dict['message_callback']:
+            raise ValueError("'full_topic_fieldname' is deprecated, use '[[topics]][[[topic name]]][[[[field name]]]]'")
+        if 'contains_total' in service_dict['message_callback']:
+            raise ValueError("'contains_total' is deprecated use '[[topics]][[[topic name]]][[[[field name]]]]' contains_total setting.")
+        if 'label_map' in service_dict['message_callback']:
+            raise ValueError("'label_map' is deprecated use '[[topics]][[[topic name]]][[[[field name]]]]' name setting.")
+        if 'fields' in service_dict['message_callback']:
+            raise ValueError("'fields' is deprecated, use '[[topics]][[[topic name]]][[[[field name]]]]'")
 
-        # For backwards compatibility
-        overlap = to_float(service_dict.get('overlap', 0))
-        self.logger.info("overlap is %s" % overlap)
         topics_dict = service_dict.get('topics', {})
-        topics_dict['overlap'] = overlap
 
         message_callback_provider_name = service_dict.get('message_callback_provider',
                                                           'user.MQTTSubscribe.MessageCallbackProvider')
         self.manager = TopicManager(topics_dict, self.logger)
 
         self.cached_fields = None
-        if self.manager.managing_fields:
-            self.cached_fields = self.manager.cached_fields
+        self.cached_fields = self.manager.cached_fields
 
         clientid = service_dict.get('clientid',
                                     'MQTTSubscribe-' + str(random.randint(1000, 9999)))
@@ -1537,27 +1368,13 @@ class MQTTSubscribeService(StdService):
 
         self.logger.info("binding is %s" % self.binding)
 
-        archive_field_cache_dict = service_dict.get('archive_field_cache', None)
-        self.cached_fields = {}
-        if archive_field_cache_dict is not None:
-            self.logger.info("'archive_field_cache' is deprecated, use '[[topics]][[[topic name]]][[[[field name]]]]'")
-            if self.subscriber.cached_fields is not None: # removed in v2.0 pragma: no cover
-                self.logger.trace("Ignoring archive_field_cache configration and using topics/fields configuration.")
-
-            fields_dict = archive_field_cache_dict.get('fields', {})
-            for field in archive_field_cache_dict.get('fields', {}):
-                self.cached_fields[field] = {}
-                self.cached_fields[field]['expires_after'] = to_float(fields_dict[field].get('expires_after', None))
-
-        self.logger.info("archive_field_cache_dict is %s" % archive_field_cache_dict)
-
         self.subscriber.start()
 
         if self.binding == 'archive':
             self.bind(weewx.NEW_ARCHIVE_RECORD, self.new_archive_record)
         elif self.binding == 'loop':
             self.bind(weewx.NEW_LOOP_PACKET, self.new_loop_packet)
-            if archive_field_cache_dict is not None or self.subscriber.cached_fields is not None:
+            if self.subscriber.cached_fields is not None:
                 self.cache = RecordCache()
                 self.bind(weewx.NEW_ARCHIVE_RECORD, self.new_archive_record)
         else:
@@ -1611,14 +1428,8 @@ class MQTTSubscribeService(StdService):
                                   % (weeutil.weeutil.timestamp_to_string(event.record['dateTime']),
                                      to_sorted_string(event.record)))
 
-
-        if self.subscriber.cached_fields is not None:
-            cached_fields = self.subscriber.cached_fields
-        else:
-            cached_fields = self.cached_fields
-
         target_data = {}
-        for field in cached_fields:
+        for field in self.subscriber.cached_fields:
             if field in event.record:
                 timestamp = time.time()
                 self.logger.trace("Update cache %s to %s with units of %i and timestamp of %i"
@@ -1630,7 +1441,7 @@ class MQTTSubscribeService(StdService):
             else:
                 target_data[field] = self.cache.get_value(field,
                                                           time.time(),
-                                                          cached_fields[field]['expires_after'])
+                                                          self.subscriber.cached_fields[field]['expires_after'])
                 self.logger.trace("target_data after cache lookup is: %s"
                                   % to_sorted_string(target_data))
 
