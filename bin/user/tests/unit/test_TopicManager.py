@@ -90,39 +90,26 @@ class TestInit(unittest.TestCase):
 
         self.assertEqual(error.exception.args[0], "For %s invalid units, %s." % (field, config_dict[topic][field]['units']))
 
-    def test_mutually_exclusive(self):
-        mock_logger = mock.Mock(spec=Logger)
-
-        config_dict = {}
-
-        topic = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
-        field = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
-        config_dict['use_topic_as_fieldname'] = True
-        config_dict[topic] = {}
-        config_dict[topic][field] = {}
-
-        config = configobj.ConfigObj(config_dict)
-
-        with self.assertRaises(ValueError) as error:
-            TopicManager(config, mock_logger)
-
-        self.assertEqual(error.exception.args[0],
-                         "MQTTSubscribe: use_topic_as_fieldname is mutually exclusive with  [[[[%s]]]] sections." % field)
-
 class TestConfigureFields(unittest.TestCase):
     def test_no_field_configuration(self):
         mock_logger = mock.Mock(spec=Logger)
 
         topic = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+        configured_field = {}
+        configured_field[topic] = {}
+        configured_field[topic]['name'] = topic
+        configured_field[topic]['contains_total'] = True
+        configured_field[topic]['ignore'] = False
+        configured_field[topic]['conversion_type'] = 'float'
         config_dict = {}
 
-        config_dict[topic] = {}
+        config_dict[topic] = {'contains_total': True}
 
         config = configobj.ConfigObj(config_dict)
 
         SUT = TopicManager(config, mock_logger)
 
-        self.assertEqual(SUT.subscribed_topics[topic]['fields'], {})
+        self.assertEqual(SUT.subscribed_topics[topic]['fields'], configured_field)
 
     def test_global_defaults(self):
         mock_logger = mock.Mock(spec=Logger)
@@ -204,7 +191,8 @@ class TestConfigureFields(unittest.TestCase):
         self.assertEqual(SUT.subscribed_topics[topic]['fields'][fieldname]['units'], unit_name)
         self.assertIsNone(SUT.cached_fields[fieldname]['expires_after'])
 
-    def test_use_topic_as_fieldname(self):
+    @staticmethod
+    def test_use_topic_as_fieldname():
         mock_logger = mock.Mock(spec=Logger)
 
         topic = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
@@ -219,19 +207,13 @@ class TestConfigureFields(unittest.TestCase):
         weewx_name = 'barfoo'
         config_dict[topic]['name'] = weewx_name
         config_dict[topic]['expires_after'] = 'none'
-        unit_name = 'unit_name'
         config_dict[topic]['units'] = 'unit_name'
 
         config = configobj.ConfigObj(config_dict)
 
-        SUT = TopicManager(config, mock_logger)
+        TopicManager(config, mock_logger)
 
-        self.assertTrue(SUT.subscribed_topics[topic]['fields'][topic]['ignore'])
-        self.assertTrue(SUT.subscribed_topics[topic]['fields'][topic]['contains_total'])
-        self.assertEqual(SUT.subscribed_topics[topic]['fields'][topic]['conversion_type'], 'int')
-        self.assertEqual(SUT.subscribed_topics[topic]['fields'][topic]['name'], weewx_name)
-        self.assertEqual(SUT.subscribed_topics[topic]['fields'][topic]['units'], unit_name)
-        self.assertIsNone(SUT.cached_fields[topic]['expires_after'])
+        mock_logger.info.assert_called_once_with("'use_topic_as_fieldname' option is no longer needed and can be removed.")
 
 class TestQueueSizeCheck(unittest.TestCase):
     topic = 'foo/bar'
