@@ -1,3 +1,8 @@
+V2.0.0
+- Removed support for options that had been depecated.
+  For a list of options and replacements see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/Options-removed-in-2.0.0
+- Eliminated need for 'use_topic_as_fieldname'.
+
 V1.6.2
 *** IMPORTANT ***
 - All depecated options are planned to removed in the next release, 2.0.0.
