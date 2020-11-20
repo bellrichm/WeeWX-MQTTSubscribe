@@ -191,30 +191,6 @@ class TestConfigureFields(unittest.TestCase):
         self.assertEqual(SUT.subscribed_topics[topic]['fields'][fieldname]['units'], unit_name)
         self.assertIsNone(SUT.cached_fields[fieldname]['expires_after'])
 
-    @staticmethod
-    def test_use_topic_as_fieldname():
-        mock_logger = mock.Mock(spec=Logger)
-
-        topic = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
-        config_dict = {}
-
-        config_dict[topic] = {}
-        config_dict['use_topic_as_fieldname'] = 'true'
-
-        config_dict[topic]['ignore'] = 'true'
-        config_dict[topic]['contains_total'] = 'true'
-        config_dict[topic]['conversion_type'] = 'int'
-        weewx_name = 'barfoo'
-        config_dict[topic]['name'] = weewx_name
-        config_dict[topic]['expires_after'] = 'none'
-        config_dict[topic]['units'] = 'unit_name'
-
-        config = configobj.ConfigObj(config_dict)
-
-        TopicManager(config, mock_logger)
-
-        mock_logger.info.assert_called_once_with("'use_topic_as_fieldname' option is no longer needed and can be removed.")
-
 class TestQueueSizeCheck(unittest.TestCase):
     topic = 'foo/bar'
     config_dict = {}

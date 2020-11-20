@@ -526,6 +526,24 @@ class Testtls_configuration(unittest.TestCase):
                     ssl.PROTOCOL_SSLv3 = saved_version
                 self.assertEqual(error.exception.args[0], "'ca_certs' is required.")
 
+class TestDeprecatedOptions(unittest.TestCase):
+    def test_use_topic_as_fieldname(self):
+        config_dict = {}
+        config_dict['message_callback'] = {}
+        config_dict['topics'] = {}
+        config_dict['topics']['use_topic_as_fieldname'] = 'true'
+        config = configobj.ConfigObj(config_dict)
+
+        mock_logger = mock.Mock(spec=Logger)
+
+        with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client):
+            with mock.patch('user.MQTTSubscribe.MessageCallbackProvider'):
+                with mock.patch('user.MQTTSubscribe.TopicManager'):
+                    SUT = MQTTSubscriber(config, mock_logger)
+
+                    self.assertEqual(SUT.logger.info.call_count, 10)
+                    mock_logger.info.assert_any_call("'use_topic_as_fieldname' option is no longer needed and can be removed.")
+
 class TestStart(unittest.TestCase):
     def set_connection_success(self, *args, **kwargs): # match signature pylint: disable=unused-argument
         self.SUT.userdata['connect'] = True
@@ -535,6 +553,7 @@ class TestStart(unittest.TestCase):
 
         config_dict = {}
         config_dict['message_callback'] = {}
+        config_dict['topics'] = {}
         config = configobj.ConfigObj(config_dict)
         connect_rc = random.randint(1, 10)
         flags = random.randint(0, 255)
@@ -563,6 +582,7 @@ class TestStart(unittest.TestCase):
 
         config_dict = {}
         config_dict['message_callback'] = {}
+        config_dict['topics'] = {}
         config = configobj.ConfigObj(config_dict)
 
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client):
@@ -585,6 +605,7 @@ class TestStart(unittest.TestCase):
 
         config_dict = {}
         config_dict['message_callback'] = {}
+        config_dict['topics'] = {}
         config = configobj.ConfigObj(config_dict)
 
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client):
@@ -611,6 +632,7 @@ class Test_disconnect(unittest.TestCase):
 
         config_dict = {}
         config_dict['message_callback'] = {}
+        config_dict['topics'] = {}
         config = configobj.ConfigObj(config_dict)
 
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client):
@@ -630,6 +652,7 @@ class TestCallbacks(unittest.TestCase):
 
         config_dict = {}
         config_dict['message_callback'] = {}
+        config_dict['topics'] = {}
         config = configobj.ConfigObj(config_dict)
 
         rc = random.randint(1, 10)
@@ -650,6 +673,7 @@ class TestCallbacks(unittest.TestCase):
 
         config_dict = {}
         config_dict['message_callback'] = {}
+        config_dict['topics'] = {}
         config = configobj.ConfigObj(config_dict)
 
         mid = random.randint(1, 10)
@@ -672,6 +696,7 @@ class TestCallbacks(unittest.TestCase):
 
         config_dict = {}
         config_dict['message_callback'] = {}
+        config_dict['topics'] = {}
         config = configobj.ConfigObj(config_dict)
 
         level = 1

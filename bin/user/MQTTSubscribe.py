@@ -274,7 +274,7 @@ import weewx
 import weewx.drivers
 from weewx.engine import StdEngine, StdService
 
-VERSION = '2.0.0-rc01'
+VERSION = '2.0.0-rc02'
 DRIVER_NAME = 'MQTTSubscribeDriver'
 DRIVER_VERSION = VERSION
 
@@ -532,8 +532,6 @@ class TopicManager(object):
         default_msg_id_field = config.get('msg_id_field', None)
         defaults['ignore_msg_id_field'] = config.get('ignore_msg_id_field', False)
         default_qos = to_int(config.get('qos', 0))
-        if config.get('use_topic_as_fieldname', False):
-            self.logger.info("'use_topic_as_fieldname' option is no longer needed and can be removed.")
         default_use_server_datetime = to_bool(config.get('use_server_datetime', False))
         default_ignore_start_time = to_bool(config.get('ignore_start_time', False))
         default_ignore_end_time = to_bool(config.get('ignore_end_time', False))
@@ -605,7 +603,7 @@ class TopicManager(object):
             else:
                 # See if any field options are directly under the topic.
                 # And if so, use the topic as the field name.
-                for (key, value) in topic_dict.items():
+                for (key, value) in topic_dict.items(): # match signature pylint: disable=unused-variable
                     if key not in topic_options:
                         self.subscribed_topics[topic]['fields'][topic] = self._configure_field(topic_dict, topic_dict, topic, defaults)
                         self._configure_ignore_fields(topic_dict, topic_dict, topic, topic, defaults)
@@ -1124,22 +1122,10 @@ class MQTTSubscriber(object):
         if message_callback_config is None:
             raise ValueError("[[message_callback]] is required.")
 
-        if 'topic' in service_dict:
-            raise ValueError("'topic' is deprecated, use '[[topics]][[[topic name]]]'")
-        if 'overlap' in service_dict:
-            raise ValueError("'overlap' is deprecated, use 'adjust_start_time'")
-        if 'archive_field_cache' in service_dict:
-            raise ValueError("'archive_field_cache' is deprecated, use '[[topics]][[[topic name]]][[[[field name]]]]'")
-        if 'full_topic_fieldname' in service_dict['message_callback']:
-            raise ValueError("'full_topic_fieldname' is deprecated, use '[[topics]][[[topic name]]][[[[field name]]]]'")
-        if 'contains_total' in service_dict['message_callback']:
-            raise ValueError("'contains_total' is deprecated use '[[topics]][[[topic name]]][[[[field name]]]]' contains_total setting.")
-        if 'label_map' in service_dict['message_callback']:
-            raise ValueError("'label_map' is deprecated use '[[topics]][[[topic name]]][[[[field name]]]]' name setting.")
-        if 'fields' in service_dict['message_callback']:
-            raise ValueError("'fields' is deprecated, use '[[topics]][[[topic name]]][[[[field name]]]]'")
-
         topics_dict = service_dict.get('topics', {})
+        # todo check that a topics section exists
+
+        self._check_deprecated_options(service_dict)
 
         message_callback_provider_name = service_dict.get('message_callback_provider',
                                                           'user.MQTTSubscribe.MessageCallbackProvider')
@@ -1218,6 +1204,24 @@ class MQTTSubscriber(object):
         except Exception as exception: # (want to catch all) pylint: disable=broad-except
             self.logger.error("Failed to connect to %s at %i. '%s'" %(host, port, exception))
             raise weewx.WeeWxIOError(exception)
+
+    def _check_deprecated_options(self, service_dict):
+        if 'topic' in service_dict:
+            raise ValueError("'topic' is deprecated, use '[[topics]][[[topic name]]]'")
+        if 'overlap' in service_dict:
+            raise ValueError("'overlap' is deprecated, use 'adjust_start_time'")
+        if 'archive_field_cache' in service_dict:
+            raise ValueError("'archive_field_cache' is deprecated, use '[[topics]][[[topic name]]][[[[field name]]]]'")
+        if 'full_topic_fieldname' in service_dict['message_callback']:
+            raise ValueError("'full_topic_fieldname' is deprecated, use '[[topics]][[[topic name]]][[[[field name]]]]'")
+        if 'contains_total' in service_dict['message_callback']:
+            raise ValueError("'contains_total' is deprecated use '[[topics]][[[topic name]]][[[[field name]]]]' contains_total setting.")
+        if 'label_map' in service_dict['message_callback']:
+            raise ValueError("'label_map' is deprecated use '[[topics]][[[topic name]]][[[[field name]]]]' name setting.")
+        if 'fields' in service_dict['message_callback']:
+            raise ValueError("'fields' is deprecated, use '[[topics]][[[topic name]]][[[[field name]]]]'")
+        if 'use_topic_as_fieldname' in service_dict['topics']:
+            self.logger.info("'use_topic_as_fieldname' option is no longer needed and can be removed.")
 
     @property
     def subscribed_topics(self):
