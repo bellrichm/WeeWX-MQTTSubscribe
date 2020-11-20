@@ -1122,8 +1122,9 @@ class MQTTSubscriber(object):
         if message_callback_config is None:
             raise ValueError("[[message_callback]] is required.")
 
-        topics_dict = service_dict.get('topics', {})
-        # todo check that a topics section exists
+        topics_dict = service_dict.get('topics', None)
+        if topics_dict is None:
+            raise ValueError("[[topics]] is required.")
 
         self._check_deprecated_options(service_dict)
 
