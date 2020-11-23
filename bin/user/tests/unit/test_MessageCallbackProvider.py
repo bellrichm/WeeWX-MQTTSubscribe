@@ -36,7 +36,7 @@ class TestGetDefaultCallBacks(unittest.TestCase):
     def test_get_unknown_payload_type(self):
         mock_logger = mock.Mock(spec=Logger)
         message_handler_config_dict = {}
-        payload_type = 'foobar'
+        payload_type = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
         message_handler_config_dict['type'] = payload_type
 
         with self.assertRaises(ValueError) as context:
@@ -219,7 +219,7 @@ class TestConversionType(unittest.TestCase):
         self.assertEqual(new_value, value)
 
 class TestKeywordload(unittest.TestCase):
-    topic = 'foo/bar'
+    topic = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
 
     payload_dict = {
         'inTemp': round(random.uniform(10, 100), 2),
@@ -491,7 +491,7 @@ class TestKeywordload(unittest.TestCase):
         mock_manager.append_data.assert_called_once_with(msg.topic, payload_dict)
 
 class TestJsonPayload(unittest.TestCase):
-    topic = 'foo/bar'
+    topic = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
 
     payload_dict = {
         'inTemp': round(random.uniform(10, 100), 2),
@@ -885,10 +885,14 @@ class TestJsonPayload(unittest.TestCase):
             self.assertIsInstance(key, str)
 
 class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
-    topic_end = 'bar'
-    topic = 'foo/' + topic_end
+    topic_end = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+    topic = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+    topic = topic + '/' + topic_end
     single_topic = topic_end
-    multi_topic = 'foo1/foo2/' + topic_end
+    multi_topic = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+    multi_topic = multi_topic + '/'
+    multi_topic = multi_topic + ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+    multi_topic = multi_topic + '/' + topic_end
 
     payload_dict = {
         'inTemp': round(random.uniform(1, 100), 2),
@@ -1139,10 +1143,14 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         self.assertFalse(mock_manager.append_data.called)
 
 class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
-    topic_end = 'bar'
-    topic = 'foo/' + topic_end
+    topic_end = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+    topic = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+    topic = topic + '/' + topic_end
     single_topic = topic_end
-    multi_topic = 'foo1/foo2/' + topic_end
+    multi_topic = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+    multi_topic = multi_topic + '/'
+    multi_topic = multi_topic + ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+    multi_topic = multi_topic + '/' + topic_end
 
     payload_dict = {
         'inTemp': round(random.uniform(1, 100), 2),

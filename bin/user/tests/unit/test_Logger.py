@@ -556,7 +556,8 @@ class TestV4Logging(unittest.TestCase):
                 mock_logger.parent = mock_parent_logger
                 mock_logging.getLogger.return_value = mock_logger
 
-                SUT = Logger('bar', level='foo')
+                SUT = Logger(''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),
+                             level=''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]))
 
                 mock_logging.addLevelName.assert_called_once_with(log_level, 'TRACE')
                 SUT._logmsg.setLevel.called_once_with(log_level) # pylint: disable=protected-access

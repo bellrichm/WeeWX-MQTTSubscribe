@@ -10,6 +10,7 @@ import unittest
 import mock
 
 import random
+import string
 import time
 
 import test_weewx_stubs # used to set up stubs - pylint: disable=unused-import
@@ -20,7 +21,7 @@ class TestclosePort(unittest.TestCase):
     @staticmethod
     def test_close_port():
         config_dict = {}
-        config_dict['topic'] = 'foo/bar'
+        config_dict['topic'] = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
 
         with mock.patch('user.MQTTSubscribe.MQTTSubscriber'):
             SUT = MQTTSubscribeDriver(**config_dict)
@@ -30,7 +31,7 @@ class TestclosePort(unittest.TestCase):
 class TestArchiveInterval(unittest.TestCase):
     def test_no_archive_topic(self):
         config_dict = {}
-        config_dict['topic'] = 'foo/bar'
+        config_dict['topic'] = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
 
         with mock.patch('user.MQTTSubscribe.MQTTSubscriber'):
             with self.assertRaises(NotImplementedError) as error:
@@ -40,7 +41,7 @@ class TestArchiveInterval(unittest.TestCase):
             self.assertEqual(len(error.exception.args), 0)
 
     def test_archive_topic(self):
-        topic = 'foo/bar'
+        topic = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
         default_archive_interval = 900
         config_dict = {}
         config_dict['topic'] = topic
@@ -85,7 +86,7 @@ class TestgenLoopPackets(unittest.TestCase):
         yield # needed to make this a generator # pylint: disable=unreachable
 
     def test_queue_empty(self):
-        topic = 'foo/bar'
+        topic = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
         self.setup_queue_tests(topic)
 
         with mock.patch('user.MQTTSubscribe.MQTTSubscriber') as mock_manager:
@@ -101,7 +102,7 @@ class TestgenLoopPackets(unittest.TestCase):
                 self.assertEqual(mock_manager.return_value.get_data.call_count, 2)
 
     def test_queue_returns_none(self):
-        topic = 'foo/bar'
+        topic = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
         self.setup_queue_tests(topic)
 
         with mock.patch('user.MQTTSubscribe.MQTTSubscriber') as mock_manager:
@@ -122,7 +123,7 @@ class TestgenLoopPackets(unittest.TestCase):
                     continue
         """
 
-        topic = 'foo/bar'
+        topic = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
 
         config_dict = {}
         config_dict['topic'] = topic
@@ -144,7 +145,7 @@ class TestgenLoopPackets(unittest.TestCase):
                 self.assertIsNone(packet) # hack two, the generator never really returns because of the side effect exception
 
     def test_queue(self):
-        topic = 'foo/bar'
+        topic = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
         self.setup_queue_tests(topic)
 
         with mock.patch('user.MQTTSubscribe.MQTTSubscriber') as mock_manager:
@@ -182,7 +183,7 @@ class TestgenArchiveRecords(unittest.TestCase):
 
         self.config_dict['archive_topic'] = archive_topic
         self.config_dict['topics'] = {}
-        self.config_dict['topics']['foo/bar'] = {}
+        self.config_dict['topics'][''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])] = {}
         self.config_dict['topics'][archive_topic] = {}
 
     @staticmethod

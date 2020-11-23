@@ -192,7 +192,7 @@ class TestConfigureFields(unittest.TestCase):
         self.assertIsNone(SUT.cached_fields[fieldname]['expires_after'])
 
 class TestQueueSizeCheck(unittest.TestCase):
-    topic = 'foo/bar'
+    topic = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
     config_dict = {}
     config_dict[topic] = {}
     config = configobj.ConfigObj(config_dict)
@@ -250,7 +250,7 @@ class TestQueueSizeCheck(unittest.TestCase):
 
 
 class TestAppendData(unittest.TestCase):
-    topic = 'foo/bar'
+    topic = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
     config_dict = {}
     config_dict[topic] = {}
     config = configobj.ConfigObj(config_dict)
@@ -464,7 +464,7 @@ class TestAppendData(unittest.TestCase):
 
 
 class TestGetQueueData(unittest.TestCase):
-    topic = 'foo/bar'
+    topic = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
     config_dict = {}
     config_dict[topic] = {}
     config = configobj.ConfigObj(config_dict)
@@ -570,7 +570,7 @@ class TestGetQueueData(unittest.TestCase):
             self.assertEqual(len(elements), 0)
 
 class TestGetWindQueueData(unittest.TestCase):
-    topic = 'foo/bar'
+    topic = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
     config_dict = {}
     config_dict[topic] = {}
     config = configobj.ConfigObj(config_dict)
@@ -635,7 +635,7 @@ class TestGetWindQueueData(unittest.TestCase):
 
 class TestAccumulatedData(unittest.TestCase):
 
-    topic = 'foo/bar'
+    topic = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
     config_dict = {}
     config_dict[topic] = {}
     config = configobj.ConfigObj(config_dict)

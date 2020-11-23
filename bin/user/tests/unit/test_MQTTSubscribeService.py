@@ -128,7 +128,7 @@ class Testnew_loop_packet(unittest.TestCase):
         }
 
         self.config_dict['MQTTSubscribeService'] = {}
-        self.config_dict['MQTTSubscribeService']['topic'] = 'foo/bar'
+        self.config_dict['MQTTSubscribeService']['topic'] = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
 
     @staticmethod
     def generator(test_data):
@@ -136,7 +136,7 @@ class Testnew_loop_packet(unittest.TestCase):
             yield data
 
     def test_queue_valid(self):
-        topic = 'foo/bar'
+        topic = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
         current_time = int(time.time() + 0.5)
         end_period_ts = (int(current_time / 300) + 1) * 300
         start_ts = end_period_ts - 300
@@ -161,7 +161,7 @@ class Testnew_loop_packet(unittest.TestCase):
             SUT.shutDown()
 
     def test_packet_is_in_past(self):
-        topic = 'foo/bar'
+        topic = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
         current_time = int(time.time() + 0.5)
         end_period_ts = (int(current_time / 300) + 1) * 300
         start_ts = end_period_ts - 300
@@ -238,7 +238,7 @@ class Testnew_archive_record(unittest.TestCase):
             yield data
 
     def test_queue_valid(self):
-        topic = 'foo/bar'
+        topic = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
         current_time = int(time.time() + 0.5)
         end_period_ts = (int(current_time / 300) + 1) * 300
         start_ts = end_period_ts - 300

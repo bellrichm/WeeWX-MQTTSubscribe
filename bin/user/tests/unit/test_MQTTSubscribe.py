@@ -590,7 +590,7 @@ class TestDeprecatedOptions(unittest.TestCase):
             with mock.patch('user.MQTTSubscribe.MessageCallbackProvider'):
                 with mock.patch('user.MQTTSubscribe.TopicManager'):
                     with self.assertRaises(ValueError) as error:
-                        MQTTSubscriber(config, mock_logger)            
+                        MQTTSubscriber(config, mock_logger)
                     self.assertEqual(error.exception.args[0], "'overlap' is deprecated, use 'adjust_start_time'")
 
     def test_archive_field_cache_is_deprecated(self):
@@ -606,14 +606,16 @@ class TestDeprecatedOptions(unittest.TestCase):
             with mock.patch('user.MQTTSubscribe.MessageCallbackProvider'):
                 with mock.patch('user.MQTTSubscribe.TopicManager'):
                     with self.assertRaises(ValueError) as error:
-                        MQTTSubscriber(config, mock_logger)            
-                    self.assertEqual(error.exception.args[0], "'archive_field_cache' is deprecated, use '[[topics]][[[topic name]]][[[[field name]]]]'")
+                        MQTTSubscriber(config, mock_logger)
+                    self.assertEqual(error.exception.args[0],
+                                     "'archive_field_cache' is deprecated, use '[[topics]][[[topic name]]][[[[field name]]]]'")
 
     def test_full_topic_fieldname_is_deprecated(self):
         config_dict = {}
         config_dict['message_callback'] = {}
         config_dict['topics'] = {}
-        config_dict['message_callback']['full_topic_fieldname'] = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+        config_dict['message_callback']['full_topic_fieldname'] = \
+            ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
         config = configobj.ConfigObj(config_dict)
 
         mock_logger = mock.Mock(spec=Logger)
@@ -622,14 +624,16 @@ class TestDeprecatedOptions(unittest.TestCase):
             with mock.patch('user.MQTTSubscribe.MessageCallbackProvider'):
                 with mock.patch('user.MQTTSubscribe.TopicManager'):
                     with self.assertRaises(ValueError) as error:
-                        MQTTSubscriber(config, mock_logger)            
-                    self.assertEqual(error.exception.args[0], "'full_topic_fieldname' is deprecated, use '[[topics]][[[topic name]]][[[[field name]]]]'")
+                        MQTTSubscriber(config, mock_logger)
+                    self.assertEqual(error.exception.args[0],
+                                     "'full_topic_fieldname' is deprecated, use '[[topics]][[[topic name]]][[[[field name]]]]'")
 
     def test_contains_total_is_deprecated(self):
         config_dict = {}
         config_dict['message_callback'] = {}
         config_dict['topics'] = {}
-        config_dict['message_callback']['contains_total'] = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+        config_dict['message_callback']['contains_total'] = \
+            ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
         config = configobj.ConfigObj(config_dict)
 
         mock_logger = mock.Mock(spec=Logger)
@@ -638,8 +642,9 @@ class TestDeprecatedOptions(unittest.TestCase):
             with mock.patch('user.MQTTSubscribe.MessageCallbackProvider'):
                 with mock.patch('user.MQTTSubscribe.TopicManager'):
                     with self.assertRaises(ValueError) as error:
-                        MQTTSubscriber(config, mock_logger)            
-                    self.assertEqual(error.exception.args[0], "'contains_total' is deprecated use '[[topics]][[[topic name]]][[[[field name]]]]' contains_total setting.")
+                        MQTTSubscriber(config, mock_logger)
+                    self.assertEqual(error.exception.args[0],
+                                     "'contains_total' is deprecated use '[[topics]][[[topic name]]][[[[field name]]]]' contains_total setting.")
 
     def test_label_map_is_deprecated(self):
         config_dict = {}
@@ -654,8 +659,9 @@ class TestDeprecatedOptions(unittest.TestCase):
             with mock.patch('user.MQTTSubscribe.MessageCallbackProvider'):
                 with mock.patch('user.MQTTSubscribe.TopicManager'):
                     with self.assertRaises(ValueError) as error:
-                        MQTTSubscriber(config, mock_logger)            
-                    self.assertEqual(error.exception.args[0], "'label_map' is deprecated use '[[topics]][[[topic name]]][[[[field name]]]]' name setting.")
+                        MQTTSubscriber(config, mock_logger)
+                    self.assertEqual(error.exception.args[0],
+                                     "'label_map' is deprecated use '[[topics]][[[topic name]]][[[[field name]]]]' name setting.")
 
     def test_fields_is_deprecated(self):
         config_dict = {}
@@ -670,7 +676,7 @@ class TestDeprecatedOptions(unittest.TestCase):
             with mock.patch('user.MQTTSubscribe.MessageCallbackProvider'):
                 with mock.patch('user.MQTTSubscribe.TopicManager'):
                     with self.assertRaises(ValueError) as error:
-                        MQTTSubscriber(config, mock_logger)            
+                        MQTTSubscriber(config, mock_logger)
                     self.assertEqual(error.exception.args[0], "'fields' is deprecated, use '[[topics]][[[topic name]]][[[[field name]]]]'")
 
     def test_use_topic_as_fieldname(self):

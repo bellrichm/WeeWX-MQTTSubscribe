@@ -56,7 +56,7 @@ class Test_get_value(unittest.TestCase):
     def test_key_not_in_cache(self):
         SUT = RecordCache()
 
-        value = SUT.get_value('foo', 0, None)
+        value = SUT.get_value(''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), 0, None)
 
         self.assertIsNone(value)
 
