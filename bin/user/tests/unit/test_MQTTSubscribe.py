@@ -30,7 +30,7 @@ class TestInitialization(unittest.TestCase):
         config_dict = {
             'message_callback': {},
             'topics': {
-                'foo/bar': {}
+                ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]): {}
             },
             'log': True
         }
@@ -52,7 +52,7 @@ class TestInitialization(unittest.TestCase):
 
             'message_callback': {},
             'topics': {
-                'foo/bar': {}
+                ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]): {}
             }
         }
 
@@ -72,7 +72,7 @@ class TestInitialization(unittest.TestCase):
         config_dict = {
             'message_callback': {},
             'topics': {
-                'foo/bar': {}
+                ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]): {}
             }
         }
 
@@ -112,7 +112,7 @@ class TestInitialization(unittest.TestCase):
         with self.assertRaises(ValueError) as error:
             MQTTSubscriber(config, mock_logger)
 
-        self.assertEqual(error.exception.args[0], "[[topics]] is required.")        
+        self.assertEqual(error.exception.args[0], "[[topics]] is required.")
 
     def test_missing_archive_topic_in_topics(self):
         archive_topic = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
@@ -149,7 +149,7 @@ class TestInitialization(unittest.TestCase):
             'archive_topic': None,
             'message_callback': {},
             'topics': {
-                'foobar': {}
+                ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]): {}
             }
         }
 
@@ -183,7 +183,7 @@ class TestInitialization(unittest.TestCase):
             'archive_topic': None,
             'message_callback': {},
             'topics': {
-                'foobar': {}
+                ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]): {}
             }
         }
 
@@ -217,7 +217,7 @@ class TestInitialization(unittest.TestCase):
             'archive_topic': None,
             'message_callback': {},
             'topics': {
-                'foobar': {}
+                ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]): {}
             }
         }
 
@@ -253,7 +253,7 @@ class TestInitialization(unittest.TestCase):
             'archive_topic': None,
             'message_callback': {},
             'topics': {
-                'foobar': {}
+                ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]): {}
             }
         }
 
@@ -560,6 +560,119 @@ class Testtls_configuration(unittest.TestCase):
                     self.assertEqual(error.exception.args[0], "'ca_certs' is required.")
 
 class TestDeprecatedOptions(unittest.TestCase):
+    def test_topic_is_deprecated(self):
+        config_dict = {}
+        config_dict['message_callback'] = {}
+        config_dict['topics'] = {}
+        config_dict['topic'] = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+        config = configobj.ConfigObj(config_dict)
+
+        mock_logger = mock.Mock(spec=Logger)
+
+        with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client):
+            with mock.patch('user.MQTTSubscribe.MessageCallbackProvider'):
+                with mock.patch('user.MQTTSubscribe.TopicManager'):
+                    with self.assertRaises(ValueError) as error:
+                        MQTTSubscriber(config, mock_logger)
+
+                    self.assertEqual(error.exception.args[0], "'topic' is deprecated, use '[[topics]][[[topic name]]]'")
+
+    def test_overlap_is_deprecated(self):
+        config_dict = {}
+        config_dict['message_callback'] = {}
+        config_dict['topics'] = {}
+        config_dict['overlap'] = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+        config = configobj.ConfigObj(config_dict)
+
+        mock_logger = mock.Mock(spec=Logger)
+
+        with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client):
+            with mock.patch('user.MQTTSubscribe.MessageCallbackProvider'):
+                with mock.patch('user.MQTTSubscribe.TopicManager'):
+                    with self.assertRaises(ValueError) as error:
+                        MQTTSubscriber(config, mock_logger)            
+                    self.assertEqual(error.exception.args[0], "'overlap' is deprecated, use 'adjust_start_time'")
+
+    def test_archive_field_cache_is_deprecated(self):
+        config_dict = {}
+        config_dict['message_callback'] = {}
+        config_dict['topics'] = {}
+        config_dict['archive_field_cache'] = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+        config = configobj.ConfigObj(config_dict)
+
+        mock_logger = mock.Mock(spec=Logger)
+
+        with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client):
+            with mock.patch('user.MQTTSubscribe.MessageCallbackProvider'):
+                with mock.patch('user.MQTTSubscribe.TopicManager'):
+                    with self.assertRaises(ValueError) as error:
+                        MQTTSubscriber(config, mock_logger)            
+                    self.assertEqual(error.exception.args[0], "'archive_field_cache' is deprecated, use '[[topics]][[[topic name]]][[[[field name]]]]'")
+
+    def test_full_topic_fieldname_is_deprecated(self):
+        config_dict = {}
+        config_dict['message_callback'] = {}
+        config_dict['topics'] = {}
+        config_dict['message_callback']['full_topic_fieldname'] = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+        config = configobj.ConfigObj(config_dict)
+
+        mock_logger = mock.Mock(spec=Logger)
+
+        with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client):
+            with mock.patch('user.MQTTSubscribe.MessageCallbackProvider'):
+                with mock.patch('user.MQTTSubscribe.TopicManager'):
+                    with self.assertRaises(ValueError) as error:
+                        MQTTSubscriber(config, mock_logger)            
+                    self.assertEqual(error.exception.args[0], "'full_topic_fieldname' is deprecated, use '[[topics]][[[topic name]]][[[[field name]]]]'")
+
+    def test_contains_total_is_deprecated(self):
+        config_dict = {}
+        config_dict['message_callback'] = {}
+        config_dict['topics'] = {}
+        config_dict['message_callback']['contains_total'] = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+        config = configobj.ConfigObj(config_dict)
+
+        mock_logger = mock.Mock(spec=Logger)
+
+        with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client):
+            with mock.patch('user.MQTTSubscribe.MessageCallbackProvider'):
+                with mock.patch('user.MQTTSubscribe.TopicManager'):
+                    with self.assertRaises(ValueError) as error:
+                        MQTTSubscriber(config, mock_logger)            
+                    self.assertEqual(error.exception.args[0], "'contains_total' is deprecated use '[[topics]][[[topic name]]][[[[field name]]]]' contains_total setting.")
+
+    def test_label_map_is_deprecated(self):
+        config_dict = {}
+        config_dict['message_callback'] = {}
+        config_dict['topics'] = {}
+        config_dict['message_callback']['label_map'] = {}
+        config = configobj.ConfigObj(config_dict)
+
+        mock_logger = mock.Mock(spec=Logger)
+
+        with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client):
+            with mock.patch('user.MQTTSubscribe.MessageCallbackProvider'):
+                with mock.patch('user.MQTTSubscribe.TopicManager'):
+                    with self.assertRaises(ValueError) as error:
+                        MQTTSubscriber(config, mock_logger)            
+                    self.assertEqual(error.exception.args[0], "'label_map' is deprecated use '[[topics]][[[topic name]]][[[[field name]]]]' name setting.")
+
+    def test_fields_is_deprecated(self):
+        config_dict = {}
+        config_dict['message_callback'] = {}
+        config_dict['topics'] = {}
+        config_dict['message_callback']['fields'] = {}
+        config = configobj.ConfigObj(config_dict)
+
+        mock_logger = mock.Mock(spec=Logger)
+
+        with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client):
+            with mock.patch('user.MQTTSubscribe.MessageCallbackProvider'):
+                with mock.patch('user.MQTTSubscribe.TopicManager'):
+                    with self.assertRaises(ValueError) as error:
+                        MQTTSubscriber(config, mock_logger)            
+                    self.assertEqual(error.exception.args[0], "'fields' is deprecated, use '[[topics]][[[topic name]]][[[[field name]]]]'")
+
     def test_use_topic_as_fieldname(self):
         config_dict = {}
         config_dict['message_callback'] = {}
