@@ -70,17 +70,18 @@ def on_connect(client, userdata, flags, rc):  # (match callback signature) pylin
 
 def on_disconnect(client, userdata, rc):  # (match callback signature) pylint: disable=unused-argument
     """ The on_connect callback. """
-    # https://pypi.org/project/paho-mqtt/#on-connect
-    # rc:
-    # 0: Connection successful
+    # https://pypi.org/project/paho-mqtt/#on-discconnect
+    # The rc parameter indicates the disconnection state.
+    # If MQTT_ERR_SUCCESS (0), the callback was called in response to a disconnect() call. If any other value the disconnection was unexpected,
+    # such as might be caused by a network error.
     print("Disconnected with result code %i" % rc)
-
 
 def on_publish(client, userdata, mid):  # (match callback signature) pylint: disable=unused-argument
     """ The on_publish callback. """
     print("Published: %s" % mid)
 
 def on_log(client, userdata, level, msg): # (match callback signature) pylint: disable=unused-argument
+    """ The on_log callback. """
     print("MQTT log %s" % msg)
 
 def main():
@@ -128,10 +129,18 @@ def main():
                 else:
                     input()
             mqtt_message_info = client.publish(topic, message)
-            mqtt_message_info.wait_for_publish()
             print("Sent: %s has return code %i" % (mqtt_message_info.mid, mqtt_message_info.rc))
+            if mqtt_message_info.rc == mqtt.MQTT_ERR_NO_CONN:
+                client.connect(host, port, keepalive)
+                client.loop_start()
+                mqtt_message_info = client.publish(topic, message)
+            elif not mqtt_message_info.is_published:
+                mqtt_message_info = client.publish(topic, message)
+            mqtt_message_info.wait_for_publish()
+            
             message = file_object.readline().rstrip()
 
     client.disconnect()
+    print("Done")
 
 main()
