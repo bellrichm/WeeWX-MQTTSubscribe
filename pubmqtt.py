@@ -80,6 +80,8 @@ def on_publish(client, userdata, mid):  # (match callback signature) pylint: dis
     """ The on_publish callback. """
     print("Published: %s" % mid)
 
+def on_log(client, userdata, level, msg): # (match callback signature) pylint: disable=unused-argument
+    print("MQTT log %s" % msg)
 
 def main():
     # pylint: disable=too-many-locals
@@ -102,6 +104,7 @@ def main():
     client.on_connect = on_connect
     client.on_disconnect = on_disconnect
     client.on_publish = on_publish
+    client.on_log = on_log
     client.connect(host, port, keepalive)
     client.loop_start()
 
