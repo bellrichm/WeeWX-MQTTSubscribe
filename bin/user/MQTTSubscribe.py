@@ -1330,7 +1330,7 @@ class MQTTSubscriber(object):
 
         for topic in self.manager.subscribed_topics:
             (result, mid) = client.subscribe(topic, self.manager.get_qos(topic))
-            self.logger.debug("Subscribing to %s has a mid %i and rc %i" %(topic, mid, result))
+            self.logger.info("Subscribing to %s has a mid %i and rc %i" %(topic, mid, result))
 
     def _on_disconnect(self, client, userdata, rc): # (match callback signature) pylint: disable=unused-argument
         self.logger.info("Disconnected with result code %i" %rc)
