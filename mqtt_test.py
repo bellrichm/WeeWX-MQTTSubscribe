@@ -66,7 +66,7 @@ def init_parser():
     """ Parse the command line arguments. """
     parser = argparse.ArgumentParser(usage=USAGE)
     parser.add_argument("--type", choices=["driver", "service"],
-                        help="The simulation type.",
+                        help="This contols what configuration section, [MQTTSubscribeDriver] or [MQTTSubscribeDriver], is read. ",
                         default="driver")
     parser.add_argument('--records', dest='max_records', type=int,
                         help='The number of MQTT records to retrieve.')
@@ -113,6 +113,8 @@ def main():
         config_path = os.path.abspath(options.config_file)
         configuration = configobj.ConfigObj(config_path, file_error=True)
         config_dict = configuration.get(config_type, {})
+        print("Reading configuration file, %s."% config_path)
+        print("Using section [%s] of the configuration file."% config_type)
     else:
         config_dict = {}
 
