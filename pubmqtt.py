@@ -137,7 +137,7 @@ def main():
             elif not mqtt_message_info.is_published:
                 mqtt_message_info = client.publish(topic, message)
             mqtt_message_info.wait_for_publish()
-            
+
             message = file_object.readline().rstrip()
 
     client.disconnect()
