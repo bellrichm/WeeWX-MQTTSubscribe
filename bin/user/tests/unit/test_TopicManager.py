@@ -572,6 +572,7 @@ class TestGetQueueData(unittest.TestCase):
 class TestGetWindQueueData(unittest.TestCase):
     topic = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
     config_dict = {}
+    config_dict['collect_wind_across_loops'] = False
     config_dict[topic] = {}
     config = configobj.ConfigObj(config_dict)
 
@@ -621,9 +622,7 @@ class TestGetWindQueueData(unittest.TestCase):
         collected_data = self.create_queue_data()
         with mock.patch('user.MQTTSubscribe.CollectData') as mock_CollectData:
             type(mock_CollectData.return_value).get_data = mock.Mock(return_value=collected_data)
-            type(mock_CollectData.return_value).add_data = mock.Mock(return_value={})
             SUT = TopicManager(self.config, mock_logger)
-            SUT.append_data(self.topic, self.create_queue_data(), fieldname=self.fieldname)
             gen = SUT.get_data(self.topic)
             data = next(gen, None)
 
@@ -632,6 +631,21 @@ class TestGetWindQueueData(unittest.TestCase):
             data = next(gen, None)
             self.assertIsNone(data)
 
+    @staticmethod
+    def test_get_from_collector_not_called():
+        mock_logger = mock.Mock(spec=Logger)
+
+        topic = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+        config_dict = {}
+        config_dict[topic] = {}
+        config = configobj.ConfigObj(config_dict)
+
+        with mock.patch('user.MQTTSubscribe.CollectData') as mock_CollectData:
+            SUT = TopicManager(config, mock_logger)
+            gen = SUT.get_data(topic)
+            next(gen, None)
+
+            mock_CollectData.get_data.assert_not_called()
 
 class TestAccumulatedData(unittest.TestCase):
 

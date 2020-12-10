@@ -10,6 +10,7 @@
     "    [[topics]]",
     "        unit_system = METRICWX",
     "        use_topic_as_fieldname = True",
+    "        collect_wind_across_loops = False",    
     "        [[[weewx/windDir]]]",
     "            name = windDir",
     "        [[[weewx/windSpeed]]]",

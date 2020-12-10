@@ -135,6 +135,11 @@ Configuration:
         # Default is US.
         unit_system = US
 
+        # By default wind data is collected together across generation of loop packets.
+        # Setting to false results in the data only being collected together within a loop packet.
+        # Default is True.
+        collect_wind_across_loops = True
+
         # When true, the fieldname is set to the topic and therefore [[[[fieldname]]]] cannot be used.
         # This allows the [[[[fieldname]]]] configuration to be specified directly under the [[[topic]]].
         # Default is False.
@@ -524,6 +529,9 @@ class TopicManager(object):
         if not config.sections:
             raise ValueError("At least one topic must be configured.")
 
+        self.collect_wind_across_loops = to_bool(config.get('collect_wind_across_loops', True))
+        self.logger.debug("TopicManager self.collect_wind_across_loops is %s" % self.collect_wind_across_loops)
+
         topic_options = ['unit_system', 'msg_id_field', 'qos', 'use_server_datetime', 'ignore_start_time',
                          'ignore_end_time', 'adjust_start_time', 'adjust_end_time', 'datetime_format',
                          'offset_format', 'max_queue']
@@ -632,6 +640,9 @@ class TopicManager(object):
         self.subscribed_topics[topic]['max_queue'] = max_queue
         self.subscribed_topics[topic]['queue'] = self.collected_queue
 
+        if self.collect_wind_across_loops:
+            self.collector = CollectData(self.collected_fields, self.collected_units)
+
         self.logger.debug("TopicManager self.subscribed_topics is %s" % self.subscribed_topics)
         self.logger.debug("TopicManager self.cached_fields is %s" % self.cached_fields)
 
@@ -725,7 +736,11 @@ class TopicManager(object):
         """ Get data off the queue of MQTT data. """
         queue = self._get_queue(topic)
         self.logger.trace("TopicManager starting queue %s size is: %i" %(topic, len(queue)))
-        collector = CollectData(self.collected_fields, self.collected_units)
+        if self.collect_wind_across_loops:
+            collector = self.collector
+        else:
+            collector = CollectData(self.collected_fields, self.collected_units)
+
         while queue:
             if queue[0]['data']['dateTime'] > end_ts:
                 self.logger.trace("TopicManager leaving queue: %s size: %i content: %s" %(topic, len(queue), queue[0]))
@@ -744,11 +759,12 @@ class TopicManager(object):
                                   %(topic, to_sorted_string(data)))
                 yield data
 
-        data = collector.get_data()
-        if data:
-            self.logger.debug("TopicManager data-> outgoing collected %s: %s"
-                              % (topic, to_sorted_string(data)))
-            yield data
+        if not self.collect_wind_across_loops:
+            data = collector.get_data()
+            if data:
+                self.logger.debug("TopicManager data-> outgoing collected %s: %s"
+                                  % (topic, to_sorted_string(data)))
+                yield data
 
     def get_accumulated_data(self, topic, start_time, end_time, units):
         """ Get the MQTT data after being accumulated. """

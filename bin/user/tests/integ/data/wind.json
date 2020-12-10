@@ -9,6 +9,7 @@
     "    # The topics to subscribe to.",
     "    [[topics]]",
     "        unit_system = METRICWX",
+    "        collect_wind_across_loops = False",
     "        [[[weewx/#]]]",
     "            [[[[weewx/windDir]]]]",
     "                name = windDir",
