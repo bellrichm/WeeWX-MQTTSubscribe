@@ -140,6 +140,11 @@ Configuration:
         # Default is True.
         collect_wind_across_loops = True
 
+        # With the exception of wind data, by default a packet is created for every MQTT message received.
+        # When this is true, MQTTSubscribe attempts to collect observations across messages into a packet.
+        # Default is False.
+        collect_observations = False
+
         # When true, the fieldname is set to the topic and therefore [[[[fieldname]]]] cannot be used.
         # This allows the [[[[fieldname]]]] configuration to be specified directly under the [[[topic]]].
         # Default is False.
@@ -279,7 +284,7 @@ import weewx
 import weewx.drivers
 from weewx.engine import StdEngine, StdService
 
-VERSION = '2.0.0-rc02'
+VERSION = '2.0.0-rc03'
 DRIVER_NAME = 'MQTTSubscribeDriver'
 DRIVER_VERSION = VERSION
 
@@ -497,19 +502,47 @@ class CollectData(object):
         self.fields = fields
         self.unit_system = unit_system
         self.data = {}
+        self.date_time = None
 
     def add_data(self, field, in_data):
         """ Add data to the collection and return old collection if this field is already in the collection. """
+        self.date_time = in_data['dateTime']
         old_data = {}
         if field in self.data:
             old_data = dict(self.data)
             old_data['usUnits'] = self.unit_system
+            old_data['dateTime'] = self.date_time
             self.data = {}
 
-        target_data = weewx.units.to_std_system(in_data, self.unit_system)
+        target_data = dict(in_data)
+        target_data = weewx.units.to_std_system(target_data, self.unit_system)
+        if 'dateTime' in target_data:
+            del target_data['dateTime']
+        if 'usUnits' in target_data:
+            del target_data['usUnits']
 
         self.data[field] = target_data[field]
-        self.data['dateTime'] = in_data['dateTime']
+
+        return old_data
+
+    def add_dict(self, in_dict):
+        """ Add data to the collection and return old collection if any field is already in the collection. """
+        self.date_time = in_dict['dateTime']
+        old_data = {}
+        if any(item in in_dict for item in self.data):
+            old_data = dict(self.data)
+            old_data['usUnits'] = self.unit_system
+            old_data['dateTime'] = self.date_time
+            self.data = dict()
+
+        target_data = dict(in_dict)
+        target_data = weewx.units.to_std_system(target_data, self.unit_system)
+        if 'dateTime' in target_data:
+            del target_data['dateTime']
+        if 'usUnits' in target_data:
+            del target_data['usUnits']
+
+        self.data.update(target_data)
 
         return old_data
 
@@ -517,6 +550,7 @@ class CollectData(object):
         """ Return the collection. """
         if self.data != {}:
             self.data['usUnits'] = self.unit_system
+            self.data['dateTime'] = self.date_time
         return self.data
 
 class TopicManager(object):
@@ -531,6 +565,9 @@ class TopicManager(object):
 
         self.collect_wind_across_loops = to_bool(config.get('collect_wind_across_loops', True))
         self.logger.debug("TopicManager self.collect_wind_across_loops is %s" % self.collect_wind_across_loops)
+
+        self.collect_observations = to_bool(config.get('collect_observations', False))
+        self.logger.debug("TopicManager self.collect_observations is %s" % self.collect_observations)
 
         topic_options = ['unit_system', 'msg_id_field', 'qos', 'use_server_datetime', 'ignore_start_time',
                          'ignore_end_time', 'adjust_start_time', 'adjust_end_time', 'datetime_format',
@@ -741,6 +778,9 @@ class TopicManager(object):
         else:
             collector = CollectData(self.collected_fields, self.collected_units)
 
+        if self.collect_observations:
+            observation_collector = CollectData(None, self.collected_units)
+
         while queue:
             if queue[0]['data']['dateTime'] > end_ts:
                 self.logger.trace("TopicManager leaving queue: %s size: %i content: %s" %(topic, len(queue), queue[0]))
@@ -751,6 +791,8 @@ class TopicManager(object):
                 self.logger.trace("TopicManager processing wind data %s %s: %s."
                                   %(fieldname, weeutil.weeutil.timestamp_to_string(payload['data']['dateTime']), to_sorted_string(payload)))
                 data = collector.add_data(fieldname, payload['data'])
+            elif self.collect_observations:
+                data = observation_collector.add_dict(payload['data'])
             else:
                 data = payload['data']
 
@@ -761,6 +803,13 @@ class TopicManager(object):
 
         if not self.collect_wind_across_loops:
             data = collector.get_data()
+            if data:
+                self.logger.debug("TopicManager data-> outgoing collected %s: %s"
+                                  % (topic, to_sorted_string(data)))
+                yield data
+
+        if self.collect_observations:
+            data = observation_collector.get_data()
             if data:
                 self.logger.debug("TopicManager data-> outgoing collected %s: %s"
                                   % (topic, to_sorted_string(data)))
