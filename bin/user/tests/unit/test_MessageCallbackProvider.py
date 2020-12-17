@@ -941,6 +941,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         mock_manager.get_msg_id_field.return_value = None
         mock_manager.get_ignore_msg_id_field.return_value = []
         mock_manager.get_ignore_value.return_value = False
+        mock_manager.get_topic_tail_is_fieldname.return_value = False
         mock_manager.get_fields.return_value = {}
 
         SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
@@ -958,6 +959,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         mock_manager.get_msg_id_field.return_value = None
         mock_manager.get_ignore_msg_id_field.return_value = []
         mock_manager.get_ignore_value.return_value = False
+        mock_manager.get_topic_tail_is_fieldname.return_value = False
         mock_manager.get_fields.return_value = {}
 
         if PY2:
@@ -1010,6 +1012,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         mock_manager.get_msg_id_field.return_value = None
         mock_manager.get_ignore_msg_id_field.return_value = []
         mock_manager.get_ignore_value.return_value = False
+        mock_manager.get_topic_tail_is_fieldname.return_value = False
         mock_manager.get_fields.return_value = {}
 
         SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
@@ -1034,6 +1037,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         mock_manager.get_msg_id_field.return_value = None
         mock_manager.get_ignore_msg_id_field.return_value = []
         mock_manager.get_ignore_value.return_value = False
+        mock_manager.get_topic_tail_is_fieldname.return_value = False
         mock_manager.get_fields.return_value = {}
 
         SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
@@ -1199,6 +1203,7 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
         mock_manager.get_msg_id_field.return_value = None
         mock_manager.get_ignore_msg_id_field.return_value = []
         mock_manager.get_ignore_value.return_value = False
+        mock_manager.get_topic_tail_is_fieldname.return_value = False
         mock_manager.get_fields.return_value = {}
 
         message_handler_config_dict = dict(self.message_handler_config_dict)

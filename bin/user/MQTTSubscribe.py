@@ -569,7 +569,7 @@ class TopicManager(object):
         self.collect_observations = to_bool(config.get('collect_observations', False))
         self.logger.debug("TopicManager self.collect_observations is %s" % self.collect_observations)
 
-        topic_options = ['unit_system', 'msg_id_field', 'qos', 'use_server_datetime', 'ignore_start_time',
+        topic_options = ['unit_system', 'msg_id_field', 'qos', 'topic_tail_is_fieldname', 'use_server_datetime', 'ignore_start_time',
                          'ignore_end_time', 'adjust_start_time', 'adjust_end_time', 'datetime_format',
                          'offset_format', 'max_queue']
 
@@ -577,6 +577,7 @@ class TopicManager(object):
         default_msg_id_field = config.get('msg_id_field', None)
         defaults['ignore_msg_id_field'] = config.get('ignore_msg_id_field', False)
         default_qos = to_int(config.get('qos', 0))
+        default_topic_tail_is_fieldname = to_bool(config.get('topic_tail_is_fieldname', False))
         default_use_server_datetime = to_bool(config.get('use_server_datetime', False))
         default_ignore_start_time = to_bool(config.get('ignore_start_time', False))
         default_ignore_end_time = to_bool(config.get('ignore_end_time', False))
@@ -606,6 +607,8 @@ class TopicManager(object):
 
             msg_id_field = topic_dict.get('msg_id_field', default_msg_id_field)
             qos = to_int(topic_dict.get('qos', default_qos))
+            topic_tail_is_fieldname = to_bool(topic_dict.get('topic_tail_is_fieldname',
+                                                             default_topic_tail_is_fieldname))
             use_server_datetime = to_bool(topic_dict.get('use_server_datetime',
                                                          default_use_server_datetime))
             ignore_start_time = to_bool(topic_dict.get('ignore_start_time', default_ignore_start_time))
@@ -627,6 +630,7 @@ class TopicManager(object):
             self.subscribed_topics[topic]['unit_system'] = unit_system
             self.subscribed_topics[topic]['msg_id_field'] = msg_id_field
             self.subscribed_topics[topic]['qos'] = qos
+            self.subscribed_topics[topic]['topic_tail_is_fieldname'] = topic_tail_is_fieldname
             self.subscribed_topics[topic]['use_server_datetime'] = use_server_datetime
             self.subscribed_topics[topic]['ignore_start_time'] = ignore_start_time
             self.subscribed_topics[topic]['ignore_end_time'] = ignore_end_time
@@ -667,6 +671,7 @@ class TopicManager(object):
         self.subscribed_topics[topic]['type'] = 'collector'
         self.subscribed_topics[topic]['unit_system'] = weewx.units.unit_constants[default_unit_system_name]
         self.subscribed_topics[topic]['qos'] = default_qos
+        self.subscribed_topics[topic]['topic_tail_is_fieldname'] = default_topic_tail_is_fieldname
         self.subscribed_topics[topic]['use_server_datetime'] = default_use_server_datetime
         self.subscribed_topics[topic]['ignore_start_time'] = default_ignore_start_time
         self.subscribed_topics[topic]['ignore_end_time'] = default_ignore_end_time
@@ -770,6 +775,7 @@ class TopicManager(object):
         return bool(self._get_queue(topic))
 
     def get_data(self, topic, end_ts=MAXSIZE):
+        # pylint: disable=too-many-branches
         """ Get data off the queue of MQTT data. """
         queue = self._get_queue(topic)
         self.logger.trace("TopicManager starting queue %s size is: %i" %(topic, len(queue)))
@@ -804,7 +810,7 @@ class TopicManager(object):
         if not self.collect_wind_across_loops:
             data = collector.get_data()
             if data:
-                self.logger.debug("TopicManager data-> outgoing collected %s: %s"
+                self.logger.debug("TopicManager data-> outgoing wind %s: %s"
                                   % (topic, to_sorted_string(data)))
                 yield data
 
@@ -880,6 +886,10 @@ class TopicManager(object):
     def get_qos(self, topic):
         """ Get the QOS. """
         return self._get_value('qos', topic)
+
+    def get_topic_tail_is_fieldname(self, topic):
+        """ Get the topic_tail_is_fieldname. """
+        return self._get_value('topic_tail_is_fieldname', topic)
 
     def get_type(self, topic):
         """ Get the type. """
@@ -1150,10 +1160,13 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
             self._log_message(msg)
             fields = self.topic_manager.get_fields(msg.topic)
             fields_ignore_default = self.topic_manager.get_ignore_value(msg.topic)
+            topic_tail_is_fieldname = self.topic_manager.get_topic_tail_is_fieldname(msg.topic)
 
             payload_str = msg.payload
 
             key = msg.topic
+            if topic_tail_is_fieldname:
+                key = key.rpartition('/')[2]
 
             if PY2:
                 key = key.encode('utf-8')
