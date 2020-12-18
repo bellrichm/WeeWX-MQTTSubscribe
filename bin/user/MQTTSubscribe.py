@@ -145,6 +145,11 @@ Configuration:
         # Default is False.
         collect_observations = False
 
+        # When true, the last segment of the topic is used as the fieldname.
+        # Only used for individual payloads.
+        # Default is False.
+        topic_tail_is_fieldname = False
+
         # When true, the fieldname is set to the topic and therefore [[[[fieldname]]]] cannot be used.
         # This allows the [[[[fieldname]]]] configuration to be specified directly under the [[[topic]]].
         # Default is False.
@@ -601,6 +606,7 @@ class TopicManager(object):
         self.topics = {}
         self.subscribed_topics = {}
         self.cached_fields = {}
+        self.queues = []
 
         for topic in config.sections:
             topic_dict = config.get(topic, {})
@@ -643,6 +649,14 @@ class TopicManager(object):
             self.subscribed_topics[topic]['queue'] = deque()
             self.subscribed_topics[topic]['ignore_msg_id_field'] = []
             self.subscribed_topics[topic]['fields'] = {}
+            self.queues.append(
+                dict(
+                    {'name': topic,
+                     'max_size': self.subscribed_topics[topic]['max_queue'],
+                     'data': self.subscribed_topics[topic]['queue']
+                    }
+                )
+            )
 
             if topic_dict.sections:
                 for field in topic_dict.sections:
@@ -681,6 +695,14 @@ class TopicManager(object):
         self.subscribed_topics[topic]['offset_format'] = default_offset_format
         self.subscribed_topics[topic]['max_queue'] = max_queue
         self.subscribed_topics[topic]['queue'] = self.collected_queue
+        self.queues.append(
+            dict(
+                {'name': topic,
+                 'max_size': self.subscribed_topics[topic]['max_queue'],
+                 'data': self.subscribed_topics[topic]['queue']
+                }
+            )
+        )
 
         if self.collect_wind_across_loops:
             self.collector = CollectData(self.collected_fields, self.collected_units)
@@ -774,11 +796,12 @@ class TopicManager(object):
         """ Return True if queue has data. """
         return bool(self._get_queue(topic))
 
-    def get_data(self, topic, end_ts=MAXSIZE):
+    def get_data(self, queue, end_ts=MAXSIZE):
         # pylint: disable=too-many-branches
         """ Get data off the queue of MQTT data. """
-        queue = self._get_queue(topic)
-        self.logger.trace("TopicManager starting queue %s size is: %i" %(topic, len(queue)))
+        topic = queue['name']
+        data_queue = queue['data']
+        self.logger.trace("TopicManager starting queue %s size is: %i" %(topic, len(data_queue)))
         if self.collect_wind_across_loops:
             collector = self.collector
         else:
@@ -787,11 +810,11 @@ class TopicManager(object):
         if self.collect_observations:
             observation_collector = CollectData(None, self.collected_units)
 
-        while queue:
-            if queue[0]['data']['dateTime'] > end_ts:
-                self.logger.trace("TopicManager leaving queue: %s size: %i content: %s" %(topic, len(queue), queue[0]))
+        while data_queue:
+            if data_queue[0]['data']['dateTime'] > end_ts:
+                self.logger.trace("TopicManager leaving queue: %s size: %i content: %s" %(topic, len(data_queue), data_queue[0]))
                 break
-            payload = queue.popleft()
+            payload = data_queue.popleft()
             if self.get_type(topic) == 'collector':
                 fieldname = payload['fieldname']
                 self.logger.trace("TopicManager processing wind data %s %s: %s."
@@ -821,8 +844,10 @@ class TopicManager(object):
                                   % (topic, to_sorted_string(data)))
                 yield data
 
-    def get_accumulated_data(self, topic, start_time, end_time, units):
+    def get_accumulated_data(self, queue, start_time, end_time, units):
         """ Get the MQTT data after being accumulated. """
+        # pylint: disable=too-many-locals
+        topic = queue['name']
         if not self.has_data(topic):
             return {}
 
@@ -846,7 +871,7 @@ class TopicManager(object):
         self.logger.trace("TopicManager processing interval: %f %f" %(start_ts, end_ts))
         accumulator = weewx.accum.Accum(weeutil.weeutil.TimeSpan(start_ts, end_ts))
 
-        for data in self.get_data(topic, end_ts):
+        for data in self.get_data(queue, end_ts):
             try:
                 self.logger.trace("TopicManager input to accumulate %s %s: %s"
                                   % (topic, weeutil.weeutil.timestamp_to_string(data['dateTime']), to_sorted_string(data)))
@@ -1303,9 +1328,9 @@ class MQTTSubscriber(object):
             self.logger.info("'use_topic_as_fieldname' option is no longer needed and can be removed.")
 
     @property
-    def subscribed_topics(self):
-        """ The topics subscribed to. """
-        return self.manager.subscribed_topics # pragma: no cover
+    def queues(self):
+        """ The queues of observations. """
+        return self.manager.queues # pragma: no cover
 
     def config_tls(self, tls_dict):
         """ Configure TLS."""
@@ -1365,13 +1390,13 @@ class MQTTSubscriber(object):
                             tls_version=tls_version,
                             ciphers=tls_dict.get('ciphers'))
 
-    def get_data(self, topic, end_ts=MAXSIZE):
+    def get_data(self, queue, end_ts=MAXSIZE):
         """ Get data off the queue of MQTT data. """
-        return self.manager.get_data(topic, end_ts) # pragma: no cover
+        return self.manager.get_data(queue, end_ts) # pragma: no cover
 
-    def get_accumulated_data(self, topic, start_ts, end_ts, units):
+    def get_accumulated_data(self, queue, start_ts, end_ts, units):
         """ Get the MQTT data after being accumulated. """
-        return self.manager.get_accumulated_data(topic, start_ts, end_ts, units) # pragma: no cover
+        return self.manager.get_accumulated_data(queue, start_ts, end_ts, units) # pragma: no cover
 
     def start(self):
         """ start subscribing to the topics """
@@ -1477,11 +1502,11 @@ class MQTTSubscribeService(StdService):
             start_ts = self.end_ts
             self.end_ts = event.packet['dateTime']
 
-            for topic in self.subscriber.subscribed_topics: # topics might not be cached.. therefore use subscribed?
+            for queue in self.subscriber.queues: # topics might not be cached.. therefore use subscribed?
                 self.logger.trace("Packet prior to update is: %s %s"
                                   % (weeutil.weeutil.timestamp_to_string(event.packet['dateTime']),
                                      to_sorted_string(event.packet)))
-                target_data = self.subscriber.get_accumulated_data(topic,
+                target_data = self.subscriber.get_accumulated_data(queue,
                                                                    start_ts, self.end_ts, event.packet['usUnits'])
                 event.packet.update(target_data)
                 self.logger.trace("Packet after update is: %s %s"
@@ -1501,11 +1526,11 @@ class MQTTSubscribeService(StdService):
             end_ts = event.record['dateTime']
             start_ts = end_ts - event.record['interval'] * 60
 
-            for topic in self.subscriber.subscribed_topics: # topics might not be cached.. therefore use subscribed?
+            for queue in self.subscriber.queues:
                 self.logger.trace("Record prior to update is: %s %s"
                                   % (weeutil.weeutil.timestamp_to_string(event.record['dateTime']),
                                      to_sorted_string(event.record)))
-                target_data = self.subscriber.get_accumulated_data(topic, start_ts, end_ts, event.record['usUnits'])
+                target_data = self.subscriber.get_accumulated_data(queue, start_ts, end_ts, event.record['usUnits'])
                 event.record.update(target_data)
                 self.logger.trace("Record after update is: %s %s"
                                   % (weeutil.weeutil.timestamp_to_string(event.record['dateTime']),
@@ -1581,14 +1606,14 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice): # (methods not used) py
     def genLoopPackets(self): # need to override parent - pylint: disable=invalid-name
         """ Called to generate loop packets. """
         while True:
-            for topic in self.subscriber.subscribed_topics: # topics might not be cached.. therefore use subscribed?
-                if topic == self.archive_topic:
+            for queue in self.subscriber.queues:
+                if queue['name'] == self.archive_topic:
                     continue
 
-                for data in self.subscriber.get_data(topic):
+                for data in self.subscriber.get_data(queue):
                     if data:
                         self.logger.debug("data-> final loop packet is %s %s: %s"
-                                          % (topic, weeutil.weeutil.timestamp_to_string(data['dateTime']), to_sorted_string(data)))
+                                          % (queue['name'], weeutil.weeutil.timestamp_to_string(data['dateTime']), to_sorted_string(data)))
                         yield data
                     else:
                         break

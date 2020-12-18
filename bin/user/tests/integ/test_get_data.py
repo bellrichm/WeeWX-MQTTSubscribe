@@ -34,8 +34,8 @@ class TestGetData(unittest.TestCase):
                     utils.send_msg(utils.send_direct_msg, payload, on_message, topic, topic_info)
 
             records = []
-            for topic in manager.subscribed_topics:
-                for data in manager.get_data(topic):
+            for queue in manager.queues:
+                for data in manager.get_data(queue):
                     if data:
                         records.append(data)
                     else:

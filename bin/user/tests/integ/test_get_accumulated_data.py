@@ -40,8 +40,8 @@ class TestAccumulatedData(unittest.TestCase):
 
             end_ts = time.time()
             records = []
-            for topic in sorted(manager.subscribed_topics): # todo - dependent on topic names - not great
-                data = manager.get_accumulated_data(topic, start_ts, end_ts, unit_system)
+            for queue in sorted(manager.queues, key=lambda i: i['name']): # todo - dependent on topic names - not great
+                data = manager.get_accumulated_data(queue, start_ts, end_ts, unit_system)
                 records.append(data)
 
             if check_results:

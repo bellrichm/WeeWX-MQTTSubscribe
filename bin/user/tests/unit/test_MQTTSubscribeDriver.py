@@ -88,10 +88,13 @@ class TestgenLoopPackets(unittest.TestCase):
     def test_queue_empty(self):
         topic = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
         self.setup_queue_tests(topic)
+        queue = dict(
+            {'name': topic}
+            )
 
         with mock.patch('user.MQTTSubscribe.MQTTSubscriber') as mock_manager:
             with mock.patch('user.MQTTSubscribe.time') as mock_time:
-                type(mock_manager.return_value).subscribed_topics = mock.PropertyMock(return_value=[topic])
+                type(mock_manager.return_value).queues = mock.PropertyMock(return_value=[queue])
                 type(mock_manager.return_value).get_data = mock.Mock(side_effect=[self.empty_generator(), self.generator([self.queue_data])])
 
                 SUT = MQTTSubscribeDriver(**self.config_dict)
@@ -104,10 +107,13 @@ class TestgenLoopPackets(unittest.TestCase):
     def test_queue_returns_none(self):
         topic = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
         self.setup_queue_tests(topic)
+        queue = dict(
+            {'name': topic}
+            )
 
         with mock.patch('user.MQTTSubscribe.MQTTSubscriber') as mock_manager:
             with mock.patch('user.MQTTSubscribe.time') as mock_time:
-                type(mock_manager.return_value).subscribed_topics = mock.PropertyMock(return_value=[topic])
+                type(mock_manager.return_value).queues = mock.PropertyMock(return_value=[queue])
                 type(mock_manager.return_value).get_data = mock.Mock(return_value=self.generator([None, self.queue_data]))
 
                 SUT = MQTTSubscribeDriver(**self.config_dict)
@@ -147,10 +153,13 @@ class TestgenLoopPackets(unittest.TestCase):
     def test_queue(self):
         topic = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
         self.setup_queue_tests(topic)
+        queue = dict(
+            {'name': topic}
+        )
 
         with mock.patch('user.MQTTSubscribe.MQTTSubscriber') as mock_manager:
             with mock.patch('user.MQTTSubscribe.time') as mock_time:
-                type(mock_manager.return_value).subscribed_topics = mock.PropertyMock(return_value=[topic])
+                type(mock_manager.return_value).queues = mock.PropertyMock(return_value=[queue])
                 type(mock_manager.return_value).get_data = mock.Mock(return_value=self.generator([self.queue_data]))
 
                 SUT = MQTTSubscribeDriver(**self.config_dict)

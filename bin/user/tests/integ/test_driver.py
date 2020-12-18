@@ -92,7 +92,7 @@ class TestDriver(unittest.TestCase):
             more_data = False
             # hack to check if there is more data in the queues
             for topics in testrun['messages']:
-                for topic in driver.subscriber.subscribed_topics:
+                for topic in driver.subscriber.manager.subscribed_topics:
                     if driver.subscriber.manager.has_data(topic):
                         more_data = True
 
@@ -102,7 +102,7 @@ class TestDriver(unittest.TestCase):
                 more_data = False
                 # hack to check if there is more data in the queues
                 for topics in testrun['messages']:
-                    for topic in driver.subscriber.subscribed_topics:
+                    for topic in driver.subscriber.manager.subscribed_topics:
                         if driver.subscriber.manager.has_data(topic):
                             more_data = True
 
