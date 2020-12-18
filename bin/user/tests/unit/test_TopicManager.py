@@ -268,7 +268,7 @@ class TestAppendData(unittest.TestCase):
         SUT = TopicManager(self.config, mock_logger)
 
         SUT.append_data(self.topic, queue_data)
-        queue = SUT._get_queue(self.topic)  # pylint: disable=protected-access
+        queue = SUT._get_queue(self.topic)['data']  # pylint: disable=protected-access
 
         self.assertEqual(len(queue), 1)
         queue_element = queue.popleft()
@@ -292,7 +292,7 @@ class TestAppendData(unittest.TestCase):
         SUT = TopicManager(config, mock_logger)
 
         SUT.append_data(self.topic, queue_data)
-        queue = SUT._get_queue(self.topic)  # pylint: disable=protected-access
+        queue = SUT._get_queue(self.topic)['data']  # pylint: disable=protected-access
 
         self.assertEqual(len(queue), 1)
         queue_element = queue.popleft()
@@ -313,7 +313,7 @@ class TestAppendData(unittest.TestCase):
         SUT = TopicManager(self.config, mock_logger)
 
         SUT.append_data(self.topic, queue_data)
-        queue = SUT._get_queue(self.topic)  # pylint: disable=protected-access
+        queue = SUT._get_queue(self.topic)['data']  # pylint: disable=protected-access
 
         self.assertEqual(len(queue), 1)
         queue_element = queue.popleft()
@@ -333,7 +333,7 @@ class TestAppendData(unittest.TestCase):
         SUT = TopicManager(self.config, mock_logger)
 
         SUT.append_data(self.topic, queue_data)
-        queue = SUT._get_queue(self.topic)  # pylint: disable=protected-access
+        queue = SUT._get_queue(self.topic)['data']  # pylint: disable=protected-access
 
         self.assertEqual(len(queue), 1)
         queue_element = queue.popleft()
@@ -375,7 +375,7 @@ class TestAppendData(unittest.TestCase):
         SUT = TopicManager(config, mock_logger)
 
         SUT.append_data(self.topic, queue_data)
-        queue = SUT._get_queue(self.topic)  # pylint: disable=protected-access
+        queue = SUT._get_queue(self.topic)['data']  # pylint: disable=protected-access
 
         self.assertEqual(len(queue), 1)
         queue_element = queue.popleft()
@@ -418,7 +418,7 @@ class TestAppendData(unittest.TestCase):
         SUT = TopicManager(config, mock_logger)
 
         SUT.append_data(self.topic, queue_data)
-        queue = SUT._get_queue(self.topic)  # pylint: disable=protected-access
+        queue = SUT._get_queue(self.topic)['data']  # pylint: disable=protected-access
 
         self.assertEqual(len(queue), 1)
         queue_element = queue.popleft()
@@ -453,7 +453,7 @@ class TestAppendData(unittest.TestCase):
         SUT = TopicManager(config, mock_logger)
 
         SUT.append_data(self.topic, queue_data)
-        queue = SUT._get_queue(self.topic)  # pylint: disable=protected-access
+        queue = SUT._get_queue(self.topic)['data']  # pylint: disable=protected-access
 
         self.assertEqual(len(queue), 1)
         queue_element = queue.popleft()
@@ -484,12 +484,8 @@ class TestGetQueueData(unittest.TestCase):
         with mock.patch('user.MQTTSubscribe.CollectData') as mock_CollectData:
             type(mock_CollectData.return_value).get_data = mock.Mock(return_value={})
             SUT = TopicManager(self.config, mock_logger)
-            queue = dict(
-                {'name': self.topic,
-                 'data': SUT.subscribed_topics[self.topic]['queue']}
-                )
 
-            gen = SUT.get_data(queue)
+            gen = SUT.get_data(SUT.subscribed_topics[self.topic]['queue'])
             data = next(gen, None)
 
             self.assertIsNone(data)
@@ -501,11 +497,7 @@ class TestGetQueueData(unittest.TestCase):
             type(mock_CollectData.return_value).get_data = mock.Mock(return_value={})
             SUT = TopicManager(self.config, mock_logger)
             SUT.append_data(self.topic, self.create_queue_data())
-            queue = dict(
-                {'name': self.topic,
-                 'data': SUT.subscribed_topics[self.topic]['queue']}
-            )
-            gen = SUT.get_data(queue, 0)
+            gen = SUT.get_data(SUT.subscribed_topics[self.topic]['queue'], 0)
             data = next(gen, None)
 
             self.assertIsNone(data)
@@ -522,13 +514,9 @@ class TestGetQueueData(unittest.TestCase):
             SUT.append_data(self.topic, elem_one)
             SUT.append_data(self.topic, elem_two)
             SUT.append_data(self.topic, elem_three)
-            queue = dict(
-                {'name': self.topic,
-                 'data': SUT.subscribed_topics[self.topic]['queue']}
-                )
 
             elements = []
-            for data in SUT.get_data(queue):
+            for data in SUT.get_data(SUT.subscribed_topics[self.topic]['queue']):
                 elements.append(data)
 
             self.assertEqual(len(elements), 3)
@@ -558,15 +546,11 @@ class TestGetQueueData(unittest.TestCase):
                 'dateTime': time.time()
             }
 
-            queue = dict(
-                {'name': collector_topic,
-                 'data': SUT.subscribed_topics[collector_topic]['queue']}
-                )
 
             SUT.append_data(collector_topic, data, fieldname)
 
             elements = []
-            for data in SUT.get_data(queue):
+            for data in SUT.get_data(SUT.subscribed_topics[collector_topic]['queue']):
                 elements.append(data)
 
             self.assertEqual(len(elements), 0)
@@ -594,11 +578,8 @@ class TestGetWindQueueData(unittest.TestCase):
             type(mock_CollectData.return_value).get_data = mock.Mock(return_value={})
             SUT = TopicManager(self.config, mock_logger)
             SUT.append_data(self.topic, self.create_queue_data(), fieldname=self.fieldname)
-            queue = dict(
-                {'name': self.topic,
-                 'data': SUT.subscribed_topics[self.topic]['queue']}
-                )
-            gen = SUT.get_data(queue, 0)
+
+            gen = SUT.get_data(SUT.subscribed_topics[self.topic]['queue'], 0)
             data = next(gen, None)
 
             self.assertIsNone(data)
@@ -614,11 +595,7 @@ class TestGetWindQueueData(unittest.TestCase):
             SUT.append_data(self.topic, self.create_queue_data(), fieldname=self.fieldname)
             # ToDo - need to get the topic a better way
             # perhaps find it by searching on subscribed topic 'type'
-            queue = dict(
-                {'name': SUT.collected_topic,
-                 'data': SUT.subscribed_topics[SUT.collected_topic]['queue']}
-                )
-            gen = SUT.get_data(queue)
+            gen = SUT.get_data(SUT.subscribed_topics[SUT.collected_topic]['queue'])
             data = next(gen, None)
 
             self.assertEqual(data, collected_data)
@@ -633,11 +610,8 @@ class TestGetWindQueueData(unittest.TestCase):
         with mock.patch('user.MQTTSubscribe.CollectData') as mock_CollectData:
             type(mock_CollectData.return_value).get_data = mock.Mock(return_value=collected_data)
             SUT = TopicManager(self.config, mock_logger)
-            queue = dict(
-                {'name': self.topic,
-                 'data': SUT.subscribed_topics[self.topic]['queue']}
-                )
-            gen = SUT.get_data(queue)
+
+            gen = SUT.get_data(SUT.subscribed_topics[self.topic]['queue'], 0)
             data = next(gen, None)
 
             self.assertEqual(data, collected_data)
@@ -656,11 +630,8 @@ class TestGetWindQueueData(unittest.TestCase):
 
         with mock.patch('user.MQTTSubscribe.CollectData') as mock_CollectData:
             SUT = TopicManager(config, mock_logger)
-            queue = dict(
-                {'name': topic,
-                 'data': SUT.subscribed_topics[topic]['queue']}
-                )
-            gen = SUT.get_data(queue)
+
+            gen = SUT.get_data(SUT.subscribed_topics[topic]['queue'], 0)
             next(gen, None)
 
             mock_CollectData.get_data.assert_not_called()
@@ -706,11 +677,8 @@ class TestAccumulatedData(unittest.TestCase):
 
                 SUT = TopicManager(config, mock_logger)
                 SUT.append_data(self.topic, {'dateTime': start_ts})
-                queue = dict(
-                    {'name': self.topic,
-                     'data': SUT.subscribed_topics[self.topic]['queue']}
-                )
-                accumulated_data = SUT.get_accumulated_data(queue, 0, end_ts, 0)
+
+                accumulated_data = SUT.get_accumulated_data(SUT.subscribed_topics[self.topic]['queue'], 0, end_ts, 0)
 
                 mock_Accum.assert_called_once_with(test_weewx_stubs.weeutil.weeutil.TimeSpan(start_ts - adjust_start_time, end_ts))
                 self.assertDictEqual(accumulated_data, final_record_data)
@@ -741,12 +709,9 @@ class TestAccumulatedData(unittest.TestCase):
 
                 SUT = TopicManager(config, mock_logger)
                 SUT.append_data(self.topic, {'dateTime': start_ts})
-                queue = dict(
-                    {'name': self.topic,
-                     'data': SUT.subscribed_topics[self.topic]['queue']}
-                )
 
-                accumulated_data = SUT.get_accumulated_data(queue, 0, end_ts, 0)
+
+                accumulated_data = SUT.get_accumulated_data(SUT.subscribed_topics[self.topic]['queue'], 0, end_ts, 0)
 
                 mock_Accum.assert_called_once_with(test_weewx_stubs.weeutil.weeutil.TimeSpan(start_ts - adjust_start_time, end_ts))
                 self.assertDictEqual(accumulated_data, final_record_data)
@@ -774,12 +739,9 @@ class TestAccumulatedData(unittest.TestCase):
 
                 SUT = TopicManager(config, mock_logger)
                 SUT.append_data(self.topic, {'dateTime': end_ts})
-                queue = dict(
-                    {'name': self.topic,
-                     'data': SUT.subscribed_topics[self.topic]['queue']}
-                )
 
-                accumulated_data = SUT.get_accumulated_data(queue, 0, 0, 0)
+
+                accumulated_data = SUT.get_accumulated_data(SUT.subscribed_topics[self.topic]['queue'], 0, 0, 0)
 
                 mock_Accum.assert_called_once_with(test_weewx_stubs.weeutil.weeutil.TimeSpan(0, end_ts))
                 self.assertDictEqual(accumulated_data, final_record_data)
@@ -795,13 +757,9 @@ class TestAccumulatedData(unittest.TestCase):
 
                 SUT = TopicManager(self.config, mock_logger)
                 SUT.append_data(self.topic, queue_data)
-                queue = dict(
-                    {'name': self.topic,
-                     'data': SUT.subscribed_topics[self.topic]['queue']}
-                )
 
                 mock_logger.reset_mock()
-                accumulated_data = SUT.get_accumulated_data(queue, 0, time.time(), 0)
+                accumulated_data = SUT.get_accumulated_data(SUT.subscribed_topics[self.topic]['queue'], 0, time.time(), 0)
 
                 self.assertDictEqual(accumulated_data, {})
                 mock_logger.info.assert_called_once()
@@ -816,12 +774,8 @@ class TestAccumulatedData(unittest.TestCase):
                 type(mock_Accum.return_value).isEmpty = mock.PropertyMock(return_value=True)
 
                 SUT = TopicManager(self.config, mock_logger)
-                queue = dict(
-                    {'name': self.topic,
-                     'data': SUT.subscribed_topics[self.topic]['queue']}
-                )
 
-                accumulated_data = SUT.get_accumulated_data(queue, 0, time.time(), 0)
+                accumulated_data = SUT.get_accumulated_data(SUT.subscribed_topics[self.topic]['queue'], 0, time.time(), 0)
 
                 self.assertDictEqual(accumulated_data, {})
                 mock_Accum.assert_not_called()
@@ -847,12 +801,8 @@ class TestAccumulatedData(unittest.TestCase):
 
                 SUT = TopicManager(self.config, mock_logger)
                 SUT.append_data(self.topic, {})
-                queue = dict(
-                    {'name': self.topic,
-                     'data': SUT.subscribed_topics[self.topic]['queue']}
-                )
 
-                accumulated_data = SUT.get_accumulated_data(queue, 0, time.time(), 0)
+                accumulated_data = SUT.get_accumulated_data(SUT.subscribed_topics[self.topic]['queue'], 0, time.time(), 0)
 
                 self.assertDictEqual(accumulated_data, final_record_data)
 

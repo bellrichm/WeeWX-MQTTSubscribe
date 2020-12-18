@@ -645,18 +645,16 @@ class TopicManager(object):
             self.subscribed_topics[topic]['datetime_format'] = datetime_format
             self.subscribed_topics[topic]['offset_format'] = offset_format
             self.subscribed_topics[topic]['ignore'] = ignore
-            self.subscribed_topics[topic]['max_queue'] = topic_dict.get('max_queue', max_queue)
-            self.subscribed_topics[topic]['queue'] = deque()
             self.subscribed_topics[topic]['ignore_msg_id_field'] = []
             self.subscribed_topics[topic]['fields'] = {}
-            self.queues.append(
-                dict(
-                    {'name': topic,
-                     'max_size': self.subscribed_topics[topic]['max_queue'],
-                     'data': self.subscribed_topics[topic]['queue']
-                    }
-                )
+            queue = dict(
+                {'name': topic,
+                 'max_size': topic_dict.get('max_queue', max_queue),
+                 'data': deque()
+                }
             )
+            self.subscribed_topics[topic]['queue'] = queue
+            self.queues.append(queue)
 
             if topic_dict.sections:
                 for field in topic_dict.sections:
@@ -693,16 +691,14 @@ class TopicManager(object):
         self.subscribed_topics[topic]['adjust_end_time'] = default_adjust_end_time
         self.subscribed_topics[topic]['datetime_format'] = default_datetime_format
         self.subscribed_topics[topic]['offset_format'] = default_offset_format
-        self.subscribed_topics[topic]['max_queue'] = max_queue
-        self.subscribed_topics[topic]['queue'] = self.collected_queue
-        self.queues.append(
-            dict(
-                {'name': topic,
-                 'max_size': self.subscribed_topics[topic]['max_queue'],
-                 'data': self.subscribed_topics[topic]['queue']
-                }
-            )
+        queue = dict(
+            {'name': topic,
+             'max_size': max_queue,
+             'data': self.collected_queue
+            }
         )
+        self.subscribed_topics[topic]['queue'] = queue
+        self.queues.append(queue)
 
         if self.collect_wind_across_loops:
             self.collector = CollectData(self.collected_fields, self.collected_units)
@@ -760,21 +756,21 @@ class TopicManager(object):
         payload['data'] = data
 
         if fieldname in self.collected_fields:
-            self._queue_size_check(self.collected_queue, self._get_max_queue(topic))
+            self._queue_size_check(self.collected_queue, queue['max_size'])
             self.logger.trace("TopicManager Adding wind data %s %s: %s"
                               % (fieldname, weeutil.weeutil.timestamp_to_string(data['dateTime']), to_sorted_string(data)))
             payload['fieldname'] = fieldname
             self.collected_queue.append(payload)
         else:
-            self._queue_size_check(queue, self._get_max_queue(topic))
+            self._queue_size_check(queue, queue['max_size'])
             self.logger.trace("TopicManager Added to queue %s %s %s: %s"
                               %(topic, self._lookup_topic(topic),
                                 weeutil.weeutil.timestamp_to_string(data['dateTime']), to_sorted_string(data)))
-            queue.append(payload,)
+            queue['data'].append(payload,)
 
     def peek_datetime(self, topic):
         """ Return the date/time of the first element in the queue. """
-        queue = self._get_queue(topic)
+        queue = self._get_queue(topic)['data']
         self.logger.trace("TopicManager queue size is: %i" % len(queue))
         datetime_value = None
         if queue:
@@ -784,7 +780,7 @@ class TopicManager(object):
 
     def peek_last_datetime(self, topic):
         """ Return the date/time of the last element in the queue. """
-        queue = self._get_queue(topic)
+        queue = self._get_queue(topic)['data']
         self.logger.trace("TopicManager queue size is: %i" % len(queue))
         datetime_value = 0
         if queue:
@@ -794,7 +790,7 @@ class TopicManager(object):
 
     def has_data(self, topic):
         """ Return True if queue has data. """
-        return bool(self._get_queue(topic))
+        return bool(self._get_queue(topic)['data'])
 
     def get_data(self, queue, end_ts=MAXSIZE):
         # pylint: disable=too-many-branches
@@ -935,9 +931,6 @@ class TopicManager(object):
     def get_ignore_msg_id_field(self, topic):
         """ Get the ignore_msg_id_field value """
         return self._get_value('ignore_msg_id_field', topic)
-
-    def _get_max_queue(self, topic):
-        return self._get_value('max_queue', topic)
 
     def _get_queue(self, topic):
         return self._get_value('queue', topic)
