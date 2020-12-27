@@ -101,6 +101,7 @@ class TestConfigureFields(unittest.TestCase):
         configured_field[topic]['contains_total'] = True
         configured_field[topic]['ignore'] = False
         configured_field[topic]['conversion_type'] = 'float'
+        configured_field[topic]['conversion_error_to_none'] = False
         config_dict = {}
 
         config_dict[topic] = {'contains_total': True}

@@ -236,6 +236,12 @@ Configuration:
                 # Default is float.
                 conversion_type = float
 
+                # When True: if there is an exception converting the data type, the value is set to None.
+                # When False: if there is an exception converting the data type, an error is logged and the MQTT msg is skipped.
+                # Valid values: True, False.
+                # Default is False.
+                conversion_error_to_none = False
+
                 # The units of the incoming data.
                 # Useful if this field's units differ from the topic's unit_system's units.
                 # Valid values: see, http://www.weewx.com/docs/customizing.htm#units
@@ -299,6 +305,9 @@ if PY2:
     MAXSIZE = sys.maxint # (only a python 3 error) pylint: disable=no-member
 else:
     MAXSIZE = sys.maxsize
+
+class ConversionError(ValueError):
+    """ Error converting data types. """
 
 class AbstractLogger(object):
     """ The abstract logging class. """
@@ -596,6 +605,7 @@ class TopicManager(object):
         default_ignore = to_bool(config.get('ignore', False))
         defaults['contains_total'] = to_bool(config.get('contains_total', False))
         defaults['conversion_type'] = config.get('conversion_type', 'float')
+        defaults['conversion_error_to_none'] = to_bool(config.get('conversion_error_to_none', False))
 
         default_unit_system_name = config.get('unit_system', 'US').strip().upper()
         if default_unit_system_name not in weewx.units.unit_constants:
@@ -710,11 +720,13 @@ class TopicManager(object):
     def _configure_field(topic_dict, field_dict, fieldname, defaults):
         contains_total = to_bool(topic_dict.get('contains_total', defaults['contains_total']))
         conversion_type = topic_dict.get('conversion_type', defaults['conversion_type'])
+        conversion_error_to_none = topic_dict.get('conversion_error_to_none', defaults['conversion_error_to_none'])
         field = {}
         field['name'] = (field_dict).get('name', fieldname)
         field['ignore'] = to_bool((field_dict).get('ignore', defaults['ignore']))
         field['contains_total'] = to_bool((field_dict).get('contains_total', contains_total))
         field['conversion_type'] = (field_dict).get('conversion_type', conversion_type)
+        field['conversion_error_to_none'] = (field_dict).get('conversion_error_to_none', conversion_error_to_none)
         if 'units' in field_dict:
             if field_dict['units'] in weewx.units.conversionDict and field['name'] in weewx.units.obs_group_dict:
                 field['units'] = field_dict['units']
@@ -1015,17 +1027,23 @@ class AbstractMessageCallbackProvider(object): # pylint: disable=too-few-public-
 
         return None
 
-    @staticmethod
-    def _convert_value(fields, field, value):
+    def _convert_value(self, fields, field, value):
         conversion_type = fields.get(field, {}).get('conversion_type', 'float')
-        if conversion_type == 'bool':
-            return to_bool(value)
-        if conversion_type == 'float':
-            return to_float(value)
-        if conversion_type == 'int':
-            return to_int(value)
+        try:
+            if conversion_type == 'bool':
+                return to_bool(value)
+            if conversion_type == 'float':
+                return to_float(value)
+            if conversion_type == 'int':
+                return to_int(value)
 
-        return value
+            return value
+        except ValueError:
+            conversion_error_to_none = fields.get(field, {}).get('conversion_error_to_none', False)
+            if conversion_error_to_none:
+                return None
+            self.logger.error('error converting field %s, value %s to %s' % (field, value, conversion_type))
+            raise ConversionError()
 
 class MessageCallbackProvider(AbstractMessageCallbackProvider):
     # pylint: disable=too-many-instance-attributes, too-few-public-methods, too-many-locals
@@ -1127,6 +1145,8 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
                 self.logger.error("MessageCallbackProvider on_message_keyword failed to find data in: topic=%s and payload=%s"
                                   % (msg.topic, msg.payload))
 
+        except ConversionError:
+            pass
         except Exception as exception: # (want to catch all) pylint: disable=broad-except
             self._log_exception('on_message_keyword', exception, msg)
 
@@ -1168,6 +1188,8 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
             if data_final:
                 self.topic_manager.append_data(msg.topic, data_final)
 
+        except ConversionError:
+            pass
         except Exception as exception: # (want to catch all) pylint: disable=broad-except
             self._log_exception('on_message_json', exception, msg)
 
@@ -1200,6 +1222,8 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
                 self.topic_manager.append_data(msg.topic, data, fieldname)
             else:
                 self.logger.trace("MessageCallbackProvider on_message_individual ignoring field: %s" % key)
+        except ConversionError:
+            pass
         except Exception as exception: # (want to catch all) pylint: disable=broad-except
             self._log_exception('on_message_individual', exception, msg)
 
