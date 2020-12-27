@@ -255,7 +255,11 @@ class TestKeywordload(unittest.TestCase):
 
         SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
 
-        msg = Msg(self.topic, 'field=value', 0, 0)
+        payload = 'field=value'
+        if not PY2:
+            payload = payload.encode("utf-8")
+
+        msg = Msg(self.topic, payload, 0, 0)
 
         SUT._on_message_keyword(None, None, msg)
         self.assertEqual(mock_logger.error.call_count, 1)
@@ -270,7 +274,12 @@ class TestKeywordload(unittest.TestCase):
 
         SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
 
-        msg = Msg(self.topic, 'field1=1 field2=2', 0, 0)
+        
+        payload = 'field1=1 field2=2'
+        if not PY2:
+            payload = payload.encode("utf-8")
+
+        msg = Msg(self.topic, payload, 0, 0)
 
         SUT._on_message_keyword(None, None, msg)
         self.assertEqual(mock_logger.error.call_count, 1)
@@ -912,10 +921,11 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
 
         SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
 
-        msg = Msg(self.topic,
-                  ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),  # pylint: disable=unused-variable
-                  0,
-                  0)
+        payload = ''
+        if not PY2:
+            payload = payload.encode("utf-8")
+
+        msg = Msg(self.topic, payload, 0, 0)
 
         SUT._on_message_individual(None, None, msg)
         self.assertEqual(mock_logger.error.call_count, 1)
@@ -930,7 +940,11 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
 
         SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
 
-        msg = Msg(self.topic, '', 0, 0)
+        payload = ''
+        if not PY2:
+            payload = payload.encode("utf-8")
+
+        msg = Msg(self.topic, payload, 0, 0)
 
         SUT._on_message_individual(None, None, msg)
         self.assertEqual(mock_logger.error.call_count, 1)
@@ -1174,10 +1188,11 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
 
         SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
 
-        msg = Msg(self.topic,
-                  ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),   # pylint: disable=unused-variable
-                  0,
-                  0)
+        payload = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])  # pylint: disable=unused-variable
+        if not PY2:
+            payload = payload.encode("utf-8")
+
+        msg = Msg(self.topic, payload, 0, 0)
 
         SUT._on_message_individual(None, None, msg)
         self.assertEqual(mock_logger.error.call_count, 1)
@@ -1192,7 +1207,10 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
 
         SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
 
-        msg = Msg(self.topic, '', 0, 0)
+        payload = ''
+        if not PY2:
+            payload = payload.encode("utf-8")
+        msg = Msg(self.topic, payload, 0, 0)
 
         SUT._on_message_individual(None, None, msg)
         self.assertEqual(mock_logger.error.call_count, 1)
