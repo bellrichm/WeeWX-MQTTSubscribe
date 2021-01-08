@@ -278,6 +278,7 @@ import re
 import ssl
 import sys
 import time
+import traceback
 from collections import deque
 
 import configobj
@@ -1105,8 +1106,9 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
                           %(msg.topic, msg.qos, msg.retain, msg.payload))
 
     def _log_exception(self, method, exception, msg):
-        self.logger.error("MessageCallbackProvider %s failed with: %s" %(method, exception))
+        self.logger.error("MessageCallbackProvider %s failed with %s and reason %s." % (method, type(exception), exception))
         self.logger.error("**** MessageCallbackProvider Ignoring topic=%s and payload=%s" % (msg.topic, msg.payload))
+        self.logger.error("**** MessageCallbackProvider %s" % traceback.format_exc())
 
     def _on_message_keyword(self, client, userdata, msg): # (match callback signature) pylint: disable=unused-argument
         # Wrap all the processing in a try, so it doesn't crash and burn on any error

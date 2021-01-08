@@ -274,7 +274,6 @@ class TestKeywordload(unittest.TestCase):
 
         SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
 
-        
         payload = 'field1=1 field2=2'
         if not PY2:
             payload = payload.encode("utf-8")
@@ -524,7 +523,7 @@ class TestJsonPayload(unittest.TestCase):
                   0)
 
         SUT._on_message_json(None, None, msg)
-        self.assertEqual(mock_logger.error.call_count, 2)
+        self.assertEqual(mock_logger.error.call_count, 3)
 
     def test_empty_payload(self):
         mock_logger = mock.Mock(spec=Logger)
@@ -537,7 +536,7 @@ class TestJsonPayload(unittest.TestCase):
         msg = Msg(self.topic, '', 0, 0)
 
         SUT._on_message_json(None, None, msg)
-        self.assertEqual(mock_logger.error.call_count, 2)
+        self.assertEqual(mock_logger.error.call_count, 3)
 
     def test_missing_dateTime(self):
         mock_manager = mock.Mock(spec=TopicManager)
