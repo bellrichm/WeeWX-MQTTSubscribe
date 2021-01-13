@@ -1422,12 +1422,15 @@ class MQTTSubscriber(object):
         self.logger.debug("Starting loop")
         self.client.loop_start()
 
+        self.logger.info("Waiting for MQTT connection.")
         while not self.userdata['connect']:
             time.sleep(1)
 
         if self.userdata['connect_rc'] > 0:
             raise weewx.WeeWxIOError("Unable to connect. Return code is %i flags are %s."
                                      % (self.userdata['connect_rc'], self.userdata['connect_flags']))
+
+        self.logger.info("MQTT initialization complete.")
 
     def disconnect(self):
         """ shut it down """
