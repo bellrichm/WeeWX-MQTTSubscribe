@@ -143,7 +143,15 @@ Configuration:
         # With the exception of wind data, by default a packet is created for every MQTT message received.
         # When this is true, MQTTSubscribe attempts to collect observations across messages into a packet.
         # Default is False.
+        # This is experimental and may be removed.
         collect_observations = False
+
+        # With the exception of wind data, by default a queue is created for every MQTT topic.
+        # When this is true, MQTTSubsribe uses a single queue for all non wind data.
+        # This is useful when 'collect_observations = True'.
+        # Default is False.
+        # This is experimental and may be removed.
+        single_queue = False
 
         # When true, the last segment of the topic is used as the fieldname.
         # Only used for individual payloads.
@@ -584,9 +592,13 @@ class TopicManager(object):
         self.collect_observations = to_bool(config.get('collect_observations', False))
         self.logger.debug("TopicManager self.collect_observations is %s" % self.collect_observations)
 
-        topic_options = ['unit_system', 'msg_id_field', 'qos', 'topic_tail_is_fieldname', 'use_server_datetime', 'ignore_start_time',
-                         'ignore_end_time', 'adjust_start_time', 'adjust_end_time', 'datetime_format',
-                         'offset_format', 'max_queue']
+        single_queue = to_bool(config.get('single_queue', False))
+        self.logger.debug("TopicManager single_queue is %s" % single_queue)
+
+        topic_options = ['collect_wind_across_loops', 'collect_observations', 'single_queue', 'unit_system',
+                         'msg_id_field', 'qos', 'topic_tail_is_fieldname',
+                         'use_server_datetime', 'ignore_start_time', 'ignore_end_time', 'adjust_start_time', 'adjust_end_time',
+                         'datetime_format', 'offset_format', 'max_queue']
 
         defaults = {}
         default_msg_id_field = config.get('msg_id_field', None)
@@ -619,6 +631,20 @@ class TopicManager(object):
         self.cached_fields = {}
         self.queues = []
 
+        if single_queue:
+            queue = dict(
+                {'name': "%f-single-queue" % time.time(),
+                 'type': 'normal',
+                 'ignore_start_time': default_ignore_start_time,
+                 'ignore_end_time': default_ignore_end_time,
+                 'adjust_start_time': default_adjust_start_time,
+                 'adjust_end_time': default_adjust_end_time,
+                 'max_size': max_queue,
+                 'data': deque()
+                }
+            )
+            self.queues.append(queue)
+
         for topic in config.sections:
             topic_dict = config.get(topic, {})
 
@@ -628,10 +654,6 @@ class TopicManager(object):
                                                              default_topic_tail_is_fieldname))
             use_server_datetime = to_bool(topic_dict.get('use_server_datetime',
                                                          default_use_server_datetime))
-            ignore_start_time = to_bool(topic_dict.get('ignore_start_time', default_ignore_start_time))
-            ignore_end_time = to_bool(topic_dict.get('ignore_end_time', default_ignore_end_time))
-            adjust_start_time = to_float(topic_dict.get('adjust_start_time', default_adjust_start_time))
-            adjust_end_time = to_float(topic_dict.get('adjust_end_time', default_adjust_end_time))
             datetime_format = topic_dict.get('datetime_format', default_datetime_format)
             offset_format = topic_dict.get('offset_format', default_offset_format)
             ignore = to_bool(topic_dict.get('ignore', default_ignore))
@@ -643,29 +665,30 @@ class TopicManager(object):
             unit_system = weewx.units.unit_constants[unit_system_name]
 
             self.subscribed_topics[topic] = {}
-            self.subscribed_topics[topic]['type'] = 'normal'
             self.subscribed_topics[topic]['unit_system'] = unit_system
             self.subscribed_topics[topic]['msg_id_field'] = msg_id_field
             self.subscribed_topics[topic]['qos'] = qos
             self.subscribed_topics[topic]['topic_tail_is_fieldname'] = topic_tail_is_fieldname
             self.subscribed_topics[topic]['use_server_datetime'] = use_server_datetime
-            self.subscribed_topics[topic]['ignore_start_time'] = ignore_start_time
-            self.subscribed_topics[topic]['ignore_end_time'] = ignore_end_time
-            self.subscribed_topics[topic]['adjust_start_time'] = adjust_start_time
-            self.subscribed_topics[topic]['adjust_end_time'] = adjust_end_time
             self.subscribed_topics[topic]['datetime_format'] = datetime_format
             self.subscribed_topics[topic]['offset_format'] = offset_format
             self.subscribed_topics[topic]['ignore'] = ignore
             self.subscribed_topics[topic]['ignore_msg_id_field'] = []
             self.subscribed_topics[topic]['fields'] = {}
-            queue = dict(
-                {'name': topic,
-                 'max_size': topic_dict.get('max_queue', max_queue),
-                 'data': deque()
-                }
-            )
+            if not single_queue:
+                queue = dict(
+                    {'name': topic,
+                     'type': 'normal',
+                     'ignore_start_time': to_bool(topic_dict.get('ignore_start_time', default_ignore_start_time)),
+                     'ignore_end_time': to_bool(topic_dict.get('ignore_end_time', default_ignore_end_time)),
+                     'adjust_start_time': to_float(topic_dict.get('adjust_start_time', default_adjust_start_time)),
+                     'adjust_end_time': to_float(topic_dict.get('adjust_end_time', default_adjust_end_time)),
+                     'max_size': topic_dict.get('max_queue', max_queue),
+                     'data': deque()
+                    }
+                )
+                self.queues.append(queue)
             self.subscribed_topics[topic]['queue'] = queue
-            self.queues.append(queue)
 
             if topic_dict.sections:
                 for field in topic_dict.sections:
@@ -691,19 +714,19 @@ class TopicManager(object):
         self.collected_topic = "%f-%s" % (time.time(), '-'.join(self.collected_fields))
         topic = self.collected_topic
         self.subscribed_topics[topic] = {}
-        self.subscribed_topics[topic]['type'] = 'collector'
         self.subscribed_topics[topic]['unit_system'] = weewx.units.unit_constants[default_unit_system_name]
         self.subscribed_topics[topic]['qos'] = default_qos
         self.subscribed_topics[topic]['topic_tail_is_fieldname'] = default_topic_tail_is_fieldname
         self.subscribed_topics[topic]['use_server_datetime'] = default_use_server_datetime
-        self.subscribed_topics[topic]['ignore_start_time'] = default_ignore_start_time
-        self.subscribed_topics[topic]['ignore_end_time'] = default_ignore_end_time
-        self.subscribed_topics[topic]['adjust_start_time'] = default_adjust_start_time
-        self.subscribed_topics[topic]['adjust_end_time'] = default_adjust_end_time
         self.subscribed_topics[topic]['datetime_format'] = default_datetime_format
         self.subscribed_topics[topic]['offset_format'] = default_offset_format
         queue = dict(
             {'name': topic,
+             'type': 'collector',
+             'ignore_start_time': default_ignore_start_time,
+             'ignore_end_time': default_ignore_end_time,
+             'adjust_start_time': default_adjust_start_time,
+             'adjust_end_time': default_adjust_end_time,
              'max_size': max_queue,
              'data': self.collected_queue
             }
@@ -781,9 +804,8 @@ class TopicManager(object):
                                 weeutil.weeutil.timestamp_to_string(data['dateTime']), to_sorted_string(data)))
             queue['data'].append(payload,)
 
-    def peek_datetime(self, topic):
+    def peek_datetime(self, queue):
         """ Return the date/time of the first element in the queue. """
-        queue = self._get_queue(topic)['data']
         self.logger.trace("TopicManager queue size is: %i" % len(queue))
         datetime_value = None
         if queue:
@@ -791,9 +813,8 @@ class TopicManager(object):
 
         return datetime_value
 
-    def peek_last_datetime(self, topic):
+    def peek_last_datetime(self, queue):
         """ Return the date/time of the last element in the queue. """
-        queue = self._get_queue(topic)['data']
         self.logger.trace("TopicManager queue size is: %i" % len(queue))
         datetime_value = 0
         if queue:
@@ -808,9 +829,10 @@ class TopicManager(object):
     def get_data(self, queue, end_ts=MAXSIZE):
         # pylint: disable=too-many-branches
         """ Get data off the queue of MQTT data. """
-        topic = queue['name']
+        queue_name = queue['name']
         data_queue = queue['data']
-        self.logger.trace("TopicManager starting queue %s size is: %i" %(topic, len(data_queue)))
+        queue_type = queue['type']
+        self.logger.trace("TopicManager starting queue %s size is: %i" %(queue_name, len(data_queue)))
         if self.collect_wind_across_loops:
             collector = self.collector
         else:
@@ -821,10 +843,10 @@ class TopicManager(object):
 
         while data_queue:
             if data_queue[0]['data']['dateTime'] > end_ts:
-                self.logger.trace("TopicManager leaving queue: %s size: %i content: %s" %(topic, len(data_queue), data_queue[0]))
+                self.logger.trace("TopicManager leaving queue: %s size: %i content: %s" %(queue_name, len(data_queue), data_queue[0]))
                 break
             payload = data_queue.popleft()
-            if self.get_type(topic) == 'collector':
+            if queue_type == 'collector':
                 fieldname = payload['fieldname']
                 self.logger.trace("TopicManager processing wind data %s %s: %s."
                                   %(fieldname, weeutil.weeutil.timestamp_to_string(payload['data']['dateTime']), to_sorted_string(payload)))
@@ -836,44 +858,45 @@ class TopicManager(object):
 
             if data:
                 self.logger.debug("TopicManager data-> outgoing %s: %s"
-                                  %(topic, to_sorted_string(data)))
+                                  %(queue_name, to_sorted_string(data)))
                 yield data
 
         if not self.collect_wind_across_loops:
             data = collector.get_data()
             if data:
                 self.logger.debug("TopicManager data-> outgoing wind %s: %s"
-                                  % (topic, to_sorted_string(data)))
+                                  % (queue_name, to_sorted_string(data)))
                 yield data
 
         if self.collect_observations:
             data = observation_collector.get_data()
             if data:
                 self.logger.debug("TopicManager data-> outgoing collected %s: %s"
-                                  % (topic, to_sorted_string(data)))
+                                  % (queue_name, to_sorted_string(data)))
                 yield data
 
     def get_accumulated_data(self, queue, start_time, end_time, units):
         """ Get the MQTT data after being accumulated. """
         # pylint: disable=too-many-locals
-        topic = queue['name']
-        if not self.has_data(topic):
+        queue_name = queue['name']
+        data_queue = queue['data']
+        if not bool(data_queue):
             return {}
 
-        ignore_start_time = self._get_value('ignore_start_time', topic)
-        ignore_end_time = self._get_value('ignore_end_time', topic)
-        adjust_start_time = self._get_value('adjust_start_time', topic)
-        adjust_end_time = self._get_value('adjust_end_time', topic)
+        ignore_start_time = queue['ignore_start_time']
+        ignore_end_time = queue['ignore_end_time']
+        adjust_start_time = queue['adjust_start_time']
+        adjust_end_time = queue['adjust_end_time']
 
         if ignore_start_time:
             self.logger.trace("TopicManager ignoring start time.")
-            start_ts = self.peek_datetime(topic) - adjust_start_time
+            start_ts = self.peek_datetime(data_queue) - adjust_start_time
         else:
             start_ts = start_time - adjust_start_time
 
         if ignore_end_time:
             self.logger.trace("TopicManager ignoring end time.")
-            end_ts = self.peek_last_datetime(topic) + adjust_end_time
+            end_ts = self.peek_last_datetime(data_queue) + adjust_end_time
         else:
             end_ts = end_time + adjust_end_time
 
@@ -883,7 +906,7 @@ class TopicManager(object):
         for data in self.get_data(queue, end_ts):
             try:
                 self.logger.trace("TopicManager input to accumulate %s %s: %s"
-                                  % (topic, weeutil.weeutil.timestamp_to_string(data['dateTime']), to_sorted_string(data)))
+                                  % (queue_name, weeutil.weeutil.timestamp_to_string(data['dateTime']), to_sorted_string(data)))
                 accumulator.addRecord(data)
             except weewx.accum.OutOfSpan:
                 self.logger.info("TopicManager ignoring record outside of interval %f %f %f %s"
@@ -893,10 +916,10 @@ class TopicManager(object):
         if not accumulator.isEmpty:
             aggregate_data = accumulator.getRecord()
             self.logger.trace("TopicManager prior to conversion is %s %s: %s"
-                              % (topic, weeutil.weeutil.timestamp_to_string(aggregate_data['dateTime']), to_sorted_string(aggregate_data)))
+                              % (queue_name, weeutil.weeutil.timestamp_to_string(aggregate_data['dateTime']), to_sorted_string(aggregate_data)))
             target_data = weewx.units.to_std_system(aggregate_data, units)
             self.logger.trace("TopicManager after conversion is %s %s: %s"
-                              % (topic, weeutil.weeutil.timestamp_to_string(target_data['dateTime']), to_sorted_string(target_data)))
+                              % (queue_name, weeutil.weeutil.timestamp_to_string(target_data['dateTime']), to_sorted_string(target_data)))
         else:
             self.logger.trace("TopicManager accumulator was empty")
 
@@ -905,7 +928,7 @@ class TopicManager(object):
             target_data['dateTime'] = end_time
 
         self.logger.debug("TopicManager data-> outgoing accumulated %s: %s"
-                          % (topic, to_sorted_string(target_data)))
+                          % (queue_name, to_sorted_string(target_data)))
         return target_data
 
     def _queue_size_check(self, queue, max_queue):

@@ -536,7 +536,7 @@ class TestGetQueueData(unittest.TestCase):
 
             collector_topic = ""
             for topic in SUT.subscribed_topics:
-                if SUT.subscribed_topics[topic]['type'] == 'collector':
+                if SUT.subscribed_topics[topic]['queue']['type'] == 'collector':
                     collector_topic = topic
                     break
 
