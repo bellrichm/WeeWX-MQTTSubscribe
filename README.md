@@ -49,6 +49,9 @@ The following symbolic names are used to define the various locations:
 * *$BIN_ROOT* - The directory where WeeWX executables are located.
 * *$CONFIG_ROOT* - The directory where the configuration (typically, weewx.conf) is located.
 
+The notation vX.Y.Z designates the version being installed.
+X.Y.Z is the release.
+
 Prior to making any updates/changes, always make a backup.
 
 ## Preqrequisites
@@ -61,24 +64,31 @@ Prior to making any updates/changes, always make a backup.
 See the [current MQTTSubscribe build/test matrix](https://ci.appveyor.com/project/bellrichm/weewx-mqttsubscribe)
 for the current WeeWX and python versions being tested.
 
-Paho MQTT python client.
+Install the Paho MQTT python client.
 
+* For python 2
 
-    pip install paho-mqtt
+    `pip install paho-mqtt`
+
+* For python 3
+
+    `pip3 install paho-mqtt`
 
 ## Installation
 
 1. Download MQTTSubscribe
 
     ```
-    wget -P $DOWNLOAD_ROOT https://github.com/bellrichm/WeeWX-MQTTSubscribe/archive/v.X.Y.Z.tar.gz
+    wget -P $DOWNLOAD_ROOT https://github.com/bellrichm/WeeWX-MQTTSubscribe/archive/vX.Y.Z.tar.gz
     ```
+
+    All of the releases can be found [here](https://github.com/bellrichm/WeeWX-MQTTSubscribe/releases) and this is the [latest](https://github.com/bellrichm/WeeWX-MQTTSubscribe/releases/latest).
 
 2. Install MQTTSubscribe
     * As a driver
 
         ```
-        $BIN_ROOT/wee_extension --install=$DOWNLOAD_ROOT/v.X.Y.Z.tar.gz
+        $BIN_ROOT/wee_extension --install=$DOWNLOAD_ROOT/vX.Y.Z.tar.gz
         $BIN_ROOT/wee_config --reconfig
         ```
 
@@ -87,7 +97,7 @@ Paho MQTT python client.
         set the environment variable MQTTSubscribe_install_type to DRIVER. For example,
 
         ```
-        MQTTSubscribe_install_type=DRIVER $BIN_ROOT/wee_extension --install=$DOWNLOAD_ROOT/v.X.Y.Z.tar.gz
+        MQTTSubscribe_install_type=DRIVER $BIN_ROOT/wee_extension --install=$DOWNLOAD_ROOT/vX.Y.Z.tar.gz
         ```
 
         And then configure the driver.
@@ -99,20 +109,20 @@ Paho MQTT python client.
     * As a service
 
         ```
-        $BIN_ROOT/wee_extension --install=$DOWNLOAD_DIR/v.X.Y.Z.tar.gz
+        $BIN_ROOT/wee_extension --install=$DOWNLOAD_DIR/vX.Y.Z.tar.gz
         ```
 
         **Note:** By default when installing, the service is installed and configured, but not enabled.
         To enable, set the environment variable MQTTSubscribe_install_type to SERVICE. For example,
 
         ```
-        MQTTSubscribe_install_type=SERVICE $BIN_ROOT/wee_extension --install=$DOWNLOAD_DIR/v.X.Y.Z.tar.gz
+        MQTTSubscribe_install_type=SERVICE $BIN_ROOT/wee_extension --install=$DOWNLOAD_DIR/vX.Y.Z.tar.gz
         ```
 
-    In either case, edit the [MQTTSubscribeService] stanza as required.
+    In either case, **edit the [MQTTSubscribeDriver] or [MQTTSubscribeService] stanza as required**.
     At the very least the [\[topics\]] stanza must be configured to the topics to subscribe to.
     Other settings such as host and port may need to be changed.
-    See, [configuring MQTTSubscribe](https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/Configuring)
+    See, [configuring MQTTSubscribe](https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/Configuring).
 
 3. Restart WeeWX
 
@@ -134,7 +144,20 @@ Paho MQTT python client.
 
 ## Manual Installation
 
-See, [manual installation](https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/Manual-installation)
+See, [manual installation](https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/Manual-installation).
+
+## Debugging
+
+See, [debugging](https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/Debugging).
+
+## Getting Help
+
+Feel free to [open an issue](https://github.com/bellrichm/WeeWX-MQTTSubscribe/issues/new),
+[start a discussion in github](https://github.com/bellrichm/WeeWX-MQTTSubscribe/discussions/new),
+or [post on WeeWX google group](https://groups.google.com/g/weewx-user).
+When doing so, see [Help! Posting to weewx user](https://github.com/weewx/weewx/wiki/Help!-Posting-to-weewx-user)
+for information on capturing the log.
+And yes, **capturing the log from WeeWX startup** makes debugging much easeier.
 
 [![Build status](https://ci.appveyor.com/api/projects/status/r0e08p7qt278thax?svg=true)](https://ci.appveyor.com/project/bellrichm/weewx-mqttsubscribe-master)
 
