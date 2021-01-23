@@ -250,6 +250,13 @@ Configuration:
                 # Default is False.
                 conversion_error_to_none = False
 
+                # When the field has any of the listed values, the MQTT message is not processed.
+                # Any set of values separated by a comma is valid. For example: v1, v2, v3.
+                # Default is empty.
+                # filter_out_message_when = ,
+                # Only used for json payloads.
+                # Note, conversion_type will most likely have to be set.
+
                 # The units of the incoming data.
                 # Useful if this field's units differ from the topic's unit_system's units.
                 # Valid values: see, http://www.weewx.com/docs/customizing.htm#units
@@ -689,11 +696,13 @@ class TopicManager(object):
                 )
                 self.queues.append(queue)
             self.subscribed_topics[topic]['queue'] = queue
+            self.subscribed_topics[topic]['filters'] = {}
 
             if topic_dict.sections:
                 for field in topic_dict.sections:
                     self.subscribed_topics[topic]['fields'][field] = self._configure_field(topic_dict, topic_dict[field], field, defaults)
                     self._configure_ignore_fields(topic_dict, topic_dict[field], topic, field, defaults)
+                    self._configure_filter_out_by(topic_dict[field], topic, field)
                     self._configure_cached_fields(topic_dict[field], field)
             else:
                 # See if any field options are directly under the topic.
@@ -702,6 +711,7 @@ class TopicManager(object):
                     if key not in topic_options:
                         self.subscribed_topics[topic]['fields'][topic] = self._configure_field(topic_dict, topic_dict, topic, defaults)
                         self._configure_ignore_fields(topic_dict, topic_dict, topic, topic, defaults)
+                        self._configure_filter_out_by(topic_dict, topic, topic)
                         self._configure_cached_fields(topic_dict, topic)
                         break
 
@@ -758,6 +768,22 @@ class TopicManager(object):
                 raise ValueError("For %s invalid units, %s." % (field['name'], field_dict['units']))
 
         return field
+
+    def _configure_filter_out_by(self, field_dict, topic, fieldname):
+        filter_values = weeutil.weeutil.option_as_list(field_dict.get('filter_out_message_when', None))
+        conversion_type = field_dict.get('conversion_type', 'float')
+        values = []
+        if filter_values is not None:
+            for value in filter_values:
+                if conversion_type == 'bool':
+                    values.append(to_bool(value))
+                elif conversion_type == 'float':
+                    values.append(to_float(value))
+                elif conversion_type == 'int':
+                    values.append(to_int(value))
+                else:
+                    values.append(value)
+            self.subscribed_topics[topic]['filters'].update({fieldname: values})
 
     def _configure_ignore_fields(self, topic_dict, field_dict, topic, fieldname, defaults):
         # pylint: disable=too-many-arguments
@@ -939,6 +965,10 @@ class TopicManager(object):
     def get_fields(self, topic):
         """ Get the fields. """
         return self._get_value('fields', topic)
+
+    def get_filters(self, topic):
+        """ Get the filters. """
+        return self._get_value('filters', topic)
 
     def get_qos(self, topic):
         """ Get the QOS. """
@@ -1176,11 +1206,12 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
             self._log_exception('on_message_keyword', exception, msg)
 
     def _on_message_json(self, client, userdata, msg): # (match callback signature) pylint: disable=unused-argument
-        # pylint: disable=too-many-locals
+        # pylint: disable=too-many-locals, too-many-branches
         # Wrap all the processing in a try, so it doesn't crash and burn on any error
         try:
             self._log_message(msg)
             fields = self.topic_manager.get_fields(msg.topic)
+            filters = self.topic_manager.get_filters(msg.topic)
             fields_ignore_default = self.topic_manager.get_ignore_value(msg.topic)
             msg_id_field = self.topic_manager.get_msg_id_field(msg.topic)
             ignore_msg_id_field = self.topic_manager.get_ignore_msg_id_field(msg.topic)
@@ -1204,6 +1235,11 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
                     lookup_key = key + "_" + str(msg_id) # todo - cleanup
                 else:
                     lookup_key = key
+                if lookup_key in filters:
+                    if data_flattened[key] in filters[lookup_key]:
+                        self.logger.info("MessageCallbackProvider on_message_json filtered out %s : %s with %s=%s"
+                                         % (msg.topic, msg.payload, lookup_key, filters[lookup_key]))
+                        return
                 if not fields.get(lookup_key, {}).get('ignore', fields_ignore_default):
                     (fieldname, value) = self._update_data(fields, lookup_key, data_flattened[key], unit_system)
                     data_final[fieldname] = value

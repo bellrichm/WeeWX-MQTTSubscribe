@@ -545,6 +545,7 @@ class TestJsonPayload(unittest.TestCase):
         mock_manager.get_ignore_msg_id_field.return_value = []
         mock_manager.get_ignore_value.return_value = False
         mock_manager.get_fields.return_value = {}
+        mock_manager.get_filters.return_value = {}
 
         SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), stub_logger, mock_manager)
 
@@ -569,6 +570,7 @@ class TestJsonPayload(unittest.TestCase):
         mock_manager.get_ignore_msg_id_field.return_value = []
         mock_manager.get_ignore_value.return_value = False
         mock_manager.get_fields.return_value = {}
+        mock_manager.get_filters.return_value = {}
 
         SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), stub_logger, mock_manager)
 
@@ -594,6 +596,7 @@ class TestJsonPayload(unittest.TestCase):
         mock_manager.get_ignore_msg_id_field.return_value = []
         mock_manager.get_ignore_value.return_value = False
         mock_manager.get_fields.return_value = {}
+        mock_manager.get_filters.return_value = {}
 
         SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), stub_logger, mock_manager)
 
@@ -624,6 +627,7 @@ class TestJsonPayload(unittest.TestCase):
         mock_manager.get_fields.return_value = {}
         mock_manager.get_ignore_value.return_value = False
         mock_manager.get_ignore_msg_id_field.return_value = []
+        mock_manager.get_filters.return_value = {}
 
         SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), stub_logger, mock_manager)
 
@@ -661,6 +665,7 @@ class TestJsonPayload(unittest.TestCase):
         mock_manager.get_msg_id_field.return_value = msg_id_field
         mock_manager.get_fields.return_value = {}
         mock_manager.get_ignore_value.return_value = False
+        mock_manager.get_filters.return_value = {}
 
         SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), stub_logger, mock_manager)
 
@@ -700,6 +705,7 @@ class TestJsonPayload(unittest.TestCase):
         mock_manager.get_ignore_msg_id_field.return_value = []
         mock_manager.get_ignore_value.return_value = False
         mock_manager.get_fields.return_value = {}
+        mock_manager.get_filters.return_value = {}
 
         SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), stub_logger, mock_manager)
 
@@ -738,6 +744,7 @@ class TestJsonPayload(unittest.TestCase):
         mock_manager.get_ignore_msg_id_field.return_value = []
         mock_manager.get_ignore_value.return_value = False
         mock_manager.get_fields.return_value = {'nested01_inTemp': {'name': 'inTemp'}}
+        mock_manager.get_filters.return_value = {}
 
         message_handler_config_dict = copy.deepcopy(self.message_handler_config_dict)
         message_handler_config_dict['fields'] = {}
@@ -812,6 +819,7 @@ class TestJsonPayload(unittest.TestCase):
         mock_manager.get_ignore_msg_id_field.return_value = []
         mock_manager.get_ignore_value.return_value = False
         mock_manager.get_fields.return_value = {}
+        mock_manager.get_filters.return_value = {}
 
         message_handler_config_dict = {}
         message_handler_config_dict['type'] = 'json'
@@ -857,6 +865,7 @@ class TestJsonPayload(unittest.TestCase):
         mock_manager.get_ignore_msg_id_field.return_value = []
         mock_manager.get_ignore_value.return_value = False
         mock_manager.get_fields.return_value = {}
+        mock_manager.get_filters.return_value = {}
 
         message_handler_config_dict = {}
         message_handler_config_dict['type'] = 'json'
