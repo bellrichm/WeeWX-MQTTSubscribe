@@ -262,7 +262,7 @@ class TestKeywordload(unittest.TestCase):
         msg = Msg(self.topic, payload, 0, 0)
 
         SUT._on_message_keyword(None, None, msg)
-        self.assertEqual(mock_logger.error.call_count, 1)
+        self.assertEqual(mock_logger.error.call_count, 2)
 
     def test_payload_missing_delimiter(self):
         mock_logger = mock.Mock(spec=Logger)
@@ -281,7 +281,7 @@ class TestKeywordload(unittest.TestCase):
         msg = Msg(self.topic, payload, 0, 0)
 
         SUT._on_message_keyword(None, None, msg)
-        self.assertEqual(mock_logger.error.call_count, 1)
+        self.assertEqual(mock_logger.error.call_count, 2)
 
     def test_payload_missing_separator(self):
         mock_logger = mock.Mock(spec=Logger)
@@ -979,7 +979,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         msg = Msg(self.topic, payload, 0, 0)
 
         SUT._on_message_individual(None, None, msg)
-        self.assertEqual(mock_logger.error.call_count, 1)
+        self.assertEqual(mock_logger.error.call_count, 2)
 
     def test_empty_payload(self):
         mock_logger = mock.Mock(spec=Logger)
@@ -998,7 +998,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         msg = Msg(self.topic, payload, 0, 0)
 
         SUT._on_message_individual(None, None, msg)
-        self.assertEqual(mock_logger.error.call_count, 1)
+        self.assertEqual(mock_logger.error.call_count, 2)
 
     def test_None_payload(self):
         mock_manager = mock.Mock(spec=TopicManager)
@@ -1246,7 +1246,7 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
         msg = Msg(self.topic, payload, 0, 0)
 
         SUT._on_message_individual(None, None, msg)
-        self.assertEqual(mock_logger.error.call_count, 1)
+        self.assertEqual(mock_logger.error.call_count, 2)
 
     def test_empty_payload(self):
         mock_logger = mock.Mock(spec=Logger)
@@ -1264,7 +1264,7 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
         msg = Msg(self.topic, payload, 0, 0)
 
         SUT._on_message_individual(None, None, msg)
-        self.assertEqual(mock_logger.error.call_count, 1)
+        self.assertEqual(mock_logger.error.call_count, 2)
 
     def test_None_payload(self):
         mock_manager = mock.Mock(spec=TopicManager)

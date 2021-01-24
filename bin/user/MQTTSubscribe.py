@@ -702,7 +702,7 @@ class TopicManager(object):
                 for field in topic_dict.sections:
                     self.subscribed_topics[topic]['fields'][field] = self._configure_field(topic_dict, topic_dict[field], field, defaults)
                     self._configure_ignore_fields(topic_dict, topic_dict[field], topic, field, defaults)
-                    self._configure_filter_out_by(topic_dict[field], topic, field)
+                    self._configure_filter_out_message(topic_dict[field], topic, field)
                     self._configure_cached_fields(topic_dict[field], field)
             else:
                 # See if any field options are directly under the topic.
@@ -711,7 +711,7 @@ class TopicManager(object):
                     if key not in topic_options:
                         self.subscribed_topics[topic]['fields'][topic] = self._configure_field(topic_dict, topic_dict, topic, defaults)
                         self._configure_ignore_fields(topic_dict, topic_dict, topic, topic, defaults)
-                        self._configure_filter_out_by(topic_dict, topic, topic)
+                        self._configure_filter_out_message(topic_dict, topic, topic)
                         self._configure_cached_fields(topic_dict, topic)
                         break
 
@@ -769,7 +769,7 @@ class TopicManager(object):
 
         return field
 
-    def _configure_filter_out_by(self, field_dict, topic, fieldname):
+    def _configure_filter_out_message(self, field_dict, topic, fieldname):
         filter_values = weeutil.weeutil.option_as_list(field_dict.get('filter_out_message_when', None))
         conversion_type = field_dict.get('conversion_type', 'float')
         values = []
@@ -1096,7 +1096,7 @@ class AbstractMessageCallbackProvider(object): # pylint: disable=too-few-public-
             conversion_error_to_none = fields.get(field, {}).get('conversion_error_to_none', False)
             if conversion_error_to_none:
                 return None
-            self.logger.error('error converting field %s, value %s to %s' % (field, value, conversion_type))
+            self.logger.error('Error converting field %s, value %s to %s' % (field, value, conversion_type))
             raise ConversionError()
 
 class MessageCallbackProvider(AbstractMessageCallbackProvider):
@@ -1201,7 +1201,7 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
                                   % (msg.topic, msg.payload))
 
         except ConversionError:
-            pass
+            self.logger.error("Ignoring topic=%s and payload=%s" % (msg.topic, msg.payload))
         except Exception as exception: # (want to catch all) pylint: disable=broad-except
             self._log_exception('on_message_keyword', exception, msg)
 
@@ -1250,7 +1250,7 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
                 self.topic_manager.append_data(msg.topic, data_final)
 
         except ConversionError:
-            pass
+            self.logger.error("Ignoring topic=%s and payload=%s" % (msg.topic, msg.payload))
         except Exception as exception: # (want to catch all) pylint: disable=broad-except
             self._log_exception('on_message_json', exception, msg)
 
@@ -1284,7 +1284,7 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
             else:
                 self.logger.trace("MessageCallbackProvider on_message_individual ignoring field: %s" % key)
         except ConversionError:
-            pass
+            self.logger.error("Ignoring topic=%s and payload=%s" % (msg.topic, msg.payload))
         except Exception as exception: # (want to catch all) pylint: disable=broad-except
             self._log_exception('on_message_individual', exception, msg)
 
