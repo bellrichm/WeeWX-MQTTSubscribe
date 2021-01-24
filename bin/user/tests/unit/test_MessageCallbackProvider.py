@@ -901,6 +901,49 @@ class TestJsonPayload(unittest.TestCase):
         for key in second_arg:
             self.assertIsInstance(key, str)
 
+    def test_filter_message(self):
+        lookup_key = 'outTemp'
+        filters = {lookup_key: [self.payload_dict['outTemp']]}
+        mock_manager = mock.Mock(spec=TopicManager)
+        mock_logger = mock.Mock(spec=Logger)
+        mock_manager.get_msg_id_field.return_value = None
+        mock_manager.get_ignore_msg_id_field.return_value = []
+        mock_manager.get_ignore_value.return_value = False
+        mock_manager.get_fields.return_value = {}
+        mock_manager.get_filters.return_value = filters
+
+        message_handler_config_dict = {}
+        message_handler_config_dict['type'] = 'json'
+        field_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])  # pylint: disable=unused-variable
+
+        fields = {}
+
+        field = {}
+        field['ignore'] = True
+        fields['inTemp'] = field
+
+        message_handler_config_dict['fields'] = fields
+
+        SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), mock_logger, mock_manager)
+
+        payload_dict = {}
+        payload_dict['outTemp'] = self.payload_dict['outTemp']
+        payload_dict['dateTime'] = time.time()
+        payload_dict['usUnits'] = random.randint(1, 10)
+
+        if PY2:
+            payload = json.dumps(payload_dict)
+        else:
+            payload = json.dumps(payload_dict).encode("utf-8")
+
+        msg = Msg(self.topic, payload, 0, 0)
+
+        SUT._on_message_json(None, None, msg)
+
+        mock_manager.append_data.assert_not_called()
+        SUT.logger.info.assert_called_with("MessageCallbackProvider on_message_json filtered out %s : %s with %s=%s"
+                                           % (msg.topic, msg.payload, lookup_key, filters[lookup_key]))
+
 class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
     topic_end = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
     topic = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])

@@ -192,6 +192,32 @@ class TestConfigureFields(unittest.TestCase):
         self.assertEqual(SUT.subscribed_topics[topic]['fields'][fieldname]['units'], unit_name)
         self.assertIsNone(SUT.cached_fields[fieldname]['expires_after'])
 
+    def test_filter_out_message(self):
+        mock_logger = mock.Mock(spec=Logger)
+
+        value_count = random.randint(1, 5)
+
+        topic = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+        config_dict = {}
+
+        config_dict[topic] = {}
+
+        fieldname = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+        config_dict[topic][fieldname] = {}
+        config_dict[topic][fieldname]['filter_out_message_when'] = []
+        filters = {fieldname: []}
+        i = 0
+        while i < value_count:
+            config_dict[topic][fieldname]['filter_out_message_when'].append(i)
+            filters[fieldname].append(float(i))
+            i += 1
+
+        config = configobj.ConfigObj(config_dict)
+
+        SUT = TopicManager(config, mock_logger)
+
+        self.assertEqual(SUT.subscribed_topics[topic]['filters'], filters)
+
 class TestQueueSizeCheck(unittest.TestCase):
     topic = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
     config_dict = {}
