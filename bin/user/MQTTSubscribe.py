@@ -108,7 +108,7 @@ Configuration:
     # Configuration for the message callback.
     [[message_callback]]
         # The format of the MQTT payload.
-        # Currently support: individual, json, keyword.
+        # Currently support: individual, json, keyword, multiple
         # Must be specified.
         type = REPLACE_ME
 
@@ -134,6 +134,11 @@ Configuration:
         # For more information see, http://weewx.com/docs/customizing.htm#units
         # Default is US.
         unit_system = US
+
+        # The format of the MQTT payload of this topic.
+        # Valid values: individual, json, keyword.
+        # Default is None.
+        message_type = None
 
         # By default wind data is collected together across generation of loop packets.
         # Setting to false results in the data only being collected together within a loop packet.
@@ -603,7 +608,7 @@ class TopicManager(object):
         self.logger.debug("TopicManager single_queue is %s" % single_queue)
 
         topic_options = ['collect_wind_across_loops', 'collect_observations', 'single_queue', 'unit_system',
-                         'msg_id_field', 'qos', 'topic_tail_is_fieldname',
+                         'msg_id_field', 'qos', 'message_type', 'topic_tail_is_fieldname',
                          'use_server_datetime', 'ignore_start_time', 'ignore_end_time', 'adjust_start_time', 'adjust_end_time',
                          'datetime_format', 'offset_format', 'max_queue']
 
@@ -611,6 +616,7 @@ class TopicManager(object):
         default_msg_id_field = config.get('msg_id_field', None)
         defaults['ignore_msg_id_field'] = config.get('ignore_msg_id_field', False)
         default_qos = to_int(config.get('qos', 0))
+        default_message_type = config.get('message_type', None)
         default_topic_tail_is_fieldname = to_bool(config.get('topic_tail_is_fieldname', False))
         default_use_server_datetime = to_bool(config.get('use_server_datetime', False))
         default_ignore_start_time = to_bool(config.get('ignore_start_time', False))
@@ -637,6 +643,7 @@ class TopicManager(object):
         self.subscribed_topics = {}
         self.cached_fields = {}
         self.queues = []
+        self.found_message_type = False
 
         if single_queue:
             queue = dict(
@@ -657,6 +664,9 @@ class TopicManager(object):
 
             msg_id_field = topic_dict.get('msg_id_field', default_msg_id_field)
             qos = to_int(topic_dict.get('qos', default_qos))
+            message_type = topic_dict.get('message_type', default_message_type)
+            if message_type:
+                self.found_message_type = True
             topic_tail_is_fieldname = to_bool(topic_dict.get('topic_tail_is_fieldname',
                                                              default_topic_tail_is_fieldname))
             use_server_datetime = to_bool(topic_dict.get('use_server_datetime',
@@ -675,6 +685,7 @@ class TopicManager(object):
             self.subscribed_topics[topic]['unit_system'] = unit_system
             self.subscribed_topics[topic]['msg_id_field'] = msg_id_field
             self.subscribed_topics[topic]['qos'] = qos
+            self.subscribed_topics[topic]['message_type'] = message_type
             self.subscribed_topics[topic]['topic_tail_is_fieldname'] = topic_tail_is_fieldname
             self.subscribed_topics[topic]['use_server_datetime'] = use_server_datetime
             self.subscribed_topics[topic]['datetime_format'] = datetime_format
@@ -714,6 +725,11 @@ class TopicManager(object):
                         self._configure_filter_out_message(topic_dict, topic, topic)
                         self._configure_cached_fields(topic_dict, topic)
                         break
+
+        if self.found_message_type:
+            for topic in self.subscribed_topics:
+                if self.subscribed_topics[topic]['message_type'] is None:
+                    raise ValueError("MQTTSubscribe: topic: %s has no configured 'message_type'" % topic)
 
         # Add the collector queue as a subscribed topic so that data can retrieved from it
         # Yes, this is a bit of a hack.
@@ -978,9 +994,9 @@ class TopicManager(object):
         """ Get the topic_tail_is_fieldname. """
         return self._get_value('topic_tail_is_fieldname', topic)
 
-    def get_type(self, topic):
+    def get_message_type(self, topic):
         """ Get the type. """
-        return self._get_value('type', topic)
+        return self._get_value('message_type', topic)
 
     def get_unit_system(self, topic):
         """ Get the unit system """
@@ -1113,6 +1129,9 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
         if self.type not in self.callbacks:
             raise ValueError("Invalid type configured: %s" % self.type)
 
+        if self.type == 'multiple' and not topic_manager.found_message_type:
+            raise ValueError("Type of '%s' requires '[[[topic-name]]]' to have a 'message_type' configured" % self.type)
+
     def get_callback(self):
         """ Get the MQTT callback. """
         return self.callbacks[self.type]
@@ -1122,6 +1141,7 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
         self.callbacks['individual'] = self._on_message_individual
         self.callbacks['json'] = self._on_message_json
         self.callbacks['keyword'] = self._on_message_keyword
+        self.callbacks['multiple'] = self._on_message_multi
 
     def _byteify(self, data, ignore_dicts=False):
         if PY2:
@@ -1285,6 +1305,22 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
                 self.logger.trace("MessageCallbackProvider on_message_individual ignoring field: %s" % key)
         except ConversionError:
             self.logger.error("Ignoring topic=%s and payload=%s" % (msg.topic, msg.payload))
+        except Exception as exception: # (want to catch all) pylint: disable=broad-except
+            self._log_exception('on_message_individual', exception, msg)
+
+    def _on_message_multi(self, client, userdata, msg):
+        # Wrap all the processing in a try, so it doesn't crash and burn on any error
+        try:
+            message_type = self.topic_manager.get_message_type(msg.topic)
+            # ToDo: eliminate if/elif?
+            if message_type == 'individual':
+                self._on_message_individual(client, userdata, msg)
+            elif message_type == 'json':
+                self._on_message_json(client, userdata, msg)
+            elif message_type == 'keyword':
+                self._on_message_keyword(client, userdata, msg)
+            else:
+                self.logger.error("Unknown message_type=%s. Skipping topic=%s and payload=%s" % (message_type, msg.topic, msg.payload))
         except Exception as exception: # (want to catch all) pylint: disable=broad-except
             self._log_exception('on_message_individual', exception, msg)
 
