@@ -616,7 +616,7 @@ class TopicManager(object):
         default_msg_id_field = config.get('msg_id_field', None)
         defaults['ignore_msg_id_field'] = config.get('ignore_msg_id_field', False)
         default_qos = to_int(config.get('qos', 0))
-        default_message_type = config.get('message_type', None)
+        default_message_dict = config.get('Message', {})
         default_topic_tail_is_fieldname = to_bool(config.get('topic_tail_is_fieldname', False))
         default_use_server_datetime = to_bool(config.get('use_server_datetime', False))
         default_ignore_start_time = to_bool(config.get('ignore_start_time', False))
@@ -643,7 +643,6 @@ class TopicManager(object):
         self.subscribed_topics = {}
         self.cached_fields = {}
         self.queues = []
-        self.found_message_type = False
 
         if single_queue:
             queue = dict(
@@ -662,11 +661,15 @@ class TopicManager(object):
         for topic in config.sections:
             topic_dict = config.get(topic, {})
 
+            if topic == 'Message':
+                # if 'type' option is set, this not a 'topic'
+                # it is actually a 'Message' configuration stanza
+                # and it has already been retrieved into default_message_config
+                if topic_dict.get('type', None) is not None:
+                    continue
+
             msg_id_field = topic_dict.get('msg_id_field', default_msg_id_field)
             qos = to_int(topic_dict.get('qos', default_qos))
-            message_type = topic_dict.get('message_type', default_message_type)
-            if message_type:
-                self.found_message_type = True
             topic_tail_is_fieldname = to_bool(topic_dict.get('topic_tail_is_fieldname',
                                                              default_topic_tail_is_fieldname))
             use_server_datetime = to_bool(topic_dict.get('use_server_datetime',
@@ -685,7 +688,6 @@ class TopicManager(object):
             self.subscribed_topics[topic]['unit_system'] = unit_system
             self.subscribed_topics[topic]['msg_id_field'] = msg_id_field
             self.subscribed_topics[topic]['qos'] = qos
-            self.subscribed_topics[topic]['message_type'] = message_type
             self.subscribed_topics[topic]['topic_tail_is_fieldname'] = topic_tail_is_fieldname
             self.subscribed_topics[topic]['use_server_datetime'] = use_server_datetime
             self.subscribed_topics[topic]['datetime_format'] = datetime_format
@@ -709,12 +711,25 @@ class TopicManager(object):
             self.subscribed_topics[topic]['queue'] = queue
             self.subscribed_topics[topic]['filters'] = {}
 
-            if topic_dict.sections:
+            # see if there is 'Message' stanza for this 'topic'
+            message_dict = topic_dict.get('Message', default_message_dict)
+            message_type = message_dict.get('type', None)
+            if message_type is not None:
+                message_dict['flatten_delimiter'] = message_dict.get('flatten_delimiter', '_')
+                message_dict['keyword_delimiter'] = message_dict.get('keyword_delimiter', ',')
+                message_dict['keyword_separator'] = message_dict.get('keyword_separator', '=')
+
+            self.subscribed_topics[topic]['Message'] = message_dict
+
+            if len(topic_dict.sections) > 1 or (len(topic_dict.sections) == 1  and message_type is None):
                 for field in topic_dict.sections:
-                    self.subscribed_topics[topic]['fields'][field] = self._configure_field(topic_dict, topic_dict[field], field, defaults)
-                    self._configure_ignore_fields(topic_dict, topic_dict[field], topic, field, defaults)
-                    self._configure_filter_out_message(topic_dict[field], topic, field)
-                    self._configure_cached_fields(topic_dict[field], field)
+                    if field == 'Message' and topic_dict[field].get('type', None) is not None:
+                        pass
+                    else:
+                        self.subscribed_topics[topic]['fields'][field] = self._configure_field(topic_dict, topic_dict[field], field, defaults)
+                        self._configure_ignore_fields(topic_dict, topic_dict[field], topic, field, defaults)
+                        self._configure_filter_out_message(topic_dict[field], topic, field)
+                        self._configure_cached_fields(topic_dict[field], field)
             else:
                 # See if any field options are directly under the topic.
                 # And if so, use the topic as the field name.
@@ -726,11 +741,6 @@ class TopicManager(object):
                         self._configure_cached_fields(topic_dict, topic)
                         break
 
-        if self.found_message_type:
-            for topic in self.subscribed_topics:
-                if self.subscribed_topics[topic]['message_type'] is None:
-                    raise ValueError("MQTTSubscribe: topic: %s has no configured 'message_type'" % topic)
-
         # Add the collector queue as a subscribed topic so that data can retrieved from it
         # Yes, this is a bit of a hack.
         # Note, it would not be too hard to allow additional fields via the [fields] configuration option
@@ -740,6 +750,7 @@ class TopicManager(object):
         self.collected_topic = "%f-%s" % (time.time(), '-'.join(self.collected_fields))
         topic = self.collected_topic
         self.subscribed_topics[topic] = {}
+        self.subscribed_topics[topic]['Message'] = {}
         self.subscribed_topics[topic]['unit_system'] = weewx.units.unit_constants[default_unit_system_name]
         self.subscribed_topics[topic]['qos'] = default_qos
         self.subscribed_topics[topic]['topic_tail_is_fieldname'] = default_topic_tail_is_fieldname
@@ -978,6 +989,16 @@ class TopicManager(object):
             element = queue.popleft()
             self.logger.error("TopicManager queue limit %i reached. Removing: %s" %(max_queue, element))
 
+    def set_message_dict(self, message_dict):
+        """ If a topic's message_dict is not set, set it to a default.
+            This is used for backwards compatilibity and will be able to be removed in the future. """
+        if message_dict is not None:
+            for topic in self.subscribed_topics:
+                if not self.subscribed_topics[topic]['Message']:
+                    self.subscribed_topics[topic]['Message'] = message_dict.dict()
+                else:
+                    self.logger.info("log something about ignoring old location")
+
     def get_fields(self, topic):
         """ Get the fields. """
         return self._get_value('fields', topic)
@@ -994,9 +1015,9 @@ class TopicManager(object):
         """ Get the topic_tail_is_fieldname. """
         return self._get_value('topic_tail_is_fieldname', topic)
 
-    def get_message_type(self, topic):
+    def get_message_dict(self, topic):
         """ Get the type. """
-        return self._get_value('message_type', topic)
+        return self._get_value('Message', topic)
 
     def get_unit_system(self, topic):
         """ Get the unit system """
@@ -1120,28 +1141,28 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
     """ Provide the MQTT callback. """
     def __init__(self, config, logger, topic_manager):
         super(MessageCallbackProvider, self).__init__(logger, topic_manager)
-        self._setup_callbacks()
-        self.type = config.get('type', None)
-        self.flatten_delimiter = config.get('flatten_delimiter', '_')
-        self.keyword_delimiter = config.get('keyword_delimiter', ',')
-        self.keyword_separator = config.get('keyword_separator', '=')
+        # backwards compatibility, type set- so set defaults
+        if config is not None and config.get('type', None) is not None:
+            config['flatten_delimiter'] = config.get('flatten_delimiter', '_')
+            config['keyword_delimiter'] = config.get('keyword_delimiter', ',')
+            config['keyword_separator'] = config.get('keyword_separator', '=')
 
-        if self.type not in self.callbacks:
-            raise ValueError("Invalid type configured: %s" % self.type)
+        topic_manager.set_message_dict(config)
 
-        if self.type == 'multiple' and not topic_manager.found_message_type:
-            raise ValueError("Type of '%s' requires '[[[topic-name]]]' to have a 'message_type' configured" % self.type)
+        for topic in topic_manager.subscribed_topics:
+            if topic_manager.subscribed_topics[topic]['queue']['type'] == 'collector':
+                continue
+            if not topic_manager.subscribed_topics[topic]['Message']:
+                raise ValueError("%s topic is missing '[[[[Message]]]]' section" % topic)
+            message_type = topic_manager.subscribed_topics[topic]['Message'].get('type', None)
+            if message_type is None:
+                raise ValueError("%s topic is missing '[[[[Message]]]] type=' section" % topic)
+            if message_type not in ['json', 'keyword', 'individual']:
+                raise ValueError("Invalid type configured: %s" % message_type)
 
     def get_callback(self):
         """ Get the MQTT callback. """
-        return self.callbacks[self.type]
-
-    def _setup_callbacks(self):
-        self.callbacks = {}
-        self.callbacks['individual'] = self._on_message_individual
-        self.callbacks['json'] = self._on_message_json
-        self.callbacks['keyword'] = self._on_message_keyword
-        self.callbacks['multiple'] = self._on_message_multi
+        return self._on_message_multi
 
     def _byteify(self, data, ignore_dicts=False):
         if PY2:
@@ -1187,6 +1208,7 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
         # Wrap all the processing in a try, so it doesn't crash and burn on any error
         try:
             self._log_message(msg)
+            message_dict = self.topic_manager.get_message_dict(msg.topic)
             fields = self.topic_manager.get_fields(msg.topic)
             fields_ignore_default = self.topic_manager.get_ignore_value(msg.topic)
 
@@ -1195,15 +1217,15 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
             else:
                 payload_str = msg.payload.decode('utf-8')
 
-            fielddata = payload_str.split(self.keyword_delimiter)
+            fielddata = payload_str.split(message_dict['keyword_delimiter'])
             data = {}
             unit_system = self.topic_manager.get_unit_system(msg.topic)
             for field in fielddata:
-                eq_index = field.find(self.keyword_separator)
+                eq_index = field.find(message_dict['keyword_separator'])
                 # Ignore all fields that do not have the separator
                 if eq_index == -1:
                     self.logger.error("MessageCallbackProvider on_message_keyword failed to find separator: %s"
-                                      % self.keyword_separator)
+                                      % message_dict['keyword_separator'])
                     self.logger.error("**** MessageCallbackProvider Skipping field=%s " % field)
                     continue
 
@@ -1230,6 +1252,7 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
         # Wrap all the processing in a try, so it doesn't crash and burn on any error
         try:
             self._log_message(msg)
+            message_dict = self.topic_manager.get_message_dict(msg.topic)
             fields = self.topic_manager.get_fields(msg.topic)
             filters = self.topic_manager.get_filters(msg.topic)
             fields_ignore_default = self.topic_manager.get_ignore_value(msg.topic)
@@ -1243,7 +1266,7 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
 
             data = self._byteify(json.loads(payload_str, object_hook=self._byteify), ignore_dicts=True)
 
-            data_flattened = self._flatten_dict(data, self.flatten_delimiter)
+            data_flattened = self._flatten_dict(data, message_dict['flatten_delimiter'])
 
             unit_system = self.topic_manager.get_unit_system(msg.topic)
             data_final = {}
@@ -1311,7 +1334,8 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
     def _on_message_multi(self, client, userdata, msg):
         # Wrap all the processing in a try, so it doesn't crash and burn on any error
         try:
-            message_type = self.topic_manager.get_message_type(msg.topic)
+            message_dict = self.topic_manager.get_message_dict(msg.topic)
+            message_type = message_dict['type']
             # ToDo: eliminate if/elif?
             if message_type == 'individual':
                 self._on_message_individual(client, userdata, msg)
@@ -1336,8 +1360,6 @@ class MQTTSubscriber(object):
         self.logger.debug("MQTTSUBscriber sanitized_service_dict is %s" % sanitized_service_dict)
 
         message_callback_config = service_dict.get('message_callback', None)
-        if message_callback_config is None:
-            raise ValueError("[[message_callback]] is required.")
 
         topics_dict = service_dict.get('topics', None)
         if topics_dict is None:
@@ -1430,16 +1452,17 @@ class MQTTSubscriber(object):
             raise ValueError("'overlap' is deprecated, use 'adjust_start_time'")
         if 'archive_field_cache' in service_dict:
             raise ValueError("'archive_field_cache' is deprecated, use '[[topics]][[[topic name]]][[[[field name]]]]'")
-        if 'full_topic_fieldname' in service_dict['message_callback']:
-            raise ValueError("'full_topic_fieldname' is deprecated, use '[[topics]][[[topic name]]][[[[field name]]]]'")
-        if 'contains_total' in service_dict['message_callback']:
-            raise ValueError("'contains_total' is deprecated use '[[topics]][[[topic name]]][[[[field name]]]]' contains_total setting.")
-        if 'label_map' in service_dict['message_callback']:
-            raise ValueError("'label_map' is deprecated use '[[topics]][[[topic name]]][[[[field name]]]]' name setting.")
-        if 'fields' in service_dict['message_callback']:
-            raise ValueError("'fields' is deprecated, use '[[topics]][[[topic name]]][[[[field name]]]]'")
-        if 'use_topic_as_fieldname' in service_dict['topics']:
-            self.logger.info("'use_topic_as_fieldname' option is no longer needed and can be removed.")
+        if 'message_callback' in service_dict:
+            if 'full_topic_fieldname' in service_dict['message_callback']:
+                raise ValueError("'full_topic_fieldname' is deprecated, use '[[topics]][[[topic name]]][[[[field name]]]]'")
+            if 'contains_total' in service_dict['message_callback']:
+                raise ValueError("'contains_total' is deprecated use '[[topics]][[[topic name]]][[[[field name]]]]' contains_total setting.")
+            if 'label_map' in service_dict['message_callback']:
+                raise ValueError("'label_map' is deprecated use '[[topics]][[[topic name]]][[[[field name]]]]' name setting.")
+            if 'fields' in service_dict['message_callback']:
+                raise ValueError("'fields' is deprecated, use '[[topics]][[[topic name]]][[[[field name]]]]'")
+            if 'use_topic_as_fieldname' in service_dict['topics']:
+                self.logger.info("'use_topic_as_fieldname' option is no longer needed and can be removed.")
 
     @property
     def queues(self):
