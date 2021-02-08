@@ -598,6 +598,8 @@ class TopicManager(object):
         if not config.sections:
             raise ValueError("At least one topic must be configured.")
 
+        self.message_config_name = "message-%f" % time.time()
+
         self.collect_wind_across_loops = to_bool(config.get('collect_wind_across_loops', True))
         self.logger.debug("TopicManager self.collect_wind_across_loops is %s" % self.collect_wind_across_loops)
 
@@ -616,7 +618,6 @@ class TopicManager(object):
         default_msg_id_field = config.get('msg_id_field', None)
         defaults['ignore_msg_id_field'] = config.get('ignore_msg_id_field', False)
         default_qos = to_int(config.get('qos', 0))
-        default_message_dict = config.get('Message', {})
         default_topic_tail_is_fieldname = to_bool(config.get('topic_tail_is_fieldname', False))
         default_use_server_datetime = to_bool(config.get('use_server_datetime', False))
         default_ignore_start_time = to_bool(config.get('ignore_start_time', False))
@@ -632,6 +633,12 @@ class TopicManager(object):
         defaults['contains_total'] = to_bool(config.get('contains_total', False))
         defaults['conversion_type'] = config.get('conversion_type', 'float')
         defaults['conversion_error_to_none'] = to_bool(config.get('conversion_error_to_none', False))
+
+        default_message_dict = config.get('Message', configobj.ConfigObj())
+        # if 'type' option is not set, this not 'topic'
+        # so, no default 'Message' configuration exists
+        if default_message_dict.get('type', None) is None:
+            default_message_dict = configobj.ConfigObj({})
 
         default_unit_system_name = config.get('unit_system', 'US').strip().upper()
         if default_unit_system_name not in weewx.units.unit_constants:
@@ -661,12 +668,11 @@ class TopicManager(object):
         for topic in config.sections:
             topic_dict = config.get(topic, {})
 
-            if topic == 'Message':
-                # if 'type' option is set, this not a 'topic'
-                # it is actually a 'Message' configuration stanza
-                # and it has already been retrieved into default_message_config
-                if topic_dict.get('type', None) is not None:
-                    continue
+            # if 'type' option is set, this not a 'topic'
+            # it is actually a 'Message' configuration stanza
+            # and it has already been retrieved into default_message_config
+            if topic == 'Message' and topic_dict.get('type', None) is not None:
+                continue
 
             msg_id_field = topic_dict.get('msg_id_field', default_msg_id_field)
             qos = to_int(topic_dict.get('qos', default_qos))
@@ -711,25 +717,28 @@ class TopicManager(object):
             self.subscribed_topics[topic]['queue'] = queue
             self.subscribed_topics[topic]['filters'] = {}
 
-            # see if there is 'Message' stanza for this 'topic'
-            message_dict = topic_dict.get('Message', default_message_dict)
-            message_type = message_dict.get('type', None)
-            if message_type is not None:
-                message_dict['flatten_delimiter'] = message_dict.get('flatten_delimiter', '_')
-                message_dict['keyword_delimiter'] = message_dict.get('keyword_delimiter', ',')
-                message_dict['keyword_separator'] = message_dict.get('keyword_separator', '=')
+            temp_message_dict = topic_dict.get('Message', {})
+            message_type = temp_message_dict.get('type', None)
 
-            self.subscribed_topics[topic]['Message'] = message_dict
+            # ugly "deep" copy workaround
+            message_dict = configobj.ConfigObj({})
+            message_dict.merge(default_message_dict)
+
+            # if 'type' option is set, this a 'Message'
+            # So merge the default message settings
+            if message_type is not None:
+                message_dict.merge(temp_message_dict)
+            self.subscribed_topics[topic][self.message_config_name] = message_dict
 
             if len(topic_dict.sections) > 1 or (len(topic_dict.sections) == 1  and message_type is None):
                 for field in topic_dict.sections:
                     if field == 'Message' and topic_dict[field].get('type', None) is not None:
-                        pass
-                    else:
-                        self.subscribed_topics[topic]['fields'][field] = self._configure_field(topic_dict, topic_dict[field], field, defaults)
-                        self._configure_ignore_fields(topic_dict, topic_dict[field], topic, field, defaults)
-                        self._configure_filter_out_message(topic_dict[field], topic, field)
-                        self._configure_cached_fields(topic_dict[field], field)
+                        continue
+
+                    self.subscribed_topics[topic]['fields'][field] = self._configure_field(topic_dict, topic_dict[field], field, defaults)
+                    self._configure_ignore_fields(topic_dict, topic_dict[field], topic, field, defaults)
+                    self._configure_filter_out_message(topic_dict[field], topic, field)
+                    self._configure_cached_fields(topic_dict[field], field)
             else:
                 # See if any field options are directly under the topic.
                 # And if so, use the topic as the field name.
@@ -750,7 +759,7 @@ class TopicManager(object):
         self.collected_topic = "%f-%s" % (time.time(), '-'.join(self.collected_fields))
         topic = self.collected_topic
         self.subscribed_topics[topic] = {}
-        self.subscribed_topics[topic]['Message'] = {}
+        self.subscribed_topics[topic][self.message_config_name] = {}
         self.subscribed_topics[topic]['unit_system'] = weewx.units.unit_constants[default_unit_system_name]
         self.subscribed_topics[topic]['qos'] = default_qos
         self.subscribed_topics[topic]['topic_tail_is_fieldname'] = default_topic_tail_is_fieldname
@@ -989,16 +998,6 @@ class TopicManager(object):
             element = queue.popleft()
             self.logger.error("TopicManager queue limit %i reached. Removing: %s" %(max_queue, element))
 
-    def set_message_dict(self, message_dict):
-        """ If a topic's message_dict is not set, set it to a default.
-            This is used for backwards compatilibity and will be able to be removed in the future. """
-        if message_dict is not None:
-            for topic in self.subscribed_topics:
-                if not self.subscribed_topics[topic]['Message']:
-                    self.subscribed_topics[topic]['Message'] = message_dict.dict()
-                else:
-                    self.logger.info("log something about ignoring old location")
-
     def get_fields(self, topic):
         """ Get the fields. """
         return self._get_value('fields', topic)
@@ -1017,7 +1016,7 @@ class TopicManager(object):
 
     def get_message_dict(self, topic):
         """ Get the type. """
-        return self._get_value('Message', topic)
+        return self._get_value(self.message_config_name, topic)
 
     def get_unit_system(self, topic):
         """ Get the unit system """
@@ -1141,20 +1140,29 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
     """ Provide the MQTT callback. """
     def __init__(self, config, logger, topic_manager):
         super(MessageCallbackProvider, self).__init__(logger, topic_manager)
-        # backwards compatibility, type set- so set defaults
-        if config is not None and config.get('type', None) is not None:
-            config['flatten_delimiter'] = config.get('flatten_delimiter', '_')
-            config['keyword_delimiter'] = config.get('keyword_delimiter', ',')
-            config['keyword_separator'] = config.get('keyword_separator', '=')
-
-        topic_manager.set_message_dict(config)
 
         for topic in topic_manager.subscribed_topics:
             if topic_manager.subscribed_topics[topic]['queue']['type'] == 'collector':
                 continue
-            if not topic_manager.subscribed_topics[topic]['Message']:
+
+            if config is not None:
+                # backwards compability
+                if not topic_manager.subscribed_topics[topic][topic_manager.message_config_name]:
+                    topic_manager.subscribed_topics[topic][topic_manager.message_config_name] = config.dict()
+                else:
+                    self.logger.info("log something about ignoring old location")
+
+            # ToDo Investigate this and copying, maybe a merge?
+            if 'flatten_delimiter' not in topic_manager.subscribed_topics[topic][topic_manager.message_config_name]:
+                topic_manager.subscribed_topics[topic][topic_manager.message_config_name]['flatten_delimiter'] = '_'
+            if 'keyword_delimiter' not in topic_manager.subscribed_topics[topic][topic_manager.message_config_name]:
+                topic_manager.subscribed_topics[topic][topic_manager.message_config_name]['keyword_delimiter'] = ','
+            if 'keyword_separator' not in topic_manager.subscribed_topics[topic][topic_manager.message_config_name]:
+                topic_manager.subscribed_topics[topic][topic_manager.message_config_name]['keyword_separator'] = '='
+
+            if not topic_manager.subscribed_topics[topic][topic_manager.message_config_name]:
                 raise ValueError("%s topic is missing '[[[[Message]]]]' section" % topic)
-            message_type = topic_manager.subscribed_topics[topic]['Message'].get('type', None)
+            message_type = topic_manager.subscribed_topics[topic][topic_manager.message_config_name].get('type', None)
             if message_type is None:
                 raise ValueError("%s topic is missing '[[[[Message]]]] type=' section" % topic)
             if message_type not in ['json', 'keyword', 'individual']:
@@ -1278,11 +1286,10 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
                     lookup_key = key + "_" + str(msg_id) # todo - cleanup
                 else:
                     lookup_key = key
-                if lookup_key in filters:
-                    if data_flattened[key] in filters[lookup_key]:
-                        self.logger.info("MessageCallbackProvider on_message_json filtered out %s : %s with %s=%s"
-                                         % (msg.topic, msg.payload, lookup_key, filters[lookup_key]))
-                        return
+                if lookup_key in filters and data_flattened[key] in filters[lookup_key]:
+                    self.logger.info("MessageCallbackProvider on_message_json filtered out %s : %s with %s=%s"
+                                     % (msg.topic, msg.payload, lookup_key, filters[lookup_key]))
+                    return
                 if not fields.get(lookup_key, {}).get('ignore', fields_ignore_default):
                     (fieldname, value) = self._update_data(fields, lookup_key, data_flattened[key], unit_system)
                     data_final[fieldname] = value
@@ -1764,6 +1771,7 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice): # (methods not used) py
 
     def genArchiveRecords(self, lastgood_ts): # need to override parent - pylint: disable=invalid-name
         """ Called to generate the archive records. """
+        # ToDo - broke this when implementing single queue
         if not self.archive_topic:
             self.logger.debug("No archive topic configured.")
             raise NotImplementedError
