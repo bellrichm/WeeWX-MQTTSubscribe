@@ -90,16 +90,6 @@ class TestInitialization(unittest.TestCase):
 
                 self.assertEqual(error.exception.args[0], exception)
 
-    def test_missing_callback(self):
-        config_dict = {}
-        config = configobj.ConfigObj(config_dict)
-
-        mock_logger = mock.Mock(spec=Logger)
-        with self.assertRaises(ValueError) as error:
-            MQTTSubscriber(config, mock_logger)
-
-        self.assertEqual(error.exception.args[0], "[[message_callback]] is required.")
-
 
     def test_missing_topics(self):
         config_dict = {

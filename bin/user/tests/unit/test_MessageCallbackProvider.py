@@ -24,6 +24,9 @@ from user.MQTTSubscribe import TopicManager, Logger
 # Stole from six module. Added to eliminate dependency on six when running under WeeWX 3.x
 PY2 = sys.version_info[0] == 2
 
+def random_string(length=32):
+    return ''.join([random.choice(string.ascii_letters + string.digits) for n in range(length)]) # pylint: disable=unused-variable
+
 class Msg(object):
     # pylint: disable=too-few-public-methods
     def __init__(self, topic, payload, qos, retain):
@@ -32,59 +35,173 @@ class Msg(object):
         self.qos = qos
         self.retain = retain
 
-class TestGetDefaultCallBacks(unittest.TestCase):
-    def test_get_unknown_payload_type(self):
-        mock_logger = mock.Mock(spec=Logger)
-        message_handler_config_dict = {}
-        payload_type = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
-        message_handler_config_dict['type'] = payload_type
-
-        with self.assertRaises(ValueError) as context:
-            user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), mock_logger, None)
-
-        self.assertEqual(str(context.exception), "Invalid type configured: %s" % payload_type)
-
-    def test_get_individual_payload_type(self):
+class TestInitialization(unittest.TestCase):
+    @staticmethod
+    def test_message_and_message_callback_set():
         mock_logger = mock.Mock(spec=Logger)
         mock_manager = mock.Mock(spec=TopicManager)
-        mock_manager.get_msg_id_field.return_value = None
-        mock_manager.get_ignore_msg_id_field.return_value = []
 
-        message_handler_config_dict = {}
-        message_handler_config_dict['type'] = 'individual'
+        topic = random_string(10)
+        message_config_name = random_string()
+        queue_type = random_string(10)
+        mock_manager.message_config_name = message_config_name
+        mock_manager.subscribed_topics = {}
+        mock_manager.subscribed_topics[topic] = {}
+        mock_manager.subscribed_topics[topic]['queue'] = {}
+        mock_manager.subscribed_topics[topic]['queue']['type'] = queue_type
+        mock_manager.subscribed_topics[topic][message_config_name] = {}
+        mock_manager.subscribed_topics[topic][message_config_name]['type'] = 'json'
 
-        SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), mock_logger, mock_manager)
+        config_dict = {}
+        config_dict['type'] = 'barbar'
+        config = configobj.ConfigObj(config_dict)
 
-        callback = SUT.get_callback()
-        self.assertEqual(callback, SUT._on_message_individual)
+        user.MQTTSubscribe.MessageCallbackProvider(config, mock_logger, mock_manager)
 
-    def test_get_json_payload_type(self):
+        mock_logger.info.assert_called_once_with( \
+            "Message configuration found under [[MessageCallback]] and [[Topic]]. Ignoring [[MessageCallbwck]].")
+
+    def test_message_and_message_callback_not_set(self):
         mock_logger = mock.Mock(spec=Logger)
         mock_manager = mock.Mock(spec=TopicManager)
-        mock_manager.get_msg_id_field.return_value = None
-        mock_manager.get_ignore_msg_id_field.return_value = []
 
-        message_handler_config_dict = {}
-        message_handler_config_dict['type'] = 'json'
+        topic = random_string(10)
+        message_config_name = random_string()
+        queue_type = random_string(10)
+        mock_manager.message_config_name = message_config_name
+        mock_manager.subscribed_topics = {}
+        mock_manager.subscribed_topics[topic] = {}
+        mock_manager.subscribed_topics[topic]['queue'] = {}
+        mock_manager.subscribed_topics[topic]['queue']['type'] = queue_type
+        mock_manager.subscribed_topics[topic][message_config_name] = {}
 
-        SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), mock_logger, mock_manager)
+        with self.assertRaises(ValueError) as error:
+            user.MQTTSubscribe.MessageCallbackProvider(None, mock_logger, mock_manager)
 
-        callback = SUT.get_callback()
-        self.assertEqual(callback, SUT._on_message_json)
+        self.assertEqual(error.exception.args[0], "%s topic is missing '[[[[Message]]]]' section" % topic)
 
-    def test_get_keyword_payload_type(self):
+    def test_message_callback_configuration_defaults_not_set(self):
         mock_logger = mock.Mock(spec=Logger)
         mock_manager = mock.Mock(spec=TopicManager)
-        mock_manager.get_msg_id_field.return_value = None
-        mock_manager.get_ignore_msg_id_field.return_value = []
 
-        message_handler_config_dict = {}
-        message_handler_config_dict['type'] = 'keyword'
+        topic = random_string(10)
+        message_config_name = random_string()
+        queue_type = random_string(10)
+        flatten_delimiter = random_string(5)
+        keyword_delimiter = random_string(5)
+        keyword_separator = random_string(5)
+        mock_manager.message_config_name = message_config_name
+        mock_manager.subscribed_topics = {}
+        mock_manager.subscribed_topics[topic] = {}
+        mock_manager.subscribed_topics[topic]['queue'] = {}
+        mock_manager.subscribed_topics[topic]['queue']['type'] = queue_type
+        mock_manager.subscribed_topics[topic][message_config_name] = {}
 
-        SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), mock_logger, mock_manager)
+        config_dict = {}
+        config_dict['type'] = 'json'
+        config_dict['flatten_delimiter'] = flatten_delimiter
+        config_dict['keyword_delimiter'] = keyword_delimiter
+        config_dict['keyword_separator'] = keyword_separator
+        config = configobj.ConfigObj(config_dict)
 
-        callback = SUT.get_callback()
-        self.assertEqual(callback, SUT._on_message_keyword)
+        user.MQTTSubscribe.MessageCallbackProvider(config, mock_logger, mock_manager)
+
+        self.assertEqual(mock_manager.subscribed_topics[topic][message_config_name]['flatten_delimiter'], flatten_delimiter)
+        self.assertEqual(mock_manager.subscribed_topics[topic][message_config_name]['keyword_delimiter'], keyword_delimiter)
+        self.assertEqual(mock_manager.subscribed_topics[topic][message_config_name]['keyword_separator'], keyword_separator)
+
+    def test_message_configuration_defaults_set(self):
+        mock_logger = mock.Mock(spec=Logger)
+        mock_manager = mock.Mock(spec=TopicManager)
+
+        topic = random_string(10)
+        message_config_name = random_string()
+        queue_type = random_string(10)
+        flatten_delimiter = random_string(5)
+        keyword_delimiter = random_string(5)
+        keyword_separator = random_string(5)
+        mock_manager.message_config_name = message_config_name
+        mock_manager.subscribed_topics = {}
+        mock_manager.subscribed_topics[topic] = {}
+        mock_manager.subscribed_topics[topic]['queue'] = {}
+        mock_manager.subscribed_topics[topic]['queue']['type'] = queue_type
+        mock_manager.subscribed_topics[topic][message_config_name] = {}
+        mock_manager.subscribed_topics[topic][message_config_name]['type'] = 'json'
+        mock_manager.subscribed_topics[topic][message_config_name]['flatten_delimiter'] = flatten_delimiter
+        mock_manager.subscribed_topics[topic][message_config_name]['keyword_delimiter'] = keyword_delimiter
+        mock_manager.subscribed_topics[topic][message_config_name]['keyword_separator'] = keyword_separator
+
+        user.MQTTSubscribe.MessageCallbackProvider(None, mock_logger, mock_manager)
+
+        self.assertEqual(mock_manager.subscribed_topics[topic][message_config_name]['flatten_delimiter'], flatten_delimiter)
+        self.assertEqual(mock_manager.subscribed_topics[topic][message_config_name]['keyword_delimiter'], keyword_delimiter)
+        self.assertEqual(mock_manager.subscribed_topics[topic][message_config_name]['keyword_separator'], keyword_separator)
+
+    def test_message_configuration_defaults_not_set(self):
+        mock_logger = mock.Mock(spec=Logger)
+        mock_manager = mock.Mock(spec=TopicManager)
+
+        topic = random_string(10)
+        message_config_name = random_string()
+        queue_type = random_string(10)
+        mock_manager.message_config_name = message_config_name
+        mock_manager.subscribed_topics = {}
+        mock_manager.subscribed_topics[topic] = {}
+        mock_manager.subscribed_topics[topic]['queue'] = {}
+        mock_manager.subscribed_topics[topic]['queue']['type'] = queue_type
+        mock_manager.subscribed_topics[topic][message_config_name] = {}
+        mock_manager.subscribed_topics[topic][message_config_name]['type'] = 'json'
+
+        user.MQTTSubscribe.MessageCallbackProvider(None, mock_logger, mock_manager)
+
+        self.assertEqual(mock_manager.subscribed_topics[topic][message_config_name]['flatten_delimiter'], '_')
+        self.assertEqual(mock_manager.subscribed_topics[topic][message_config_name]['keyword_delimiter'], ',')
+        self.assertEqual(mock_manager.subscribed_topics[topic][message_config_name]['keyword_separator'], '=')
+
+    def test_message_configuration_invalid_type(self):
+        mock_logger = mock.Mock(spec=Logger)
+        mock_manager = mock.Mock(spec=TopicManager)
+
+        topic = random_string(10)
+        message_config_name = random_string()
+        queue_type = random_string(10)
+        message_type = random_string(10)
+        mock_manager.message_config_name = message_config_name
+        mock_manager.subscribed_topics = {}
+        mock_manager.subscribed_topics[topic] = {}
+        mock_manager.subscribed_topics[topic]['queue'] = {}
+        mock_manager.subscribed_topics[topic]['queue']['type'] = queue_type
+        mock_manager.subscribed_topics[topic][message_config_name] = {}
+        mock_manager.subscribed_topics[topic][message_config_name]['type'] = message_type
+
+        with self.assertRaises(ValueError) as error:
+            user.MQTTSubscribe.MessageCallbackProvider(None, mock_logger, mock_manager)
+
+        self.assertEqual(error.exception.args[0], "Invalid type configured: %s" % message_type)
+
+    def test_message_configuration_missing_type(self):
+        mock_logger = mock.Mock(spec=Logger)
+        mock_manager = mock.Mock(spec=TopicManager)
+
+        topic = random_string(10)
+        message_config_name = random_string()
+        queue_type = random_string(10)
+        config_option = random_string(10)
+        config_value = random_string(10)
+        mock_manager.message_config_name = message_config_name
+        mock_manager.subscribed_topics = {}
+        mock_manager.subscribed_topics[topic] = {}
+        mock_manager.subscribed_topics[topic]['queue'] = {}
+        mock_manager.subscribed_topics[topic]['queue']['type'] = queue_type
+        mock_manager.subscribed_topics[topic][message_config_name] = {}
+        mock_manager.subscribed_topics[topic][message_config_name][config_option] = config_value
+
+        with self.assertRaises(ValueError) as error:
+            user.MQTTSubscribe.MessageCallbackProvider(None, mock_logger, mock_manager)
+
+        self.assertEqual(error.exception.args[0], "%s topic is missing '[[[[Message]]]] type=' section" % topic)
+
+# missing message section? todo
 
 class TestConversionType(unittest.TestCase):
     def test_bool_conversion(self):
@@ -92,6 +209,7 @@ class TestConversionType(unittest.TestCase):
         mock_manager = mock.Mock(spec=TopicManager)
         mock_manager.get_msg_id_field.return_value = None
         mock_manager.get_ignore_msg_id_field.return_value = []
+        mock_manager.subscribed_topics = {}
 
         message_handler_config_dict = {}
         message_handler_config_dict['type'] = 'individual'
@@ -118,6 +236,7 @@ class TestConversionType(unittest.TestCase):
         mock_manager = mock.Mock(spec=TopicManager)
         mock_manager.get_msg_id_field.return_value = None
         mock_manager.get_ignore_msg_id_field.return_value = []
+        mock_manager.subscribed_topics = {}
 
         message_handler_config_dict = {}
         message_handler_config_dict['type'] = 'individual'
@@ -145,6 +264,7 @@ class TestConversionType(unittest.TestCase):
         mock_manager = mock.Mock(spec=TopicManager)
         mock_manager.get_msg_id_field.return_value = None
         mock_manager.get_ignore_msg_id_field.return_value = []
+        mock_manager.subscribed_topics = {}
 
         message_handler_config_dict = {}
         message_handler_config_dict['type'] = 'individual'
@@ -172,6 +292,7 @@ class TestConversionType(unittest.TestCase):
         mock_manager = mock.Mock(spec=TopicManager)
         mock_manager.get_msg_id_field.return_value = None
         mock_manager.get_ignore_msg_id_field.return_value = []
+        mock_manager.subscribed_topics = {}
 
         message_handler_config_dict = {}
         message_handler_config_dict['type'] = 'individual'
@@ -197,6 +318,7 @@ class TestConversionType(unittest.TestCase):
         mock_manager = mock.Mock(spec=TopicManager)
         mock_manager.get_msg_id_field.return_value = None
         mock_manager.get_ignore_msg_id_field.return_value = []
+        mock_manager.subscribed_topics = {}
 
         message_handler_config_dict = {}
         message_handler_config_dict['type'] = 'individual'
@@ -234,6 +356,8 @@ class TestKeywordload(unittest.TestCase):
         mock_manager = mock.Mock(spec=TopicManager)
         mock_manager.get_msg_id_field.return_value = None
         mock_manager.get_ignore_msg_id_field.return_value = []
+        mock_manager.get_message_dict.return_value = {'keyword_delimiter': ',', 'keyword_separator': '='}
+        mock_manager.subscribed_topics = {}
 
         SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
 
@@ -252,6 +376,8 @@ class TestKeywordload(unittest.TestCase):
         mock_manager.get_ignore_msg_id_field.return_value = []
         mock_manager.get_ignore_value.return_value = False
         mock_manager.get_fields.return_value = {}
+        mock_manager.get_message_dict.return_value = {'keyword_delimiter': ',', 'keyword_separator': '='}
+        mock_manager.subscribed_topics = {}
 
         SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
 
@@ -271,6 +397,8 @@ class TestKeywordload(unittest.TestCase):
         mock_manager.get_ignore_msg_id_field.return_value = []
         mock_manager.get_ignore_value.return_value = False
         mock_manager.get_fields.return_value = {}
+        mock_manager.get_message_dict.return_value = {'keyword_delimiter': ',', 'keyword_separator': '='}
+        mock_manager.subscribed_topics = {}
 
         SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
 
@@ -290,6 +418,8 @@ class TestKeywordload(unittest.TestCase):
         mock_manager.get_ignore_msg_id_field.return_value = []
         mock_manager.get_ignore_value.return_value = False
         mock_manager.get_fields.return_value = {}
+        mock_manager.get_message_dict.return_value = {'keyword_delimiter': ',', 'keyword_separator': '='}
+        mock_manager.subscribed_topics = {}
 
         SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
 
@@ -308,6 +438,8 @@ class TestKeywordload(unittest.TestCase):
         mock_manager.get_ignore_msg_id_field.return_value = []
         mock_manager.get_ignore_value.return_value = False
         mock_manager.get_fields.return_value = {}
+        mock_manager.get_message_dict.return_value = {'keyword_delimiter': ',', 'keyword_separator': '='}
+        mock_manager.subscribed_topics = {}
 
         SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
 
@@ -335,6 +467,8 @@ class TestKeywordload(unittest.TestCase):
         mock_manager.get_ignore_msg_id_field.return_value = []
         mock_manager.get_ignore_value.return_value = False
         mock_manager.get_fields.return_value = {}
+        mock_manager.get_message_dict.return_value = {'keyword_delimiter': ',', 'keyword_separator': '='}
+        mock_manager.subscribed_topics = {}
 
         SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
 
@@ -361,6 +495,8 @@ class TestKeywordload(unittest.TestCase):
         mock_manager.get_ignore_msg_id_field.return_value = []
         mock_manager.get_ignore_value.return_value = False
         mock_manager.get_fields.return_value = {}
+        mock_manager.get_message_dict.return_value = {'keyword_delimiter': ',', 'keyword_separator': '='}
+        mock_manager.subscribed_topics = {}
 
         SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
 
@@ -386,6 +522,8 @@ class TestKeywordload(unittest.TestCase):
         mock_logger = mock.Mock(spec=Logger)
         mock_manager.get_msg_id_field.return_value = None
         mock_manager.get_ignore_msg_id_field.return_value = []
+        mock_manager.get_message_dict.return_value = {'keyword_delimiter': ',', 'keyword_separator': '='}
+        mock_manager.subscribed_topics = {}
 
         message_handler_config_dict = {}
         message_handler_config_dict['type'] = 'keyword'
@@ -422,6 +560,8 @@ class TestKeywordload(unittest.TestCase):
         mock_manager.get_ignore_msg_id_field.return_value = []
         mock_manager.get_ignore_value.return_value = False
         mock_manager.get_fields.return_value = {}
+        mock_manager.get_message_dict.return_value = {'keyword_delimiter': ',', 'keyword_separator': '='}
+        mock_manager.subscribed_topics = {}
 
         message_handler_config_dict = {}
         message_handler_config_dict['type'] = 'keyword'
@@ -466,6 +606,8 @@ class TestKeywordload(unittest.TestCase):
         mock_manager.get_ignore_msg_id_field.return_value = []
         mock_manager.get_ignore_value.return_value = False
         mock_manager.get_fields.return_value = {}
+        mock_manager.get_message_dict.return_value = {'keyword_delimiter': ',', 'keyword_separator': '='}
+        mock_manager.subscribed_topics = {}
 
         message_handler_config_dict = {}
         message_handler_config_dict['type'] = 'keyword'
@@ -514,6 +656,8 @@ class TestJsonPayload(unittest.TestCase):
         mock_manager = mock.Mock(spec=TopicManager)
         mock_manager.get_msg_id_field.return_value = None
         mock_manager.get_ignore_msg_id_field.return_value = []
+        mock_manager.get_message_dict.return_value = {'flatten_delimiter': '_'}
+        mock_manager.subscribed_topics = {}
 
         SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
 
@@ -530,6 +674,8 @@ class TestJsonPayload(unittest.TestCase):
         mock_manager = mock.Mock(spec=TopicManager)
         mock_manager.get_msg_id_field.return_value = None
         mock_manager.get_ignore_msg_id_field.return_value = []
+        mock_manager.get_message_dict.return_value = {'flatten_delimiter': '_'}
+        mock_manager.subscribed_topics = {}
 
         SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
 
@@ -546,6 +692,8 @@ class TestJsonPayload(unittest.TestCase):
         mock_manager.get_ignore_value.return_value = False
         mock_manager.get_fields.return_value = {}
         mock_manager.get_filters.return_value = {}
+        mock_manager.get_message_dict.return_value = {'flatten_delimiter': '_'}
+        mock_manager.subscribed_topics = {}
 
         SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), stub_logger, mock_manager)
 
@@ -571,6 +719,8 @@ class TestJsonPayload(unittest.TestCase):
         mock_manager.get_ignore_value.return_value = False
         mock_manager.get_fields.return_value = {}
         mock_manager.get_filters.return_value = {}
+        mock_manager.get_message_dict.return_value = {'flatten_delimiter': '_'}
+        mock_manager.subscribed_topics = {}
 
         SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), stub_logger, mock_manager)
 
@@ -597,6 +747,9 @@ class TestJsonPayload(unittest.TestCase):
         mock_manager.get_ignore_value.return_value = False
         mock_manager.get_fields.return_value = {}
         mock_manager.get_filters.return_value = {}
+        mock_manager.get_filters.return_value = {}
+        mock_manager.get_message_dict.return_value = {'flatten_delimiter': '_'}
+        mock_manager.subscribed_topics = {}
 
         SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), stub_logger, mock_manager)
 
@@ -628,6 +781,10 @@ class TestJsonPayload(unittest.TestCase):
         mock_manager.get_ignore_value.return_value = False
         mock_manager.get_ignore_msg_id_field.return_value = []
         mock_manager.get_filters.return_value = {}
+        mock_manager.get_filters.return_value = {}
+        mock_manager.get_message_dict.return_value = {'flatten_delimiter': '_'}
+        mock_manager.subscribed_topics = {}
+
 
         SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), stub_logger, mock_manager)
 
@@ -666,6 +823,8 @@ class TestJsonPayload(unittest.TestCase):
         mock_manager.get_fields.return_value = {}
         mock_manager.get_ignore_value.return_value = False
         mock_manager.get_filters.return_value = {}
+        mock_manager.get_message_dict.return_value = {'flatten_delimiter': '_'}
+        mock_manager.subscribed_topics = {}
 
         SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), stub_logger, mock_manager)
 
@@ -706,6 +865,8 @@ class TestJsonPayload(unittest.TestCase):
         mock_manager.get_ignore_value.return_value = False
         mock_manager.get_fields.return_value = {}
         mock_manager.get_filters.return_value = {}
+        mock_manager.get_message_dict.return_value = {'flatten_delimiter': '_'}
+        mock_manager.subscribed_topics = {}
 
         SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), stub_logger, mock_manager)
 
@@ -745,6 +906,8 @@ class TestJsonPayload(unittest.TestCase):
         mock_manager.get_ignore_value.return_value = False
         mock_manager.get_fields.return_value = {'nested01_inTemp': {'name': 'inTemp'}}
         mock_manager.get_filters.return_value = {}
+        mock_manager.get_message_dict.return_value = {'flatten_delimiter': '_'}
+        mock_manager.subscribed_topics = {}
 
         message_handler_config_dict = copy.deepcopy(self.message_handler_config_dict)
         message_handler_config_dict['fields'] = {}
@@ -786,6 +949,8 @@ class TestJsonPayload(unittest.TestCase):
         mock_logger = mock.Mock(spec=Logger)
         mock_manager.get_msg_id_field.return_value = None
         mock_manager.get_ignore_msg_id_field.return_value = []
+        mock_manager.get_message_dict.return_value = {'flatten_delimiter': '_'}
+        mock_manager.subscribed_topics = {}
 
         message_handler_config_dict = {}
         message_handler_config_dict['type'] = 'json'
@@ -820,6 +985,8 @@ class TestJsonPayload(unittest.TestCase):
         mock_manager.get_ignore_value.return_value = False
         mock_manager.get_fields.return_value = {}
         mock_manager.get_filters.return_value = {}
+        mock_manager.get_message_dict.return_value = {'flatten_delimiter': '_'}
+        mock_manager.subscribed_topics = {}
 
         message_handler_config_dict = {}
         message_handler_config_dict['type'] = 'json'
@@ -866,6 +1033,8 @@ class TestJsonPayload(unittest.TestCase):
         mock_manager.get_ignore_value.return_value = False
         mock_manager.get_fields.return_value = {}
         mock_manager.get_filters.return_value = {}
+        mock_manager.get_message_dict.return_value = {'flatten_delimiter': '_'}
+        mock_manager.subscribed_topics = {}
 
         message_handler_config_dict = {}
         message_handler_config_dict['type'] = 'json'
@@ -911,6 +1080,8 @@ class TestJsonPayload(unittest.TestCase):
         mock_manager.get_ignore_value.return_value = False
         mock_manager.get_fields.return_value = {}
         mock_manager.get_filters.return_value = filters
+        mock_manager.get_message_dict.return_value = {'flatten_delimiter': '_'}
+        mock_manager.subscribed_topics = {}
 
         message_handler_config_dict = {}
         message_handler_config_dict['type'] = 'json'
@@ -969,6 +1140,8 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         mock_manager.get_ignore_msg_id_field.return_value = []
         mock_manager.get_ignore_value.return_value = False
         mock_manager.get_fields.return_value = {}
+        mock_manager.get_message_dict.return_value = {}
+        mock_manager.subscribed_topics = {}
 
         SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
 
@@ -988,6 +1161,8 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         mock_manager.get_ignore_msg_id_field.return_value = []
         mock_manager.get_ignore_value.return_value = False
         mock_manager.get_fields.return_value = {}
+        mock_manager.get_message_dict.return_value = {}
+        mock_manager.subscribed_topics = {}
 
         SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
 
@@ -1008,6 +1183,8 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         mock_manager.get_ignore_value.return_value = False
         mock_manager.get_topic_tail_is_fieldname.return_value = False
         mock_manager.get_fields.return_value = {}
+        mock_manager.get_message_dict.return_value = {}
+        mock_manager.subscribed_topics = {}
 
         SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
 
@@ -1026,6 +1203,8 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         mock_manager.get_ignore_value.return_value = False
         mock_manager.get_topic_tail_is_fieldname.return_value = False
         mock_manager.get_fields.return_value = {}
+        mock_manager.get_message_dict.return_value = {}
+        mock_manager.subscribed_topics = {}
 
         if PY2:
             topic = unicode(self.topic)  # (never called under python 3) pylint: disable=undefined-variable
@@ -1057,6 +1236,8 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         mock_manager.get_ignore_msg_id_field.return_value = []
         mock_manager.get_ignore_value.return_value = False
         mock_manager.get_fields.return_value = {}
+        mock_manager.get_message_dict.return_value = {}
+        mock_manager.subscribed_topics = {}
 
         SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
 
@@ -1079,6 +1260,8 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         mock_manager.get_ignore_value.return_value = False
         mock_manager.get_topic_tail_is_fieldname.return_value = False
         mock_manager.get_fields.return_value = {}
+        mock_manager.get_message_dict.return_value = {}
+        mock_manager.subscribed_topics = {}
 
         SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
 
@@ -1104,6 +1287,8 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         mock_manager.get_ignore_value.return_value = False
         mock_manager.get_topic_tail_is_fieldname.return_value = False
         mock_manager.get_fields.return_value = {}
+        mock_manager.get_message_dict.return_value = {}
+        mock_manager.subscribed_topics = {}
 
         SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
 
@@ -1126,6 +1311,8 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         mock_logger = mock.Mock(spec=Logger)
         mock_manager.get_msg_id_field.return_value = None
         mock_manager.get_ignore_msg_id_field.return_value = []
+        mock_manager.get_message_dict.return_value = {}
+        mock_manager.subscribed_topics = {}
 
         message_handler_config_dict = {}
         message_handler_config_dict['type'] = 'individual'
@@ -1155,6 +1342,8 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         mock_manager.get_ignore_msg_id_field.return_value = []
         mock_manager.get_ignore_value.return_value = False
         mock_manager.get_fields.return_value = {}
+        mock_manager.get_message_dict.return_value = {}
+        mock_manager.subscribed_topics = {}
 
         message_handler_config_dict = {}
         message_handler_config_dict['type'] = 'individual'
@@ -1186,6 +1375,8 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         mock_logger = mock.Mock(spec=Logger)
         mock_manager.get_msg_id_field.return_value = None
         mock_manager.get_ignore_msg_id_field.return_value = []
+        mock_manager.get_message_dict.return_value = {}
+        mock_manager.subscribed_topics = {}
 
         message_handler_config_dict = {}
         message_handler_config_dict['type'] = 'individual'
@@ -1236,6 +1427,8 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
         mock_manager.get_ignore_msg_id_field.return_value = []
         mock_manager.get_ignore_value.return_value = False
         mock_manager.get_fields.return_value = {}
+        mock_manager.get_message_dict.return_value = {}
+        mock_manager.subscribed_topics = {}
 
         SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
 
@@ -1255,6 +1448,8 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
         mock_manager.get_ignore_msg_id_field.return_value = []
         mock_manager.get_ignore_value.return_value = False
         mock_manager.get_fields.return_value = {}
+        mock_manager.get_message_dict.return_value = {}
+        mock_manager.subscribed_topics = {}
 
         SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
 
@@ -1274,6 +1469,8 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
         mock_manager.get_ignore_value.return_value = False
         mock_manager.get_topic_tail_is_fieldname.return_value = False
         mock_manager.get_fields.return_value = {}
+        mock_manager.get_message_dict.return_value = {}
+        mock_manager.subscribed_topics = {}
 
         message_handler_config_dict = dict(self.message_handler_config_dict)
 
@@ -1291,6 +1488,8 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
         mock_manager.get_ignore_msg_id_field.return_value = []
         mock_manager.get_ignore_value.return_value = False
         mock_manager.get_fields.return_value = {}
+        mock_manager.get_message_dict.return_value = {}
+        mock_manager.subscribed_topics = {}
 
         SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
 
@@ -1306,9 +1505,9 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
         mock_manager.append_data.assert_called_once_with(msg.topic, {self.topic_end: payload}, self.topic_end)
 
 if __name__ == '__main__':
-    # test_suite = unittest.TestSuite()
-    # test_suite.addTest(TestJsonPayload('test_msg_id_set'))
+    test_suite = unittest.TestSuite()
+    test_suite.addTest(TestInitialization('test_one'))
     # test_suite.addTest(TestJsonPayload('test_ignore_msg_id_field_set'))
-    # unittest.TextTestRunner().run(test_suite)
+    unittest.TextTestRunner().run(test_suite)
 
-    unittest.main(exit=False)
+   # unittest.main(exit=False)

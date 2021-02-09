@@ -108,7 +108,7 @@ Configuration:
     # Configuration for the message callback.
     [[message_callback]]
         # The format of the MQTT payload.
-        # Currently support: individual, json, keyword.
+        # Currently support: individual, json, keyword
         # Must be specified.
         type = REPLACE_ME
 
@@ -208,6 +208,25 @@ Configuration:
         # in a single queue.
         # Default is: sys.maxsize for python 3 and sys.maxint for python 2.
         max_queue = MAXSIZE
+
+        # Configuration information about the MQTT message format for this topic
+        [[[[Message]]]]
+            # The format of the MQTT payload.
+            # Currently support: individual, json, keyword.
+            # Must be specified.
+            type = REPLACE_ME
+
+            # When the json is nested, the delimiter between the hierarchies.
+            # Default is _.
+            flatten_delimiter = _
+
+            # The delimiter between fieldname and value pairs. (field1=value1, field2=value2).
+            # Default is is ",".
+            keyword_delimiter = ","
+
+            # The separator between fieldname and value pairs. (field1=value1, field2=value2).
+            # Default is "=".
+            keyword_separator = "="
 
         # The first topic to subscribe to
         [[[first/topic]]]
@@ -593,6 +612,8 @@ class TopicManager(object):
         if not config.sections:
             raise ValueError("At least one topic must be configured.")
 
+        self.message_config_name = "message-%f" % time.time()
+
         self.collect_wind_across_loops = to_bool(config.get('collect_wind_across_loops', True))
         self.logger.debug("TopicManager self.collect_wind_across_loops is %s" % self.collect_wind_across_loops)
 
@@ -627,6 +648,12 @@ class TopicManager(object):
         defaults['conversion_type'] = config.get('conversion_type', 'float')
         defaults['conversion_error_to_none'] = to_bool(config.get('conversion_error_to_none', False))
 
+        default_message_dict = config.get('Message', configobj.ConfigObj())
+        # if 'type' option is not set, this not 'topic'
+        # so, no default 'Message' configuration exists
+        if default_message_dict.get('type', None) is None:
+            default_message_dict = configobj.ConfigObj({})
+
         default_unit_system_name = config.get('unit_system', 'US').strip().upper()
         if default_unit_system_name not in weewx.units.unit_constants:
             raise ValueError("MQTTSubscribe: Unknown unit system: %s" % default_unit_system_name)
@@ -654,6 +681,12 @@ class TopicManager(object):
 
         for topic in config.sections:
             topic_dict = config.get(topic, {})
+
+            # if 'type' option is set, this not a 'topic'
+            # it is actually a 'Message' configuration stanza
+            # and it has already been retrieved into default_message_config
+            if topic == 'Message' and topic_dict.get('type', None) is not None:
+                continue
 
             msg_id_field = topic_dict.get('msg_id_field', default_msg_id_field)
             qos = to_int(topic_dict.get('qos', default_qos))
@@ -698,8 +731,24 @@ class TopicManager(object):
             self.subscribed_topics[topic]['queue'] = queue
             self.subscribed_topics[topic]['filters'] = {}
 
-            if topic_dict.sections:
+            temp_message_dict = topic_dict.get('Message', {})
+            message_type = temp_message_dict.get('type', None)
+
+            # ugly "deep" copy workaround
+            message_dict = configobj.ConfigObj({})
+            message_dict.merge(default_message_dict)
+
+            # if 'type' option is set, this a 'Message'
+            # So merge the default message settings
+            if message_type is not None:
+                message_dict.merge(temp_message_dict)
+            self.subscribed_topics[topic][self.message_config_name] = message_dict
+
+            if len(topic_dict.sections) > 1 or (len(topic_dict.sections) == 1  and message_type is None):
                 for field in topic_dict.sections:
+                    if field == 'Message' and topic_dict[field].get('type', None) is not None:
+                        continue
+
                     self.subscribed_topics[topic]['fields'][field] = self._configure_field(topic_dict, topic_dict[field], field, defaults)
                     self._configure_ignore_fields(topic_dict, topic_dict[field], topic, field, defaults)
                     self._configure_filter_out_message(topic_dict[field], topic, field)
@@ -724,6 +773,7 @@ class TopicManager(object):
         self.collected_topic = "%f-%s" % (time.time(), '-'.join(self.collected_fields))
         topic = self.collected_topic
         self.subscribed_topics[topic] = {}
+        self.subscribed_topics[topic][self.message_config_name] = {}
         self.subscribed_topics[topic]['unit_system'] = weewx.units.unit_constants[default_unit_system_name]
         self.subscribed_topics[topic]['qos'] = default_qos
         self.subscribed_topics[topic]['topic_tail_is_fieldname'] = default_topic_tail_is_fieldname
@@ -979,9 +1029,9 @@ class TopicManager(object):
         """ Get the topic_tail_is_fieldname. """
         return self._get_value('topic_tail_is_fieldname', topic)
 
-    def get_type(self, topic):
+    def get_message_dict(self, topic):
         """ Get the type. """
-        return self._get_value('type', topic)
+        return self._get_value(self.message_config_name, topic)
 
     def get_unit_system(self, topic):
         """ Get the unit system """
@@ -1105,24 +1155,37 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
     """ Provide the MQTT callback. """
     def __init__(self, config, logger, topic_manager):
         super(MessageCallbackProvider, self).__init__(logger, topic_manager)
-        self._setup_callbacks()
-        self.type = config.get('type', None)
-        self.flatten_delimiter = config.get('flatten_delimiter', '_')
-        self.keyword_delimiter = config.get('keyword_delimiter', ',')
-        self.keyword_separator = config.get('keyword_separator', '=')
 
-        if self.type not in self.callbacks:
-            raise ValueError("Invalid type configured: %s" % self.type)
+        for topic in topic_manager.subscribed_topics:
+            if topic_manager.subscribed_topics[topic]['queue']['type'] == 'collector':
+                continue
+
+            if config is not None:
+                # backwards compability
+                if not topic_manager.subscribed_topics[topic][topic_manager.message_config_name]:
+                    topic_manager.subscribed_topics[topic][topic_manager.message_config_name] = config.dict()
+                else:
+                    self.logger.info("Message configuration found under [[MessageCallback]] and [[Topic]]. Ignoring [[MessageCallbwck]].")
+
+            if not topic_manager.subscribed_topics[topic][topic_manager.message_config_name]:
+                raise ValueError("%s topic is missing '[[[[Message]]]]' section" % topic)
+            message_type = topic_manager.subscribed_topics[topic][topic_manager.message_config_name].get('type', None)
+            if message_type is None:
+                raise ValueError("%s topic is missing '[[[[Message]]]] type=' section" % topic)
+            if message_type not in ['json', 'keyword', 'individual']:
+                raise ValueError("Invalid type configured: %s" % message_type)
+
+            # ToDo Investigate this and copying, maybe a merge?
+            if 'flatten_delimiter' not in topic_manager.subscribed_topics[topic][topic_manager.message_config_name]:
+                topic_manager.subscribed_topics[topic][topic_manager.message_config_name]['flatten_delimiter'] = '_'
+            if 'keyword_delimiter' not in topic_manager.subscribed_topics[topic][topic_manager.message_config_name]:
+                topic_manager.subscribed_topics[topic][topic_manager.message_config_name]['keyword_delimiter'] = ','
+            if 'keyword_separator' not in topic_manager.subscribed_topics[topic][topic_manager.message_config_name]:
+                topic_manager.subscribed_topics[topic][topic_manager.message_config_name]['keyword_separator'] = '='
 
     def get_callback(self):
         """ Get the MQTT callback. """
-        return self.callbacks[self.type]
-
-    def _setup_callbacks(self):
-        self.callbacks = {}
-        self.callbacks['individual'] = self._on_message_individual
-        self.callbacks['json'] = self._on_message_json
-        self.callbacks['keyword'] = self._on_message_keyword
+        return self._on_message_multi
 
     def _byteify(self, data, ignore_dicts=False):
         if PY2:
@@ -1168,6 +1231,7 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
         # Wrap all the processing in a try, so it doesn't crash and burn on any error
         try:
             self._log_message(msg)
+            message_dict = self.topic_manager.get_message_dict(msg.topic)
             fields = self.topic_manager.get_fields(msg.topic)
             fields_ignore_default = self.topic_manager.get_ignore_value(msg.topic)
 
@@ -1176,15 +1240,15 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
             else:
                 payload_str = msg.payload.decode('utf-8')
 
-            fielddata = payload_str.split(self.keyword_delimiter)
+            fielddata = payload_str.split(message_dict['keyword_delimiter'])
             data = {}
             unit_system = self.topic_manager.get_unit_system(msg.topic)
             for field in fielddata:
-                eq_index = field.find(self.keyword_separator)
+                eq_index = field.find(message_dict['keyword_separator'])
                 # Ignore all fields that do not have the separator
                 if eq_index == -1:
                     self.logger.error("MessageCallbackProvider on_message_keyword failed to find separator: %s"
-                                      % self.keyword_separator)
+                                      % message_dict['keyword_separator'])
                     self.logger.error("**** MessageCallbackProvider Skipping field=%s " % field)
                     continue
 
@@ -1211,6 +1275,7 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
         # Wrap all the processing in a try, so it doesn't crash and burn on any error
         try:
             self._log_message(msg)
+            message_dict = self.topic_manager.get_message_dict(msg.topic)
             fields = self.topic_manager.get_fields(msg.topic)
             filters = self.topic_manager.get_filters(msg.topic)
             fields_ignore_default = self.topic_manager.get_ignore_value(msg.topic)
@@ -1224,7 +1289,7 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
 
             data = self._byteify(json.loads(payload_str, object_hook=self._byteify), ignore_dicts=True)
 
-            data_flattened = self._flatten_dict(data, self.flatten_delimiter)
+            data_flattened = self._flatten_dict(data, message_dict['flatten_delimiter'])
 
             unit_system = self.topic_manager.get_unit_system(msg.topic)
             data_final = {}
@@ -1236,11 +1301,10 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
                     lookup_key = key + "_" + str(msg_id) # todo - cleanup
                 else:
                     lookup_key = key
-                if lookup_key in filters:
-                    if data_flattened[key] in filters[lookup_key]:
-                        self.logger.info("MessageCallbackProvider on_message_json filtered out %s : %s with %s=%s"
-                                         % (msg.topic, msg.payload, lookup_key, filters[lookup_key]))
-                        return
+                if lookup_key in filters and data_flattened[key] in filters[lookup_key]:
+                    self.logger.info("MessageCallbackProvider on_message_json filtered out %s : %s with %s=%s"
+                                     % (msg.topic, msg.payload, lookup_key, filters[lookup_key]))
+                    return
                 if not fields.get(lookup_key, {}).get('ignore', fields_ignore_default):
                     (fieldname, value) = self._update_data(fields, lookup_key, data_flattened[key], unit_system)
                     data_final[fieldname] = value
@@ -1289,6 +1353,23 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
         except Exception as exception: # (want to catch all) pylint: disable=broad-except
             self._log_exception('on_message_individual', exception, msg)
 
+    def _on_message_multi(self, client, userdata, msg):
+        # Wrap all the processing in a try, so it doesn't crash and burn on any error
+        try:
+            message_dict = self.topic_manager.get_message_dict(msg.topic)
+            message_type = message_dict['type']
+            # ToDo: eliminate if/elif?
+            if message_type == 'individual':
+                self._on_message_individual(client, userdata, msg)
+            elif message_type == 'json':
+                self._on_message_json(client, userdata, msg)
+            elif message_type == 'keyword':
+                self._on_message_keyword(client, userdata, msg)
+            else:
+                self.logger.error("Unknown message_type=%s. Skipping topic=%s and payload=%s" % (message_type, msg.topic, msg.payload))
+        except Exception as exception: # (want to catch all) pylint: disable=broad-except
+            self._log_exception('on_message_individual', exception, msg)
+
 class MQTTSubscriber(object):
     """ Manage MQTT sunscriptions. """
     def __init__(self, service_dict, logger):
@@ -1301,8 +1382,6 @@ class MQTTSubscriber(object):
         self.logger.debug("MQTTSUBscriber sanitized_service_dict is %s" % sanitized_service_dict)
 
         message_callback_config = service_dict.get('message_callback', None)
-        if message_callback_config is None:
-            raise ValueError("[[message_callback]] is required.")
 
         topics_dict = service_dict.get('topics', None)
         if topics_dict is None:
@@ -1395,16 +1474,17 @@ class MQTTSubscriber(object):
             raise ValueError("'overlap' is deprecated, use 'adjust_start_time'")
         if 'archive_field_cache' in service_dict:
             raise ValueError("'archive_field_cache' is deprecated, use '[[topics]][[[topic name]]][[[[field name]]]]'")
-        if 'full_topic_fieldname' in service_dict['message_callback']:
-            raise ValueError("'full_topic_fieldname' is deprecated, use '[[topics]][[[topic name]]][[[[field name]]]]'")
-        if 'contains_total' in service_dict['message_callback']:
-            raise ValueError("'contains_total' is deprecated use '[[topics]][[[topic name]]][[[[field name]]]]' contains_total setting.")
-        if 'label_map' in service_dict['message_callback']:
-            raise ValueError("'label_map' is deprecated use '[[topics]][[[topic name]]][[[[field name]]]]' name setting.")
-        if 'fields' in service_dict['message_callback']:
-            raise ValueError("'fields' is deprecated, use '[[topics]][[[topic name]]][[[[field name]]]]'")
-        if 'use_topic_as_fieldname' in service_dict['topics']:
-            self.logger.info("'use_topic_as_fieldname' option is no longer needed and can be removed.")
+        if 'message_callback' in service_dict:
+            if 'full_topic_fieldname' in service_dict['message_callback']:
+                raise ValueError("'full_topic_fieldname' is deprecated, use '[[topics]][[[topic name]]][[[[field name]]]]'")
+            if 'contains_total' in service_dict['message_callback']:
+                raise ValueError("'contains_total' is deprecated use '[[topics]][[[topic name]]][[[[field name]]]]' contains_total setting.")
+            if 'label_map' in service_dict['message_callback']:
+                raise ValueError("'label_map' is deprecated use '[[topics]][[[topic name]]][[[[field name]]]]' name setting.")
+            if 'fields' in service_dict['message_callback']:
+                raise ValueError("'fields' is deprecated, use '[[topics]][[[topic name]]][[[[field name]]]]'")
+            if 'use_topic_as_fieldname' in service_dict['topics']:
+                self.logger.info("'use_topic_as_fieldname' option is no longer needed and can be removed.")
 
     @property
     def queues(self):
@@ -1706,6 +1786,7 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice): # (methods not used) py
 
     def genArchiveRecords(self, lastgood_ts): # need to override parent - pylint: disable=invalid-name
         """ Called to generate the archive records. """
+        # ToDo - broke this when implementing single queue
         if not self.archive_topic:
             self.logger.debug("No archive topic configured.")
             raise NotImplementedError

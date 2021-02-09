@@ -19,6 +19,9 @@ import test_weewx_stubs
 
 from user.MQTTSubscribe import TopicManager, Logger
 
+def random_string(length=32):
+    return ''.join([random.choice(string.ascii_letters + string.digits) for n in range(length)]) # pylint: disable=unused-variable
+
 class TestInit(unittest.TestCase):
     def test_missing_topic(self):
         mock_logger = mock.Mock(spec=Logger)
@@ -89,6 +92,154 @@ class TestInit(unittest.TestCase):
             TopicManager(config, mock_logger)
 
         self.assertEqual(error.exception.args[0], "For %s invalid units, %s." % (field, config_dict[topic][field]['units']))
+
+class TestConfigureMessage(unittest.TestCase):
+    def test_default_message_configuration(self):
+        mock_logger = mock.Mock(spec=Logger)
+
+        topic = random_string()
+
+        config_dict = {}
+        config_dict['Message'] = {}
+        config_dict['Message']['type'] = random_string(10)
+        config_dict['Message']['flatten_delimiter'] = random_string(5)
+        config_dict['Message']['keyword_delimiter'] = random_string(5)
+        config_dict['Message']['keyword_separator'] = random_string(5)
+        config_dict[topic] = {}
+
+        config = configobj.ConfigObj(config_dict)
+
+        SUT = TopicManager(config, mock_logger)
+
+        self.assertIn(SUT.message_config_name, SUT.subscribed_topics[topic])
+        self.assertEqual(SUT.subscribed_topics[topic][SUT.message_config_name]['type'],
+                         config_dict['Message']['type'])
+        self.assertEqual(SUT.subscribed_topics[topic][SUT.message_config_name]['flatten_delimiter'],
+                         config_dict['Message']['flatten_delimiter'])
+        self.assertEqual(SUT.subscribed_topics[topic][SUT.message_config_name]['keyword_delimiter'],
+                         config_dict['Message']['keyword_delimiter'])
+        self.assertEqual(SUT.subscribed_topics[topic][SUT.message_config_name]['keyword_separator'],
+                         config_dict['Message']['keyword_separator'])
+
+    def test_override_default(self):
+        mock_logger = mock.Mock(spec=Logger)
+        topic = random_string()
+        config_key = random_string(10)
+
+        config_dict = {}
+        config_dict['Message'] = {}
+        config_dict['Message']['type'] = random_string(10)
+        config_dict['Message']['flatten_delimiter'] = random_string(5)
+        config_dict['Message']['keyword_delimiter'] = random_string(5)
+        config_dict['Message']['keyword_separator'] = random_string(5)
+        config_dict['Message'][config_key] = random_string()
+
+        config_dict[topic] = {}
+        config_dict[topic]['Message'] = {}
+        config_dict[topic]['Message']['type'] = random_string(10)
+        config_dict[topic]['Message']['flatten_delimiter'] = random_string(5)
+        config_dict[topic]['Message']['keyword_delimiter'] = random_string(5)
+        config_dict[topic]['Message']['keyword_separator'] = random_string(5)
+
+        config = configobj.ConfigObj(config_dict)
+
+        SUT = TopicManager(config, mock_logger)
+
+        self.assertIn(SUT.message_config_name, SUT.subscribed_topics[topic])
+        self.assertEqual(SUT.subscribed_topics[topic][SUT.message_config_name]['type'],
+                         config_dict[topic]['Message']['type'])
+        self.assertEqual(SUT.subscribed_topics[topic][SUT.message_config_name]['flatten_delimiter'],
+                         config_dict[topic]['Message']['flatten_delimiter'])
+        self.assertEqual(SUT.subscribed_topics[topic][SUT.message_config_name]['keyword_delimiter'],
+                         config_dict[topic]['Message']['keyword_delimiter'])
+        self.assertEqual(SUT.subscribed_topics[topic][SUT.message_config_name]['keyword_separator'],
+                         config_dict[topic]['Message']['keyword_separator'])
+        self.assertEqual(SUT.subscribed_topics[topic][SUT.message_config_name][config_key],
+                         config_dict['Message'][config_key])
+
+    def test_no_default_setting(self):
+        mock_logger = mock.Mock(spec=Logger)
+        topic = random_string()
+        config_key = random_string(10)
+
+        config_dict = {}
+        config_dict['Message'] = {}
+        config_dict['Message']['type'] = random_string(10)
+        config_dict['Message']['flatten_delimiter'] = random_string(5)
+        config_dict['Message']['keyword_delimiter'] = random_string(5)
+        config_dict['Message']['keyword_separator'] = random_string(5)
+
+        config_dict[topic] = {}
+        config_dict[topic]['Message'] = {}
+        config_dict[topic]['Message']['type'] = random_string(10)
+        config_dict[topic]['Message']['flatten_delimiter'] = random_string(5)
+        config_dict[topic]['Message']['keyword_delimiter'] = random_string(5)
+        config_dict[topic]['Message']['keyword_separator'] = random_string(5)
+        config_dict[topic]['Message'][config_key] = random_string()
+
+        config = configobj.ConfigObj(config_dict)
+
+        SUT = TopicManager(config, mock_logger)
+
+        self.assertIn(SUT.message_config_name, SUT.subscribed_topics[topic])
+        self.assertEqual(SUT.subscribed_topics[topic][SUT.message_config_name]['type'],
+                         config_dict[topic]['Message']['type'])
+        self.assertEqual(SUT.subscribed_topics[topic][SUT.message_config_name]['flatten_delimiter'],
+                         config_dict[topic]['Message']['flatten_delimiter'])
+        self.assertEqual(SUT.subscribed_topics[topic][SUT.message_config_name]['keyword_delimiter'],
+                         config_dict[topic]['Message']['keyword_delimiter'])
+        self.assertEqual(SUT.subscribed_topics[topic][SUT.message_config_name]['keyword_separator'],
+                         config_dict[topic]['Message']['keyword_separator'])
+        self.assertEqual(SUT.subscribed_topics[topic][SUT.message_config_name][config_key],
+                         config_dict[topic]['Message'][config_key])
+
+    def test_topic_named_message(self):
+        mock_logger = mock.Mock(spec=Logger)
+        topic = random_string()
+
+        config_dict = {}
+        config_dict['Message'] = {}
+        config_dict['Message']['flatten_delimiter'] = random_string(5)
+        config_dict['Message']['keyword_delimiter'] = random_string(5)
+        config_dict['Message']['keyword_separator'] = random_string(5)
+
+        config_dict[topic] = {}
+
+        config = configobj.ConfigObj(config_dict)
+
+        SUT = TopicManager(config, mock_logger)
+
+        self.assertIn('Message', SUT.subscribed_topics)
+        self.assertIn(SUT.message_config_name, SUT.subscribed_topics['Message'])
+        self.assertNotIn('type', SUT.subscribed_topics['Message'])
+
+    #def test_field_named_message(self):
+    def test_one(self):
+        mock_logger = mock.Mock(spec=Logger)
+        topic = random_string()
+        config_key = random_string(10)
+
+        config_dict = {}
+        #config_dict['Message'] = {}
+        #config_dict['Message']['type'] = random_string(10)
+        #config_dict['Message']['flatten_delimiter'] = random_string(5)
+        #config_dict['Message']['keyword_delimiter'] = random_string(5)
+        #config_dict['Message']['keyword_separator'] = random_string(5)
+
+        config_dict[topic] = {}
+        config_dict[topic]['Message'] = {}
+        #config_dict[topic]['Message']['type'] = random_string(10)
+        config_dict[topic]['Message']['flatten_delimiter'] = random_string(5)
+        config_dict[topic]['Message']['keyword_delimiter'] = random_string(5)
+        config_dict[topic]['Message']['keyword_separator'] = random_string(5)
+        config_dict[topic]['Message'][config_key] = random_string()
+
+        config = configobj.ConfigObj(config_dict)
+
+        SUT = TopicManager(config, mock_logger)
+
+        self.assertIn('Message', SUT.subscribed_topics[topic]['fields'])
+        self.assertNotIn('Message', SUT.subscribed_topics[topic])
 
 class TestConfigureFields(unittest.TestCase):
     def test_no_field_configuration(self):

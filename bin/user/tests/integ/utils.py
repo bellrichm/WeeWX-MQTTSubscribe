@@ -6,6 +6,8 @@ import json
 import sys
 import time
 
+import configobj
+
 import weeutil
 
 PY2 = sys.version_info[0] == 2
@@ -98,7 +100,7 @@ def send_msg(sender, msg_type, publisher, topic, topic_info, userdata=None, self
     return i
 
 def get_callback(payload_type, config_dict, manager, logger):
-    message_callback_config = config_dict.get('message_callback', {})
+    message_callback_config = config_dict.get('message_callback', configobj.ConfigObj({}))
     message_callback_config['type'] = payload_type
 
     message_callback_provider_name = config_dict.get('message_callback_provider',
