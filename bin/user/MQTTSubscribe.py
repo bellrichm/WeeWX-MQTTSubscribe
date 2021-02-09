@@ -108,7 +108,7 @@ Configuration:
     # Configuration for the message callback.
     [[message_callback]]
         # The format of the MQTT payload.
-        # Currently support: individual, json, keyword, multiple
+        # Currently support: individual, json, keyword
         # Must be specified.
         type = REPLACE_ME
 
@@ -135,10 +135,6 @@ Configuration:
         # Default is US.
         unit_system = US
 
-        # The format of the MQTT payload of this topic.
-        # Valid values: individual, json, keyword.
-        # Default is None.
-        message_type = None
 
         # By default wind data is collected together across generation of loop packets.
         # Setting to false results in the data only being collected together within a loop packet.
@@ -213,6 +209,25 @@ Configuration:
         # in a single queue.
         # Default is: sys.maxsize for python 3 and sys.maxint for python 2.
         max_queue = MAXSIZE
+
+        # Configuration information about the MQTT message format for this topic
+        [[[[Message]]]]
+            # The format of the MQTT payload.
+            # Currently support: individual, json, keyword
+            # Must be specified.
+            type = REPLACE_ME
+
+            # When the json is nested, the delimiter between the hierarchies.
+            # Default is _.
+            flatten_delimiter = _
+
+            # The delimiter between fieldname and value pairs. (field1=value1, field2=value2).
+            # Default is is ",".
+            keyword_delimiter = ","
+
+            # The separator between fieldname and value pairs. (field1=value1, field2=value2).
+            # Default is "=".
+            keyword_separator = "="
 
         # The first topic to subscribe to
         [[[first/topic]]]
