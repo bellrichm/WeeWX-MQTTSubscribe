@@ -135,7 +135,6 @@ Configuration:
         # Default is US.
         unit_system = US
 
-
         # By default wind data is collected together across generation of loop packets.
         # Setting to false results in the data only being collected together within a loop packet.
         # Default is True.
@@ -213,7 +212,7 @@ Configuration:
         # Configuration information about the MQTT message format for this topic
         [[[[Message]]]]
             # The format of the MQTT payload.
-            # Currently support: individual, json, keyword
+            # Currently support: individual, json, keyword.
             # Must be specified.
             type = REPLACE_ME
 
@@ -625,7 +624,7 @@ class TopicManager(object):
         self.logger.debug("TopicManager single_queue is %s" % single_queue)
 
         topic_options = ['collect_wind_across_loops', 'collect_observations', 'single_queue', 'unit_system',
-                         'msg_id_field', 'qos', 'message_type', 'topic_tail_is_fieldname',
+                         'msg_id_field', 'qos', 'topic_tail_is_fieldname',
                          'use_server_datetime', 'ignore_start_time', 'ignore_end_time', 'adjust_start_time', 'adjust_end_time',
                          'datetime_format', 'offset_format', 'max_queue']
 
