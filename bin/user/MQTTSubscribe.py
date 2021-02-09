@@ -738,7 +738,7 @@ class TopicManager(object):
                     self.subscribed_topics[topic]['fields'][field] = self._configure_field(topic_dict, topic_dict[field], field, defaults)
                     self._configure_ignore_fields(topic_dict, topic_dict[field], topic, field, defaults)
                     self._configure_filter_out_message(topic_dict[field], topic, field)
-                    self._configure_cached_fields(topic_dict[field], field)
+                    self._configure_cached_fields(topic_dict[field])
             else:
                 # See if any field options are directly under the topic.
                 # And if so, use the topic as the field name.
@@ -747,7 +747,7 @@ class TopicManager(object):
                         self.subscribed_topics[topic]['fields'][topic] = self._configure_field(topic_dict, topic_dict, topic, defaults)
                         self._configure_ignore_fields(topic_dict, topic_dict, topic, topic, defaults)
                         self._configure_filter_out_message(topic_dict, topic, topic)
-                        self._configure_cached_fields(topic_dict, topic)
+                        self._configure_cached_fields(topic_dict)
                         break
 
         # Add the collector queue as a subscribed topic so that data can retrieved from it
@@ -827,10 +827,11 @@ class TopicManager(object):
         if to_bool((field_dict).get('ignore_msg_id_field', ignore_msg_id_field)):
             self.subscribed_topics[topic]['ignore_msg_id_field'].append(fieldname)
 
-    def _configure_cached_fields(self, field_dict, fieldname):
+    def _configure_cached_fields(self, field_dict):
         if 'expires_after' in field_dict:
-            self.cached_fields[fieldname] = {}
-            self.cached_fields[fieldname]['expires_after'] = to_float(field_dict['expires_after'])
+            weewx_name = field_dict['name']
+            self.cached_fields[weewx_name] = {}
+            self.cached_fields[weewx_name]['expires_after'] = to_float(field_dict['expires_after'])
 
     def append_data(self, topic, in_data, fieldname=None):
         """ Add the MQTT data to the queue. """
