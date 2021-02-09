@@ -1150,15 +1150,7 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
                 if not topic_manager.subscribed_topics[topic][topic_manager.message_config_name]:
                     topic_manager.subscribed_topics[topic][topic_manager.message_config_name] = config.dict()
                 else:
-                    self.logger.info("log something about ignoring old location")
-
-            # ToDo Investigate this and copying, maybe a merge?
-            if 'flatten_delimiter' not in topic_manager.subscribed_topics[topic][topic_manager.message_config_name]:
-                topic_manager.subscribed_topics[topic][topic_manager.message_config_name]['flatten_delimiter'] = '_'
-            if 'keyword_delimiter' not in topic_manager.subscribed_topics[topic][topic_manager.message_config_name]:
-                topic_manager.subscribed_topics[topic][topic_manager.message_config_name]['keyword_delimiter'] = ','
-            if 'keyword_separator' not in topic_manager.subscribed_topics[topic][topic_manager.message_config_name]:
-                topic_manager.subscribed_topics[topic][topic_manager.message_config_name]['keyword_separator'] = '='
+                    self.logger.info("Message configuration found under [[MessageCallback]] and [[Topic]]. Ignoring [[MessageCallbwck]].")
 
             if not topic_manager.subscribed_topics[topic][topic_manager.message_config_name]:
                 raise ValueError("%s topic is missing '[[[[Message]]]]' section" % topic)
@@ -1167,6 +1159,14 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
                 raise ValueError("%s topic is missing '[[[[Message]]]] type=' section" % topic)
             if message_type not in ['json', 'keyword', 'individual']:
                 raise ValueError("Invalid type configured: %s" % message_type)
+
+            # ToDo Investigate this and copying, maybe a merge?
+            if 'flatten_delimiter' not in topic_manager.subscribed_topics[topic][topic_manager.message_config_name]:
+                topic_manager.subscribed_topics[topic][topic_manager.message_config_name]['flatten_delimiter'] = '_'
+            if 'keyword_delimiter' not in topic_manager.subscribed_topics[topic][topic_manager.message_config_name]:
+                topic_manager.subscribed_topics[topic][topic_manager.message_config_name]['keyword_delimiter'] = ','
+            if 'keyword_separator' not in topic_manager.subscribed_topics[topic][topic_manager.message_config_name]:
+                topic_manager.subscribed_topics[topic][topic_manager.message_config_name]['keyword_separator'] = '='
 
     def get_callback(self):
         """ Get the MQTT callback. """
