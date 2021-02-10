@@ -876,7 +876,9 @@ class Teston_connect(unittest.TestCase):
         config_dict['unit_system'] = self.unit_system_name
         config_dict['topics'] = {}
         config_dict['topics'][topic1] = {}
+        config_dict['topics'][topic1]['subscribe'] = True
         config_dict['topics'][topic2] = {}
+        config_dict['topics'][topic2]['subscribe'] = True
         config_dict['message_callback'] = {}
 
         config = configobj.ConfigObj(config_dict)
