@@ -1749,6 +1749,8 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice): # (methods not used) py
 
         self.subscriber = MQTTSubscriber(stn_dict, self.logger)
 
+        self.queue = next((q for q in self.subscriber.queues if q['name'] == self.archive_topic), None)
+
         self.logger.info("Wait before retry is %i" % self.wait_before_retry)
         self.subscriber.start()
 
@@ -1791,12 +1793,11 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice): # (methods not used) py
 
     def genArchiveRecords(self, lastgood_ts): # need to override parent - pylint: disable=invalid-name
         """ Called to generate the archive records. """
-        # ToDo - broke this when implementing single queue
         if not self.archive_topic:
             self.logger.debug("No archive topic configured.")
             raise NotImplementedError
 
-        for data in self.subscriber.get_data(self.archive_topic, lastgood_ts):
+        for data in self.subscriber.get_data(self.queue, lastgood_ts):
             if data:
                 self.logger.debug("data-> final archive record is %s %s: %s"
                                   % (self.archive_topic, weeutil.weeutil.timestamp_to_string(data['dateTime']), to_sorted_string(data)))
