@@ -705,6 +705,7 @@ class TopicManager(object):
             unit_system = weewx.units.unit_constants[unit_system_name]
 
             self.subscribed_topics[topic] = {}
+            self.subscribed_topics[topic]['subscribe'] = to_bool(topic_dict.get('subscribe', True))
             self.subscribed_topics[topic]['unit_system'] = unit_system
             self.subscribed_topics[topic]['msg_id_field'] = msg_id_field
             self.subscribed_topics[topic]['qos'] = qos
@@ -773,6 +774,7 @@ class TopicManager(object):
         self.collected_topic = "%f-%s" % (time.time(), '-'.join(self.collected_fields))
         topic = self.collected_topic
         self.subscribed_topics[topic] = {}
+        self.subscribed_topics[topic]['subscribe'] = False
         self.subscribed_topics[topic][self.message_config_name] = {}
         self.subscribed_topics[topic]['unit_system'] = weewx.units.unit_constants[default_unit_system_name]
         self.subscribed_topics[topic]['qos'] = default_qos
@@ -1594,6 +1596,9 @@ class MQTTSubscriber(object):
         userdata['connect_flags'] = flags
 
         for topic in self.manager.subscribed_topics:
+            if not self.manager.subscribed_topics[topic]['subscribe']:
+                continue
+
             (result, mid) = client.subscribe(topic, self.manager.get_qos(topic))
             self.logger.info("Subscribing to %s has a mid %i and rc %i" %(topic, mid, result))
 
