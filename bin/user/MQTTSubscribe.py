@@ -1746,6 +1746,7 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice): # (methods not used) py
         self.wait_before_retry = float(stn_dict.get('wait_before_retry', 2))
         self._archive_interval = to_int(stn_dict.get('archive_interval', 300))
         self.archive_topic = stn_dict.get('archive_topic', None)
+        self.prev_archive_start = 0
 
         self.subscriber = MQTTSubscriber(stn_dict, self.logger)
 
@@ -1781,9 +1782,15 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice): # (methods not used) py
 
                 for data in self.subscriber.get_data(queue):
                     if data:
-                        self.logger.debug("data-> final loop packet is %s %s: %s"
-                                          % (queue['name'], weeutil.weeutil.timestamp_to_string(data['dateTime']), to_sorted_string(data)))
-                        yield data
+                        archive_start = weeutil.weeutil.startOfInterval(data['dateTime'], self._archive_interval)
+                        if archive_start < self.prev_archive_start:
+                            self.logger.error("Ignoring record because %s archival start is before previous archive start %s: %s"
+                                              % (archive_start, self.prev_archive_start, to_sorted_string(data)))
+                        else:
+                            self.prev_archive_start = archive_start
+                            self.logger.debug("data-> final loop packet is %s %s: %s"
+                                              % (queue['name'], weeutil.weeutil.timestamp_to_string(data['dateTime']), to_sorted_string(data)))
+                            yield data
                     else:
                         break
 

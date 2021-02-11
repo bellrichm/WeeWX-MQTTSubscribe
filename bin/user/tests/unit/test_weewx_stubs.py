@@ -145,6 +145,14 @@ class weeutil(object):
         def to_int(value):
             return int(value)
 
+        @staticmethod
+        def startOfInterval(time_ts, interval):
+            start_interval_ts = int(time_ts / interval) * interval
+
+            if time_ts == start_interval_ts:
+                start_interval_ts -= interval
+            return start_interval_ts
+
 UNITS_CONSTANTS = {'US': 1}
 
 class NEW_LOOP_PACKET(object):
