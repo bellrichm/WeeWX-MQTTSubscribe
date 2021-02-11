@@ -1502,8 +1502,12 @@ class MQTTSubscriber(object):
         units = weewx_config.get('units')
         for unit in units.sections:
             unit_config = units.get(unit)
-            unit_systems = weeutil.weeutil.option_as_list(unit_config.get('unit_system', []))
+            unit_systems = weeutil.weeutil.option_as_list(unit_config.get('unit_system'))
+            if not unit_systems:
+                raise ValueError("%s is missing an unit_system." % unit)
             group = unit_config.get('group')
+            if not group:
+                raise ValueError("%s is missing an group." % unit)
 
             for unit_system in unit_systems:
                 if unit_system == 'us':
@@ -1516,9 +1520,11 @@ class MQTTSubscriber(object):
                     raise ValueError("Invalid unit_system %s for %s." % (unit_system, unit))
 
             format_config = unit_config.get('format')
-            weewx.units.default_unit_format_dict[unit] = format_config
+            if format_config:
+                weewx.units.default_unit_format_dict[unit] = format_config
             label = unit_config.get('label')
-            weewx.units.default_unit_label_dict[unit] = label
+            if label:
+                weewx.units.default_unit_label_dict[unit] = label
 
             conversion = unit_config.get('conversion')
             for to_unit in conversion:
