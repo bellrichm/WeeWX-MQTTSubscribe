@@ -1,4 +1,5 @@
 # pylint: disable=wrong-import-order
+# pylint: disable=wrong-import-position
 # pylint: disable=missing-docstring
 # pylint: disable=invalid-name
 
@@ -12,9 +13,19 @@ import paho.mqtt.client
 import random
 import ssl
 import string
+import sys
+import types
+
+# Stole from six module. Added to eliminate dependency on six when running under WeeWX 3.x
+PY2 = sys.version_info[0] == 2
+if PY2:
+    from StringIO import StringIO # (only a python 3 error) pylint: disable=import-error
+else:
+    from io import StringIO
 
 import test_weewx_stubs
 from test_weewx_stubs import weewx
+from test_weewx_stubs import weeutil
 
 from user.MQTTSubscribe import MQTTSubscriber, Logger
 
@@ -259,8 +270,288 @@ class TestInitialization(unittest.TestCase):
 
                     SUT.client.username_pw_set.assert_called_once_with(username, password)
                     SUT.client.connect.assert_called_once_with(host, port, keepalive)
+class  TestWeewx_configuration(unittest.TestCase):
+    def test_configure_observation(self):
+        mock_logger = mock.Mock(spec=Logger)
 
-class Testtls_configuration(unittest.TestCase):
+        topic = 'ffoo'
+        name = 'foofoo'
+        value = 'bar'
+        config_dict = {}
+        config_dict['topics'] = {}
+        config_dict['topics'][topic] = {}
+        config_dict['topics'][topic]['Message'] = {}
+        config_dict['topics'][topic]['Message']['type'] = 'json'
+        config_dict['weewx'] = {}
+        config_dict['weewx']['observations'] = {}
+        config_dict['weewx']['observations'][name] = value
+
+        config = configobj.ConfigObj(config_dict)
+
+        MQTTSubscriber(config, mock_logger)
+
+        self.assertEqual(len(weewx.units.obs_group_dict), 2)
+        self.assertIn(name, weewx.units.obs_group_dict)
+        self.assertEqual(value, weewx.units.obs_group_dict[name])
+
+    def test_missing_group(self):
+        mock_logger = mock.Mock(spec=Logger)
+
+        topic = 'ffoo'
+        unit = 'foofoo'
+        config_dict = {}
+        config_dict['topics'] = {}
+        config_dict['topics'][topic] = {}
+        config_dict['topics'][topic]['Message'] = {}
+        config_dict['topics'][topic]['Message']['type'] = 'json'
+        config_dict['weewx'] = {}
+        config_dict['weewx']['units'] = {}
+        config_dict['weewx']['units'][unit] = {}
+
+        config = configobj.ConfigObj(config_dict)
+
+        with self.assertRaises(ValueError) as error:
+            MQTTSubscriber(config, mock_logger)
+
+        self.assertEqual(error.exception.args[0], "%s is missing a group." % unit)
+
+    def test_missing_unit_system(self):
+        mock_logger = mock.Mock(spec=Logger)
+
+        topic = 'ffoo'
+        unit = 'foofoo'
+        group = 'group'
+        config_dict = {}
+        config_dict['topics'] = {}
+        config_dict['topics'][topic] = {}
+        config_dict['topics'][topic]['Message'] = {}
+        config_dict['topics'][topic]['Message']['type'] = 'json'
+        config_dict['weewx'] = {}
+        config_dict['weewx']['units'] = {}
+        config_dict['weewx']['units'][unit] = {}
+        config_dict['weewx']['units'][unit]['group'] = group
+
+        config = configobj.ConfigObj(config_dict)
+
+        with self.assertRaises(ValueError) as error:
+            MQTTSubscriber(config, mock_logger)
+
+        self.assertEqual(error.exception.args[0], "%s is missing an unit_system." % unit)
+
+    def test_invalid_unit_system(self):
+        mock_logger = mock.Mock(spec=Logger)
+
+        topic = 'ffoo'
+        unit = 'foofoo'
+        group = 'group'
+        unit_system = 'unit_system'
+        config_dict = {}
+        config_dict['topics'] = {}
+        config_dict['topics'][topic] = {}
+        config_dict['topics'][topic]['Message'] = {}
+        config_dict['topics'][topic]['Message']['type'] = 'json'
+        config_dict['weewx'] = {}
+        config_dict['weewx']['units'] = {}
+        config_dict['weewx']['units'][unit] = {}
+        config_dict['weewx']['units'][unit]['group'] = group
+        config_dict['weewx']['units'][unit]['unit_system'] = unit_system
+
+        config = configobj.ConfigObj(config_dict)
+
+        with self.assertRaises(ValueError) as error:
+            MQTTSubscriber(config, mock_logger)
+
+        self.assertEqual(error.exception.args[0], "Invalid unit_system unit_system for %s." % unit)
+
+    def test_configure_default_label(self):
+        mock_logger = mock.Mock(spec=Logger)
+
+        topic = 'ffoo'
+        unit = 'foofoo'
+        group = 'group'
+        unit_system = 'us'
+        label = 'label'
+        config_dict = {}
+        config_dict['topics'] = {}
+        config_dict['topics'][topic] = {}
+        config_dict['topics'][topic]['Message'] = {}
+        config_dict['topics'][topic]['Message']['type'] = 'json'
+        config_dict['weewx'] = {}
+        config_dict['weewx']['units'] = {}
+        config_dict['weewx']['units'][unit] = {}
+        config_dict['weewx']['units'][unit]['group'] = group
+        config_dict['weewx']['units'][unit]['unit_system'] = unit_system
+        config_dict['weewx']['units'][unit]['label'] = label
+
+        config = configobj.ConfigObj(config_dict)
+
+        default_unit_label_dict = {}
+        default_unit_label_dict[unit] = label
+
+        MQTTSubscriber(config, mock_logger)
+
+        self.assertDictEqual(weewx.units.default_unit_label_dict, default_unit_label_dict)
+
+    def test_configure_default_format(self):
+        mock_logger = mock.Mock(spec=Logger)
+
+        topic = 'ffoo'
+        unit = 'foofoo'
+        group = 'group'
+        unit_system = 'us'
+        format_value = 'format'
+        config_dict = {}
+        config_dict['topics'] = {}
+        config_dict['topics'][topic] = {}
+        config_dict['topics'][topic]['Message'] = {}
+        config_dict['topics'][topic]['Message']['type'] = 'json'
+        config_dict['weewx'] = {}
+        config_dict['weewx']['units'] = {}
+        config_dict['weewx']['units'][unit] = {}
+        config_dict['weewx']['units'][unit]['group'] = group
+        config_dict['weewx']['units'][unit]['unit_system'] = unit_system
+        config_dict['weewx']['units'][unit]['format'] = format_value
+
+        config = configobj.ConfigObj(config_dict)
+
+        default_unit_format_dict = {}
+        default_unit_format_dict[unit] = format_value
+
+        MQTTSubscriber(config, mock_logger)
+
+        self.assertDictEqual(weewx.units.default_unit_format_dict, default_unit_format_dict)
+
+    def test_configure_conversion(self):
+        mock_logger = mock.Mock(spec=Logger)
+
+        topic = 'ffoo'
+        unit = 'foofoo'
+        group = 'group'
+        unit_system = 'us'
+        to_unit = 'to_unit'
+        config_dict = {}
+        config_dict['topics'] = {}
+        config_dict['topics'][topic] = {}
+        config_dict['topics'][topic]['Message'] = {}
+        config_dict['topics'][topic]['Message']['type'] = 'json'
+        config_dict['weewx'] = {}
+        config_dict['weewx']['units'] = {}
+        config_dict['weewx']['units'][unit] = {}
+        config_dict['weewx']['units'][unit]['group'] = group
+        config_dict['weewx']['units'][unit]['unit_system'] = unit_system
+        config_dict['weewx']['units'][unit]['conversion'] = {}
+        config_dict['weewx']['units'][unit]['conversion']['to_unit'] = 'lambda x: x / 1'
+
+        config = configobj.ConfigObj(config_dict)
+
+        conversionDict = {}
+        conversionDict['unit_name'] = {'foobar': lambda x: x / 1}
+        conversionDict[unit] = {to_unit: lambda x: x / 1}
+
+        MQTTSubscriber(config, mock_logger)
+
+        self.assertEqual(len(weewx.units.conversionDict), len(conversionDict))
+        for key in conversionDict:
+            self.assertIn(key, weewx.units.conversionDict)
+            self.assertEqual(len(weewx.units.conversionDict[key]), len(conversionDict[key]))
+            for key2 in conversionDict[key]:
+                self.assertIn(key2, weewx.units.conversionDict[key])
+                self.assertIsInstance(weewx.units.conversionDict[key][key2], types.FunctionType)
+
+    def test_unit_system_us(self):
+        mock_logger = mock.Mock(spec=Logger)
+
+        topic = 'ffoo'
+        unit = 'foofoo'
+        group = 'group'
+        unit_system = 'us'
+        config_dict = {}
+        config_dict['topics'] = {}
+        config_dict['topics'][topic] = {}
+        config_dict['topics'][topic]['Message'] = {}
+        config_dict['topics'][topic]['Message']['type'] = 'json'
+        config_dict['weewx'] = {}
+        config_dict['weewx']['units'] = {}
+        config_dict['weewx']['units'][unit] = {}
+        config_dict['weewx']['units'][unit]['group'] = group
+        config_dict['weewx']['units'][unit]['unit_system'] = unit_system
+        config_dict['weewx']['units'][unit]['conversion'] = {}
+
+        config = configobj.ConfigObj(config_dict)
+
+        units = weeutil.ListOfDicts({})
+        units.extend({group: unit})
+
+        MQTTSubscriber(config, mock_logger)
+
+        self.assertEqual(len(weewx.units.USUnits), len(units))
+        for key in units:
+            self.assertIn(key, weewx.units.USUnits)
+            self.assertEqual(units[key], weewx.units.USUnits[key])
+
+    def test_unit_system_metric(self):
+        mock_logger = mock.Mock(spec=Logger)
+
+        topic = 'ffoo'
+        unit = 'foofoo'
+        group = 'group'
+        unit_system = 'metric'
+        config_dict = {}
+        config_dict['topics'] = {}
+        config_dict['topics'][topic] = {}
+        config_dict['topics'][topic]['Message'] = {}
+        config_dict['topics'][topic]['Message']['type'] = 'json'
+        config_dict['weewx'] = {}
+        config_dict['weewx']['units'] = {}
+        config_dict['weewx']['units'][unit] = {}
+        config_dict['weewx']['units'][unit]['group'] = group
+        config_dict['weewx']['units'][unit]['unit_system'] = unit_system
+        config_dict['weewx']['units'][unit]['conversion'] = {}
+
+        config = configobj.ConfigObj(config_dict)
+
+        units = weeutil.ListOfDicts({})
+        units.extend({group: unit})
+
+        MQTTSubscriber(config, mock_logger)
+
+        self.assertEqual(len(weewx.units.MetricUnits), len(units))
+        for key in units:
+            self.assertIn(key, weewx.units.MetricUnits)
+            self.assertEqual(units[key], weewx.units.MetricUnits[key])
+
+    def test_unit_system_metricwx(self):
+        mock_logger = mock.Mock(spec=Logger)
+
+        topic = 'ffoo'
+        unit = 'foofoo'
+        group = 'group'
+        unit_system = 'metricwx'
+        config_dict = {}
+        config_dict['topics'] = {}
+        config_dict['topics'][topic] = {}
+        config_dict['topics'][topic]['Message'] = {}
+        config_dict['topics'][topic]['Message']['type'] = 'json'
+        config_dict['weewx'] = {}
+        config_dict['weewx']['units'] = {}
+        config_dict['weewx']['units'][unit] = {}
+        config_dict['weewx']['units'][unit]['group'] = group
+        config_dict['weewx']['units'][unit]['unit_system'] = unit_system
+        config_dict['weewx']['units'][unit]['conversion'] = {}
+
+        config = configobj.ConfigObj(config_dict)
+
+        units = weeutil.ListOfDicts({})
+        units.extend({group: unit})
+
+        MQTTSubscriber(config, mock_logger)
+
+        self.assertEqual(len(weewx.units.MetricWXUnits), len(units))
+        for key in units:
+            self.assertIn(key, weewx.units.MetricWXUnits)
+            self.assertEqual(units[key], weewx.units.MetricWXUnits[key])
+
+class  Testtls_configuration(unittest.TestCase):
     @staticmethod
     def test_tls_configuration_good():
         ca_certs = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
