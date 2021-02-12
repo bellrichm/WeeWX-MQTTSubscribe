@@ -196,9 +196,8 @@ class weewx(object): # pylint: disable=invalid-name
 
         default_unit_label_dict = {}
 
-        conversionDict = {
-            'unit_name' : 'foobar'
-        }
+        conversionDict = {}
+        conversionDict['unit_name'] = {'foobar': lambda x: x / 1}
 
         unit_constants = {
             'US'       : US,
