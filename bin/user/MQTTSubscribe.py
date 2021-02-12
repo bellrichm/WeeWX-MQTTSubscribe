@@ -1500,42 +1500,47 @@ class MQTTSubscriber(object):
     @staticmethod
     def _config_weewx(weewx_config):
         units = weewx_config.get('units')
-        for unit in units.sections:
-            unit_config = units.get(unit)
-            unit_systems = weeutil.weeutil.option_as_list(unit_config.get('unit_system'))
-            if not unit_systems:
-                raise ValueError("%s is missing an unit_system." % unit)
-            group = unit_config.get('group')
-            if not group:
-                raise ValueError("%s is missing an group." % unit)
+        if units:
+            for unit in units.sections:
+                unit_config = units.get(unit)
 
-            for unit_system in unit_systems:
-                if unit_system == 'us':
-                    weewx.units.USUnits.extend({group: unit})
-                elif unit_system == 'metric':
-                    weewx.units.MetricUnits.extend({group: unit})
-                elif unit_system == 'metricwx':
-                    weewx.units.MetricWXUnits.extend({group: unit})
-                else:
-                    raise ValueError("Invalid unit_system %s for %s." % (unit_system, unit))
+                group = unit_config.get('group')
+                if not group:
+                    raise ValueError("%s is missing a group." % unit)
 
-            format_config = unit_config.get('format')
-            if format_config:
-                weewx.units.default_unit_format_dict[unit] = format_config
-            label = unit_config.get('label')
-            if label:
-                weewx.units.default_unit_label_dict[unit] = label
+                unit_systems = weeutil.weeutil.option_as_list(unit_config.get('unit_system'))
+                if not unit_systems:
+                    raise ValueError("%s is missing an unit_system." % unit)
 
-            conversion = unit_config.get('conversion')
-            for to_unit in conversion:
-                if unit not in weewx.units.conversionDict:
-                    weewx.units.conversionDict[unit] = {}
+                for unit_system in unit_systems:
+                    if unit_system == 'us':
+                        weewx.units.USUnits.extend({group: unit})
+                    elif unit_system == 'metric':
+                        weewx.units.MetricUnits.extend({group: unit})
+                    elif unit_system == 'metricwx':
+                        weewx.units.MetricWXUnits.extend({group: unit})
+                    else:
+                        raise ValueError("Invalid unit_system %s for %s." % (unit_system, unit))
 
-                weewx.units.conversionDict[unit][to_unit] = eval(conversion[to_unit]) # pylint: disable=eval-used
+                format_config = unit_config.get('format')
+                if format_config:
+                    weewx.units.default_unit_format_dict[unit] = format_config
+                label = unit_config.get('label')
+                if label:
+                    weewx.units.default_unit_label_dict[unit] = label
+
+                conversion = unit_config.get('conversion')
+                if conversion:
+                    for to_unit in conversion:
+                        if unit not in weewx.units.conversionDict:
+                            weewx.units.conversionDict[unit] = {}
+
+                        weewx.units.conversionDict[unit][to_unit] = eval(conversion[to_unit]) # pylint: disable=eval-used
 
         observations = weewx_config.get('observations')
-        for observation in observations.keys():
-            weewx.units.obs_group_dict.extend({observation: observations[observation]})
+        if observations:
+            for observation in observations.keys():
+                weewx.units.obs_group_dict.extend({observation: observations[observation]})
 
     def config_tls(self, tls_dict):
         """ Configure TLS."""
