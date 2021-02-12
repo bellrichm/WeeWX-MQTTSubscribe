@@ -1533,7 +1533,9 @@ class MQTTSubscriber(object):
 
                 weewx.units.conversionDict[unit][to_unit] = eval(conversion[to_unit]) # pylint: disable=eval-used
 
-            weewx.units.obs_group_dict.extend({unit: group})
+        observations = weewx_config.get('observations')
+        for observation in observations.keys():
+            weewx.units.obs_group_dict.extend({observation: observations[observation]})
 
     def config_tls(self, tls_dict):
         """ Configure TLS."""
