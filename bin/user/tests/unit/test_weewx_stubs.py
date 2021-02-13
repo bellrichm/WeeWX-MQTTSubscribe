@@ -7,8 +7,13 @@
 from __future__ import print_function
 
 import locale
+import random
+import string
 import sys
 import time
+
+def random_string(length=32):
+    return ''.join([random.choice(string.ascii_letters + string.digits) for n in range(length)]) # pylint: disable=unused-variable
 
 class weeutil(object):
     class config(object):

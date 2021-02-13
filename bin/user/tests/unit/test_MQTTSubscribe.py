@@ -13,17 +13,10 @@ import paho.mqtt.client
 import random
 import ssl
 import string
-import sys
 import types
 
-# Stole from six module. Added to eliminate dependency on six when running under WeeWX 3.x
-PY2 = sys.version_info[0] == 2
-if PY2:
-    from StringIO import StringIO # (only a python 3 error) pylint: disable=import-error
-else:
-    from io import StringIO
-
 import test_weewx_stubs
+from test_weewx_stubs import random_string
 from test_weewx_stubs import weewx
 from test_weewx_stubs import weeutil
 
@@ -271,12 +264,26 @@ class TestInitialization(unittest.TestCase):
                     SUT.client.username_pw_set.assert_called_once_with(username, password)
                     SUT.client.connect.assert_called_once_with(host, port, keepalive)
 class  TestWeewx_configuration(unittest.TestCase):
+    def tearDown(self):
+        weewx.units.USUnits = weeutil.ListOfDicts({})
+
+        weewx.units.MetricUnits = weeutil.ListOfDicts({})
+
+        weewx.units.MetricWXUnits = weeutil.ListOfDicts({})
+
+        weewx.units.default_unit_format_dict = {}
+
+        weewx.units.default_unit_label_dict = {}
+
+        weewx.units.conversionDict = {}
+        weewx.units.conversionDict['unit_name'] = {'foobar': lambda x: x / 1}
+
     def test_configure_observation(self):
         mock_logger = mock.Mock(spec=Logger)
 
-        topic = 'ffoo'
-        name = 'foofoo'
-        value = 'bar'
+        topic = random_string()
+        name = random_string(10)
+        value = random_string(10)
         config_dict = {}
         config_dict['topics'] = {}
         config_dict['topics'][topic] = {}
@@ -297,8 +304,8 @@ class  TestWeewx_configuration(unittest.TestCase):
     def test_missing_group(self):
         mock_logger = mock.Mock(spec=Logger)
 
-        topic = 'ffoo'
-        unit = 'foofoo'
+        topic = random_string()
+        unit = random_string(5)
         config_dict = {}
         config_dict['topics'] = {}
         config_dict['topics'][topic] = {}
@@ -318,9 +325,9 @@ class  TestWeewx_configuration(unittest.TestCase):
     def test_missing_unit_system(self):
         mock_logger = mock.Mock(spec=Logger)
 
-        topic = 'ffoo'
-        unit = 'foofoo'
-        group = 'group'
+        topic = random_string()
+        unit = random_string(5)
+        group = random_string(10)
         config_dict = {}
         config_dict['topics'] = {}
         config_dict['topics'][topic] = {}
@@ -341,10 +348,10 @@ class  TestWeewx_configuration(unittest.TestCase):
     def test_invalid_unit_system(self):
         mock_logger = mock.Mock(spec=Logger)
 
-        topic = 'ffoo'
-        unit = 'foofoo'
-        group = 'group'
-        unit_system = 'unit_system'
+        topic = random_string()
+        unit = random_string(5)
+        group = random_string(10)
+        unit_system = random_string(5)
         config_dict = {}
         config_dict['topics'] = {}
         config_dict['topics'][topic] = {}
@@ -361,16 +368,16 @@ class  TestWeewx_configuration(unittest.TestCase):
         with self.assertRaises(ValueError) as error:
             MQTTSubscriber(config, mock_logger)
 
-        self.assertEqual(error.exception.args[0], "Invalid unit_system unit_system for %s." % unit)
+        self.assertEqual(error.exception.args[0], "Invalid unit_system %s for %s." % (unit_system, unit))
 
     def test_configure_default_label(self):
         mock_logger = mock.Mock(spec=Logger)
 
-        topic = 'ffoo'
-        unit = 'foofoo'
-        group = 'group'
+        topic = random_string()
+        unit = random_string(5)
+        group = random_string(10)
         unit_system = 'us'
-        label = 'label'
+        label = random_string(10)
         config_dict = {}
         config_dict['topics'] = {}
         config_dict['topics'][topic] = {}
@@ -395,11 +402,11 @@ class  TestWeewx_configuration(unittest.TestCase):
     def test_configure_default_format(self):
         mock_logger = mock.Mock(spec=Logger)
 
-        topic = 'ffoo'
-        unit = 'foofoo'
-        group = 'group'
+        topic = random_string()
+        unit = random_string(5)
+        group = random_string(10)
         unit_system = 'us'
-        format_value = 'format'
+        format_value = random_string(10)
         config_dict = {}
         config_dict['topics'] = {}
         config_dict['topics'][topic] = {}
@@ -424,11 +431,11 @@ class  TestWeewx_configuration(unittest.TestCase):
     def test_configure_conversion(self):
         mock_logger = mock.Mock(spec=Logger)
 
-        topic = 'ffoo'
-        unit = 'foofoo'
-        group = 'group'
+        topic = random_string()
+        unit = random_string(5)
+        group = random_string(10)
         unit_system = 'us'
-        to_unit = 'to_unit'
+        to_unit = random_string(5)
         config_dict = {}
         config_dict['topics'] = {}
         config_dict['topics'][topic] = {}
@@ -440,7 +447,7 @@ class  TestWeewx_configuration(unittest.TestCase):
         config_dict['weewx']['units'][unit]['group'] = group
         config_dict['weewx']['units'][unit]['unit_system'] = unit_system
         config_dict['weewx']['units'][unit]['conversion'] = {}
-        config_dict['weewx']['units'][unit]['conversion']['to_unit'] = 'lambda x: x / 1'
+        config_dict['weewx']['units'][unit]['conversion'][to_unit] = 'lambda x: x / 1'
 
         config = configobj.ConfigObj(config_dict)
 
@@ -461,9 +468,9 @@ class  TestWeewx_configuration(unittest.TestCase):
     def test_unit_system_us(self):
         mock_logger = mock.Mock(spec=Logger)
 
-        topic = 'ffoo'
-        unit = 'foofoo'
-        group = 'group'
+        topic = random_string()
+        unit = random_string(5)
+        group = random_string(10)
         unit_system = 'us'
         config_dict = {}
         config_dict['topics'] = {}
@@ -492,9 +499,9 @@ class  TestWeewx_configuration(unittest.TestCase):
     def test_unit_system_metric(self):
         mock_logger = mock.Mock(spec=Logger)
 
-        topic = 'ffoo'
-        unit = 'foofoo'
-        group = 'group'
+        topic = random_string()
+        unit = random_string(5)
+        group = random_string(10)
         unit_system = 'metric'
         config_dict = {}
         config_dict['topics'] = {}
@@ -523,9 +530,9 @@ class  TestWeewx_configuration(unittest.TestCase):
     def test_unit_system_metricwx(self):
         mock_logger = mock.Mock(spec=Logger)
 
-        topic = 'ffoo'
-        unit = 'foofoo'
-        group = 'group'
+        topic = random_string()
+        unit = random_string(5)
+        group = random_string(10)
         unit_system = 'metricwx'
         config_dict = {}
         config_dict['topics'] = {}
