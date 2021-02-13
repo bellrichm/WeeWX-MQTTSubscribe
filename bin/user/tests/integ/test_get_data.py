@@ -23,7 +23,7 @@ class TestGetData(unittest.TestCase):
 
         logger = Logger('IntegTest')
         topics_dict = config_dict.get('topics', {})
-        manager = TopicManager(topics_dict, logger)
+        manager = TopicManager(None, topics_dict, logger)
 
         on_message = utils.get_callback(payload, config_dict, manager, logger)
 

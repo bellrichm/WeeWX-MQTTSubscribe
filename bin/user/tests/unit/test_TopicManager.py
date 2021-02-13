@@ -31,7 +31,7 @@ class TestInit(unittest.TestCase):
         config = configobj.ConfigObj(config_dict)
 
         with self.assertRaises(ValueError) as error:
-            TopicManager(config, mock_logger)
+            TopicManager(None, config, mock_logger)
 
         self.assertEqual(error.exception.args[0], "At least one topic must be configured.")
 
@@ -48,7 +48,7 @@ class TestInit(unittest.TestCase):
         config = configobj.ConfigObj(config_dict)
 
         with self.assertRaises(ValueError) as error:
-            TopicManager(config, mock_logger)
+            TopicManager(None, config, mock_logger)
 
         self.assertEqual(error.exception.args[0], "MQTTSubscribe: Unknown unit system: %s" % unit_system_name.upper())
 
@@ -65,7 +65,7 @@ class TestInit(unittest.TestCase):
         config = configobj.ConfigObj(config_dict)
 
         with self.assertRaises(ValueError) as error:
-            TopicManager(config, mock_logger)
+            TopicManager(None, config, mock_logger)
 
         self.assertEqual(error.exception.args[0], "MQTTSubscribe: Unknown unit system: %s" % unit_system_name.upper())
 
@@ -89,7 +89,7 @@ class TestInit(unittest.TestCase):
         config = configobj.ConfigObj(config_dict)
 
         with self.assertRaises(ValueError) as error:
-            TopicManager(config, mock_logger)
+            TopicManager(None, config, mock_logger)
 
         self.assertEqual(error.exception.args[0], "For %s invalid units, %s." % (field, config_dict[topic][field]['units']))
 
@@ -109,7 +109,7 @@ class TestConfigureMessage(unittest.TestCase):
 
         config = configobj.ConfigObj(config_dict)
 
-        SUT = TopicManager(config, mock_logger)
+        SUT = TopicManager(None, config, mock_logger)
 
         self.assertIn(SUT.message_config_name, SUT.subscribed_topics[topic])
         self.assertEqual(SUT.subscribed_topics[topic][SUT.message_config_name]['type'],
@@ -143,7 +143,7 @@ class TestConfigureMessage(unittest.TestCase):
 
         config = configobj.ConfigObj(config_dict)
 
-        SUT = TopicManager(config, mock_logger)
+        SUT = TopicManager(None, config, mock_logger)
 
         self.assertIn(SUT.message_config_name, SUT.subscribed_topics[topic])
         self.assertEqual(SUT.subscribed_topics[topic][SUT.message_config_name]['type'],
@@ -179,7 +179,7 @@ class TestConfigureMessage(unittest.TestCase):
 
         config = configobj.ConfigObj(config_dict)
 
-        SUT = TopicManager(config, mock_logger)
+        SUT = TopicManager(None, config, mock_logger)
 
         self.assertIn(SUT.message_config_name, SUT.subscribed_topics[topic])
         self.assertEqual(SUT.subscribed_topics[topic][SUT.message_config_name]['type'],
@@ -207,7 +207,7 @@ class TestConfigureMessage(unittest.TestCase):
 
         config = configobj.ConfigObj(config_dict)
 
-        SUT = TopicManager(config, mock_logger)
+        SUT = TopicManager(None, config, mock_logger)
 
         self.assertIn('Message', SUT.subscribed_topics)
         self.assertIn(SUT.message_config_name, SUT.subscribed_topics['Message'])
@@ -236,7 +236,7 @@ class TestConfigureMessage(unittest.TestCase):
 
         config = configobj.ConfigObj(config_dict)
 
-        SUT = TopicManager(config, mock_logger)
+        SUT = TopicManager(None, config, mock_logger)
 
         self.assertIn('Message', SUT.subscribed_topics[topic]['fields'])
         self.assertNotIn('Message', SUT.subscribed_topics[topic])
@@ -259,7 +259,7 @@ class TestConfigureFields(unittest.TestCase):
 
         config = configobj.ConfigObj(config_dict)
 
-        SUT = TopicManager(config, mock_logger)
+        SUT = TopicManager(None, config, mock_logger)
 
         self.assertEqual(SUT.subscribed_topics[topic]['fields'], configured_field)
 
@@ -280,7 +280,7 @@ class TestConfigureFields(unittest.TestCase):
 
         config = configobj.ConfigObj(config_dict)
 
-        SUT = TopicManager(config, mock_logger)
+        SUT = TopicManager(None, config, mock_logger)
 
         self.assertTrue(SUT.subscribed_topics[topic]['fields'][fieldname]['ignore'])
         self.assertEqual(SUT.subscribed_topics[topic]['ignore_msg_id_field'], [fieldname])
@@ -304,7 +304,7 @@ class TestConfigureFields(unittest.TestCase):
 
         config = configobj.ConfigObj(config_dict)
 
-        SUT = TopicManager(config, mock_logger)
+        SUT = TopicManager(None, config, mock_logger)
 
         self.assertTrue(SUT.subscribed_topics[topic]['fields'][fieldname]['ignore'])
         self.assertEqual(SUT.subscribed_topics[topic]['ignore_msg_id_field'], [fieldname])
@@ -333,7 +333,7 @@ class TestConfigureFields(unittest.TestCase):
 
         config = configobj.ConfigObj(config_dict)
 
-        SUT = TopicManager(config, mock_logger)
+        SUT = TopicManager(None, config, mock_logger)
 
         self.assertTrue(SUT.subscribed_topics[topic]['fields'][fieldname]['ignore'])
         self.assertEqual(SUT.subscribed_topics[topic]['ignore_msg_id_field'], [fieldname])
@@ -365,7 +365,7 @@ class TestConfigureFields(unittest.TestCase):
 
         config = configobj.ConfigObj(config_dict)
 
-        SUT = TopicManager(config, mock_logger)
+        SUT = TopicManager(None, config, mock_logger)
 
         self.assertEqual(SUT.subscribed_topics[topic]['filters'], filters)
 
@@ -378,7 +378,7 @@ class TestQueueSizeCheck(unittest.TestCase):
     def test_queue_max_reached(self):
         mock_logger = mock.Mock(spec=Logger)
 
-        SUT = TopicManager(self.config, mock_logger)
+        SUT = TopicManager(None, self.config, mock_logger)
 
         queue = deque()
         queue.append(''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), )  # pylint: disable=unused-variable
@@ -395,7 +395,7 @@ class TestQueueSizeCheck(unittest.TestCase):
     def test_queue_max_not_reached(self):
         mock_logger = mock.Mock(spec=Logger)
 
-        SUT = TopicManager(self.config, mock_logger)
+        SUT = TopicManager(None, self.config, mock_logger)
 
         queue = deque()
         queue.append(''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), )  # pylint: disable=unused-variable
@@ -412,7 +412,7 @@ class TestQueueSizeCheck(unittest.TestCase):
     def test_queue_max_equal(self):
         mock_logger = mock.Mock(spec=Logger)
 
-        SUT = TopicManager(self.config, mock_logger)
+        SUT = TopicManager(None, self.config, mock_logger)
 
         queue = deque()
         queue.append(''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), )  # pylint: disable=unused-variable
@@ -443,7 +443,7 @@ class TestAppendData(unittest.TestCase):
 
         mock_logger = mock.Mock(spec=Logger)
 
-        SUT = TopicManager(self.config, mock_logger)
+        SUT = TopicManager(None, self.config, mock_logger)
 
         SUT.append_data(self.topic, queue_data)
         queue = SUT._get_queue(self.topic)['data']  # pylint: disable=protected-access
@@ -467,7 +467,7 @@ class TestAppendData(unittest.TestCase):
 
         mock_logger = mock.Mock(spec=Logger)
 
-        SUT = TopicManager(config, mock_logger)
+        SUT = TopicManager(None, config, mock_logger)
 
         SUT.append_data(self.topic, queue_data)
         queue = SUT._get_queue(self.topic)['data']  # pylint: disable=protected-access
@@ -488,7 +488,7 @@ class TestAppendData(unittest.TestCase):
 
         mock_logger = mock.Mock(spec=Logger)
 
-        SUT = TopicManager(self.config, mock_logger)
+        SUT = TopicManager(None, self.config, mock_logger)
 
         SUT.append_data(self.topic, queue_data)
         queue = SUT._get_queue(self.topic)['data']  # pylint: disable=protected-access
@@ -508,7 +508,7 @@ class TestAppendData(unittest.TestCase):
 
         mock_logger = mock.Mock(spec=Logger)
 
-        SUT = TopicManager(self.config, mock_logger)
+        SUT = TopicManager(None, self.config, mock_logger)
 
         SUT.append_data(self.topic, queue_data)
         queue = SUT._get_queue(self.topic)['data']  # pylint: disable=protected-access
@@ -550,7 +550,7 @@ class TestAppendData(unittest.TestCase):
 
         mock_logger = mock.Mock(spec=Logger)
 
-        SUT = TopicManager(config, mock_logger)
+        SUT = TopicManager(None, config, mock_logger)
 
         SUT.append_data(self.topic, queue_data)
         queue = SUT._get_queue(self.topic)['data']  # pylint: disable=protected-access
@@ -593,7 +593,7 @@ class TestAppendData(unittest.TestCase):
 
         mock_logger = mock.Mock(spec=Logger)
 
-        SUT = TopicManager(config, mock_logger)
+        SUT = TopicManager(None, config, mock_logger)
 
         SUT.append_data(self.topic, queue_data)
         queue = SUT._get_queue(self.topic)['data']  # pylint: disable=protected-access
@@ -628,7 +628,7 @@ class TestAppendData(unittest.TestCase):
 
         mock_logger = mock.Mock(spec=Logger)
 
-        SUT = TopicManager(config, mock_logger)
+        SUT = TopicManager(None, config, mock_logger)
 
         SUT.append_data(self.topic, queue_data)
         queue = SUT._get_queue(self.topic)['data']  # pylint: disable=protected-access
@@ -661,7 +661,7 @@ class TestGetQueueData(unittest.TestCase):
 
         with mock.patch('user.MQTTSubscribe.CollectData') as mock_CollectData:
             type(mock_CollectData.return_value).get_data = mock.Mock(return_value={})
-            SUT = TopicManager(self.config, mock_logger)
+            SUT = TopicManager(None, self.config, mock_logger)
 
             gen = SUT.get_data(SUT.subscribed_topics[self.topic]['queue'])
             data = next(gen, None)
@@ -673,7 +673,7 @@ class TestGetQueueData(unittest.TestCase):
 
         with mock.patch('user.MQTTSubscribe.CollectData') as mock_CollectData:
             type(mock_CollectData.return_value).get_data = mock.Mock(return_value={})
-            SUT = TopicManager(self.config, mock_logger)
+            SUT = TopicManager(None, self.config, mock_logger)
             SUT.append_data(self.topic, self.create_queue_data())
             gen = SUT.get_data(SUT.subscribed_topics[self.topic]['queue'], 0)
             data = next(gen, None)
@@ -685,7 +685,7 @@ class TestGetQueueData(unittest.TestCase):
 
         with mock.patch('user.MQTTSubscribe.CollectData') as mock_CollectData:
             type(mock_CollectData.return_value).get_data = mock.Mock(return_value={})
-            SUT = TopicManager(self.config, mock_logger)
+            SUT = TopicManager(None, self.config, mock_logger)
             elem_one = self.create_queue_data()
             elem_two = self.create_queue_data()
             elem_three = self.create_queue_data()
@@ -709,7 +709,7 @@ class TestGetQueueData(unittest.TestCase):
             type(mock_CollectData.return_value).add_data = mock.Mock(return_value={})
             type(mock_CollectData.return_value).get_data = mock.Mock(return_value={})
 
-            SUT = TopicManager(self.config, mock_logger)
+            SUT = TopicManager(None, self.config, mock_logger)
 
             collector_topic = ""
             for topic in SUT.subscribed_topics:
@@ -754,7 +754,7 @@ class TestGetWindQueueData(unittest.TestCase):
 
         with mock.patch('user.MQTTSubscribe.CollectData') as mock_CollectData:
             type(mock_CollectData.return_value).get_data = mock.Mock(return_value={})
-            SUT = TopicManager(self.config, mock_logger)
+            SUT = TopicManager(None, self.config, mock_logger)
             SUT.append_data(self.topic, self.create_queue_data(), fieldname=self.fieldname)
 
             gen = SUT.get_data(SUT.subscribed_topics[self.topic]['queue'], 0)
@@ -769,7 +769,7 @@ class TestGetWindQueueData(unittest.TestCase):
         with mock.patch('user.MQTTSubscribe.CollectData') as mock_CollectData:
             type(mock_CollectData.return_value).get_data = mock.Mock(return_value={})
             type(mock_CollectData.return_value).add_data = mock.Mock(return_value=collected_data)
-            SUT = TopicManager(self.config, mock_logger)
+            SUT = TopicManager(None, self.config, mock_logger)
             SUT.append_data(self.topic, self.create_queue_data(), fieldname=self.fieldname)
             # ToDo - need to get the topic a better way
             # perhaps find it by searching on subscribed topic 'type'
@@ -787,7 +787,7 @@ class TestGetWindQueueData(unittest.TestCase):
         collected_data = self.create_queue_data()
         with mock.patch('user.MQTTSubscribe.CollectData') as mock_CollectData:
             type(mock_CollectData.return_value).get_data = mock.Mock(return_value=collected_data)
-            SUT = TopicManager(self.config, mock_logger)
+            SUT = TopicManager(None, self.config, mock_logger)
 
             gen = SUT.get_data(SUT.subscribed_topics[self.topic]['queue'], 0)
             data = next(gen, None)
@@ -807,7 +807,7 @@ class TestGetWindQueueData(unittest.TestCase):
         config = configobj.ConfigObj(config_dict)
 
         with mock.patch('user.MQTTSubscribe.CollectData') as mock_CollectData:
-            SUT = TopicManager(config, mock_logger)
+            SUT = TopicManager(None, config, mock_logger)
 
             gen = SUT.get_data(SUT.subscribed_topics[topic]['queue'], 0)
             next(gen, None)
@@ -853,7 +853,7 @@ class TestAccumulatedData(unittest.TestCase):
                 type(mock_Accum.return_value).isEmpty = mock.PropertyMock(return_value=False)
                 mock_to_std_system.return_value = final_record_data
 
-                SUT = TopicManager(config, mock_logger)
+                SUT = TopicManager(None, config, mock_logger)
                 SUT.append_data(self.topic, {'dateTime': start_ts})
 
                 accumulated_data = SUT.get_accumulated_data(SUT.subscribed_topics[self.topic]['queue'], 0, end_ts, 0)
@@ -885,7 +885,7 @@ class TestAccumulatedData(unittest.TestCase):
                 type(mock_Accum.return_value).isEmpty = mock.PropertyMock(return_value=False)
                 mock_to_std_system.return_value = final_record_data
 
-                SUT = TopicManager(config, mock_logger)
+                SUT = TopicManager(None, config, mock_logger)
                 SUT.append_data(self.topic, {'dateTime': start_ts})
 
 
@@ -915,7 +915,7 @@ class TestAccumulatedData(unittest.TestCase):
                 type(mock_Accum.return_value).isEmpty = mock.PropertyMock(return_value=False)
                 mock_to_std_system.return_value = final_record_data
 
-                SUT = TopicManager(config, mock_logger)
+                SUT = TopicManager(None, config, mock_logger)
                 SUT.append_data(self.topic, {'dateTime': end_ts})
 
 
@@ -933,7 +933,7 @@ class TestAccumulatedData(unittest.TestCase):
                 type(mock_Accum.return_value).addRecord = \
                     mock.Mock(side_effect=test_weewx_stubs.weewx.accum.OutOfSpan("Attempt to add out-of-interval record"))
 
-                SUT = TopicManager(self.config, mock_logger)
+                SUT = TopicManager(None, self.config, mock_logger)
                 SUT.append_data(self.topic, queue_data)
 
                 mock_logger.reset_mock()
@@ -951,7 +951,7 @@ class TestAccumulatedData(unittest.TestCase):
             with mock.patch('user.MQTTSubscribe.weewx.units.to_std_system') as mock_to_std_system:
                 type(mock_Accum.return_value).isEmpty = mock.PropertyMock(return_value=True)
 
-                SUT = TopicManager(self.config, mock_logger)
+                SUT = TopicManager(None, self.config, mock_logger)
 
                 accumulated_data = SUT.get_accumulated_data(SUT.subscribed_topics[self.topic]['queue'], 0, time.time(), 0)
 
@@ -977,7 +977,7 @@ class TestAccumulatedData(unittest.TestCase):
                 type(mock_Accum.return_value).isEmpty = mock.PropertyMock(return_value=False)
                 mock_to_std_system.return_value = final_record_data
 
-                SUT = TopicManager(self.config, mock_logger)
+                SUT = TopicManager(None, self.config, mock_logger)
                 SUT.append_data(self.topic, {})
 
                 accumulated_data = SUT.get_accumulated_data(SUT.subscribed_topics[self.topic]['queue'], 0, time.time(), 0)

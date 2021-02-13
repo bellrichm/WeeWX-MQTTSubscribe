@@ -23,7 +23,7 @@ class TestAccumulatedData(unittest.TestCase):
 
         logger = Logger('IntegTest')
         topics_dict = config_dict.get('topics', {})
-        manager = TopicManager(topics_dict, logger)
+        manager = TopicManager(None, topics_dict, logger)
 
         unit_system_name = topics_dict.get('unit_system', 'US').strip().upper()
         if unit_system_name not in weewx.units.unit_constants:

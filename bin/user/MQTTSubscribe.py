@@ -605,7 +605,7 @@ class CollectData(object):
 class TopicManager(object):
     # pylint: disable=too-many-instance-attributes
     """ Manage the MQTT topic subscriptions. """
-    def __init__(self, config, logger):
+    def __init__(self, archive_topic, config, logger):
         # pylint: disable=too-many-locals, too-many-statements, too-many-branches
         self.logger = logger
 
@@ -666,7 +666,7 @@ class TopicManager(object):
         self.queues = []
 
         if single_queue:
-            queue = dict(
+            single_queue_obj = dict(
                 {'name': "%f-single-queue" % time.time(),
                  'type': 'normal',
                  'ignore_start_time': default_ignore_start_time,
@@ -677,7 +677,7 @@ class TopicManager(object):
                  'data': deque()
                 }
             )
-            self.queues.append(queue)
+            self.queues.append(single_queue_obj)
 
         for topic in config.sections:
             topic_dict = config.get(topic, {})
@@ -716,7 +716,7 @@ class TopicManager(object):
             self.subscribed_topics[topic]['ignore'] = ignore
             self.subscribed_topics[topic]['ignore_msg_id_field'] = []
             self.subscribed_topics[topic]['fields'] = {}
-            if not single_queue:
+            if not single_queue or topic == archive_topic:
                 queue = dict(
                     {'name': topic,
                      'type': 'normal',
@@ -729,7 +729,9 @@ class TopicManager(object):
                     }
                 )
                 self.queues.append(queue)
-            self.subscribed_topics[topic]['queue'] = queue
+                self.subscribed_topics[topic]['queue'] = queue
+            else:
+                self.subscribed_topics[topic]['queue'] = single_queue_obj
             self.subscribed_topics[topic]['filters'] = {}
 
             temp_message_dict = topic_dict.get('Message', {})
@@ -1389,11 +1391,15 @@ class MQTTSubscriber(object):
         if topics_dict is None:
             raise ValueError("[[topics]] is required.")
 
+        self.archive_topic = service_dict.get('archive_topic', None)
+        if self.archive_topic and self.archive_topic not in service_dict['topics']:
+            raise ValueError("Archive topic %s must be in [[topics]]" % self.archive_topic)
+
         self._check_deprecated_options(service_dict)
 
         message_callback_provider_name = service_dict.get('message_callback_provider',
                                                           'user.MQTTSubscribe.MessageCallbackProvider')
-        self.manager = TopicManager(topics_dict, self.logger)
+        self.manager = TopicManager(self.archive_topic, topics_dict, self.logger)
 
         self.cached_fields = None
         self.cached_fields = self.manager.cached_fields
@@ -1408,11 +1414,6 @@ class MQTTSubscriber(object):
         username = service_dict.get('username', None)
         password = service_dict.get('password', None)
         log_mqtt = to_bool(service_dict.get('log', False))
-
-        self.archive_topic = service_dict.get('archive_topic', None)
-
-        if self.archive_topic and self.archive_topic not in service_dict['topics']:
-            raise ValueError("Archive topic %s must be in [[topics]]" % self.archive_topic)
 
         self.logger.info("message_callback_provider_name is %s" % message_callback_provider_name)
         self.logger.info("clientid is %s" % clientid)
@@ -1499,6 +1500,7 @@ class MQTTSubscriber(object):
 
     @staticmethod
     def _config_weewx(weewx_config):
+        # pylint: disable=too-many-branches
         units = weewx_config.get('units')
         if units:
             for unit in units.sections:
