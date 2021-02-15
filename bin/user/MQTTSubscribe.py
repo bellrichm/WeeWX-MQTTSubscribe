@@ -614,39 +614,14 @@ class TopicManager(object):
 
         self.message_config_name = "message-%f" % time.time()
 
-        self.collect_wind_across_loops = to_bool(config.get('collect_wind_across_loops', True))
-        self.logger.debug("TopicManager self.collect_wind_across_loops is %s" % self.collect_wind_across_loops)
+        topic_defaults = self._configure_topic_options(config)
 
-        self.collect_observations = to_bool(config.get('collect_observations', False))
-        self.logger.debug("TopicManager self.collect_observations is %s" % self.collect_observations)
-
-        single_queue = to_bool(config.get('single_queue', False))
-        self.logger.debug("TopicManager single_queue is %s" % single_queue)
-
-        topic_options = ['collect_wind_across_loops', 'collect_observations', 'single_queue', 'unit_system',
-                         'msg_id_field', 'qos', 'topic_tail_is_fieldname',
-                         'use_server_datetime', 'ignore_start_time', 'ignore_end_time', 'adjust_start_time', 'adjust_end_time',
-                         'datetime_format', 'offset_format', 'max_queue']
-
-        defaults = {}
-        default_msg_id_field = config.get('msg_id_field', None)
-        defaults['ignore_msg_id_field'] = config.get('ignore_msg_id_field', False)
-        default_qos = to_int(config.get('qos', 0))
-        default_topic_tail_is_fieldname = to_bool(config.get('topic_tail_is_fieldname', False))
-        default_use_server_datetime = to_bool(config.get('use_server_datetime', False))
-        default_ignore_start_time = to_bool(config.get('ignore_start_time', False))
-        default_ignore_end_time = to_bool(config.get('ignore_end_time', False))
-        if default_ignore_start_time:
-            default_adjust_start_time = to_float(config.get('adjust_start_time', 1))
-        else:
-            default_adjust_start_time = to_float(config.get('adjust_start_time', 0))
-        default_adjust_end_time = to_float(config.get('adjust_end_time', 0))
-        default_datetime_format = config.get('datetime_format', None)
-        default_offset_format = config.get('offset_format', None)
-        default_ignore = to_bool(config.get('ignore', False))
-        defaults['contains_total'] = to_bool(config.get('contains_total', False))
-        defaults['conversion_type'] = config.get('conversion_type', 'float')
-        defaults['conversion_error_to_none'] = to_bool(config.get('conversion_error_to_none', False))
+        field_defaults = {}
+        field_defaults['ignore_msg_id_field'] = config.get('ignore_msg_id_field', False)
+        field_defaults['ignore'] = to_bool(config.get('ignore', False))
+        field_defaults['contains_total'] = to_bool(config.get('contains_total', False))
+        field_defaults['conversion_type'] = config.get('conversion_type', 'float')
+        field_defaults['conversion_error_to_none'] = to_bool(config.get('conversion_error_to_none', False))
 
         default_message_dict = config.get('Message', configobj.ConfigObj())
         # if 'type' option is not set, this not 'topic'
@@ -654,26 +629,22 @@ class TopicManager(object):
         if default_message_dict.get('type', None) is None:
             default_message_dict = configobj.ConfigObj({})
 
-        default_unit_system_name = config.get('unit_system', 'US').strip().upper()
-        if default_unit_system_name not in weewx.units.unit_constants:
-            raise ValueError("MQTTSubscribe: Unknown unit system: %s" % default_unit_system_name)
-
-        max_queue = config.get('max_queue', MAXSIZE)
-
         self.topics = {}
         self.subscribed_topics = {}
         self.cached_fields = {}
         self.queues = []
 
+        single_queue = to_bool(config.get('single_queue', False))
+        self.logger.debug("TopicManager single_queue is %s" % single_queue)
         if single_queue:
             single_queue_obj = dict(
                 {'name': "%f-single-queue" % time.time(),
                  'type': 'normal',
-                 'ignore_start_time': default_ignore_start_time,
-                 'ignore_end_time': default_ignore_end_time,
-                 'adjust_start_time': default_adjust_start_time,
-                 'adjust_end_time': default_adjust_end_time,
-                 'max_size': max_queue,
+                 'ignore_start_time': topic_defaults['ignore_start_time'],
+                 'ignore_end_time': topic_defaults['ignore_end_time'],
+                 'adjust_start_time': topic_defaults['adjust_start_time'],
+                 'adjust_end_time': topic_defaults['adjust_end_time'],
+                 'max_size': topic_defaults['max_queue'],
                  'data': deque()
                 }
             )
@@ -688,43 +659,37 @@ class TopicManager(object):
             if topic == 'Message' and topic_dict.get('type', None) is not None:
                 continue
 
-            msg_id_field = topic_dict.get('msg_id_field', default_msg_id_field)
-            qos = to_int(topic_dict.get('qos', default_qos))
-            topic_tail_is_fieldname = to_bool(topic_dict.get('topic_tail_is_fieldname',
-                                                             default_topic_tail_is_fieldname))
-            use_server_datetime = to_bool(topic_dict.get('use_server_datetime',
-                                                         default_use_server_datetime))
-            datetime_format = topic_dict.get('datetime_format', default_datetime_format)
-            offset_format = topic_dict.get('offset_format', default_offset_format)
-            ignore = to_bool(topic_dict.get('ignore', default_ignore))
-            defaults['ignore'] = ignore
-
-            unit_system_name = topic_dict.get('unit_system', default_unit_system_name).strip().upper()
+            unit_system_name = topic_dict.get('unit_system', topic_defaults['unit_system_name']).strip().upper()
             if unit_system_name not in weewx.units.unit_constants:
                 raise ValueError("MQTTSubscribe: Unknown unit system: %s" % unit_system_name)
             unit_system = weewx.units.unit_constants[unit_system_name]
 
             self.subscribed_topics[topic] = {}
+            # ignore is set at the topic level in addtion to the field level
+            # This allows it to be set to false at the topic level, changing MQTTSubscribe from an 'opt out' to 'opt in' strategy
+            self.subscribed_topics[topic]['ignore'] = to_bool(topic_dict.get('ignore', field_defaults['ignore']))
             self.subscribed_topics[topic]['subscribe'] = to_bool(topic_dict.get('subscribe', True))
             self.subscribed_topics[topic]['unit_system'] = unit_system
-            self.subscribed_topics[topic]['msg_id_field'] = msg_id_field
-            self.subscribed_topics[topic]['qos'] = qos
-            self.subscribed_topics[topic]['topic_tail_is_fieldname'] = topic_tail_is_fieldname
-            self.subscribed_topics[topic]['use_server_datetime'] = use_server_datetime
-            self.subscribed_topics[topic]['datetime_format'] = datetime_format
-            self.subscribed_topics[topic]['offset_format'] = offset_format
-            self.subscribed_topics[topic]['ignore'] = ignore
+            self.subscribed_topics[topic]['msg_id_field'] = topic_dict.get('msg_id_field', topic_defaults['msg_id_field'])
+            self.subscribed_topics[topic]['qos'] = to_int(topic_dict.get('qos', topic_defaults['qos']))
+            self.subscribed_topics[topic]['topic_tail_is_fieldname'] = to_bool(topic_dict.get('topic_tail_is_fieldname',
+                                                                                              topic_defaults['topic_tail_is_fieldname']))
+            self.subscribed_topics[topic]['use_server_datetime'] = to_bool(topic_dict.get('use_server_datetime',
+                                                                                          topic_defaults['use_server_datetime']))
+            self.subscribed_topics[topic]['datetime_format'] = topic_dict.get('datetime_format', topic_defaults['datetime_format'])
+            self.subscribed_topics[topic]['offset_format'] = topic_dict.get('offset_format', topic_defaults['offset_format'])
+            #self.subscribed_topics[topic]['ignore'] = ignore
             self.subscribed_topics[topic]['ignore_msg_id_field'] = []
             self.subscribed_topics[topic]['fields'] = {}
             if not single_queue or topic == archive_topic:
                 queue = dict(
                     {'name': topic,
                      'type': 'normal',
-                     'ignore_start_time': to_bool(topic_dict.get('ignore_start_time', default_ignore_start_time)),
-                     'ignore_end_time': to_bool(topic_dict.get('ignore_end_time', default_ignore_end_time)),
-                     'adjust_start_time': to_float(topic_dict.get('adjust_start_time', default_adjust_start_time)),
-                     'adjust_end_time': to_float(topic_dict.get('adjust_end_time', default_adjust_end_time)),
-                     'max_size': topic_dict.get('max_queue', max_queue),
+                     'ignore_start_time': to_bool(topic_dict.get('ignore_start_time', topic_defaults['ignore_start_time'])),
+                     'ignore_end_time': to_bool(topic_dict.get('ignore_end_time', topic_defaults['ignore_end_time'])),
+                     'adjust_start_time': to_float(topic_dict.get('adjust_start_time', topic_defaults['adjust_start_time'])),
+                     'adjust_end_time': to_float(topic_dict.get('adjust_end_time', topic_defaults['adjust_end_time'])),
+                     'max_size': topic_dict.get('max_queue', topic_defaults['max_queue']),
                      'data': deque()
                     }
                 )
@@ -752,17 +717,17 @@ class TopicManager(object):
                     if field == 'Message' and topic_dict[field].get('type', None) is not None:
                         continue
 
-                    self.subscribed_topics[topic]['fields'][field] = self._configure_field(topic_dict, topic_dict[field], field, defaults)
-                    self._configure_ignore_fields(topic_dict, topic_dict[field], topic, field, defaults)
+                    self.subscribed_topics[topic]['fields'][field] = self._configure_field(topic_dict, topic_dict[field], field, field_defaults)
+                    self._configure_ignore_fields(topic_dict, topic_dict[field], topic, field, field_defaults)
                     self._configure_filter_out_message(topic_dict[field], topic, field)
                     self._configure_cached_fields(topic_dict[field])
             else:
                 # See if any field options are directly under the topic.
                 # And if so, use the topic as the field name.
                 for (key, value) in topic_dict.items(): # match signature pylint: disable=unused-variable
-                    if key not in topic_options:
-                        self.subscribed_topics[topic]['fields'][topic] = self._configure_field(topic_dict, topic_dict, topic, defaults)
-                        self._configure_ignore_fields(topic_dict, topic_dict, topic, topic, defaults)
+                    if key not in self.topic_options:
+                        self.subscribed_topics[topic]['fields'][topic] = self._configure_field(topic_dict, topic_dict, topic, field_defaults)
+                        self._configure_ignore_fields(topic_dict, topic_dict, topic, topic, field_defaults)
                         self._configure_filter_out_message(topic_dict, topic, topic)
                         self._configure_cached_fields(topic_dict)
                         break
@@ -770,7 +735,7 @@ class TopicManager(object):
         # Add the collector queue as a subscribed topic so that data can retrieved from it
         # Yes, this is a bit of a hack.
         # Note, it would not be too hard to allow additional fields via the [fields] configuration option
-        self.collected_units = weewx.units.unit_constants[default_unit_system_name]
+        self.collected_units = weewx.units.unit_constants[topic_defaults['unit_system_name']]
         self.collected_fields = ['windGust', 'windGustDir', 'windDir', 'windSpeed']
         self.collected_queue = deque()
         self.collected_topic = "%f-%s" % (time.time(), '-'.join(self.collected_fields))
@@ -778,20 +743,20 @@ class TopicManager(object):
         self.subscribed_topics[topic] = {}
         self.subscribed_topics[topic]['subscribe'] = False
         self.subscribed_topics[topic][self.message_config_name] = {}
-        self.subscribed_topics[topic]['unit_system'] = weewx.units.unit_constants[default_unit_system_name]
-        self.subscribed_topics[topic]['qos'] = default_qos
-        self.subscribed_topics[topic]['topic_tail_is_fieldname'] = default_topic_tail_is_fieldname
-        self.subscribed_topics[topic]['use_server_datetime'] = default_use_server_datetime
-        self.subscribed_topics[topic]['datetime_format'] = default_datetime_format
-        self.subscribed_topics[topic]['offset_format'] = default_offset_format
+        self.subscribed_topics[topic]['unit_system'] = weewx.units.unit_constants[topic_defaults['unit_system_name']]
+        self.subscribed_topics[topic]['qos'] = topic_defaults['qos']
+        self.subscribed_topics[topic]['topic_tail_is_fieldname'] = topic_defaults['topic_tail_is_fieldname']
+        self.subscribed_topics[topic]['use_server_datetime'] = topic_defaults['use_server_datetime']
+        self.subscribed_topics[topic]['datetime_format'] = topic_defaults['datetime_format']
+        self.subscribed_topics[topic]['offset_format'] = topic_defaults['offset_format']
         queue = dict(
             {'name': topic,
              'type': 'collector',
-             'ignore_start_time': default_ignore_start_time,
-             'ignore_end_time': default_ignore_end_time,
-             'adjust_start_time': default_adjust_start_time,
-             'adjust_end_time': default_adjust_end_time,
-             'max_size': max_queue,
+             'ignore_start_time': topic_defaults['ignore_start_time'],
+             'ignore_end_time': topic_defaults['ignore_end_time'],
+             'adjust_start_time': topic_defaults['adjust_start_time'],
+             'adjust_end_time': topic_defaults['adjust_end_time'],
+             'max_size': topic_defaults['max_queue'],
              'data': self.collected_queue
             }
         )
@@ -804,14 +769,56 @@ class TopicManager(object):
         self.logger.debug("TopicManager self.subscribed_topics is %s" % self.subscribed_topics)
         self.logger.debug("TopicManager self.cached_fields is %s" % self.cached_fields)
 
+    def _configure_topic_options(self, config):
+        self.topic_options = ['collect_wind_across_loops', 'collect_observations', 'single_queue', 'unit_system',
+                              'msg_id_field', 'qos', 'topic_tail_is_fieldname',
+                              'use_server_datetime', 'ignore_start_time', 'ignore_end_time', 'adjust_start_time', 'adjust_end_time',
+                              'datetime_format', 'offset_format', 'max_queue']
+
+        default = {}
+
+        self.collect_wind_across_loops = to_bool(config.get('collect_wind_across_loops', True))
+        self.logger.debug("TopicManager self.collect_wind_across_loops is %s" % self.collect_wind_across_loops)
+
+        self.collect_observations = to_bool(config.get('collect_observations', False))
+        self.logger.debug("TopicManager self.collect_observations is %s" % self.collect_observations)
+
+        single_queue = to_bool(config.get('single_queue', False))
+        self.logger.debug("TopicManager single_queue is %s" % single_queue)
+
+        default['unit_system_name'] = config.get('unit_system', 'US').strip().upper()
+        if default['unit_system_name'] not in weewx.units.unit_constants:
+            raise ValueError("MQTTSubscribe: Unknown unit system: %s" % default['unit_system_name'])
+
+        default['msg_id_field'] = config.get('msg_id_field', None)
+        default['qos'] = to_int(config.get('qos', 0))
+        default['topic_tail_is_fieldname'] = to_bool(config.get('topic_tail_is_fieldname', False))
+
+        default['use_server_datetime'] = to_bool(config.get('use_server_datetime', False))
+        default['ignore_start_time'] = to_bool(config.get('ignore_start_time', False))
+        default['ignore_end_time'] = to_bool(config.get('ignore_end_time', False))
+        if default['ignore_start_time']:
+            default['adjust_start_time'] = to_float(config.get('adjust_start_time', 1))
+        else:
+            default['adjust_start_time'] = to_float(config.get('adjust_start_time', 0))
+        default['adjust_end_time'] = to_float(config.get('adjust_end_time', 0))
+
+        default['datetime_format'] = config.get('datetime_format', None)
+        default['offset_format'] = config.get('offset_format', None)
+
+        default['max_queue'] = config.get('max_queue', MAXSIZE)
+
+        return default
+
     @staticmethod
     def _configure_field(topic_dict, field_dict, fieldname, defaults):
+        ignore = to_bool(topic_dict.get('ignore', defaults['ignore']))
         contains_total = to_bool(topic_dict.get('contains_total', defaults['contains_total']))
         conversion_type = topic_dict.get('conversion_type', defaults['conversion_type'])
         conversion_error_to_none = topic_dict.get('conversion_error_to_none', defaults['conversion_error_to_none'])
         field = {}
         field['name'] = (field_dict).get('name', fieldname)
-        field['ignore'] = to_bool((field_dict).get('ignore', defaults['ignore']))
+        field['ignore'] = to_bool((field_dict).get('ignore', ignore))
         field['contains_total'] = to_bool((field_dict).get('contains_total', contains_total))
         field['conversion_type'] = (field_dict).get('conversion_type', conversion_type)
         field['conversion_error_to_none'] = (field_dict).get('conversion_error_to_none', conversion_error_to_none)
