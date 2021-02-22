@@ -106,6 +106,7 @@ Configuration:
         ciphers = None
 
     # Configuration for the message callback.
+    # DEPRECATED - use [[[Message]]] under [[topics]]
     [[message_callback]]
         # The format of the MQTT payload.
         # Currently support: individual, json, keyword
@@ -135,6 +136,10 @@ Configuration:
         # Default is US.
         unit_system = US
 
+        # Controls if an actual subscription request is made to the broker for this topic.
+        # Default is True.
+        subscribe = True
+
         # By default wind data is collected together across generation of loop packets.
         # Setting to false results in the data only being collected together within a loop packet.
         # Default is True.
@@ -156,6 +161,7 @@ Configuration:
         # When true, the last segment of the topic is used as the fieldname.
         # Only used for individual payloads.
         # Default is False.
+        # This is experimental and may be removed.
         topic_tail_is_fieldname = False
 
         # When true, the fieldname is set to the topic and therefore [[[[fieldname]]]] cannot be used.
@@ -210,7 +216,7 @@ Configuration:
         max_queue = MAXSIZE
 
         # Configuration information about the MQTT message format for this topic
-        [[[[Message]]]]
+        [[[Message]]]
             # The format of the MQTT payload.
             # Currently support: individual, json, keyword.
             # Must be specified.
@@ -292,6 +298,33 @@ Configuration:
 
         # The second topic to subscribe to
         [[[second/topic]]]
+
+    # Configure additional observations and units for WeeWX to use.
+    # See, http://weewx.com/docs/customizing.htm#Creating_a_new_unit_group
+    # This assumes a good knowledge of customizing WeeWX.
+    # EXPERIMENTAL - may be removed
+    [[weewx]]
+        [[[observations]]]
+            # The observation and unit group it belongs to.
+            observation-name = unit-group-name
+
+        [[[units]]]
+            # The unit to be added
+            [[[[unit-name-a]]]]
+                # The unit system this unit belongs to.
+                unit_system = us
+                # The unit group this unit belongs to.
+                group = unit-group-name
+                # Formatting for this unit.
+                format = formatting for unit
+                # Label for this unit.
+                label = label for unit
+                [[[[[conversion]]]]]
+                    # Conversion formula to other unit.
+                    to-unit-name-b = function to convert from unit to to-unit
+
+            [[[[unit-name-b]]]]
+                unit_system = metric, metricwx
 """
 
 # need to be python 2 compatible pylint: disable=bad-option-value, raise-missing-from, super-with-arguments
@@ -340,6 +373,18 @@ if PY2:
     MAXSIZE = sys.maxint # (only a python 3 error) pylint: disable=no-member
 else:
     MAXSIZE = sys.maxsize
+
+def gettid():
+    """Get TID as displayed by htop.
+       This is architecture dependent."""
+    import ctypes # Want to keep this piece of code self contained. pylint: disable=import-outside-toplevel
+    libc = 'libc.so.6'
+    for cmd in (186, 224, 178):
+        tid = ctypes.CDLL(libc).syscall(cmd)
+        if tid != -1:
+            return tid
+
+    return 0
 
 class ConversionError(ValueError):
     """ Error converting data types. """
@@ -678,7 +723,6 @@ class TopicManager(object):
                                                                                           topic_defaults['use_server_datetime']))
             self.subscribed_topics[topic]['datetime_format'] = topic_dict.get('datetime_format', topic_defaults['datetime_format'])
             self.subscribed_topics[topic]['offset_format'] = topic_dict.get('offset_format', topic_defaults['offset_format'])
-            #self.subscribed_topics[topic]['ignore'] = ignore
             self.subscribed_topics[topic]['ignore_msg_id_field'] = []
             self.subscribed_topics[topic]['fields'] = {}
             if not single_queue or topic == archive_topic:
