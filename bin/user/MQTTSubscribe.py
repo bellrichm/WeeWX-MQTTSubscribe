@@ -126,6 +126,9 @@ Configuration:
         keyword_separator = "="
 
     [[topics]
+        # Controls if this topic is subscribed to.
+        # Default is True.
+        subscribe = True
         # The QOS level to subscribe to.
         # Default is 0
         qos = 0
