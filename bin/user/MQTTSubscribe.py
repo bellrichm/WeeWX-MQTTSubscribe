@@ -1719,6 +1719,7 @@ class MQTTSubscribeService(StdService):
     def __init__(self, engine, config_dict):
         super(MQTTSubscribeService, self).__init__(engine, config_dict)
 
+        self.subscriber = None
         service_dict = config_dict.get('MQTTSubscribeService', {})
         logging_filename = service_dict.get('logging_filename', None)
         logging_level = service_dict.get('logging_level', 'NOTSET')
@@ -1759,7 +1760,8 @@ class MQTTSubscribeService(StdService):
 
     def shutDown(self): # need to override parent - pylint: disable=invalid-name
         """Run when an engine shutdown is requested."""
-        self.subscriber.disconnect()
+        if self.subscriber:
+            self.subscriber.disconnect()
 
     def new_loop_packet(self, event):
         """ Handle the new loop packet event. """
