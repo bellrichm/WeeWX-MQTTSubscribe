@@ -380,7 +380,9 @@ else:
 def gettid():
     """Get TID as displayed by htop.
        This is architecture dependent."""
+    # need to be python 2 compatible pylint: disable=bad-option-value
     import ctypes # Want to keep this piece of code self contained. pylint: disable=import-outside-toplevel
+    # pylint: enable=bad-option-value
     libc = 'libc.so.6'
     for cmd in (186, 224, 178):
         tid = ctypes.CDLL(libc).syscall(cmd)
