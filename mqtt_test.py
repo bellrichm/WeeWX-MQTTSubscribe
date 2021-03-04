@@ -5,6 +5,7 @@ from __future__ import print_function
 import argparse
 import os
 import random
+import time
 
 import configobj
 import paho.mqtt.client as mqtt
@@ -45,17 +46,20 @@ def on_connect(client, userdata, flags, rc): # (match callback signature) pylint
     """ MQTT on connect callback. """
     print("Connected with result code %i" % rc)
     for topic in userdata['topics']:
-        client.subscribe(topic)
+        client.subscribe(topic, qos=userdata['qos'])
 
 
 def on_disconnect(client, userdata, rc):  # (match callback signature) pylint: disable=unused-argument
     """ MQTT on disconnect callback. """
     print("Disconnected with result code %i" % rc)
 
+def on_subscribe(client, userdata, mid, granted_qos): # (match callback signature) pylint: disable=unused-argument
+    """ MQTT on subscribe callback. """
+    print("Subscribed to mid: %i is size %i has a QOS of %i" %(mid, len(granted_qos), granted_qos[0]))
 
 def on_message(client, userdata, msg):  # (match callback signature) pylint: disable=unused-argument
     """ MQTT on message callback. """
-    print('%s: %s' %(msg.topic, msg.payload))
+    print('(%s) mid:%s, qos:%s, %s: %s' %(int(time.time()), msg.mid, msg.qos, msg.topic, msg.payload))
     if userdata.get('max_records'):
         userdata['counter'] += 1
         if userdata['counter'] >= userdata['max_records']:
@@ -78,15 +82,19 @@ def init_parser():
                         help='Maximum period in seconds allowed between communications with the broker.')
     parser.add_argument("--clientid",
                         help="The clientid to connect with.")
+    parser.add_argument("--persist", action="store_true", dest="persist",
+                        help="Set up a persistence session (clean_session=false)")
     parser.add_argument("--username",
                         help="username for broker authentication.")
     parser.add_argument("--password",
                         help="password for broker authentication.")
+    parser.add_argument("--qos", default=0, type=int,
+                        help="QOS desired. Currently one specified for all topics")
     parser.add_argument("--topics",
                         help="Comma separated list of topics to subscribe to.")
     parser.add_argument("--quiet", action="store_true", dest="quiet",
                         help="Turn off the MQTT logging.")
-    parser.add_argument("config_file")
+    parser.add_argument("config_file", nargs="?")
 
     return parser
 
@@ -123,6 +131,9 @@ def main():
     keepalive = _get_option(options.keepalive, int(config_dict.get('keepalive', 60)))
     clientid = _get_option(options.clientid, config_dict.get('clientid', config_type + '-' + str(random.randint(1000, 9999))))
     username = _get_option(options.username, config_dict.get('username', None))
+    # todo cleanup, so that not always overriding config
+    clean_session = not options.persist
+    qos = options.qos
     password = _get_option(options.password, config_dict.get('password', None))
 
     topics = []
@@ -140,8 +151,10 @@ def main():
     print("Port is %s" % port)
     print("Keep alive is %s" % keepalive)
     print("Client id is %s" % clientid)
+    print("Clean session is %s" % clean_session)
     print("Username is %s" % username)
     print("Password is %s" % password)
+    print("QOS is %s" % qos)
     print("Topics are %s" % topics)
 
     if password is not None:
@@ -150,17 +163,19 @@ def main():
         print("Password is not set")
 
     userdata = {}
+    userdata['qos'] = qos
     userdata['topics'] = topics
     if max_records:
         userdata['counter'] = 0
         userdata['max_records'] = max_records
-    client = mqtt.Client(client_id=clientid, userdata=userdata)
+    client = mqtt.Client(client_id=clientid, userdata=userdata, clean_session=clean_session)
 
     if not options.quiet:
         client.on_log = on_log
 
     client.on_connect = on_connect
     client.on_disconnect = on_disconnect
+    client.on_subscribe = on_subscribe
     client.on_message = on_message
 
     if username is not None and password is not None:
