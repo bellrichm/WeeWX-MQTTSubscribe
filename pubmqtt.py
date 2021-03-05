@@ -38,7 +38,9 @@ def init_parser():
     parser.add_argument("--client-id", dest='client_id', default='clientid',
                         help="The clientid to connect with.")
     parser.add_argument("--topic", dest='topic', default='test-topic',
-                        help="The topic to subscribe to.")
+                        help="The topic to publish to.")
+    parser.add_argument("--qos", default=0, type=int,
+                        help="QOS desired. Currently one specified for all topics")
     parser.add_argument("--file", dest='file', default='tmp/messages.txt',
                         help="The file containing the messages to publish.")
     parser.add_argument("--interval", dest='interval', type=int, default=0,
@@ -95,6 +97,7 @@ def main():
     keepalive = options.keepalive
     client_id = options.client_id
     topic = options.topic
+    qos = options.qos
     filename = options.file
     interval = options.interval
     min_interval = options.min_interval
@@ -128,15 +131,15 @@ def main():
                     raw_input() # (only a python 3 error) pylint: disable=undefined-variable
                 else:
                     input()
-            mqtt_message_info = client.publish(topic, message)
-            print("Sent: %s has return code %i" % (mqtt_message_info.mid, mqtt_message_info.rc))
-            if mqtt_message_info.rc == mqtt.MQTT_ERR_NO_CONN:
-                client.connect(host, port, keepalive)
-                client.loop_start()
-                mqtt_message_info = client.publish(topic, message)
-            elif not mqtt_message_info.is_published:
-                mqtt_message_info = client.publish(topic, message)
-            mqtt_message_info.wait_for_publish()
+            mqtt_message_info = client.publish(topic, message, qos=qos)
+            print("Publish: %s has return code %i, %s" % (mqtt_message_info.mid, mqtt_message_info.rc, mqtt.error_string(mqtt_message_info.rc)))
+
+            if mqtt_message_info.rc != mqtt.MQTT_ERR_SUCCESS:
+                raise ValueError(mqtt.error_string(mqtt_message_info.rc))
+
+            if not mqtt_message_info.is_published():
+                print("Waiting for publish.")
+                mqtt_message_info.wait_for_publish()
 
             message = file_object.readline().rstrip()
 
