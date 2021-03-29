@@ -33,3 +33,5 @@ source ./localtools/init.sh
 ./appveyor/build_script.sh
 ./appveyor/test_script.sh
 ./appveyor/after_test.sh
+
+mv -f nosetests* tmp
