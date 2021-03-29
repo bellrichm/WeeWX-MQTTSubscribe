@@ -1,3 +1,8 @@
+#
+#    Copyright (c) 2020-2021 Rich Bell <bellrichm@gmail.com>
+#
+#    See the file LICENSE.txt for your full rights.
+#
 if [ "$ENABLED" != "true" ]; then
   exit 0
 fi

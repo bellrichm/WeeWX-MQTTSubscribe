@@ -1,3 +1,8 @@
+#
+#    Copyright (c) 2020-2021 Rich Bell <bellrichm@gmail.com>
+#
+#    See the file LICENSE.txt for your full rights.
+#
 export SONAR_SCANNER_HOME=$HOME/.sonar/sonar-scanner-$SONAR_SCANNER_VERSION-linux
 export PATH=$SONAR_SCANNER_HOME/bin:$PATH
 

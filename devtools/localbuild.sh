@@ -1,3 +1,8 @@
+#
+#    Copyright (c) 2020-2021 Rich Bell <bellrichm@gmail.com>
+#
+#    See the file LICENSE.txt for your full rights.
+#
 export BUILDTYPE="LOCAL"
 
 export APPVEYOR_BUILD_VERSION="local"

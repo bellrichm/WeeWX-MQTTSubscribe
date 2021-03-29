@@ -1,3 +1,8 @@
+#
+#    Copyright (c) 2020-2021 Rich Bell <bellrichm@gmail.com>
+#
+#    See the file LICENSE.txt for your full rights.
+#
 # Reminder, tags are uploaded to both coveralls and sonar as a branch with the tag name
 
 if [ "$ENABLED" != "true" ]; then

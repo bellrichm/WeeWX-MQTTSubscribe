@@ -1,5 +1,9 @@
 #! /bin/bash
-
+#
+#    Copyright (c) 2020-2021 Rich Bell <bellrichm@gmail.com>
+#
+#    See the file LICENSE.txt for your full rights.
+#
 export PYENV_VERSION=2.7.17
 export WEEWX=weewx4
 echo "Running python $PYENV_VERSION $WEEWX"

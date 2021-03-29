@@ -1,4 +1,9 @@
 #!/usr/bin/python
+#
+#    Copyright (c) 2020-2021 Rich Bell <bellrichm@gmail.com>
+#
+#    See the file LICENSE.txt for your full rights.
+#
 """ A simple utility that prints the topics and payloads. """
 
 from __future__ import print_function
