@@ -706,11 +706,12 @@ class TopicManager(object):
 
         for topic in config.sections:
             topic_dict = config.get(topic, {})
+            callback_config_name = topic_dict.get('callback_config_name', topic_defaults['callback_config_name'])
 
             # if 'type' option is set, this not a 'topic'
             # it is actually a 'Message' configuration stanza
             # and it has already been retrieved into default_message_config
-            if topic == 'Message' and topic_dict.get('type', None) is not None:
+            if topic == callback_config_name and topic_dict.get('type', None) is not None:
                 continue
 
             unit_system_name = topic_dict.get('unit_system', topic_defaults['unit_system_name']).strip().upper()
@@ -732,6 +733,7 @@ class TopicManager(object):
                                                                                           topic_defaults['use_server_datetime']))
             self.subscribed_topics[topic]['datetime_format'] = topic_dict.get('datetime_format', topic_defaults['datetime_format'])
             self.subscribed_topics[topic]['offset_format'] = topic_dict.get('offset_format', topic_defaults['offset_format'])
+            self.subscribed_topics[topic]['ignore_msg_id_field'] = callback_config_name
             self.subscribed_topics[topic]['ignore_msg_id_field'] = []
             self.subscribed_topics[topic]['fields'] = {}
             if not single_queue or topic == archive_topic:
@@ -752,7 +754,7 @@ class TopicManager(object):
                 self.subscribed_topics[topic]['queue'] = single_queue_obj
             self.subscribed_topics[topic]['filters'] = {}
 
-            temp_message_dict = topic_dict.get('Message', {})
+            temp_message_dict = topic_dict.get(callback_config_name, {})
             message_type = temp_message_dict.get('type', None)
 
             # ugly "deep" copy workaround
@@ -767,7 +769,7 @@ class TopicManager(object):
 
             if len(topic_dict.sections) > 1 or (len(topic_dict.sections) == 1  and message_type is None):
                 for field in topic_dict.sections:
-                    if field == 'Message' and topic_dict[field].get('type', None) is not None:
+                    if field == callback_config_name and topic_dict[field].get('type', None) is not None:
                         continue
 
                     self.subscribed_topics[topic]['fields'][field] = self._configure_field(topic_dict, topic_dict[field], field, field_defaults)
@@ -860,6 +862,7 @@ class TopicManager(object):
         default['offset_format'] = config.get('offset_format', None)
 
         default['max_queue'] = config.get('max_queue', MAXSIZE)
+        default['callback_config_name'] = config.get('callback_config_name', 'Message')
 
         return default
 
