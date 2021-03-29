@@ -65,7 +65,7 @@ class TestInitialization(unittest.TestCase):
         user.MQTTSubscribe.MessageCallbackProvider(config, mock_logger, mock_manager)
 
         mock_logger.info.assert_called_once_with( \
-            "Message configuration found under [[MessageCallback]] and [[Topic]]. Ignoring [[MessageCallbwck]].")
+            "Message configuration found under [[MessageCallback]] and [[Topic]]. Ignoring [[MessageCallback]].")
 
     def test_message_and_message_callback_not_set(self):
         mock_logger = mock.Mock(spec=Logger)
@@ -84,7 +84,7 @@ class TestInitialization(unittest.TestCase):
         with self.assertRaises(ValueError) as error:
             user.MQTTSubscribe.MessageCallbackProvider(None, mock_logger, mock_manager)
 
-        self.assertEqual(error.exception.args[0], "%s topic is missing '[[[[Message]]]]' section" % topic)
+        self.assertEqual(error.exception.args[0], "%s topic is missing '[[[[message]]]]' section" % topic)
 
     def test_message_callback_configuration_defaults_not_set(self):
         mock_logger = mock.Mock(spec=Logger)
@@ -205,7 +205,7 @@ class TestInitialization(unittest.TestCase):
         with self.assertRaises(ValueError) as error:
             user.MQTTSubscribe.MessageCallbackProvider(None, mock_logger, mock_manager)
 
-        self.assertEqual(error.exception.args[0], "%s topic is missing '[[[[Message]]]] type=' section" % topic)
+        self.assertEqual(error.exception.args[0], "%s topic is missing '[[[[message]]]] type=' section" % topic)
 
 # missing message section? todo
 

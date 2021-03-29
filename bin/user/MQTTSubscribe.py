@@ -111,7 +111,7 @@ Configuration:
         ciphers = None
 
     # Configuration for the message callback.
-    # DEPRECATED - use [[[Message]]] under [[topics]]
+    # DEPRECATED - use [[[message]]] under [[topics]]
     [[message_callback]]
         # The format of the MQTT payload.
         # Currently support: individual, json, keyword
@@ -224,7 +224,7 @@ Configuration:
         max_queue = MAXSIZE
 
         # Configuration information about the MQTT message format for this topic
-        [[[Message]]]
+        [[[message]]]
             # The format of the MQTT payload.
             # Currently support: individual, json, keyword.
             # Must be specified.
@@ -677,9 +677,9 @@ class TopicManager(object):
         field_defaults['conversion_type'] = config.get('conversion_type', 'float')
         field_defaults['conversion_error_to_none'] = to_bool(config.get('conversion_error_to_none', False))
 
-        default_message_dict = config.get('Message', configobj.ConfigObj())
+        default_message_dict = config.get('message', configobj.ConfigObj())
         # if 'type' option is not set, this not 'topic'
-        # so, no default 'Message' configuration exists
+        # so, no default 'message' configuration exists
         if default_message_dict.get('type', None) is None:
             default_message_dict = configobj.ConfigObj({})
 
@@ -709,7 +709,7 @@ class TopicManager(object):
             callback_config_name = topic_dict.get('callback_config_name', topic_defaults['callback_config_name'])
 
             # if 'type' option is set, this not a 'topic'
-            # it is actually a 'Message' configuration stanza
+            # it is actually a 'callback (message)' configuration stanza
             # and it has already been retrieved into default_message_config
             if topic == callback_config_name and topic_dict.get('type', None) is not None:
                 continue
@@ -761,7 +761,7 @@ class TopicManager(object):
             message_dict = configobj.ConfigObj({})
             message_dict.merge(default_message_dict)
 
-            # if 'type' option is set, this a 'Message'
+            # if 'type' option is set, this a 'callback configuration (message)' section
             # So merge the default message settings
             if message_type is not None:
                 message_dict.merge(temp_message_dict)
@@ -862,7 +862,7 @@ class TopicManager(object):
         default['offset_format'] = config.get('offset_format', None)
 
         default['max_queue'] = config.get('max_queue', MAXSIZE)
-        default['callback_config_name'] = config.get('callback_config_name', 'Message')
+        default['callback_config_name'] = config.get('callback_config_name', 'message')
 
         return default
 
@@ -1232,13 +1232,13 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
                 if not topic_manager.subscribed_topics[topic][topic_manager.message_config_name]:
                     topic_manager.subscribed_topics[topic][topic_manager.message_config_name] = config.dict()
                 else:
-                    self.logger.info("Message configuration found under [[MessageCallback]] and [[Topic]]. Ignoring [[MessageCallbwck]].")
+                    self.logger.info("Message configuration found under [[MessageCallback]] and [[Topic]]. Ignoring [[MessageCallback]].")
 
             if not topic_manager.subscribed_topics[topic][topic_manager.message_config_name]:
-                raise ValueError("%s topic is missing '[[[[Message]]]]' section" % topic)
+                raise ValueError("%s topic is missing '[[[[message]]]]' section" % topic)
             message_type = topic_manager.subscribed_topics[topic][topic_manager.message_config_name].get('type', None)
             if message_type is None:
-                raise ValueError("%s topic is missing '[[[[Message]]]] type=' section" % topic)
+                raise ValueError("%s topic is missing '[[[[message]]]] type=' section" % topic)
             if message_type not in ['json', 'keyword', 'individual']:
                 raise ValueError("Invalid type configured: %s" % message_type)
 
