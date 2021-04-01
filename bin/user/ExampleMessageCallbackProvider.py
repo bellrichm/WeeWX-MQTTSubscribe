@@ -19,6 +19,8 @@ Configuration:
 import xml.etree.ElementTree
 import user.MQTTSubscribe
 
+from weeutil.weeutil import to_float # used in eval statement pylint: disable=unused-import
+
 class MessageCallbackProvider(user.MQTTSubscribe.AbstractMessageCallbackProvider):
     # pylint: disable=too-few-public-methods
     """ Provide the MQTT callback. """
@@ -41,10 +43,10 @@ class MessageCallbackProvider(user.MQTTSubscribe.AbstractMessageCallbackProvider
 
         if parent.text is None:
             for (name, tvalue) in parent.items(): # need to match signature pylint: disable=unused-variable
-                (fieldname, value) = self._update_data(fields, fullname[1:], tvalue, unit_system)
+                (fieldname, value) = self._update_data(fields, eval('lambda x: to_float(x)'), fullname[1:], tvalue, unit_system)
                 observations[fieldname] = value
         elif not parent:
-            (fieldname, value) = self._update_data(fields, fullname[1:], parent.text, unit_system)
+            (fieldname, value) = self._update_data(fields, eval('lambda x: to_float(x)'), fullname[1:], parent.text, unit_system)
             observations[fieldname] = value
 
         return observations

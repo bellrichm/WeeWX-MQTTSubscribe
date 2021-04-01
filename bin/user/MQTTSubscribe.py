@@ -371,7 +371,7 @@ import weewx
 import weewx.drivers
 from weewx.engine import StdEngine, StdService
 
-VERSION = '2.0.0-rc07'
+VERSION = '2.0.0-rc08'
 DRIVER_NAME = 'MQTTSubscribeDriver'
 DRIVER_VERSION = VERSION
 
@@ -724,6 +724,16 @@ class TopicManager(object):
             # This allows it to be set to false at the topic level, changing MQTTSubscribe from an 'opt out' to 'opt in' strategy
             self.subscribed_topics[topic]['ignore'] = to_bool(topic_dict.get('ignore', field_defaults['ignore']))
             self.subscribed_topics[topic]['subscribe'] = to_bool(topic_dict.get('subscribe', True))
+            conversion_type = topic_dict.get('conversion_type', 'float')
+            if conversion_type == 'bool':
+                self.subscribed_topics[topic]['conversion_func_src'] = 'lambda x: to_bool(x)'
+            elif conversion_type == 'float':
+                self.subscribed_topics[topic]['conversion_func_src'] = 'lambda x: to_float(x)'
+            elif conversion_type == 'int':
+                self.subscribed_topics[topic]['conversion_func_src'] = 'lambda x: to_int(x)'
+            else:
+                self.subscribed_topics[topic]['conversion_func_src'] = 'lambda x: x'
+            self.subscribed_topics[topic]['conversion_func'] = eval(self.subscribed_topics[topic]['conversion_func_src'])
             self.subscribed_topics[topic]['unit_system'] = unit_system
             self.subscribed_topics[topic]['msg_id_field'] = topic_dict.get('msg_id_field', topic_defaults['msg_id_field'])
             self.subscribed_topics[topic]['qos'] = to_int(topic_dict.get('qos', topic_defaults['qos']))
@@ -876,7 +886,19 @@ class TopicManager(object):
         field['name'] = (field_dict).get('name', fieldname)
         field['ignore'] = to_bool((field_dict).get('ignore', ignore))
         field['contains_total'] = to_bool((field_dict).get('contains_total', contains_total))
-        field['conversion_type'] = (field_dict).get('conversion_type', conversion_type)
+        conversion_func = field_dict.get('conversion_func', None)
+        conversion_type = field_dict.get('conversion_type', conversion_type)
+        if conversion_func:
+            field['conversion_func_src'] = conversion_func
+        elif conversion_type == 'bool':
+            field['conversion_func_src'] = 'lambda x: to_bool(x)'
+        elif conversion_type == 'float':
+            field['conversion_func_src'] = 'lambda x: to_float(x)'
+        elif conversion_type == 'int':
+            field['conversion_func_src'] = 'lambda x: to_int(x)'
+        else:
+            field['conversion_func_src'] = 'lambda x: x'
+        field['conversion_func'] = eval(field['conversion_func_src'])
         field['conversion_error_to_none'] = (field_dict).get('conversion_error_to_none', conversion_error_to_none)
         if 'units' in field_dict:
             if field_dict['units'] in weewx.units.conversionDict and field['name'] in weewx.units.obs_group_dict:
@@ -888,18 +910,14 @@ class TopicManager(object):
 
     def _configure_filter_out_message(self, field_dict, topic, fieldname):
         filter_values = weeutil.weeutil.option_as_list(field_dict.get('filter_out_message_when', None))
-        conversion_type = field_dict.get('conversion_type', 'float')
+        default_conversion_func = self.subscribed_topics[topic]['conversion_func']
+        conversion_func = field_dict.get('conversion_func', default_conversion_func)
         values = []
         if filter_values is not None:
             for value in filter_values:
-                if conversion_type == 'bool':
-                    values.append(to_bool(value))
-                elif conversion_type == 'float':
-                    values.append(to_float(value))
-                elif conversion_type == 'int':
-                    values.append(to_int(value))
-                else:
-                    values.append(value)
+                # todo - #126, try/except block?
+                new_value = conversion_func(value)
+                values.append(new_value)
             self.subscribed_topics[topic]['filters'].update({fieldname: values})
 
     def _configure_ignore_fields(self, topic_dict, field_dict, topic, fieldname, defaults):
@@ -1112,6 +1130,15 @@ class TopicManager(object):
         """ Get the ignore value """
         return self._get_value('ignore', topic)
 
+    def get_conversion_func(self, topic):
+        """ Get the ignore value """
+        return self._get_value('conversion_func', topic)
+
+    def get_(self, topic):
+        """ Get the ignore value """
+        return self._get_value('ignore', topic)
+
+
     def get_ignore_msg_id_field(self, topic):
         """ Get the ignore_msg_id_field value """
         return self._get_value('ignore_msg_id_field', topic)
@@ -1169,8 +1196,9 @@ class AbstractMessageCallbackProvider(object): # pylint: disable=too-few-public-
         """ Get the MQTT callback. """
         raise NotImplementedError("Method 'get_callback' not implemented")
 
-    def _update_data(self, fields, orig_name, orig_value, unit_system):
-        value = self._convert_value(fields, orig_name, orig_value)
+    def _update_data(self, fields, default_field_conversion_func, orig_name, orig_value, unit_system):
+        # pylint: disable = too-many-arguments
+        value = self._convert_value(fields, default_field_conversion_func, orig_name, orig_value)
         fieldname = fields.get(orig_name, {}).get('name', orig_name)
 
         if orig_name in fields and 'units' in fields[orig_name]: # TODO - simplify, if possible
@@ -1199,22 +1227,17 @@ class AbstractMessageCallbackProvider(object): # pylint: disable=too-few-public-
 
         return None
 
-    def _convert_value(self, fields, field, value):
-        conversion_type = fields.get(field, {}).get('conversion_type', 'float')
+    def _convert_value(self, fields, default_field_conversion_func, field, value):
+        conversion_func = fields.get(field, {}).get('conversion_func', default_field_conversion_func)
         try:
-            if conversion_type == 'bool':
-                return to_bool(value)
-            if conversion_type == 'float':
-                return to_float(value)
-            if conversion_type == 'int':
-                return to_int(value)
-
-            return value
+            return conversion_func(value)
+        # todo - #126, additional exceptions?
         except ValueError:
             conversion_error_to_none = fields.get(field, {}).get('conversion_error_to_none', False)
             if conversion_error_to_none:
                 return None
-            self.logger.error('Error converting field %s, value %s to %s' % (field, value, conversion_type))
+            # todo - #126, print conversion_func_src
+            self.logger.error('Error converting field %s, value %s to %s' % (field, value, conversion_func))
             raise ConversionError()
 
 class MessageCallbackProvider(AbstractMessageCallbackProvider):
@@ -1301,6 +1324,7 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
             message_dict = self.topic_manager.get_message_dict(msg.topic)
             fields = self.topic_manager.get_fields(msg.topic)
             fields_ignore_default = self.topic_manager.get_ignore_value(msg.topic)
+            fields_conversion_func = self.topic_manager.get_conversion_func(msg.topic)
 
             if PY2:
                 payload_str = msg.payload
@@ -1321,7 +1345,7 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
 
                 key = field[:eq_index].strip()
                 if not fields.get(key, {}).get('ignore', fields_ignore_default):
-                    (fieldname, value) = self._update_data(fields, key, field[eq_index + 1:].strip(), unit_system)
+                    (fieldname, value) = self._update_data(fields, fields_conversion_func, key, field[eq_index + 1:].strip(), unit_system)
                     data[fieldname] = value
                 else:
                     self.logger.trace("MessageCallbackProvider on_message_keyword ignoring field: %s" % key)
@@ -1346,6 +1370,7 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
             fields = self.topic_manager.get_fields(msg.topic)
             filters = self.topic_manager.get_filters(msg.topic)
             fields_ignore_default = self.topic_manager.get_ignore_value(msg.topic)
+            fields_conversion_func = self.topic_manager.get_conversion_func(msg.topic)
             msg_id_field = self.topic_manager.get_msg_id_field(msg.topic)
             ignore_msg_id_field = self.topic_manager.get_ignore_msg_id_field(msg.topic)
 
@@ -1373,7 +1398,7 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
                                      % (msg.topic, msg.payload, lookup_key, filters[lookup_key]))
                     return
                 if not fields.get(lookup_key, {}).get('ignore', fields_ignore_default):
-                    (fieldname, value) = self._update_data(fields, lookup_key, data_flattened[key], unit_system)
+                    (fieldname, value) = self._update_data(fields, fields_conversion_func, lookup_key, data_flattened[key], unit_system)
                     data_final[fieldname] = value
                 else:
                     self.logger.trace("MessageCallbackProvider on_message_json ignoring field: %s" % lookup_key)
@@ -1393,6 +1418,7 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
             self._log_message(msg)
             fields = self.topic_manager.get_fields(msg.topic)
             fields_ignore_default = self.topic_manager.get_ignore_value(msg.topic)
+            fields_conversion_func = self.topic_manager.get_conversion_func(msg.topic)
             topic_tail_is_fieldname = self.topic_manager.get_topic_tail_is_fieldname(msg.topic)
 
             payload_str = msg.payload
@@ -1409,7 +1435,7 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
 
             unit_system = self.topic_manager.get_unit_system(msg.topic)
             if not fields.get(key, {}).get('ignore', fields_ignore_default):
-                (fieldname, value) = self._update_data(fields, key, payload_str, unit_system)
+                (fieldname, value) = self._update_data(fields, fields_conversion_func, key, payload_str, unit_system)
                 data = {}
                 data[fieldname] = value
                 self.topic_manager.append_data(msg.topic, data, fieldname)
