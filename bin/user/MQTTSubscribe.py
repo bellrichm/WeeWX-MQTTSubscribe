@@ -733,7 +733,8 @@ class TopicManager(object):
                 self.subscribed_topics[topic]['conversion_func_src'] = 'lambda x: to_int(x)'
             else:
                 self.subscribed_topics[topic]['conversion_func_src'] = 'lambda x: x'
-            self.subscribed_topics[topic]['conversion_func'] = eval(self.subscribed_topics[topic]['conversion_func_src'])
+            self.subscribed_topics[topic]['conversion_func'] =  \
+                eval(self.subscribed_topics[topic]['conversion_func_src']) # pylint: disable=eval-used
             self.subscribed_topics[topic]['unit_system'] = unit_system
             self.subscribed_topics[topic]['msg_id_field'] = topic_dict.get('msg_id_field', topic_defaults['msg_id_field'])
             self.subscribed_topics[topic]['qos'] = to_int(topic_dict.get('qos', topic_defaults['qos']))
@@ -898,7 +899,7 @@ class TopicManager(object):
             field['conversion_func_src'] = 'lambda x: to_int(x)'
         else:
             field['conversion_func_src'] = 'lambda x: x'
-        field['conversion_func'] = eval(field['conversion_func_src'])
+        field['conversion_func'] = eval(field['conversion_func_src']) # pylint: disable=eval-used
         field['conversion_error_to_none'] = (field_dict).get('conversion_error_to_none', conversion_error_to_none)
         if 'units' in field_dict:
             if field_dict['units'] in weewx.units.conversionDict and field['name'] in weewx.units.obs_group_dict:
@@ -915,7 +916,6 @@ class TopicManager(object):
         values = []
         if filter_values is not None:
             for value in filter_values:
-                # todo - #126, try/except block?
                 new_value = conversion_func(value)
                 values.append(new_value)
             self.subscribed_topics[topic]['filters'].update({fieldname: values})
@@ -1231,12 +1231,11 @@ class AbstractMessageCallbackProvider(object): # pylint: disable=too-few-public-
         conversion_func = fields.get(field, {}).get('conversion_func', default_field_conversion_func)
         try:
             return conversion_func(value)
-        # todo - #126, additional exceptions?
-        except ValueError:
+        except (NameError, TypeError, ValueError):
             conversion_error_to_none = fields.get(field, {}).get('conversion_error_to_none', False)
             if conversion_error_to_none:
                 return None
-            # todo - #126, print conversion_func_src
+            # todo - #126, print conversion_func_src, add info to ConversionError?
             self.logger.error('Error converting field %s, value %s to %s' % (field, value, conversion_func))
             raise ConversionError()
 

@@ -43,10 +43,10 @@ class MessageCallbackProvider(user.MQTTSubscribe.AbstractMessageCallbackProvider
 
         if parent.text is None:
             for (name, tvalue) in parent.items(): # need to match signature pylint: disable=unused-variable
-                (fieldname, value) = self._update_data(fields, eval('lambda x: to_float(x)'), fullname[1:], tvalue, unit_system)
+                (fieldname, value) = self._update_data(fields, eval('lambda x: to_float(x)'), fullname[1:], tvalue, unit_system) # pylint: disable=eval-used
                 observations[fieldname] = value
         elif not parent:
-            (fieldname, value) = self._update_data(fields, eval('lambda x: to_float(x)'), fullname[1:], parent.text, unit_system)
+            (fieldname, value) = self._update_data(fields, eval('lambda x: to_float(x)'), fullname[1:], parent.text, unit_system) # pylint: disable=eval-used
             observations[fieldname] = value
 
         return observations
