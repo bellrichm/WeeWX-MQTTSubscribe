@@ -1231,7 +1231,7 @@ class AbstractMessageCallbackProvider(object): # pylint: disable=too-few-public-
         conversion_func = fields.get(field, {}).get('conversion_func', default_field_conversion_func)
         try:
             return conversion_func(value)
-        except (NameError, TypeError, ValueError):
+        except ValueError:
             conversion_error_to_none = fields.get(field, {}).get('conversion_error_to_none', False)
             if conversion_error_to_none:
                 return None
