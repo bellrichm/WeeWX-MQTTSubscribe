@@ -257,7 +257,8 @@ class TestConfigureFields(unittest.TestCase):
         configured_field[topic]['name'] = topic
         configured_field[topic]['contains_total'] = True
         configured_field[topic]['ignore'] = False
-        configured_field[topic]['conversion_func_src'] = 'lambda x: to_float(x)'
+        #configured_field[topic]['conversion_func'] = {}
+        #configured_field[topic]['conversion_func']['source'] = 'lambda x: to_float(x)'
         configured_field[topic]['conversion_error_to_none'] = False
         config_dict = {}
 
@@ -269,6 +270,7 @@ class TestConfigureFields(unittest.TestCase):
 
         self.assertIn(topic, SUT.subscribed_topics[topic]['fields'])
         self.assertGreaterEqual(SUT.subscribed_topics[topic]['fields'][topic].items(), configured_field[topic].items())
+        self.assertEqual(SUT.subscribed_topics[topic]['fields'][topic]['conversion_func']['source'], 'lambda x: to_float(x)')
 
     def test_global_defaults(self):
         mock_logger = mock.Mock(spec=Logger)
@@ -292,7 +294,7 @@ class TestConfigureFields(unittest.TestCase):
         self.assertTrue(SUT.subscribed_topics[topic]['fields'][fieldname]['ignore'])
         self.assertEqual(SUT.subscribed_topics[topic]['ignore_msg_id_field'], [fieldname])
         self.assertTrue(SUT.subscribed_topics[topic]['fields'][fieldname]['contains_total'])
-        self.assertEqual(SUT.subscribed_topics[topic]['fields'][fieldname]['conversion_func_src'], 'lambda x: to_int(x)')
+        self.assertEqual(SUT.subscribed_topics[topic]['fields'][fieldname]['conversion_func']['source'], 'lambda x: to_int(x)')
 
     def test_topic_defaults(self):
         mock_logger = mock.Mock(spec=Logger)
@@ -316,7 +318,7 @@ class TestConfigureFields(unittest.TestCase):
         self.assertTrue(SUT.subscribed_topics[topic]['fields'][fieldname]['ignore'])
         self.assertEqual(SUT.subscribed_topics[topic]['ignore_msg_id_field'], [fieldname])
         self.assertTrue(SUT.subscribed_topics[topic]['fields'][fieldname]['contains_total'])
-        self.assertEqual(SUT.subscribed_topics[topic]['fields'][fieldname]['conversion_func_src'], 'lambda x: to_int(x)')
+        self.assertEqual(SUT.subscribed_topics[topic]['fields'][fieldname]['conversion_func']['source'], 'lambda x: to_int(x)')
 
     def test_configure_field(self):
         mock_logger = mock.Mock(spec=Logger)
@@ -345,7 +347,7 @@ class TestConfigureFields(unittest.TestCase):
         self.assertTrue(SUT.subscribed_topics[topic]['fields'][fieldname]['ignore'])
         self.assertEqual(SUT.subscribed_topics[topic]['ignore_msg_id_field'], [fieldname])
         self.assertTrue(SUT.subscribed_topics[topic]['fields'][fieldname]['contains_total'])
-        self.assertEqual(SUT.subscribed_topics[topic]['fields'][fieldname]['conversion_func_src'], 'lambda x: to_int(x)')
+        self.assertEqual(SUT.subscribed_topics[topic]['fields'][fieldname]['conversion_func']['source'], 'lambda x: to_int(x)')
         self.assertEqual(SUT.subscribed_topics[topic]['fields'][fieldname]['name'], weewx_name)
         self.assertEqual(SUT.subscribed_topics[topic]['fields'][fieldname]['units'], unit_name)
         self.assertIsNone(SUT.cached_fields[weewx_name]['expires_after'])
@@ -368,7 +370,7 @@ class TestConfigureFields(unittest.TestCase):
 
         SUT = TopicManager(None, config, mock_logger)
 
-        self.assertEqual(SUT.subscribed_topics[topic]['fields'][fieldname]['conversion_func_src'], 'lambda x: to_bool(x)')
+        self.assertEqual(SUT.subscribed_topics[topic]['fields'][fieldname]['conversion_func']['source'], 'lambda x: to_bool(x)')
 
     def test_field_conversion_type_float(self):
         mock_logger = mock.Mock(spec=Logger)
@@ -388,7 +390,7 @@ class TestConfigureFields(unittest.TestCase):
 
         SUT = TopicManager(None, config, mock_logger)
 
-        self.assertEqual(SUT.subscribed_topics[topic]['fields'][fieldname]['conversion_func_src'], 'lambda x: to_float(x)')
+        self.assertEqual(SUT.subscribed_topics[topic]['fields'][fieldname]['conversion_func']['source'], 'lambda x: to_float(x)')
 
     def test_field_conversion_type_int(self):
         mock_logger = mock.Mock(spec=Logger)
@@ -407,7 +409,7 @@ class TestConfigureFields(unittest.TestCase):
 
         SUT = TopicManager(None, config, mock_logger)
 
-        self.assertEqual(SUT.subscribed_topics[topic]['fields'][fieldname]['conversion_func_src'], 'lambda x: to_int(x)')
+        self.assertEqual(SUT.subscribed_topics[topic]['fields'][fieldname]['conversion_func']['source'], 'lambda x: to_int(x)')
 
     def test_field_conversion_type_unknown(self):
         mock_logger = mock.Mock(spec=Logger)
@@ -426,8 +428,9 @@ class TestConfigureFields(unittest.TestCase):
 
         SUT = TopicManager(None, config, mock_logger)
 
-        self.assertEqual(SUT.subscribed_topics[topic]['fields'][fieldname]['conversion_func_src'], 'lambda x: x')
+        self.assertEqual(SUT.subscribed_topics[topic]['fields'][fieldname]['conversion_func']['source'], 'lambda x: x')
 
+    # todo - issue 126, remove? rename?
     def test_field_conversion_type_unknown2(self):
         mock_logger = mock.Mock(spec=Logger)
 
@@ -447,7 +450,7 @@ class TestConfigureFields(unittest.TestCase):
 
         SUT = TopicManager(None, config, mock_logger)
 
-        self.assertEqual(SUT.subscribed_topics[topic]['fields'][fieldname]['conversion_func_src'], 'lambda x: "foo"')
+        self.assertEqual(SUT.subscribed_topics[topic]['fields'][fieldname]['conversion_func']['source'], 'lambda x: "foo"')
 
 
     def test_filter_out_message(self):

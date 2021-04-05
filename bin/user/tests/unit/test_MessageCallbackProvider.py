@@ -252,7 +252,10 @@ class TestKeywordload(unittest.TestCase):
         mock_manager.get_msg_id_field.return_value = None
         mock_manager.get_ignore_msg_id_field.return_value = []
         mock_manager.get_ignore_value.return_value = False
-        mock_manager.get_conversion_func.return_value = eval('lambda x: to_float(x)')
+        mock_manager.get_conversion_func.return_value = {
+            'source': 'lambda x: to_float(x)',
+            'compiled': eval('lambda x: to_float(x)')
+            }
         mock_manager.get_fields.return_value = {}
         mock_manager.get_message_dict.return_value = {'keyword_delimiter': ',', 'keyword_separator': '='}
         mock_manager.subscribed_topics = {}
@@ -274,7 +277,10 @@ class TestKeywordload(unittest.TestCase):
         mock_manager.get_msg_id_field.return_value = None
         mock_manager.get_ignore_msg_id_field.return_value = []
         mock_manager.get_ignore_value.return_value = False
-        mock_manager.get_conversion_func.return_value = eval('lambda x: to_float(x)')
+        mock_manager.get_conversion_func.return_value = {
+            'source': 'lambda x: to_float(x)',
+            'compiled': eval('lambda x: to_float(x)')
+            }
         mock_manager.get_fields.return_value = {}
         mock_manager.get_message_dict.return_value = {'keyword_delimiter': ',', 'keyword_separator': '='}
         mock_manager.subscribed_topics = {}
@@ -316,7 +322,10 @@ class TestKeywordload(unittest.TestCase):
         mock_manager.get_msg_id_field.return_value = None
         mock_manager.get_ignore_msg_id_field.return_value = []
         mock_manager.get_ignore_value.return_value = False
-        mock_manager.get_conversion_func.return_value = eval('lambda x: to_float(x)')
+        mock_manager.get_conversion_func.return_value = {
+            'source': 'lambda x: to_float(x)',
+            'compiled': eval('lambda x: to_float(x)')
+            }
         mock_manager.get_fields.return_value = {}
         mock_manager.get_message_dict.return_value = {'keyword_delimiter': ',', 'keyword_separator': '='}
         mock_manager.subscribed_topics = {}
@@ -346,7 +355,10 @@ class TestKeywordload(unittest.TestCase):
         mock_manager.get_msg_id_field.return_value = None
         mock_manager.get_ignore_msg_id_field.return_value = []
         mock_manager.get_ignore_value.return_value = False
-        mock_manager.get_conversion_func.return_value = eval('lambda x: to_float(x)')
+        mock_manager.get_conversion_func.return_value = {
+            'source': 'lambda x: to_float(x)',
+            'compiled': eval('lambda x: to_float(x)')
+            }
         mock_manager.get_fields.return_value = {}
         mock_manager.get_message_dict.return_value = {'keyword_delimiter': ',', 'keyword_separator': '='}
         mock_manager.subscribed_topics = {}
@@ -375,7 +387,10 @@ class TestKeywordload(unittest.TestCase):
         mock_manager.get_msg_id_field.return_value = None
         mock_manager.get_ignore_msg_id_field.return_value = []
         mock_manager.get_ignore_value.return_value = False
-        mock_manager.get_conversion_func.return_value = eval('lambda x: to_float(x)')
+        mock_manager.get_conversion_func.return_value = {
+            'source': 'lambda x: to_float(x)',
+            'compiled': eval('lambda x: to_float(x)')
+            }
         mock_manager.get_fields.return_value = {}
         mock_manager.get_message_dict.return_value = {'keyword_delimiter': ',', 'keyword_separator': '='}
         mock_manager.subscribed_topics = {}
@@ -441,7 +456,10 @@ class TestKeywordload(unittest.TestCase):
         mock_manager.get_msg_id_field.return_value = None
         mock_manager.get_ignore_msg_id_field.return_value = []
         mock_manager.get_ignore_value.return_value = False
-        mock_manager.get_conversion_func.return_value = eval('lambda x: to_float(x)')
+        mock_manager.get_conversion_func.return_value = {
+            'source': 'lambda x: to_float(x)',
+            'compiled': eval('lambda x: to_float(x)')
+            }
         mock_manager.get_fields.return_value = {}
         mock_manager.get_message_dict.return_value = {'keyword_delimiter': ',', 'keyword_separator': '='}
         mock_manager.subscribed_topics = {}
@@ -488,7 +506,10 @@ class TestKeywordload(unittest.TestCase):
         mock_manager.get_msg_id_field.return_value = None
         mock_manager.get_ignore_msg_id_field.return_value = []
         mock_manager.get_ignore_value.return_value = False
-        mock_manager.get_conversion_func.return_value = eval('lambda x: to_float(x)')
+        mock_manager.get_conversion_func.return_value = {
+            'source': 'lambda x: to_float(x)',
+            'compiled': eval('lambda x: to_float(x)')
+            }
         mock_manager.get_fields.return_value = {}
         mock_manager.get_message_dict.return_value = {'keyword_delimiter': ',', 'keyword_separator': '='}
         mock_manager.subscribed_topics = {}
@@ -556,7 +577,10 @@ class TestJsonPayload(unittest.TestCase):
     def test_empty_payload(self):
         mock_logger = mock.Mock(spec=Logger)
         mock_manager = mock.Mock(spec=TopicManager)
-        mock_manager.get_conversion_func.return_value = eval('lambda x: to_float(x)')
+        mock_manager.get_conversion_func.return_value = {
+            'source': 'lambda x: to_float(x)',
+            'compiled': eval('lambda x: to_float(x)')
+            }
         mock_manager.get_msg_id_field.return_value = None
         mock_manager.get_ignore_msg_id_field.return_value = []
         mock_manager.get_message_dict.return_value = {'flatten_delimiter': '_'}
@@ -575,7 +599,10 @@ class TestJsonPayload(unittest.TestCase):
         mock_manager.get_msg_id_field.return_value = None
         mock_manager.get_ignore_msg_id_field.return_value = []
         mock_manager.get_ignore_value.return_value = False
-        mock_manager.get_conversion_func.return_value = eval('lambda x: to_float(x)')
+        mock_manager.get_conversion_func.return_value = {
+            'source': 'lambda x: to_float(x)',
+            'compiled': eval('lambda x: to_float(x)')
+            }
         mock_manager.get_fields.return_value = {}
         mock_manager.get_filters.return_value = {}
         mock_manager.get_message_dict.return_value = {'flatten_delimiter': '_'}
@@ -603,7 +630,10 @@ class TestJsonPayload(unittest.TestCase):
         mock_manager.get_msg_id_field.return_value = None
         mock_manager.get_ignore_msg_id_field.return_value = []
         mock_manager.get_ignore_value.return_value = False
-        mock_manager.get_conversion_func.return_value = eval('lambda x: to_float(x)')
+        mock_manager.get_conversion_func.return_value = {
+            'source': 'lambda x: to_float(x)',
+            'compiled': eval('lambda x: to_float(x)')
+            }
         mock_manager.get_fields.return_value = {}
         mock_manager.get_filters.return_value = {}
         mock_manager.get_message_dict.return_value = {'flatten_delimiter': '_'}
@@ -632,7 +662,10 @@ class TestJsonPayload(unittest.TestCase):
         mock_manager.get_ignore_value.return_value = True
         mock_manager.get_ignore_msg_id_field.return_value = []
         mock_manager.get_ignore_value.return_value = False
-        mock_manager.get_conversion_func.return_value = eval('lambda x: to_float(x)')
+        mock_manager.get_conversion_func.return_value = {
+            'source': 'lambda x: to_float(x)',
+            'compiled': eval('lambda x: to_float(x)')
+            }
         mock_manager.get_fields.return_value = {}
         mock_manager.get_filters.return_value = {}
         mock_manager.get_filters.return_value = {}
@@ -667,7 +700,10 @@ class TestJsonPayload(unittest.TestCase):
         mock_manager.get_msg_id_field.return_value = msg_id_field
         mock_manager.get_fields.return_value = {}
         mock_manager.get_ignore_value.return_value = False
-        mock_manager.get_conversion_func.return_value = eval('lambda x: to_float(x)')
+        mock_manager.get_conversion_func.return_value = {
+            'source': 'lambda x: to_float(x)',
+            'compiled': eval('lambda x: to_float(x)')
+            }
         mock_manager.get_ignore_msg_id_field.return_value = []
         mock_manager.get_filters.return_value = {}
         mock_manager.get_filters.return_value = {}
@@ -711,7 +747,10 @@ class TestJsonPayload(unittest.TestCase):
         mock_manager.get_msg_id_field.return_value = msg_id_field
         mock_manager.get_fields.return_value = {}
         mock_manager.get_ignore_value.return_value = False
-        mock_manager.get_conversion_func.return_value = eval('lambda x: to_float(x)')
+        mock_manager.get_conversion_func.return_value = {
+            'source': 'lambda x: to_float(x)',
+            'compiled': eval('lambda x: to_float(x)')
+            }
         mock_manager.get_filters.return_value = {}
         mock_manager.get_message_dict.return_value = {'flatten_delimiter': '_'}
         mock_manager.subscribed_topics = {}
@@ -753,7 +792,10 @@ class TestJsonPayload(unittest.TestCase):
         mock_manager.get_msg_id_field.return_value = None
         mock_manager.get_ignore_msg_id_field.return_value = []
         mock_manager.get_ignore_value.return_value = False
-        mock_manager.get_conversion_func.return_value = eval('lambda x: to_float(x)')
+        mock_manager.get_conversion_func.return_value = {
+            'source': 'lambda x: to_float(x)',
+            'compiled': eval('lambda x: to_float(x)')
+            }
         mock_manager.get_fields.return_value = {}
         mock_manager.get_filters.return_value = {}
         mock_manager.get_message_dict.return_value = {'flatten_delimiter': '_'}
@@ -795,7 +837,10 @@ class TestJsonPayload(unittest.TestCase):
         mock_manager.get_msg_id_field.return_value = None
         mock_manager.get_ignore_msg_id_field.return_value = []
         mock_manager.get_ignore_value.return_value = False
-        mock_manager.get_conversion_func.return_value = eval('lambda x: to_float(x)')
+        mock_manager.get_conversion_func.return_value = {
+            'source': 'lambda x: to_float(x)',
+            'compiled': eval('lambda x: to_float(x)')
+            }
         mock_manager.get_fields.return_value = {'nested01_inTemp': {'name': 'inTemp'}}
         mock_manager.get_filters.return_value = {}
         mock_manager.get_message_dict.return_value = {'flatten_delimiter': '_'}
@@ -875,7 +920,10 @@ class TestJsonPayload(unittest.TestCase):
         mock_manager.get_msg_id_field.return_value = None
         mock_manager.get_ignore_msg_id_field.return_value = []
         mock_manager.get_ignore_value.return_value = False
-        mock_manager.get_conversion_func.return_value = eval('lambda x: to_float(x)')
+        mock_manager.get_conversion_func.return_value = {
+            'source': 'lambda x: to_float(x)',
+            'compiled': eval('lambda x: to_float(x)')
+            }
         mock_manager.get_fields.return_value = {}
         mock_manager.get_filters.return_value = {}
         mock_manager.get_message_dict.return_value = {'flatten_delimiter': '_'}
@@ -924,7 +972,10 @@ class TestJsonPayload(unittest.TestCase):
         mock_manager.get_msg_id_field.return_value = None
         mock_manager.get_ignore_msg_id_field.return_value = []
         mock_manager.get_ignore_value.return_value = False
-        mock_manager.get_conversion_func.return_value = eval('lambda x: to_float(x)')
+        mock_manager.get_conversion_func.return_value = {
+            'source': 'lambda x: to_float(x)',
+            'compiled': eval('lambda x: to_float(x)')
+            }
         mock_manager.get_fields.return_value = {}
         mock_manager.get_filters.return_value = {}
         mock_manager.get_message_dict.return_value = {'flatten_delimiter': '_'}
@@ -972,6 +1023,10 @@ class TestJsonPayload(unittest.TestCase):
         mock_manager.get_msg_id_field.return_value = None
         mock_manager.get_ignore_msg_id_field.return_value = []
         mock_manager.get_ignore_value.return_value = False
+        mock_manager.get_conversion_func.return_value = {
+            'source': 'lambda x: to_float(x)',
+            'compiled': eval('lambda x: to_float(x)')
+            }        
         mock_manager.get_fields.return_value = {}
         mock_manager.get_filters.return_value = filters
         mock_manager.get_message_dict.return_value = {'flatten_delimiter': '_'}
@@ -1033,7 +1088,10 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         mock_manager.get_msg_id_field.return_value = None
         mock_manager.get_ignore_msg_id_field.return_value = []
         mock_manager.get_ignore_value.return_value = False
-        mock_manager.get_conversion_func.return_value = eval('lambda x: to_float(x)')
+        mock_manager.get_conversion_func.return_value = {
+            'source': 'lambda x: to_float(x)',
+            'compiled': eval('lambda x: to_float(x)')
+            }
         mock_manager.get_fields.return_value = {}
         mock_manager.get_message_dict.return_value = {}
         mock_manager.subscribed_topics = {}
@@ -1055,7 +1113,10 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         mock_manager.get_msg_id_field.return_value = None
         mock_manager.get_ignore_msg_id_field.return_value = []
         mock_manager.get_ignore_value.return_value = False
-        mock_manager.get_conversion_func.return_value = eval('lambda x: to_float(x)')
+        mock_manager.get_conversion_func.return_value = {
+            'source': 'lambda x: to_float(x)',
+            'compiled': eval('lambda x: to_float(x)')
+            }
         mock_manager.get_fields.return_value = {}
         mock_manager.get_message_dict.return_value = {}
         mock_manager.subscribed_topics = {}
@@ -1077,7 +1138,10 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         mock_manager.get_msg_id_field.return_value = None
         mock_manager.get_ignore_msg_id_field.return_value = []
         mock_manager.get_ignore_value.return_value = False
-        mock_manager.get_conversion_func.return_value = eval('lambda x: to_float(x)')
+        mock_manager.get_conversion_func.return_value = {
+            'source': 'lambda x: to_float(x)',
+            'compiled': eval('lambda x: to_float(x)')
+            }
         mock_manager.get_topic_tail_is_fieldname.return_value = False
         mock_manager.get_fields.return_value = {}
         mock_manager.get_message_dict.return_value = {}
@@ -1098,7 +1162,10 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         mock_manager.get_msg_id_field.return_value = None
         mock_manager.get_ignore_msg_id_field.return_value = []
         mock_manager.get_ignore_value.return_value = False
-        mock_manager.get_conversion_func.return_value = eval('lambda x: to_float(x)')
+        mock_manager.get_conversion_func.return_value = {
+            'source': 'lambda x: to_float(x)',
+            'compiled': eval('lambda x: to_float(x)')
+            }
         mock_manager.get_topic_tail_is_fieldname.return_value = False
         mock_manager.get_fields.return_value = {}
         mock_manager.get_message_dict.return_value = {}
@@ -1133,7 +1200,10 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         mock_manager.get_msg_id_field.return_value = None
         mock_manager.get_ignore_msg_id_field.return_value = []
         mock_manager.get_ignore_value.return_value = False
-        mock_manager.get_conversion_func.return_value = eval('lambda x: to_float(x)')
+        mock_manager.get_conversion_func.return_value = {
+            'source': 'lambda x: to_float(x)',
+            'compiled': eval('lambda x: to_float(x)')
+            }
         mock_manager.get_fields.return_value = {}
         mock_manager.get_message_dict.return_value = {}
         mock_manager.subscribed_topics = {}
@@ -1157,7 +1227,10 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         mock_manager.get_msg_id_field.return_value = None
         mock_manager.get_ignore_msg_id_field.return_value = []
         mock_manager.get_ignore_value.return_value = False
-        mock_manager.get_conversion_func.return_value = eval('lambda x: to_float(x)')
+        mock_manager.get_conversion_func.return_value = {
+            'source': 'lambda x: to_float(x)',
+            'compiled': eval('lambda x: to_float(x)')
+            }
         mock_manager.get_topic_tail_is_fieldname.return_value = False
         mock_manager.get_fields.return_value = {}
         mock_manager.get_message_dict.return_value = {}
@@ -1185,7 +1258,10 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         mock_manager.get_msg_id_field.return_value = None
         mock_manager.get_ignore_msg_id_field.return_value = []
         mock_manager.get_ignore_value.return_value = False
-        mock_manager.get_conversion_func.return_value = eval('lambda x: to_float(x)')
+        mock_manager.get_conversion_func.return_value = {
+            'source': 'lambda x: to_float(x)',
+            'compiled': eval('lambda x: to_float(x)')
+            }
         mock_manager.get_topic_tail_is_fieldname.return_value = False
         mock_manager.get_fields.return_value = {}
         mock_manager.get_message_dict.return_value = {}
@@ -1242,7 +1318,10 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         mock_manager.get_msg_id_field.return_value = None
         mock_manager.get_ignore_msg_id_field.return_value = []
         mock_manager.get_ignore_value.return_value = False
-        mock_manager.get_conversion_func.return_value = eval('lambda x: to_float(x)')
+        mock_manager.get_conversion_func.return_value = {
+            'source': 'lambda x: to_float(x)',
+            'compiled': eval('lambda x: to_float(x)')
+            }
         mock_manager.get_fields.return_value = {}
         mock_manager.get_message_dict.return_value = {}
         mock_manager.subscribed_topics = {}
@@ -1328,7 +1407,10 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
         mock_manager.get_msg_id_field.return_value = None
         mock_manager.get_ignore_msg_id_field.return_value = []
         mock_manager.get_ignore_value.return_value = False
-        mock_manager.get_conversion_func.return_value = eval('lambda x: to_float(x)')
+        mock_manager.get_conversion_func.return_value = {
+            'source': 'lambda x: to_float(x)',
+            'compiled': eval('lambda x: to_float(x)')
+            }
         mock_manager.get_fields.return_value = {}
         mock_manager.get_message_dict.return_value = {}
         mock_manager.subscribed_topics = {}
@@ -1350,7 +1432,10 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
         mock_manager.get_msg_id_field.return_value = None
         mock_manager.get_ignore_msg_id_field.return_value = []
         mock_manager.get_ignore_value.return_value = False
-        mock_manager.get_conversion_func.return_value = eval('lambda x: to_float(x)')
+        mock_manager.get_conversion_func.return_value = {
+            'source': 'lambda x: to_float(x)',
+            'compiled': eval('lambda x: to_float(x)')
+            }
         mock_manager.get_fields.return_value = {}
         mock_manager.get_message_dict.return_value = {}
         mock_manager.subscribed_topics = {}
@@ -1371,7 +1456,10 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
         mock_manager.get_msg_id_field.return_value = None
         mock_manager.get_ignore_msg_id_field.return_value = []
         mock_manager.get_ignore_value.return_value = False
-        mock_manager.get_conversion_func.return_value = eval('lambda x: to_float(x)')
+        mock_manager.get_conversion_func.return_value = {
+            'source': 'lambda x: to_float(x)',
+            'compiled': eval('lambda x: to_float(x)')
+            }
         mock_manager.get_topic_tail_is_fieldname.return_value = False
         mock_manager.get_fields.return_value = {}
         mock_manager.get_message_dict.return_value = {}
@@ -1392,7 +1480,10 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
         mock_manager.get_msg_id_field.return_value = None
         mock_manager.get_ignore_msg_id_field.return_value = []
         mock_manager.get_ignore_value.return_value = False
-        mock_manager.get_conversion_func.return_value = eval('lambda x: to_float(x)')
+        mock_manager.get_conversion_func.return_value = {
+            'source': 'lambda x: to_float(x)',
+            'compiled': eval('lambda x: to_float(x)')
+            }
         mock_manager.get_fields.return_value = {}
         mock_manager.get_message_dict.return_value = {}
         mock_manager.subscribed_topics = {}

@@ -36,7 +36,10 @@ class TestTest(unittest.TestCase):
         with mock.patch('weewx.units'):
             SUT = AbstractMessageCallbackProvider(mock_logger, mock_manager)
 
-            default_field_conversion_func = eval('lambda x: to_float(x)')
+            default_field_conversion_func = {
+                'source': 'lambda x: to_float(x)',
+                'compiled': eval('lambda x: to_float(x)')
+            }
             orig_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])  # pylint: disable=unused-variable
             previous_value = round(random.uniform(101, 200), 2)
 
@@ -68,7 +71,10 @@ class TestTest(unittest.TestCase):
         with mock.patch('weewx.units'):
             SUT = AbstractMessageCallbackProvider(mock_logger, mock_manager)
 
-            default_field_conversion_func = eval('lambda x: to_float(x)')
+            default_field_conversion_func = {
+                'source': 'lambda x: to_float(x)',
+                'compiled': eval('lambda x: to_float(x)')
+            }
             orig_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])  # pylint: disable=unused-variable
 
             new_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])  # pylint: disable=unused-variable
@@ -95,7 +101,10 @@ class TestTest(unittest.TestCase):
         with mock.patch('weewx.units'):
             SUT = AbstractMessageCallbackProvider(mock_logger, mock_manager)
 
-            default_field_conversion_func = eval('lambda x: to_float(x)')
+            default_field_conversion_func = {
+                'source': 'lambda x: to_float(x)',
+                'compiled': eval('lambda x: to_float(x)')
+            }
             orig_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])  # pylint: disable=unused-variable
             previous_value = round(random.uniform(0, 9), 2)
 
@@ -127,7 +136,11 @@ class TestTest(unittest.TestCase):
         with mock.patch('weewx.units') as mock_weewx_units:
             SUT = AbstractMessageCallbackProvider(mock_logger, mock_manager)
 
-            default_field_conversion_func = eval('lambda x: to_float(x)')
+            default_field_conversion_func = {
+                'source': 'lambda x: to_float(x)',
+                'compiled': eval('lambda x: to_float(x)')
+            }
+
             mock_weewx_units.getStandardUnitType.return_value = \
                 (''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),
                  ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]))

@@ -725,16 +725,17 @@ class TopicManager(object):
             self.subscribed_topics[topic]['ignore'] = to_bool(topic_dict.get('ignore', field_defaults['ignore']))
             self.subscribed_topics[topic]['subscribe'] = to_bool(topic_dict.get('subscribe', True))
             conversion_type = topic_dict.get('conversion_type', 'float')
+            self.subscribed_topics[topic]['conversion_func'] = {}
             if conversion_type == 'bool':
-                self.subscribed_topics[topic]['conversion_func_src'] = 'lambda x: to_bool(x)'
+                self.subscribed_topics[topic]['conversion_func']['source'] = 'lambda x: to_bool(x)'
             elif conversion_type == 'float':
-                self.subscribed_topics[topic]['conversion_func_src'] = 'lambda x: to_float(x)'
+                self.subscribed_topics[topic]['conversion_func']['source'] = 'lambda x: to_float(x)'
             elif conversion_type == 'int':
-                self.subscribed_topics[topic]['conversion_func_src'] = 'lambda x: to_int(x)'
+                self.subscribed_topics[topic]['conversion_func']['source'] = 'lambda x: to_int(x)'
             else:
-                self.subscribed_topics[topic]['conversion_func_src'] = 'lambda x: x'
-            self.subscribed_topics[topic]['conversion_func'] =  \
-                eval(self.subscribed_topics[topic]['conversion_func_src']) # pylint: disable=eval-used
+                self.subscribed_topics[topic]['conversion_func']['source'] = 'lambda x: x'
+            self.subscribed_topics[topic]['conversion_func']['compiled'] =  \
+                eval(self.subscribed_topics[topic]['conversion_func']['source']) # pylint: disable=eval-used
             self.subscribed_topics[topic]['unit_system'] = unit_system
             self.subscribed_topics[topic]['msg_id_field'] = topic_dict.get('msg_id_field', topic_defaults['msg_id_field'])
             self.subscribed_topics[topic]['qos'] = to_int(topic_dict.get('qos', topic_defaults['qos']))
@@ -889,17 +890,18 @@ class TopicManager(object):
         field['contains_total'] = to_bool((field_dict).get('contains_total', contains_total))
         conversion_func = field_dict.get('conversion_func', None)
         conversion_type = field_dict.get('conversion_type', conversion_type)
+        field['conversion_func'] = {}
         if conversion_func:
-            field['conversion_func_src'] = conversion_func
+            field['conversion_func']['source'] = conversion_func
         elif conversion_type == 'bool':
-            field['conversion_func_src'] = 'lambda x: to_bool(x)'
+            field['conversion_func']['source'] = 'lambda x: to_bool(x)'
         elif conversion_type == 'float':
-            field['conversion_func_src'] = 'lambda x: to_float(x)'
+            field['conversion_func']['source'] = 'lambda x: to_float(x)'
         elif conversion_type == 'int':
-            field['conversion_func_src'] = 'lambda x: to_int(x)'
+            field['conversion_func']['source'] = 'lambda x: to_int(x)'
         else:
-            field['conversion_func_src'] = 'lambda x: x'
-        field['conversion_func'] = eval(field['conversion_func_src']) # pylint: disable=eval-used
+            field['conversion_func']['source'] = 'lambda x: x'
+        field['conversion_func']['compiled'] = eval(field['conversion_func']['source']) # pylint: disable=eval-used
         field['conversion_error_to_none'] = (field_dict).get('conversion_error_to_none', conversion_error_to_none)
         if 'units' in field_dict:
             if field_dict['units'] in weewx.units.conversionDict and field['name'] in weewx.units.obs_group_dict:
@@ -912,7 +914,12 @@ class TopicManager(object):
     def _configure_filter_out_message(self, field_dict, topic, fieldname):
         filter_values = weeutil.weeutil.option_as_list(field_dict.get('filter_out_message_when', None))
         default_conversion_func = self.subscribed_topics[topic]['conversion_func']
-        conversion_func = field_dict.get('conversion_func', default_conversion_func)
+        conversion_func = field_dict.get('conversion_func', None)
+        if conversion_func:
+            # todo - issue 126, fix - is there a better way. Why using field_dict?
+            conversion_func = eval(conversion_func)
+        else:
+            conversion_func = default_conversion_func['compiled']
         values = []
         if filter_values is not None:
             for value in filter_values:
@@ -1228,7 +1235,7 @@ class AbstractMessageCallbackProvider(object): # pylint: disable=too-few-public-
         return None
 
     def _convert_value(self, fields, default_field_conversion_func, field, value):
-        conversion_func = fields.get(field, {}).get('conversion_func', default_field_conversion_func)
+        conversion_func = fields.get(field, {}).get('conversion_func', default_field_conversion_func)['compiled']
         try:
             return conversion_func(value)
         except ValueError:
