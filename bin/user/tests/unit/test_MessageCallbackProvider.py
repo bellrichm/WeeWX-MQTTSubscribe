@@ -1026,7 +1026,7 @@ class TestJsonPayload(unittest.TestCase):
         mock_manager.get_conversion_func.return_value = {
             'source': 'lambda x: to_float(x)',
             'compiled': eval('lambda x: to_float(x)')
-            }        
+            }
         mock_manager.get_fields.return_value = {}
         mock_manager.get_filters.return_value = filters
         mock_manager.get_message_dict.return_value = {'flatten_delimiter': '_'}

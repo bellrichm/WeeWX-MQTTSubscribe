@@ -786,7 +786,10 @@ class TopicManager(object):
 
                     self.subscribed_topics[topic]['fields'][field] = self._configure_field(topic_dict, topic_dict[field], field, field_defaults)
                     self._configure_ignore_fields(topic_dict, topic_dict[field], topic, field, field_defaults)
-                    self._configure_filter_out_message(topic_dict[field], topic, field)
+                    filter_values = weeutil.weeutil.option_as_list(topic_dict[field].get('filter_out_message_when', None))
+                    if filter_values:
+                        conversion_func = self.subscribed_topics[topic]['fields'][field]['conversion_func']['compiled']
+                        self._configure_filter_out_message(topic, field, filter_values, conversion_func)
                     self._configure_cached_fields(topic_dict[field])
             else:
                 # See if any field options are directly under the topic.
@@ -795,7 +798,10 @@ class TopicManager(object):
                     if key not in self.topic_options:
                         self.subscribed_topics[topic]['fields'][topic] = self._configure_field(topic_dict, topic_dict, topic, field_defaults)
                         self._configure_ignore_fields(topic_dict, topic_dict, topic, topic, field_defaults)
-                        self._configure_filter_out_message(topic_dict, topic, topic)
+                        filter_values = weeutil.weeutil.option_as_list(topic_dict.get('filter_out_message_when', None))
+                        if filter_values:
+                            conversion_func = self.subscribed_topics[topic]['fields'][topic]['conversion_func']['compiled']
+                            self._configure_filter_out_message(topic, topic, filter_values, conversion_func)
                         self._configure_cached_fields(topic_dict)
                         break
 
@@ -911,21 +917,12 @@ class TopicManager(object):
 
         return field
 
-    def _configure_filter_out_message(self, field_dict, topic, fieldname):
-        filter_values = weeutil.weeutil.option_as_list(field_dict.get('filter_out_message_when', None))
-        default_conversion_func = self.subscribed_topics[topic]['conversion_func']
-        conversion_func = field_dict.get('conversion_func', None)
-        if conversion_func:
-            # todo - issue 126, fix - is there a better way. Why using field_dict?
-            conversion_func = eval(conversion_func)
-        else:
-            conversion_func = default_conversion_func['compiled']
+    def _configure_filter_out_message(self, topic, fieldname, filter_values, conversion_func):
         values = []
-        if filter_values is not None:
-            for value in filter_values:
-                new_value = conversion_func(value)
-                values.append(new_value)
-            self.subscribed_topics[topic]['filters'].update({fieldname: values})
+        for value in filter_values:
+            new_value = conversion_func(value)
+            values.append(new_value)
+        self.subscribed_topics[topic]['filters'].update({fieldname: values})
 
     def _configure_ignore_fields(self, topic_dict, field_dict, topic, fieldname, defaults):
         # pylint: disable=too-many-arguments
