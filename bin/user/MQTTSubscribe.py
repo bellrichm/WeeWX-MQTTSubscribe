@@ -1231,17 +1231,17 @@ class AbstractMessageCallbackProvider(object): # pylint: disable=too-few-public-
 
         return None
 
-    def _convert_value(self, fields, default_field_conversion_func, field, value):
-        conversion_func = fields.get(field, {}).get('conversion_func', default_field_conversion_func)['compiled']
+    @staticmethod
+    def _convert_value(fields, default_field_conversion_func, field, value):
+        conversion_func = fields.get(field, {}).get('conversion_func', default_field_conversion_func)
         try:
-            return conversion_func(value)
-        except ValueError:
+            return conversion_func['compiled'](value)
+        except ValueError as exception:
             conversion_error_to_none = fields.get(field, {}).get('conversion_error_to_none', False)
             if conversion_error_to_none:
                 return None
-            # todo - #126, print conversion_func_src, add info to ConversionError?
-            self.logger.error('Error converting field %s, value %s to %s' % (field, value, conversion_func))
-            raise ConversionError()
+            raise ConversionError("Failed converting field %s with value %s using '%s' with reason %s." \
+                % (field, value, conversion_func['source'], exception))
 
 class MessageCallbackProvider(AbstractMessageCallbackProvider):
     # pylint: disable=too-many-instance-attributes, too-few-public-methods, too-many-locals
@@ -1359,8 +1359,6 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
                 self.logger.error("MessageCallbackProvider on_message_keyword failed to find data in: topic=%s and payload=%s"
                                   % (msg.topic, msg.payload))
 
-        except ConversionError:
-            self.logger.error("Ignoring topic=%s and payload=%s" % (msg.topic, msg.payload))
         except Exception as exception: # (want to catch all) pylint: disable=broad-except
             self._log_exception('on_message_keyword', exception, msg)
 
@@ -1409,8 +1407,6 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
             if data_final:
                 self.topic_manager.append_data(msg.topic, data_final)
 
-        except ConversionError:
-            self.logger.error("Ignoring topic=%s and payload=%s" % (msg.topic, msg.payload))
         except Exception as exception: # (want to catch all) pylint: disable=broad-except
             self._log_exception('on_message_json', exception, msg)
 
@@ -1444,8 +1440,7 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
                 self.topic_manager.append_data(msg.topic, data, fieldname)
             else:
                 self.logger.trace("MessageCallbackProvider on_message_individual ignoring field: %s" % key)
-        except ConversionError:
-            self.logger.error("Ignoring topic=%s and payload=%s" % (msg.topic, msg.payload))
+
         except Exception as exception: # (want to catch all) pylint: disable=broad-except
             self._log_exception('on_message_individual', exception, msg)
 
