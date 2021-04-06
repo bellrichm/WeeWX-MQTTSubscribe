@@ -257,7 +257,8 @@ class TestConfigureFields(unittest.TestCase):
         configured_field[topic]['name'] = topic
         configured_field[topic]['contains_total'] = True
         configured_field[topic]['ignore'] = False
-        configured_field[topic]['conversion_type'] = 'float'
+        #configured_field[topic]['conversion_func'] = {}
+        #configured_field[topic]['conversion_func']['source'] = 'lambda x: to_float(x)'
         configured_field[topic]['conversion_error_to_none'] = False
         config_dict = {}
 
@@ -267,7 +268,9 @@ class TestConfigureFields(unittest.TestCase):
 
         SUT = TopicManager(None, config, mock_logger)
 
-        self.assertEqual(SUT.subscribed_topics[topic]['fields'], configured_field)
+        self.assertIn(topic, SUT.subscribed_topics[topic]['fields'])
+        self.assertGreaterEqual(SUT.subscribed_topics[topic]['fields'][topic].items(), configured_field[topic].items())
+        self.assertEqual(SUT.subscribed_topics[topic]['fields'][topic]['conversion_func']['source'], 'lambda x: to_float(x)')
 
     def test_global_defaults(self):
         mock_logger = mock.Mock(spec=Logger)
@@ -291,7 +294,7 @@ class TestConfigureFields(unittest.TestCase):
         self.assertTrue(SUT.subscribed_topics[topic]['fields'][fieldname]['ignore'])
         self.assertEqual(SUT.subscribed_topics[topic]['ignore_msg_id_field'], [fieldname])
         self.assertTrue(SUT.subscribed_topics[topic]['fields'][fieldname]['contains_total'])
-        self.assertEqual(SUT.subscribed_topics[topic]['fields'][fieldname]['conversion_type'], 'int')
+        self.assertEqual(SUT.subscribed_topics[topic]['fields'][fieldname]['conversion_func']['source'], 'lambda x: to_int(x)')
 
     def test_topic_defaults(self):
         mock_logger = mock.Mock(spec=Logger)
@@ -315,7 +318,7 @@ class TestConfigureFields(unittest.TestCase):
         self.assertTrue(SUT.subscribed_topics[topic]['fields'][fieldname]['ignore'])
         self.assertEqual(SUT.subscribed_topics[topic]['ignore_msg_id_field'], [fieldname])
         self.assertTrue(SUT.subscribed_topics[topic]['fields'][fieldname]['contains_total'])
-        self.assertEqual(SUT.subscribed_topics[topic]['fields'][fieldname]['conversion_type'], 'int')
+        self.assertEqual(SUT.subscribed_topics[topic]['fields'][fieldname]['conversion_func']['source'], 'lambda x: to_int(x)')
 
     def test_configure_field(self):
         mock_logger = mock.Mock(spec=Logger)
@@ -344,10 +347,111 @@ class TestConfigureFields(unittest.TestCase):
         self.assertTrue(SUT.subscribed_topics[topic]['fields'][fieldname]['ignore'])
         self.assertEqual(SUT.subscribed_topics[topic]['ignore_msg_id_field'], [fieldname])
         self.assertTrue(SUT.subscribed_topics[topic]['fields'][fieldname]['contains_total'])
-        self.assertEqual(SUT.subscribed_topics[topic]['fields'][fieldname]['conversion_type'], 'int')
+        self.assertEqual(SUT.subscribed_topics[topic]['fields'][fieldname]['conversion_func']['source'], 'lambda x: to_int(x)')
         self.assertEqual(SUT.subscribed_topics[topic]['fields'][fieldname]['name'], weewx_name)
         self.assertEqual(SUT.subscribed_topics[topic]['fields'][fieldname]['units'], unit_name)
         self.assertIsNone(SUT.cached_fields[weewx_name]['expires_after'])
+
+    def test_field_conversion_type_bool(self):
+        mock_logger = mock.Mock(spec=Logger)
+
+        topic = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+        config_dict = {}
+
+        config_dict[topic] = {}
+        config_dict[topic]['conversion_type'] = 'int'
+
+        fieldname = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+        config_dict[topic][fieldname] = {}
+
+        config_dict[topic][fieldname]['conversion_type'] = 'bool'
+
+        config = configobj.ConfigObj(config_dict)
+
+        SUT = TopicManager(None, config, mock_logger)
+
+        self.assertEqual(SUT.subscribed_topics[topic]['fields'][fieldname]['conversion_func']['source'], 'lambda x: to_bool(x)')
+
+    def test_field_conversion_type_float(self):
+        mock_logger = mock.Mock(spec=Logger)
+
+        topic = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+        config_dict = {}
+
+        config_dict[topic] = {}
+        config_dict[topic]['conversion_type'] = 'float'
+
+        fieldname = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+        config_dict[topic][fieldname] = {}
+
+        config_dict[topic][fieldname]['conversion_type'] = 'float'
+
+        config = configobj.ConfigObj(config_dict)
+
+        SUT = TopicManager(None, config, mock_logger)
+
+        self.assertEqual(SUT.subscribed_topics[topic]['fields'][fieldname]['conversion_func']['source'], 'lambda x: to_float(x)')
+
+    def test_field_conversion_type_int(self):
+        mock_logger = mock.Mock(spec=Logger)
+
+        topic = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+        config_dict = {}
+
+        config_dict[topic] = {}
+
+        fieldname = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+        config_dict[topic][fieldname] = {}
+
+        config_dict[topic][fieldname]['conversion_type'] = 'int'
+
+        config = configobj.ConfigObj(config_dict)
+
+        SUT = TopicManager(None, config, mock_logger)
+
+        self.assertEqual(SUT.subscribed_topics[topic]['fields'][fieldname]['conversion_func']['source'], 'lambda x: to_int(x)')
+
+    def test_field_conversion_type_unknown(self):
+        mock_logger = mock.Mock(spec=Logger)
+
+        topic = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+        config_dict = {}
+
+        config_dict[topic] = {}
+
+        fieldname = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+        config_dict[topic][fieldname] = {}
+
+        config_dict[topic][fieldname]['conversion_type'] = 'unknown'
+
+        config = configobj.ConfigObj(config_dict)
+
+        SUT = TopicManager(None, config, mock_logger)
+
+        self.assertEqual(SUT.subscribed_topics[topic]['fields'][fieldname]['conversion_func']['source'], 'lambda x: x')
+
+    # todo - issue 126, remove? rename?
+    def test_field_conversion_type_unknown2(self):
+        mock_logger = mock.Mock(spec=Logger)
+
+        topic = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+        config_dict = {}
+
+        config_dict[topic] = {}
+        config_dict[topic]['conversion_type'] = 'int'
+
+        fieldname = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+        config_dict[topic][fieldname] = {}
+
+        config_dict[topic][fieldname]['conversion_type'] = 'bool'
+        config_dict[topic][fieldname]['conversion_func'] = 'lambda x: "foo"'
+
+        config = configobj.ConfigObj(config_dict)
+
+        SUT = TopicManager(None, config, mock_logger)
+
+        self.assertEqual(SUT.subscribed_topics[topic]['fields'][fieldname]['conversion_func']['source'], 'lambda x: "foo"')
+
 
     def test_filter_out_message(self):
         mock_logger = mock.Mock(spec=Logger)
