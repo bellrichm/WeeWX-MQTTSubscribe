@@ -127,6 +127,7 @@ class TestConfigureMessage(unittest.TestCase):
         self.assertEqual(SUT.subscribed_topics[topic][SUT.message_config_name]['keyword_separator'],
                          config_dict['message']['keyword_separator'])
 
+    @unittest.skip('Message section not yet supported.')
     def test_override_default(self):
         mock_logger = mock.Mock(spec=Logger)
         topic = random_string()
@@ -163,6 +164,7 @@ class TestConfigureMessage(unittest.TestCase):
         self.assertEqual(SUT.subscribed_topics[topic][SUT.message_config_name][config_key],
                          config_dict['message'][config_key])
 
+    @unittest.skip('Message section not yet supported.')
     def test_no_default_setting(self):
         mock_logger = mock.Mock(spec=Logger)
         topic = random_string()

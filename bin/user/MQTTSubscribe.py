@@ -371,7 +371,7 @@ import weewx
 import weewx.drivers
 from weewx.engine import StdEngine, StdService
 
-VERSION = '2.0.0-rc08'
+VERSION = '2.0.0'
 DRIVER_NAME = 'MQTTSubscribeDriver'
 DRIVER_VERSION = VERSION
 
@@ -880,7 +880,9 @@ class TopicManager(object):
         default['offset_format'] = config.get('offset_format', None)
 
         default['max_queue'] = config.get('max_queue', MAXSIZE)
-        default['callback_config_name'] = config.get('callback_config_name', 'message')
+        # To do - temporarily disable, until post 2.0.0
+        #default['callback_config_name'] = config.get('callback_config_name', 'message')
+        default['callback_config_name'] = config.get('callback_config_name', '')
 
         return default
 
