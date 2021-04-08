@@ -42,6 +42,14 @@ Configuration:
     # Default is None.
     username = None
 
+    # The minimum time in seconds that the client will wait before trying to reconnect.
+    # Default is 1
+    min_delay = 1
+
+    # The maximum time in seconds that the client will wait before trying to reconnect.
+    # Default is 120
+    max_delay = 120
+
     # password for broker authentication.
     # Default is None.
     password = None
@@ -244,6 +252,11 @@ Configuration:
 
         # The first topic to subscribe to
         [[[first/topic]]]
+            # When set to false, the topic is not subscribed to.
+            # Valid values: True, False
+            # Default is True
+            subscribe = True
+
             # Specifies a field name in the mqtt message.
             # The value of the field is appended to every field name in the mqtt message.
             # This enables same formatted messages to map to different WeeWX fields.
@@ -276,6 +289,11 @@ Configuration:
                 # Valid values: bool, float, int, none.
                 # Default is float.
                 conversion_type = float
+
+                # Valid values, a Python expression that when evaluated returns a valid value.
+                Example, conversion_func = lambda x: True if x == 'ON' else False
+                # Default is not set.
+                conversion_func =
 
                 # When True: if there is an exception converting the data type, the value is set to None.
                 # When False: if there is an exception converting the data type, an error is logged and the MQTT msg is skipped.
@@ -371,7 +389,7 @@ import weewx
 import weewx.drivers
 from weewx.engine import StdEngine, StdService
 
-VERSION = '2.0.0'
+VERSION = '2.1.0-rc01'
 DRIVER_NAME = 'MQTTSubscribeDriver'
 DRIVER_VERSION = VERSION
 
@@ -745,7 +763,7 @@ class TopicManager(object):
                                                                                           topic_defaults['use_server_datetime']))
             self.subscribed_topics[topic]['datetime_format'] = topic_dict.get('datetime_format', topic_defaults['datetime_format'])
             self.subscribed_topics[topic]['offset_format'] = topic_dict.get('offset_format', topic_defaults['offset_format'])
-            self.subscribed_topics[topic]['ignore_msg_id_field'] = callback_config_name
+            self.subscribed_topics[topic]['ignore_msg_id_field'] = callback_config_name # ToDo - investigate
             self.subscribed_topics[topic]['ignore_msg_id_field'] = []
             self.subscribed_topics[topic]['fields'] = {}
             if not single_queue or topic == archive_topic:
@@ -1502,6 +1520,8 @@ class MQTTSubscriber(object):
         port = to_int(service_dict.get('port', 1883))
         username = service_dict.get('username', None)
         password = service_dict.get('password', None)
+        min_delay = to_int(service_dict.get('min_delay', 1))
+        max_delay = to_int(service_dict.get('max_delay', 120))
         log_mqtt = to_bool(service_dict.get('log', False))
 
         self.logger.info("message_callback_provider_name is %s" % message_callback_provider_name)
@@ -1548,6 +1568,8 @@ class MQTTSubscriber(object):
 
         if username is not None and password is not None:
             self.client.username_pw_set(username, password)
+
+        self.client.reconnect_delay_set(min_delay=min_delay, max_delay=max_delay)
 
         tls_dict = service_dict.get('tls')
         if tls_dict:
