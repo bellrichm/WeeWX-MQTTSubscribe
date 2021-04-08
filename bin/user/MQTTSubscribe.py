@@ -1531,6 +1531,8 @@ class MQTTSubscriber(object):
         self.logger.info("port is %s" % port)
         self.logger.info("keepalive is %s" % keepalive)
         self.logger.info("username is %s" % username)
+        self.logger.info("min_delay is %s" % min_delay)
+        self.logger.info("max_delay is %s" % max_delay)
         if password is not None:
             self.logger.info("password is set")
         else:
