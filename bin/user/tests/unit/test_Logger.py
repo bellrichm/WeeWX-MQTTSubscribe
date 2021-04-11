@@ -30,7 +30,7 @@ class TestV3Logging(unittest.TestCase):
                 reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
             else:
                 import importlib
-                importlib.reload(user.MQTTSubscribe)
+                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
             with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
                 with mock.patch('user.MQTTSubscribe.open') as mock_open:
                     from user.MQTTSubscribe import Logger
@@ -46,7 +46,7 @@ class TestV3Logging(unittest.TestCase):
             if PY2:
                 reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
             else:
-                importlib.reload(user.MQTTSubscribe)
+                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
 
     @staticmethod
     def test_error_not_logged():
@@ -56,7 +56,7 @@ class TestV3Logging(unittest.TestCase):
                 reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
             else:
                 import importlib
-                importlib.reload(user.MQTTSubscribe)
+                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
             with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
                 with mock.patch('user.MQTTSubscribe.syslog') as mock_syslog:
                     from user.MQTTSubscribe import Logger
@@ -74,7 +74,7 @@ class TestV3Logging(unittest.TestCase):
             if PY2:
                 reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
             else:
-                importlib.reload(user.MQTTSubscribe)
+                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
 
     @staticmethod
     def test_error_logged():
@@ -84,7 +84,7 @@ class TestV3Logging(unittest.TestCase):
                 reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
             else:
                 import importlib
-                importlib.reload(user.MQTTSubscribe)
+                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
             with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
                 with mock.patch('user.MQTTSubscribe.syslog') as mock_syslog:
                     from user.MQTTSubscribe import Logger
@@ -103,7 +103,7 @@ class TestV3Logging(unittest.TestCase):
             if PY2:
                 reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
             else:
-                importlib.reload(user.MQTTSubscribe)
+                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
 
     @staticmethod
     def test_error_logged_to_file():
@@ -113,7 +113,7 @@ class TestV3Logging(unittest.TestCase):
                 reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
             else:
                 import importlib
-                importlib.reload(user.MQTTSubscribe)
+                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
             with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
                 with mock.patch('user.MQTTSubscribe.open') as mock_open:
                     with mock.patch('user.MQTTSubscribe.syslog') as mock_syslog:
@@ -137,7 +137,7 @@ class TestV3Logging(unittest.TestCase):
             if PY2:
                 reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
             else:
-                importlib.reload(user.MQTTSubscribe)
+                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
 
     @staticmethod
     def test_error_logged_to_console():
@@ -147,7 +147,7 @@ class TestV3Logging(unittest.TestCase):
                 reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
             else:
                 import importlib
-                importlib.reload(user.MQTTSubscribe)
+                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
             with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
                 with mock.patch('user.MQTTSubscribe.print') as mock_print:
                     with mock.patch('user.MQTTSubscribe.syslog') as mock_syslog:
@@ -168,7 +168,7 @@ class TestV3Logging(unittest.TestCase):
             if PY2:
                 reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
             else:
-                importlib.reload(user.MQTTSubscribe)
+                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
 
     @staticmethod
     def test_info_not_logged():
@@ -178,7 +178,7 @@ class TestV3Logging(unittest.TestCase):
                 reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
             else:
                 import importlib
-                importlib.reload(user.MQTTSubscribe)
+                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
             with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
                 with mock.patch('user.MQTTSubscribe.syslog') as mock_syslog:
                     from user.MQTTSubscribe import Logger
@@ -196,7 +196,7 @@ class TestV3Logging(unittest.TestCase):
             if PY2:
                 reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
             else:
-                importlib.reload(user.MQTTSubscribe)
+                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
 
     @staticmethod
     def test_info_logged():
@@ -206,7 +206,7 @@ class TestV3Logging(unittest.TestCase):
                 reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
             else:
                 import importlib
-                importlib.reload(user.MQTTSubscribe)
+                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
             with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
                 with mock.patch('user.MQTTSubscribe.syslog') as mock_syslog:
                     from user.MQTTSubscribe import Logger
@@ -225,7 +225,7 @@ class TestV3Logging(unittest.TestCase):
             if PY2:
                 reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
             else:
-                importlib.reload(user.MQTTSubscribe)
+                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
 
     @staticmethod
     def test_info_logged_to_file():
@@ -235,7 +235,7 @@ class TestV3Logging(unittest.TestCase):
                 reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
             else:
                 import importlib
-                importlib.reload(user.MQTTSubscribe)
+                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
             with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
                 with mock.patch('user.MQTTSubscribe.open') as mock_open:
                     with mock.patch('user.MQTTSubscribe.syslog') as mock_syslog:
@@ -259,7 +259,7 @@ class TestV3Logging(unittest.TestCase):
             if PY2:
                 reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
             else:
-                importlib.reload(user.MQTTSubscribe)
+                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
 
     @staticmethod
     def test_info_logged_to_console():
@@ -269,7 +269,7 @@ class TestV3Logging(unittest.TestCase):
                 reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
             else:
                 import importlib
-                importlib.reload(user.MQTTSubscribe)
+                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
             with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
                 with mock.patch('user.MQTTSubscribe.print') as mock_print:
                     with mock.patch('user.MQTTSubscribe.syslog') as mock_syslog:
@@ -290,7 +290,7 @@ class TestV3Logging(unittest.TestCase):
             if PY2:
                 reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
             else:
-                importlib.reload(user.MQTTSubscribe)
+                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
 
     @staticmethod
     def test_debug_not_logged():
@@ -300,7 +300,7 @@ class TestV3Logging(unittest.TestCase):
                 reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
             else:
                 import importlib
-                importlib.reload(user.MQTTSubscribe)
+                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
             with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
                 with mock.patch('user.MQTTSubscribe.syslog') as mock_syslog:
                     from user.MQTTSubscribe import Logger
@@ -318,7 +318,7 @@ class TestV3Logging(unittest.TestCase):
             if PY2:
                 reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
             else:
-                importlib.reload(user.MQTTSubscribe)
+                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
 
     @staticmethod
     def test_debug_logged():
@@ -328,7 +328,7 @@ class TestV3Logging(unittest.TestCase):
                 reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
             else:
                 import importlib
-                importlib.reload(user.MQTTSubscribe)
+                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
             with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
                 with mock.patch('user.MQTTSubscribe.syslog') as mock_syslog:
                     from user.MQTTSubscribe import Logger
@@ -347,7 +347,7 @@ class TestV3Logging(unittest.TestCase):
             if PY2:
                 reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
             else:
-                importlib.reload(user.MQTTSubscribe)
+                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
 
     @staticmethod
     def test_debug_logged_to_file():
@@ -357,7 +357,7 @@ class TestV3Logging(unittest.TestCase):
                 reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
             else:
                 import importlib
-                importlib.reload(user.MQTTSubscribe)
+                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
             with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
                 with mock.patch('user.MQTTSubscribe.open') as mock_open:
                     with mock.patch('user.MQTTSubscribe.syslog') as mock_syslog:
@@ -381,7 +381,7 @@ class TestV3Logging(unittest.TestCase):
             if PY2:
                 reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
             else:
-                importlib.reload(user.MQTTSubscribe)
+                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
 
     @staticmethod
     def test_debug_logged_to_console():
@@ -391,7 +391,7 @@ class TestV3Logging(unittest.TestCase):
                 reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
             else:
                 import importlib
-                importlib.reload(user.MQTTSubscribe)
+                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
             with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
                 with mock.patch('user.MQTTSubscribe.print') as mock_print:
                     with mock.patch('user.MQTTSubscribe.syslog') as mock_syslog:
@@ -412,7 +412,7 @@ class TestV3Logging(unittest.TestCase):
             if PY2:
                 reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
             else:
-                importlib.reload(user.MQTTSubscribe)
+                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
 
     @staticmethod
     def test_trace_not_logged():
@@ -422,7 +422,7 @@ class TestV3Logging(unittest.TestCase):
                 reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
             else:
                 import importlib
-                importlib.reload(user.MQTTSubscribe)
+                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
             with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
                 with mock.patch('user.MQTTSubscribe.syslog') as mock_syslog:
                     from user.MQTTSubscribe import Logger
@@ -440,7 +440,7 @@ class TestV3Logging(unittest.TestCase):
             if PY2:
                 reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
             else:
-                importlib.reload(user.MQTTSubscribe)
+                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
 
     @staticmethod
     def test_trace_logged():
@@ -450,7 +450,7 @@ class TestV3Logging(unittest.TestCase):
                 reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
             else:
                 import importlib
-                importlib.reload(user.MQTTSubscribe)
+                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
             with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
                 with mock.patch('user.MQTTSubscribe.syslog') as mock_syslog:
                     from user.MQTTSubscribe import Logger
@@ -469,7 +469,7 @@ class TestV3Logging(unittest.TestCase):
             if PY2:
                 reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
             else:
-                importlib.reload(user.MQTTSubscribe)
+                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
 
     @staticmethod
     def test_trace_logged_to_file():
@@ -479,7 +479,7 @@ class TestV3Logging(unittest.TestCase):
                 reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
             else:
                 import importlib
-                importlib.reload(user.MQTTSubscribe)
+                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
             with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
                 with mock.patch('user.MQTTSubscribe.open') as mock_open:
                     with mock.patch('user.MQTTSubscribe.syslog') as mock_syslog:
@@ -503,7 +503,7 @@ class TestV3Logging(unittest.TestCase):
             if PY2:
                 reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
             else:
-                importlib.reload(user.MQTTSubscribe)
+                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
 
     @staticmethod
     def test_trace_logged_to_console():
@@ -513,7 +513,7 @@ class TestV3Logging(unittest.TestCase):
                 reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
             else:
                 import importlib
-                importlib.reload(user.MQTTSubscribe)
+                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
             with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
                 with mock.patch('user.MQTTSubscribe.print') as mock_print:
                     with mock.patch('user.MQTTSubscribe.syslog') as mock_syslog:
@@ -534,7 +534,7 @@ class TestV3Logging(unittest.TestCase):
             if PY2:
                 reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
             else:
-                importlib.reload(user.MQTTSubscribe)
+                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
 
 class TestV4Logging(unittest.TestCase):
     def test_init_set_trace_log_level(self):
@@ -602,7 +602,7 @@ class TestV4Logging(unittest.TestCase):
                 reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
             else:
                 import importlib
-                importlib.reload(user.MQTTSubscribe)
+                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
             with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
                 from user.MQTTSubscribe import Logger
 
@@ -616,7 +616,7 @@ class TestV4Logging(unittest.TestCase):
             if PY2:
                 reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
             else:
-                importlib.reload(user.MQTTSubscribe)
+                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
 
     @staticmethod
     def test_error_logged():
@@ -626,7 +626,7 @@ class TestV4Logging(unittest.TestCase):
                 reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
             else:
                 import importlib
-                importlib.reload(user.MQTTSubscribe)
+                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
             with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
                 from user.MQTTSubscribe import Logger
 
@@ -643,7 +643,7 @@ class TestV4Logging(unittest.TestCase):
             if PY2:
                 reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
             else:
-                importlib.reload(user.MQTTSubscribe)
+                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
 
     @staticmethod
     def test_info_logged():
@@ -653,7 +653,7 @@ class TestV4Logging(unittest.TestCase):
                 reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
             else:
                 import importlib
-                importlib.reload(user.MQTTSubscribe)
+                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
             with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
                 from user.MQTTSubscribe import Logger
 
@@ -670,7 +670,7 @@ class TestV4Logging(unittest.TestCase):
             if PY2:
                 reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
             else:
-                importlib.reload(user.MQTTSubscribe)
+                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
 
     @staticmethod
     def test_debug_logged():
@@ -680,7 +680,7 @@ class TestV4Logging(unittest.TestCase):
                 reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
             else:
                 import importlib
-                importlib.reload(user.MQTTSubscribe)
+                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
             with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
                 from user.MQTTSubscribe import Logger
 
@@ -697,7 +697,7 @@ class TestV4Logging(unittest.TestCase):
             if PY2:
                 reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
             else:
-                importlib.reload(user.MQTTSubscribe)
+                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
 
     @staticmethod
     def test_trace_logged_with_debug_set():
@@ -707,7 +707,7 @@ class TestV4Logging(unittest.TestCase):
                 reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
             else:
                 import importlib
-                importlib.reload(user.MQTTSubscribe)
+                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
             with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
                 from user.MQTTSubscribe import Logger
 
@@ -725,7 +725,7 @@ class TestV4Logging(unittest.TestCase):
             if PY2:
                 reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
             else:
-                importlib.reload(user.MQTTSubscribe)
+                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
 
     @staticmethod
     def test_trace_logged_with_debug_not_set():
@@ -735,7 +735,7 @@ class TestV4Logging(unittest.TestCase):
                 reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
             else:
                 import importlib
-                importlib.reload(user.MQTTSubscribe)
+                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
             with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
                 from user.MQTTSubscribe import Logger
 
@@ -753,7 +753,7 @@ class TestV4Logging(unittest.TestCase):
             if PY2:
                 reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
             else:
-                importlib.reload(user.MQTTSubscribe)
+                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
 
 if __name__ == '__main__':
     # test_suite = unittest.TestSuite()
