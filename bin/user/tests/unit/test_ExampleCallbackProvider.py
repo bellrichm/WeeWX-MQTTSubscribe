@@ -15,7 +15,7 @@ import mock
 import random
 import xml.etree
 
-from test_weewx_stubs import random_string
+from test_weewx_stubs import random_ascii_letters
 
 from user.ExampleMessageCallbackProvider import MessageCallbackProvider
 
@@ -34,7 +34,7 @@ class Test1(unittest.TestCase):
 
         i = 0
         while i < size:
-            observation_dict[random_string()] = round(random.uniform(101, 200), 2)
+            observation_dict[random_ascii_letters()] = round(random.uniform(101, 200), 2)
             i += 1
 
         return observation_dict

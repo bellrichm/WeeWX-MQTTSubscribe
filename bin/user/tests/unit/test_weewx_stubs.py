@@ -21,6 +21,9 @@ import time
 def random_string(length=32):
     return ''.join([random.choice(string.ascii_letters + string.digits) for n in range(length)]) # pylint: disable=unused-variable
 
+def random_ascii_letters(length=32):
+    return''.join([random.choice(string.ascii_letters) for n in range(length)]) # pylint: disable=unused-variable
+
 class weeutil(object):
     class config(object):
         def merge_config(self):
