@@ -18,7 +18,6 @@ import configobj
 import paho.mqtt.client
 import random
 import ssl
-import string
 import types
 
 import test_weewx_stubs
@@ -40,7 +39,7 @@ class TestInitialization(unittest.TestCase):
         config_dict = {
             'message_callback': {},
             'topics': {
-                ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]): {}
+                random_string(): {}
             },
             'log': True
         }
@@ -62,7 +61,7 @@ class TestInitialization(unittest.TestCase):
 
             'message_callback': {},
             'topics': {
-                ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]): {}
+                random_string(): {}
             }
         }
 
@@ -82,7 +81,7 @@ class TestInitialization(unittest.TestCase):
         config_dict = {
             'message_callback': {},
             'topics': {
-                ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]): {}
+                random_string(): {}
             }
         }
 
@@ -115,12 +114,12 @@ class TestInitialization(unittest.TestCase):
         self.assertEqual(error.exception.args[0], "[[topics]] is required.")
 
     def test_missing_archive_topic_in_topics(self):
-        archive_topic = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+        archive_topic = random_string()
         config_dict = {
-            'archive_topic': archive_topic,  # pylint: disable=unused-variable
+            'archive_topic': archive_topic,
             'message_callback': {},
             'topics': {
-                ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]): {}  # pylint: disable=unused-variable
+                random_string(): {}
             }
         }
         config = configobj.ConfigObj(config_dict)
@@ -145,11 +144,11 @@ class TestInitialization(unittest.TestCase):
             'keepalive': keepalive,
             'port': port,
             'username': None,
-            'password': ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),  # pylint: disable=unused-variable
+            'password': random_string(),
             'archive_topic': None,
             'message_callback': {},
             'topics': {
-                ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]): {}
+                random_string(): {}
             }
         }
 
@@ -178,12 +177,12 @@ class TestInitialization(unittest.TestCase):
             'host': host,
             'keepalive': keepalive,
             'port': port,
-            'username': ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),  # pylint: disable=unused-variable
+            'username': random_string(),
             'password': None,
             'archive_topic': None,
             'message_callback': {},
             'topics': {
-                ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]): {}
+                random_string(): {}
             }
         }
 
@@ -217,7 +216,7 @@ class TestInitialization(unittest.TestCase):
             'archive_topic': None,
             'message_callback': {},
             'topics': {
-                ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]): {}
+                random_string(): {}
             }
         }
 
@@ -239,8 +238,8 @@ class TestInitialization(unittest.TestCase):
         host = 'host'
         port = random.randint(1000, 9999)
         keepalive = random.randint(1, 10)
-        username = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])  # pylint: disable=unused-variable
-        password = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+        username = random_string()
+        password = random_string()
         config_dict = {
             'console': False,
             'keyword_delimiter': None,
@@ -253,7 +252,7 @@ class TestInitialization(unittest.TestCase):
             'archive_topic': None,
             'message_callback': {},
             'topics': {
-                ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]): {}
+                random_string(): {}
             }
         }
 
@@ -577,14 +576,14 @@ class  TestWeewx_configuration(unittest.TestCase):
 class  Testtls_configuration(unittest.TestCase):
     @staticmethod
     def test_tls_configuration_good():
-        ca_certs = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+        ca_certs = random_string()
         config_dict = {
             'message_callback': {},
             'tls': {
                 'ca_certs': ca_certs
             },
             'topics': {
-                ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]): {}
+                random_string(): {}
             }
         }
         config = configobj.ConfigObj(config_dict)
@@ -607,11 +606,11 @@ class  Testtls_configuration(unittest.TestCase):
         config_dict = {
             'message_callback': {},
             'tls': {
-                'ca_certs': ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),
+                'ca_certs': random_string(),
                 'tls_version': tls_version
             },
             'topics': {
-                ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]): {}
+                random_string(): {}
             }
         }
         config = configobj.ConfigObj(config_dict)
@@ -636,11 +635,11 @@ class  Testtls_configuration(unittest.TestCase):
         config_dict = {
             'message_callback': {},
             'tls': {
-                'ca_certs': ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),
+                'ca_certs': random_string(),
                 'tls_version': tls_version
             },
             'topics': {
-                ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]): {}
+                random_string(): {}
             }
         }
         config = configobj.ConfigObj(config_dict)
@@ -665,11 +664,11 @@ class  Testtls_configuration(unittest.TestCase):
         config_dict = {
             'message_callback': {},
             'tls': {
-                'ca_certs': ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),
+                'ca_certs': random_string(),
                 'tls_version': tls_version
             },
             'topics': {
-                ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]): {}
+                random_string(): {}
             }
         }
         config = configobj.ConfigObj(config_dict)
@@ -694,11 +693,11 @@ class  Testtls_configuration(unittest.TestCase):
         config_dict = {
             'message_callback': {},
             'tls': {
-                'ca_certs': ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),
+                'ca_certs': random_string(),
                 'tls_version': tls_version
             },
             'topics': {
-                ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]): {}
+                random_string(): {}
             }
         }
         config = configobj.ConfigObj(config_dict)
@@ -723,11 +722,11 @@ class  Testtls_configuration(unittest.TestCase):
         config_dict = {
             'message_callback': {},
             'tls': {
-                'ca_certs': ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),
+                'ca_certs': random_string(),
                 'tls_version': tls_version
             },
             'topics': {
-                ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]): {}
+                random_string(): {}
             }
         }
         config = configobj.ConfigObj(config_dict)
@@ -752,11 +751,11 @@ class  Testtls_configuration(unittest.TestCase):
         config_dict = {
             'message_callback': {},
             'tls': {
-                'ca_certs': ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),
+                'ca_certs': random_string(),
                 'tls_version': tls_version
             },
             'topics': {
-                ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]): {}
+                random_string(): {}
             }
         }
         config = configobj.ConfigObj(config_dict)
@@ -782,11 +781,11 @@ class  Testtls_configuration(unittest.TestCase):
             'message_callback': {},
 
             'tls': {
-                'ca_certs': ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),
+                'ca_certs': random_string(),
                 'tls_version': tls_version
             },
             'topics': {
-                ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]): {}
+                random_string(): {}
             }
         }
         config = configobj.ConfigObj(config_dict)
@@ -807,15 +806,15 @@ class  Testtls_configuration(unittest.TestCase):
                     self.assertEqual(error.exception.args[0], "Invalid 'tls_version'., %s" % tls_version)
 
     def test_invalid_certs_required(self):
-        certs_required = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+        certs_required = random_string()
         config_dict = {
             'message_callback': {},
             'tls': {
-                'ca_certs': ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),
+                'ca_certs': random_string(),
                 'certs_required': certs_required
                 },
             'topics': {
-                ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]): {}
+                random_string(): {}
             }
         }
         config = configobj.ConfigObj(config_dict)
@@ -839,11 +838,10 @@ class  Testtls_configuration(unittest.TestCase):
         config_dict = {
             'message_callback': {},
             'tls': {
-                ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]): \
-                     ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+                random_string(): random_string()
             },
             'topics': {
-                ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]): {}
+                random_string(): {}
             }
         }
         config = configobj.ConfigObj(config_dict)
@@ -868,7 +866,7 @@ class TestDeprecatedOptions(unittest.TestCase):
         config_dict = {}
         config_dict['message_callback'] = {}
         config_dict['topics'] = {}
-        config_dict['topic'] = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+        config_dict['topic'] = random_string()
         config = configobj.ConfigObj(config_dict)
 
         mock_logger = mock.Mock(spec=Logger)
@@ -885,7 +883,7 @@ class TestDeprecatedOptions(unittest.TestCase):
         config_dict = {}
         config_dict['message_callback'] = {}
         config_dict['topics'] = {}
-        config_dict['overlap'] = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+        config_dict['overlap'] = random_string()
         config = configobj.ConfigObj(config_dict)
 
         mock_logger = mock.Mock(spec=Logger)
@@ -901,7 +899,7 @@ class TestDeprecatedOptions(unittest.TestCase):
         config_dict = {}
         config_dict['message_callback'] = {}
         config_dict['topics'] = {}
-        config_dict['archive_field_cache'] = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+        config_dict['archive_field_cache'] = random_string()
         config = configobj.ConfigObj(config_dict)
 
         mock_logger = mock.Mock(spec=Logger)
@@ -918,8 +916,7 @@ class TestDeprecatedOptions(unittest.TestCase):
         config_dict = {}
         config_dict['message_callback'] = {}
         config_dict['topics'] = {}
-        config_dict['message_callback']['full_topic_fieldname'] = \
-            ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+        config_dict['message_callback']['full_topic_fieldname'] = random_string()
         config = configobj.ConfigObj(config_dict)
 
         mock_logger = mock.Mock(spec=Logger)
@@ -936,8 +933,7 @@ class TestDeprecatedOptions(unittest.TestCase):
         config_dict = {}
         config_dict['message_callback'] = {}
         config_dict['topics'] = {}
-        config_dict['message_callback']['contains_total'] = \
-            ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+        config_dict['message_callback']['contains_total'] = random_string()
         config = configobj.ConfigObj(config_dict)
 
         mock_logger = mock.Mock(spec=Logger)
@@ -1156,7 +1152,7 @@ class TestCallbacks(unittest.TestCase):
         config = configobj.ConfigObj(config_dict)
 
         level = 1
-        msg = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+        msg = random_string()
 
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client):
             with mock.patch('user.MQTTSubscribe.MessageCallbackProvider'):
@@ -1178,14 +1174,14 @@ class Teston_connect(unittest.TestCase):
         'host': 'host',
         'keepalive': random.randint(1, 10),
         'port': random.randint(1, 10),
-        'username': ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),
-        'password': ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),
+        'username': random_string(),
+        'password': random_string(),
         'archive_topic': None
     }
 
     def test_multiple_topics(self):
-        topic1 = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])  # pylint: disable=unused-variable
-        topic2 = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+        topic1 = random_string()
+        topic2 = random_string()
         config_dict = dict(self.config_dict)
         config_dict['unit_system'] = self.unit_system_name
         config_dict['topics'] = {}

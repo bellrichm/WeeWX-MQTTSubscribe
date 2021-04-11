@@ -13,8 +13,9 @@ import unittest
 import mock
 
 import random
-import string
 import xml.etree
+
+from test_weewx_stubs import random_string
 
 from user.ExampleMessageCallbackProvider import MessageCallbackProvider
 
@@ -33,8 +34,7 @@ class Test1(unittest.TestCase):
 
         i = 0
         while i < size:
-            # pylint: disable=unused-variable
-            observation_dict[''.join([random.choice(string.ascii_letters) for n in range(32)])] = round(random.uniform(101, 200), 2)
+            observation_dict[random_string()] = round(random.uniform(101, 200), 2)
             i += 1
 
         return observation_dict

@@ -14,10 +14,10 @@ import mock
 import configobj
 import copy
 import random
-import string
 import time
 
 import test_weewx_stubs
+from test_weewx_stubs import random_string
 
 import user.MQTTSubscribe
 
@@ -25,7 +25,7 @@ class atestInitialization(unittest.TestCase):
     def test_invalid_binding(self):
         mock_StdEngine = mock.Mock()
 
-        binding = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+        binding = random_string()
         config_dict = {
             'MQTTSubscribeService': {
                 'binding': binding
@@ -73,7 +73,7 @@ class atestInitialization(unittest.TestCase):
     def test_archive_topic_specified(self):
         mock_StdEngine = mock.Mock()
         #mock_StdEngine.stn_info.hardware = 'MQTTSubscribeDriver'
-        archive_topic = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+        archive_topic = random_string()
 
         config_dict = {
             'MQTTSubscribeService': {
@@ -130,7 +130,7 @@ class Testnew_loop_packet(unittest.TestCase):
         }
 
         self.config_dict['MQTTSubscribeService'] = {}
-        self.config_dict['MQTTSubscribeService']['topic'] = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+        self.config_dict['MQTTSubscribeService']['topic'] = random_string()
 
     @staticmethod
     def generator(test_data):
@@ -138,7 +138,7 @@ class Testnew_loop_packet(unittest.TestCase):
             yield data
 
     def test_queue_valid(self):
-        topic = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+        topic = random_string()
         current_time = int(time.time() + 0.5)
         end_period_ts = (int(current_time / 300) + 1) * 300
         start_ts = end_period_ts - 300
@@ -241,7 +241,7 @@ class Testnew_archive_record(unittest.TestCase):
             yield data
 
     def test_queue_valid(self):
-        topic = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+        topic = random_string()
         current_time = int(time.time() + 0.5)
         end_period_ts = (int(current_time / 300) + 1) * 300
         start_ts = end_period_ts - 300
@@ -270,7 +270,7 @@ class Testnew_archive_record(unittest.TestCase):
 
     def test_field_missing(self):
         unit_system = random.randint(1, 10)
-        fieldname = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+        fieldname = random_string()
         config_dict = {}
         config_dict['MQTTSubscribeService'] = {}
 
@@ -303,7 +303,7 @@ class Testnew_archive_record(unittest.TestCase):
     def test_field_exists():
         mock_StdEngine = mock.Mock()
         unit_system = random.randint(1, 10)
-        fieldname = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+        fieldname = random_string()
         config_dict = {}
         config_dict['MQTTSubscribeService'] = {}
 

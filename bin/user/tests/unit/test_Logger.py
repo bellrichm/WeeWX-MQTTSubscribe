@@ -15,10 +15,9 @@ import unittest
 import mock
 
 import random
-import string
 import sys
 
-from test_weewx_stubs import weeutil, weewx
+from test_weewx_stubs import weeutil, weewx, random_string
 
 # Stole from six module. Added to eliminate dependency on six when running under WeeWX 3.x
 PY2 = sys.version_info[0] == 2
@@ -35,8 +34,8 @@ class TestV3Logging(unittest.TestCase):
             with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
                 with mock.patch('user.MQTTSubscribe.open') as mock_open:
                     from user.MQTTSubscribe import Logger
-                    mode = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
-                    filename = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+                    mode = random_string()
+                    filename = random_string()
 
                     mock_logging._checkLevel.return_value = 0 # pylint: disable=protected-access
                     Logger(mode, filename=filename)
@@ -62,8 +61,8 @@ class TestV3Logging(unittest.TestCase):
                 with mock.patch('user.MQTTSubscribe.syslog') as mock_syslog:
                     from user.MQTTSubscribe import Logger
 
-                    mode = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
-                    message = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+                    mode = random_string()
+                    message = random_string()
                     mock_logging._checkLevel.return_value = random.randint(41, 99) # pylint: disable=protected-access
 
                     SUT = Logger(mode)
@@ -90,8 +89,8 @@ class TestV3Logging(unittest.TestCase):
                 with mock.patch('user.MQTTSubscribe.syslog') as mock_syslog:
                     from user.MQTTSubscribe import Logger
                     log_level = random.randint(1, 99)
-                    mode = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
-                    message = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+                    mode = random_string()
+                    message = random_string()
                     mock_logging._checkLevel.return_value = random.randint(1, 40) # pylint: disable=protected-access
                     type(mock_syslog).LOG_ERR = mock.PropertyMock(return_value=log_level)
 
@@ -122,9 +121,9 @@ class TestV3Logging(unittest.TestCase):
                         mock_file = mock.Mock()
                         mock_open.return_value = mock_file
                         log_level = random.randint(1, 99)
-                        mode = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
-                        message = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
-                        filename = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+                        mode = random_string()
+                        message = random_string()
+                        filename = random_string()
                         mock_logging._checkLevel.return_value = random.randint(1, 40) # pylint: disable=protected-access
                         type(mock_syslog).LOG_ERR = mock.PropertyMock(return_value=log_level)
 
@@ -154,8 +153,8 @@ class TestV3Logging(unittest.TestCase):
                     with mock.patch('user.MQTTSubscribe.syslog') as mock_syslog:
                         from user.MQTTSubscribe import Logger
                         log_level = random.randint(1, 99)
-                        mode = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
-                        message = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+                        mode = random_string()
+                        message = random_string()
                         mock_logging._checkLevel.return_value = random.randint(1, 40) # pylint: disable=protected-access
                         type(mock_syslog).LOG_ERR = mock.PropertyMock(return_value=log_level)
 
@@ -184,8 +183,8 @@ class TestV3Logging(unittest.TestCase):
                 with mock.patch('user.MQTTSubscribe.syslog') as mock_syslog:
                     from user.MQTTSubscribe import Logger
 
-                    mode = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
-                    message = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+                    mode = random_string()
+                    message = random_string()
                     mock_logging._checkLevel.return_value = random.randint(21, 99) # pylint: disable=protected-access
 
                     SUT = Logger(mode)
@@ -212,8 +211,8 @@ class TestV3Logging(unittest.TestCase):
                 with mock.patch('user.MQTTSubscribe.syslog') as mock_syslog:
                     from user.MQTTSubscribe import Logger
                     log_level = random.randint(1, 99)
-                    mode = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
-                    message = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+                    mode = random_string()
+                    message = random_string()
                     mock_logging._checkLevel.return_value = random.randint(1, 20) # pylint: disable=protected-access
                     type(mock_syslog).LOG_INFO = mock.PropertyMock(return_value=log_level)
 
@@ -244,9 +243,9 @@ class TestV3Logging(unittest.TestCase):
                         mock_file = mock.Mock()
                         mock_open.return_value = mock_file
                         log_level = random.randint(1, 99)
-                        mode = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
-                        message = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
-                        filename = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+                        mode = random_string()
+                        message = random_string()
+                        filename = random_string()
                         mock_logging._checkLevel.return_value = random.randint(1, 20) # pylint: disable=protected-access
                         type(mock_syslog).LOG_INFO = mock.PropertyMock(return_value=log_level)
 
@@ -276,8 +275,8 @@ class TestV3Logging(unittest.TestCase):
                     with mock.patch('user.MQTTSubscribe.syslog') as mock_syslog:
                         from user.MQTTSubscribe import Logger
                         log_level = random.randint(1, 99)
-                        mode = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
-                        message = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+                        mode = random_string()
+                        message = random_string()
                         mock_logging._checkLevel.return_value = random.randint(1, 20) # pylint: disable=protected-access
                         type(mock_syslog).LOG_INFO = mock.PropertyMock(return_value=log_level)
 
@@ -306,8 +305,8 @@ class TestV3Logging(unittest.TestCase):
                 with mock.patch('user.MQTTSubscribe.syslog') as mock_syslog:
                     from user.MQTTSubscribe import Logger
 
-                    mode = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
-                    message = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+                    mode = random_string()
+                    message = random_string()
                     mock_logging._checkLevel.return_value = random.randint(41, 99) # pylint: disable=protected-access
 
                     SUT = Logger(mode)
@@ -334,8 +333,8 @@ class TestV3Logging(unittest.TestCase):
                 with mock.patch('user.MQTTSubscribe.syslog') as mock_syslog:
                     from user.MQTTSubscribe import Logger
                     log_level = random.randint(1, 99)
-                    mode = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
-                    message = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+                    mode = random_string()
+                    message = random_string()
                     mock_logging._checkLevel.return_value = random.randint(1, 10) # pylint: disable=protected-access
                     type(mock_syslog).LOG_DEBUG = mock.PropertyMock(return_value=log_level)
 
@@ -366,9 +365,9 @@ class TestV3Logging(unittest.TestCase):
                         mock_file = mock.Mock()
                         mock_open.return_value = mock_file
                         log_level = random.randint(1, 99)
-                        mode = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
-                        message = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
-                        filename = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+                        mode = random_string()
+                        message = random_string()
+                        filename = random_string()
                         mock_logging._checkLevel.return_value = random.randint(1, 10) # pylint: disable=protected-access
                         type(mock_syslog).LOG_DEBUG = mock.PropertyMock(return_value=log_level)
 
@@ -398,8 +397,8 @@ class TestV3Logging(unittest.TestCase):
                     with mock.patch('user.MQTTSubscribe.syslog') as mock_syslog:
                         from user.MQTTSubscribe import Logger
                         log_level = random.randint(1, 99)
-                        mode = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
-                        message = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+                        mode = random_string()
+                        message = random_string()
                         mock_logging._checkLevel.return_value = random.randint(1, 10) # pylint: disable=protected-access
                         type(mock_syslog).LOG_DEBUG = mock.PropertyMock(return_value=log_level)
 
@@ -428,8 +427,8 @@ class TestV3Logging(unittest.TestCase):
                 with mock.patch('user.MQTTSubscribe.syslog') as mock_syslog:
                     from user.MQTTSubscribe import Logger
                     weewx.debug = 0
-                    mode = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
-                    message = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+                    mode = random_string()
+                    message = random_string()
                     mock_logging._checkLevel.return_value = random.randint(41, 99) # pylint: disable=protected-access
 
                     SUT = Logger(mode)
@@ -456,8 +455,8 @@ class TestV3Logging(unittest.TestCase):
                 with mock.patch('user.MQTTSubscribe.syslog') as mock_syslog:
                     from user.MQTTSubscribe import Logger
                     log_level = random.randint(1, 99)
-                    mode = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
-                    message = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+                    mode = random_string()
+                    message = random_string()
                     mock_logging._checkLevel.return_value = random.randint(41, 99) # pylint: disable=protected-access
                     type(mock_syslog).LOG_DEBUG = mock.PropertyMock(return_value=log_level)
 
@@ -488,9 +487,9 @@ class TestV3Logging(unittest.TestCase):
                         mock_file = mock.Mock()
                         mock_open.return_value = mock_file
                         log_level = random.randint(1, 99)
-                        mode = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
-                        message = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
-                        filename = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+                        mode = random_string()
+                        message = random_string()
+                        filename = random_string()
                         mock_logging._checkLevel.return_value = random.randint(1, 10) # pylint: disable=protected-access
                         type(mock_syslog).LOG_DEBUG = mock.PropertyMock(return_value=log_level)
 
@@ -520,8 +519,8 @@ class TestV3Logging(unittest.TestCase):
                     with mock.patch('user.MQTTSubscribe.syslog') as mock_syslog:
                         from user.MQTTSubscribe import Logger
                         log_level = random.randint(1, 99)
-                        mode = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
-                        message = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+                        mode = random_string()
+                        message = random_string()
                         mock_logging._checkLevel.return_value = random.randint(1, 10) # pylint: disable=protected-access
                         type(mock_syslog).LOG_DEBUG = mock.PropertyMock(return_value=log_level)
 
@@ -562,8 +561,7 @@ class TestV4Logging(unittest.TestCase):
                 mock_logger.parent = mock_parent_logger
                 mock_logging.getLogger.return_value = mock_logger
 
-                SUT = Logger(''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),
-                             level=''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]))
+                SUT = Logger(random_string(), level=random_string())
 
                 mock_logging.addLevelName.assert_called_once_with(log_level, 'TRACE')
                 SUT._logmsg.setLevel.called_once_with(log_level) # pylint: disable=protected-access
@@ -585,8 +583,8 @@ class TestV4Logging(unittest.TestCase):
 
                 mock_file_handler = mock.Mock()
                 mock_logging.FileHandler.return_value = mock_file_handler
-                mode = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
-                filename = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+                mode = random_string()
+                filename = random_string()
 
                 SUT = Logger(mode, filename=filename)
 
@@ -609,7 +607,7 @@ class TestV4Logging(unittest.TestCase):
                 from user.MQTTSubscribe import Logger
 
                 mock_logging._checkLevel.return_value = 0 # pylint: disable=protected-access
-                mode = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+                mode = random_string()
 
                 SUT = Logger(mode, console=True)
 
@@ -633,8 +631,8 @@ class TestV4Logging(unittest.TestCase):
                 from user.MQTTSubscribe import Logger
 
                 mock_logging._checkLevel.return_value = 0 # pylint: disable=protected-access
-                mode = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
-                message = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+                mode = random_string()
+                message = random_string()
 
                 SUT = Logger(mode)
 
@@ -660,8 +658,8 @@ class TestV4Logging(unittest.TestCase):
                 from user.MQTTSubscribe import Logger
 
                 mock_logging._checkLevel.return_value = 0 # pylint: disable=protected-access
-                mode = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
-                message = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+                mode = random_string()
+                message = random_string()
 
                 SUT = Logger(mode)
 
@@ -687,8 +685,8 @@ class TestV4Logging(unittest.TestCase):
                 from user.MQTTSubscribe import Logger
 
                 mock_logging._checkLevel.return_value = 0 # pylint: disable=protected-access
-                mode = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
-                message = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+                mode = random_string()
+                message = random_string()
 
                 SUT = Logger(mode)
 
@@ -715,8 +713,8 @@ class TestV4Logging(unittest.TestCase):
 
                 weewx.debug = 2
                 mock_logging._checkLevel.return_value = 0 # pylint: disable=protected-access
-                mode = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
-                message = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+                mode = random_string()
+                message = random_string()
 
                 SUT = Logger(mode)
 
@@ -743,8 +741,8 @@ class TestV4Logging(unittest.TestCase):
 
                 weewx.debug = 0
                 mock_logging._checkLevel.return_value = 0 # pylint: disable=protected-access
-                mode = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
-                message = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+                mode = random_string()
+                message = random_string()
 
                 SUT = Logger(mode)
 

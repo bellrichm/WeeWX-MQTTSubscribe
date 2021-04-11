@@ -9,10 +9,11 @@
 # pylint: disable=invalid-name
 
 import random
-import string
 import time
 
 import unittest
+
+from test_weewx_stubs import random_string
 
 from user.MQTTSubscribe import RecordCache
 
@@ -21,7 +22,7 @@ class Test_clear_cache(unittest.TestCase):
         unit_system = random.randint(1, 10)
         SUT = RecordCache()
 
-        key = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+        key = random_string()
         value = round(random.uniform(1, 100), 2)
         timestamp = time.time()
         SUT.update_value(key, value, unit_system, timestamp)
@@ -34,7 +35,7 @@ class Test_update_value(unittest.TestCase):
         unit_system = random.randint(1, 10)
         SUT = RecordCache()
 
-        key = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+        key = random_string()
         value = round(random.uniform(1, 100), 2)
         timestamp = time.time()
 
@@ -47,7 +48,7 @@ class Test_update_value(unittest.TestCase):
         unit_system = random.randint(1, 10)
         SUT = RecordCache()
 
-        key = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+        key = random_string()
 
         SUT.update_value(key, unit_system, round(random.uniform(1, 100), 2), time.time())
 
@@ -62,7 +63,7 @@ class Test_get_value(unittest.TestCase):
     def test_key_not_in_cache(self):
         SUT = RecordCache()
 
-        value = SUT.get_value(''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), 0, None)
+        value = SUT.get_value(random_string(), 0, None)
 
         self.assertIsNone(value)
 
@@ -70,7 +71,7 @@ class Test_get_value(unittest.TestCase):
         unit_system = random.randint(1, 10)
         SUT = RecordCache()
 
-        key = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+        key = random_string()
         value = round(random.uniform(1, 100), 2)
         SUT.update_value(key, value, unit_system, time.time())
 
@@ -80,7 +81,7 @@ class Test_get_value(unittest.TestCase):
     def test_get_data_is_not_expired(self):
         unit_system = random.randint(1, 10)
         SUT = RecordCache()
-        key = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+        key = random_string()
         value = round(random.uniform(1, 100), 2)
         timestamp = time.time()
         SUT.update_value(key, value, unit_system, timestamp)
@@ -91,7 +92,7 @@ class Test_get_value(unittest.TestCase):
     def test_get_data_is_expired(self):
         unit_system = random.randint(1, 10)
         SUT = RecordCache()
-        key = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+        key = random_string()
         value = round(random.uniform(1, 100), 2)
         timestamp = time.time()
         SUT.update_value(key, value, unit_system, timestamp)
@@ -104,18 +105,18 @@ class Test_update_timestamp(unittest.TestCase):
         # somewhat silly test
         unit_system = random.randint(1, 10)
         SUT = RecordCache()
-        key = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+        key = random_string()
         value = round(random.uniform(1, 100), 2)
         SUT.update_value(key, value, unit_system, time.time())
 
-        nonexisting_key = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+        nonexisting_key = random_string()
         SUT.update_timestamp(nonexisting_key, time.time())
         self.assertNotIn(nonexisting_key, SUT.cached_values)
 
     def test_key_exists(self):
         unit_system = random.randint(1, 10)
         SUT = RecordCache()
-        key = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+        key = random_string()
         value = round(random.uniform(1, 100), 2)
         SUT.update_value(key, value, unit_system, 0)
 
@@ -128,18 +129,18 @@ class Test_remove_value(unittest.TestCase):
         # somewhat silly test
         unit_system = random.randint(1, 10)
         SUT = RecordCache()
-        key = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+        key = random_string()
         value = round(random.uniform(1, 100), 2)
         SUT.update_value(key, value, unit_system, time.time())
 
-        nonexisting_key = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+        nonexisting_key = random_string()
         SUT.remove_value(nonexisting_key)
         self.assertNotIn(nonexisting_key, SUT.cached_values)
 
     def test_key_exists(self):
         unit_system = random.randint(1, 10)
         SUT = RecordCache()
-        key = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+        key = random_string()
         value = round(random.uniform(1, 100), 2)
         SUT.update_value(key, value, unit_system, time.time())
 

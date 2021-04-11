@@ -15,11 +15,11 @@ import mock
 
 import argparse
 import random
-import string
 import sys
 import time
 
-#import test_weewx_stubs
+from test_weewx_stubs import random_string
+
 import user.MQTTSubscribe
 
 # Stole from six module. Added to eliminate dependency on six when running under WeeWX 3.x
@@ -58,12 +58,12 @@ class test_simulate_driver(unittest.TestCase):
         options.delay = delay
         options.units = 'US'
 
-        options.callback = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
-        options.topics = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
-        options.host = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
-        options.console = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
-        options.config_file = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
-        options.verbose = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+        options.callback = random_string()
+        options.topics = random_string()
+        options.host = random_string()
+        options.console = random_string()
+        options.config_file = random_string()
+        options.verbose = random_string()
 
         mock_driver = mock.Mock()
         data = {}
@@ -105,12 +105,12 @@ class test_simulate_driver(unittest.TestCase):
 
         options.interval = random.randint(1, 99)
         options.delay = random.randint(1, 99)
-        options.callback = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
-        options.topics = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
-        options.host = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
-        options.console = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
-        options.config_file = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
-        options.verbose = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+        options.callback = random_string()
+        options.topics = random_string()
+        options.host = random_string()
+        options.console = random_string()
+        options.config_file = random_string()
+        options.verbose = random_string()
 
         mock_driver = mock.Mock()
         data = {}
@@ -156,12 +156,12 @@ class test_simulate_service(unittest.TestCase):
         options.delay = delay
         options.units = 'US'
 
-        options.callback = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
-        options.topics = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
-        options.host = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
-        options.console = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
-        options.config_file = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
-        options.verbose = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+        options.callback = random_string()
+        options.topics = random_string()
+        options.host = random_string()
+        options.console = random_string()
+        options.config_file = random_string()
+        options.verbose = random_string()
 
         with mock.patch('user.MQTTSubscribe.argparse') as mock_argparse:
             with mock.patch('user.MQTTSubscribe.print'):
@@ -208,12 +208,12 @@ class test_simulate_service(unittest.TestCase):
         options.delay = delay
         options.units = 'US'
 
-        options.callback = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
-        options.topics = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
-        options.host = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
-        options.console = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
-        options.config_file = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
-        options.verbose = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+        options.callback = random_string()
+        options.topics = random_string()
+        options.host = random_string()
+        options.console = random_string()
+        options.config_file = random_string()
+        options.verbose = random_string()
 
         with mock.patch('user.MQTTSubscribe.argparse') as mock_argparse:
             with mock.patch('user.MQTTSubscribe.print'):
@@ -262,7 +262,7 @@ class test_init_config(unittest.TestCase):
         topics = []
         i = 0
         while i < topic_count:
-            topics.append(''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])) # pylint: disable=unused-variable
+            topics.append(random_string())
             i += 1
 
         topics_string = ','.join(topics)
@@ -280,8 +280,8 @@ class test_init_config(unittest.TestCase):
         options.delay = random.randint(1, 99)
         options.units = None
 
-        options.config_file = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
-        options.verbose = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+        options.config_file = random_string()
+        options.verbose = random_string()
 
         with mock.patch('user.MQTTSubscribe.argparse') as mock_argparse:
             with mock.patch('user.MQTTSubscribe.print'):
@@ -332,7 +332,7 @@ class test_init_config(unittest.TestCase):
     def test_init_host(self):
         config_dict = {}
         binding = 'loop'
-        host = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+        host = random_string()
 
         MQTTSubscribeService_binding_config = {
             'MQTTSubscribeService': {
@@ -365,8 +365,8 @@ class test_init_config(unittest.TestCase):
         options.delay = random.randint(1, 99)
         options.units = None
 
-        options.config_file = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
-        options.verbose = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+        options.config_file = random_string()
+        options.verbose = random_string()
 
         with mock.patch('user.MQTTSubscribe.argparse') as mock_argparse:
             with mock.patch('user.MQTTSubscribe.print'):
@@ -397,7 +397,7 @@ class test_init_config(unittest.TestCase):
     def test_init_callback(self):
         config_dict = {}
         binding = 'loop'
-        callback = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+        callback = random_string()
 
         MQTTSubscribeService_binding_config = {
             'MQTTSubscribeService': {
@@ -434,8 +434,8 @@ class test_init_config(unittest.TestCase):
         options.delay = random.randint(1, 99)
         options.units = None
 
-        options.config_file = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
-        options.verbose = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+        options.config_file = random_string()
+        options.verbose = random_string()
 
         with mock.patch('user.MQTTSubscribe.argparse') as mock_argparse:
             with mock.patch('user.MQTTSubscribe.print'):
@@ -490,7 +490,7 @@ class test_init_config(unittest.TestCase):
         options.callback = None
         options.topics = None
         options.host = None
-        options.console = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+        options.console = random_string()
 
         options.type = None
         options.record_count = random.randint(1, 99)
@@ -498,8 +498,8 @@ class test_init_config(unittest.TestCase):
         options.delay = random.randint(1, 99)
         options.units = None
 
-        options.config_file = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
-        options.verbose = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+        options.config_file = random_string()
+        options.verbose = random_string()
 
         with mock.patch('user.MQTTSubscribe.argparse') as mock_argparse:
             with mock.patch('user.MQTTSubscribe.print'):

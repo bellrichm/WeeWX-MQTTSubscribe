@@ -19,21 +19,18 @@ import configobj
 import copy
 import json
 import random
-import string
 import sys
 import time
 
 import six
 import test_weewx_stubs # used to set up stubs - pylint: disable=unused-import
+from test_weewx_stubs import random_string
 
 import user.MQTTSubscribe
 from user.MQTTSubscribe import TopicManager, Logger
 
 # Stole from six module. Added to eliminate dependency on six when running under WeeWX 3.x
 PY2 = sys.version_info[0] == 2
-
-def random_string(length=32):
-    return ''.join([random.choice(string.ascii_letters + string.digits) for n in range(length)]) # pylint: disable=unused-variable
 
 # todo - mock?
 def to_float(x):
@@ -218,7 +215,7 @@ class TestInitialization(unittest.TestCase):
 # missing message section? todo
 
 class TestKeywordload(unittest.TestCase):
-    topic = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+    topic = random_string()
 
     payload_dict = {
         'inTemp': round(random.uniform(10, 100), 2),
@@ -424,7 +421,6 @@ class TestKeywordload(unittest.TestCase):
 
         message_handler_config_dict = {}
         message_handler_config_dict['type'] = 'keyword'
-        field_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])  # pylint: disable=unused-variable
 
         fields = {}
         fields['ignore'] = True
@@ -466,7 +462,6 @@ class TestKeywordload(unittest.TestCase):
 
         message_handler_config_dict = {}
         message_handler_config_dict['type'] = 'keyword'
-        field_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])  # pylint: disable=unused-variable
 
         fields = {}
         fields['ignore'] = True
@@ -546,7 +541,7 @@ class TestKeywordload(unittest.TestCase):
         mock_manager.append_data.assert_called_once_with(msg.topic, payload_dict)
 
 class TestJsonPayload(unittest.TestCase):
-    topic = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+    topic = random_string()
 
     payload_dict = {
         'inTemp': round(random.uniform(10, 100), 2),
@@ -567,7 +562,7 @@ class TestJsonPayload(unittest.TestCase):
         SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
 
         msg = Msg(self.topic,
-                  ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),  # pylint: disable=unused-variable
+                  random_string(),
                   0,
                   0)
 
@@ -696,7 +691,7 @@ class TestJsonPayload(unittest.TestCase):
     def test_msg_id_set(self):
         mock_manager = mock.Mock(spec=TopicManager)
         stub_logger = test_weewx_stubs.Logger(console=True)
-        msg_id_field = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])  # pylint: disable=unused-variable
+        msg_id_field = random_string()
         mock_manager.get_msg_id_field.return_value = msg_id_field
         mock_manager.get_fields.return_value = {}
         mock_manager.get_ignore_value.return_value = False
@@ -743,7 +738,7 @@ class TestJsonPayload(unittest.TestCase):
     def test_ignore_msg_id_field_set(self):
         mock_manager = mock.Mock(spec=TopicManager)
         stub_logger = test_weewx_stubs.Logger(console=True)
-        msg_id_field = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])  # pylint: disable=unused-variable
+        msg_id_field = random_string()
         mock_manager.get_msg_id_field.return_value = msg_id_field
         mock_manager.get_fields.return_value = {}
         mock_manager.get_ignore_value.return_value = False
@@ -983,7 +978,6 @@ class TestJsonPayload(unittest.TestCase):
 
         message_handler_config_dict = {}
         message_handler_config_dict['type'] = 'json'
-        field_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])  # pylint: disable=unused-variable
 
         fields = {}
 
@@ -1034,7 +1028,6 @@ class TestJsonPayload(unittest.TestCase):
 
         message_handler_config_dict = {}
         message_handler_config_dict['type'] = 'json'
-        field_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])  # pylint: disable=unused-variable
 
         fields = {}
 
@@ -1065,13 +1058,13 @@ class TestJsonPayload(unittest.TestCase):
                                            % (msg.topic, msg.payload, lookup_key, filters[lookup_key]))
 
 class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
-    topic_end = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
-    topic = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+    topic_end = random_string()
+    topic = random_string()
     topic = topic + '/' + topic_end
     single_topic = topic_end
-    multi_topic = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+    multi_topic = random_string()
     multi_topic = multi_topic + '/'
-    multi_topic = multi_topic + ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+    multi_topic = multi_topic + random_string()
     multi_topic = multi_topic + '/' + topic_end
 
     payload_dict = {
@@ -1361,7 +1354,6 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
 
         message_handler_config_dict = {}
         message_handler_config_dict['type'] = 'individual'
-        field_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])  # pylint: disable=unused-variable
 
         fields = {}
 
@@ -1384,13 +1376,13 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         self.assertFalse(mock_manager.append_data.called)
 
 class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
-    topic_end = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
-    topic = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+    topic_end = random_string()
+    topic = random_string()
     topic = topic + '/' + topic_end
     single_topic = topic_end
-    multi_topic = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+    multi_topic = random_string()
     multi_topic = multi_topic + '/'
-    multi_topic = multi_topic + ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+    multi_topic = multi_topic + random_string()
     multi_topic = multi_topic + '/' + topic_end
 
     payload_dict = {
@@ -1417,7 +1409,7 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
 
         SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
 
-        payload = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])  # pylint: disable=unused-variable
+        payload = random_string()
         if not PY2:
             payload = payload.encode("utf-8")
 

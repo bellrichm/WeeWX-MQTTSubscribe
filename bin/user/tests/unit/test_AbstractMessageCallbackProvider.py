@@ -15,10 +15,10 @@ import unittest
 import mock
 
 import random
-import string
 
 import six
 import test_weewx_stubs # needed to import AbstractMessageCallbackProvider pylint: disable=unused-import
+from test_weewx_stubs import random_string
 
 from user.MQTTSubscribe import AbstractMessageCallbackProvider, Logger, TopicManager
 
@@ -40,14 +40,12 @@ class TestTest(unittest.TestCase):
                 'source': 'lambda x: to_float(x)',
                 'compiled': eval('lambda x: to_float(x)')
             }
-            orig_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])  # pylint: disable=unused-variable
+            orig_name = random_string()
             previous_value = round(random.uniform(101, 200), 2)
 
             SUT.previous_values = {
                 orig_name: previous_value
             }
-
-            new_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])  # pylint: disable=unused-variable
 
             fields = {
                 orig_name: {
@@ -75,9 +73,7 @@ class TestTest(unittest.TestCase):
                 'source': 'lambda x: to_float(x)',
                 'compiled': eval('lambda x: to_float(x)')
             }
-            orig_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])  # pylint: disable=unused-variable
-
-            new_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])  # pylint: disable=unused-variable
+            orig_name = random_string()
 
             fields = {
                 orig_name: {
@@ -105,14 +101,12 @@ class TestTest(unittest.TestCase):
                 'source': 'lambda x: to_float(x)',
                 'compiled': eval('lambda x: to_float(x)')
             }
-            orig_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])  # pylint: disable=unused-variable
+            orig_name = random_string()
             previous_value = round(random.uniform(0, 9), 2)
 
             SUT.previous_values = {
                 orig_name: previous_value
             }
-
-            new_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])  # pylint: disable=unused-variable
 
             fields = {
                 orig_name: {
@@ -141,19 +135,15 @@ class TestTest(unittest.TestCase):
                 'compiled': eval('lambda x: to_float(x)')
             }
 
-            mock_weewx_units.getStandardUnitType.return_value = \
-                (''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),
-                 ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]))
+            mock_weewx_units.getStandardUnitType.return_value = (random_string(), random_string())
             converted_value = round(random.uniform(10, 100), 2)
-            mock_weewx_units.convert.return_value = (converted_value,
-                                                     ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),
-                                                     ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]))
+            mock_weewx_units.convert.return_value = (converted_value, random_string(), random_string())
 
-            orig_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])  # pylint: disable=unused-variable
+            orig_name = random_string()
 
             fields = {
                 orig_name: {
-                    'units': ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]),  # pylint: disable=unused-variable
+                    'units': random_string(),
                 }
             }
 

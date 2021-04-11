@@ -18,16 +18,13 @@ import configobj
 import copy
 import datetime
 import random
-import string
 import time
 
 import test_weewx_stubs
+from test_weewx_stubs import random_string
+
 
 from user.MQTTSubscribe import TopicManager, Logger
-
-def random_string(length=32):
-    return ''.join([random.choice(string.ascii_letters + string.digits) for n in range(length)]) # pylint: disable=unused-variable
-
 class TestInit(unittest.TestCase):
     def test_missing_topic(self):
         mock_logger = mock.Mock(spec=Logger)
@@ -46,8 +43,8 @@ class TestInit(unittest.TestCase):
 
         config_dict = {}
 
-        topic = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
-        unit_system_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+        topic = random_string()
+        unit_system_name = random_string()
         config_dict[topic] = {}
         config_dict['unit_system'] = unit_system_name
 
@@ -63,8 +60,8 @@ class TestInit(unittest.TestCase):
 
         config_dict = {}
 
-        topic = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
-        unit_system_name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+        topic = random_string()
+        unit_system_name = random_string()
         config_dict[topic] = {}
         config_dict[topic]['unit_system'] = unit_system_name
 
@@ -80,11 +77,11 @@ class TestInit(unittest.TestCase):
 
         config_dict = {}
 
-        topic = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
-        field = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+        topic = random_string()
+        field = random_string()
         config_dict[topic] = {}
         config_dict[topic][field] = {}
-        config_dict[topic][field]['units'] = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+        config_dict[topic][field]['units'] = random_string()
         field_dict = {}
         field_dict['name'] = field
         field_dict['use_topic_as_field_name'] = False
@@ -253,7 +250,7 @@ class TestConfigureFields(unittest.TestCase):
     def test_no_field_configuration(self):
         mock_logger = mock.Mock(spec=Logger)
 
-        topic = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+        topic = random_string()
         configured_field = {}
         configured_field[topic] = {}
         configured_field[topic]['name'] = topic
@@ -277,7 +274,7 @@ class TestConfigureFields(unittest.TestCase):
     def test_global_defaults(self):
         mock_logger = mock.Mock(spec=Logger)
 
-        topic = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+        topic = random_string()
         config_dict = {}
         config_dict['ignore'] = 'true'
         config_dict['ignore_msg_id_field'] = 'true'
@@ -286,7 +283,7 @@ class TestConfigureFields(unittest.TestCase):
 
         config_dict[topic] = {}
 
-        fieldname = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+        fieldname = random_string()
         config_dict[topic][fieldname] = {}
 
         config = configobj.ConfigObj(config_dict)
@@ -301,7 +298,7 @@ class TestConfigureFields(unittest.TestCase):
     def test_topic_defaults(self):
         mock_logger = mock.Mock(spec=Logger)
 
-        topic = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+        topic = random_string()
         config_dict = {}
 
         config_dict[topic] = {}
@@ -310,7 +307,7 @@ class TestConfigureFields(unittest.TestCase):
         config_dict[topic]['contains_total'] = 'true'
         config_dict[topic]['conversion_type'] = 'int'
 
-        fieldname = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+        fieldname = random_string()
         config_dict[topic][fieldname] = {}
 
         config = configobj.ConfigObj(config_dict)
@@ -325,12 +322,12 @@ class TestConfigureFields(unittest.TestCase):
     def test_configure_field(self):
         mock_logger = mock.Mock(spec=Logger)
 
-        topic = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+        topic = random_string()
         config_dict = {}
 
         config_dict[topic] = {}
 
-        fieldname = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+        fieldname = random_string()
         config_dict[topic][fieldname] = {}
         config_dict[topic][fieldname]['ignore'] = 'true'
         config_dict[topic][fieldname]['ignore_msg_id_field'] = 'true'
@@ -357,13 +354,13 @@ class TestConfigureFields(unittest.TestCase):
     def test_field_conversion_type_bool(self):
         mock_logger = mock.Mock(spec=Logger)
 
-        topic = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+        topic = random_string()
         config_dict = {}
 
         config_dict[topic] = {}
         config_dict[topic]['conversion_type'] = 'int'
 
-        fieldname = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+        fieldname = random_string()
         config_dict[topic][fieldname] = {}
 
         config_dict[topic][fieldname]['conversion_type'] = 'bool'
@@ -377,13 +374,13 @@ class TestConfigureFields(unittest.TestCase):
     def test_field_conversion_type_float(self):
         mock_logger = mock.Mock(spec=Logger)
 
-        topic = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+        topic = random_string()
         config_dict = {}
 
         config_dict[topic] = {}
         config_dict[topic]['conversion_type'] = 'float'
 
-        fieldname = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+        fieldname = random_string()
         config_dict[topic][fieldname] = {}
 
         config_dict[topic][fieldname]['conversion_type'] = 'float'
@@ -397,12 +394,12 @@ class TestConfigureFields(unittest.TestCase):
     def test_field_conversion_type_int(self):
         mock_logger = mock.Mock(spec=Logger)
 
-        topic = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+        topic = random_string()
         config_dict = {}
 
         config_dict[topic] = {}
 
-        fieldname = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+        fieldname = random_string()
         config_dict[topic][fieldname] = {}
 
         config_dict[topic][fieldname]['conversion_type'] = 'int'
@@ -416,12 +413,12 @@ class TestConfigureFields(unittest.TestCase):
     def test_field_conversion_type_unknown(self):
         mock_logger = mock.Mock(spec=Logger)
 
-        topic = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+        topic = random_string()
         config_dict = {}
 
         config_dict[topic] = {}
 
-        fieldname = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+        fieldname = random_string()
         config_dict[topic][fieldname] = {}
 
         config_dict[topic][fieldname]['conversion_type'] = 'unknown'
@@ -436,13 +433,13 @@ class TestConfigureFields(unittest.TestCase):
     def test_field_conversion_type_unknown2(self):
         mock_logger = mock.Mock(spec=Logger)
 
-        topic = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+        topic = random_string()
         config_dict = {}
 
         config_dict[topic] = {}
         config_dict[topic]['conversion_type'] = 'int'
 
-        fieldname = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+        fieldname = random_string()
         config_dict[topic][fieldname] = {}
 
         config_dict[topic][fieldname]['conversion_type'] = 'bool'
@@ -460,12 +457,12 @@ class TestConfigureFields(unittest.TestCase):
 
         value_count = random.randint(1, 5)
 
-        topic = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]) # pylint: disable=unused-variable
+        topic = random_string()
         config_dict = {}
 
         config_dict[topic] = {}
 
-        fieldname = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+        fieldname = random_string()
         config_dict[topic][fieldname] = {}
         config_dict[topic][fieldname]['filter_out_message_when'] = []
         filters = {fieldname: []}
@@ -482,7 +479,7 @@ class TestConfigureFields(unittest.TestCase):
         self.assertEqual(SUT.subscribed_topics[topic]['filters'], filters)
 
 class TestQueueSizeCheck(unittest.TestCase):
-    topic = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+    topic = random_string()
     config_dict = {}
     config_dict[topic] = {}
     config = configobj.ConfigObj(config_dict)
@@ -493,10 +490,10 @@ class TestQueueSizeCheck(unittest.TestCase):
         SUT = TopicManager(None, self.config, mock_logger)
 
         queue = deque()
-        queue.append(''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), )  # pylint: disable=unused-variable
-        queue.append(''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), )
-        queue.append(''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), )
-        queue.append(''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), )
+        queue.append(random_string(), )
+        queue.append(random_string(), )
+        queue.append(random_string(), )
+        queue.append(random_string(), )
         orig_queue_size = len(queue)
         max_queue = 2
 
@@ -510,10 +507,10 @@ class TestQueueSizeCheck(unittest.TestCase):
         SUT = TopicManager(None, self.config, mock_logger)
 
         queue = deque()
-        queue.append(''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), )  # pylint: disable=unused-variable
-        queue.append(''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), )
-        queue.append(''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), )
-        queue.append(''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), )
+        queue.append(random_string(), )
+        queue.append(random_string(), )
+        queue.append(random_string(), )
+        queue.append(random_string(), )
         orig_queue_size = len(queue)
         max_queue = 7
 
@@ -527,10 +524,10 @@ class TestQueueSizeCheck(unittest.TestCase):
         SUT = TopicManager(None, self.config, mock_logger)
 
         queue = deque()
-        queue.append(''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), )  # pylint: disable=unused-variable
-        queue.append(''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), )
-        queue.append(''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), )
-        queue.append(''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)]), )
+        queue.append(random_string(), )
+        queue.append(random_string(), )
+        queue.append(random_string(), )
+        queue.append(random_string(), )
         orig_queue_size = len(queue)
         max_queue = 4
 
@@ -540,7 +537,7 @@ class TestQueueSizeCheck(unittest.TestCase):
 
 
 class TestAppendData(unittest.TestCase):
-    topic = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+    topic = random_string()
     config_dict = {}
     config_dict[topic] = {}
     config = configobj.ConfigObj(config_dict)
@@ -754,7 +751,7 @@ class TestAppendData(unittest.TestCase):
 
 
 class TestGetQueueData(unittest.TestCase):
-    topic = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+    topic = random_string()
     config_dict = {}
     config_dict[topic] = {}
     config = configobj.ConfigObj(config_dict)
@@ -846,7 +843,7 @@ class TestGetQueueData(unittest.TestCase):
             self.assertEqual(len(elements), 0)
 
 class TestGetWindQueueData(unittest.TestCase):
-    topic = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+    topic = random_string()
     config_dict = {}
     config_dict['collect_wind_across_loops'] = False
     config_dict[topic] = {}
@@ -913,7 +910,7 @@ class TestGetWindQueueData(unittest.TestCase):
     def test_get_from_collector_not_called():
         mock_logger = mock.Mock(spec=Logger)
 
-        topic = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+        topic = random_string()
         config_dict = {}
         config_dict[topic] = {}
         config = configobj.ConfigObj(config_dict)
@@ -928,7 +925,7 @@ class TestGetWindQueueData(unittest.TestCase):
 
 class TestAccumulatedData(unittest.TestCase):
 
-    topic = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(32)])
+    topic = random_string()
     config_dict = {}
     config_dict[topic] = {}
     config = configobj.ConfigObj(config_dict)
