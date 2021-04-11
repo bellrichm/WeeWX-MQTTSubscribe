@@ -4,11 +4,10 @@
 #    See the file LICENSE.txt for your full rights.
 #
 
-# pylint: disable=import-outside-toplevel
 # pylint: disable=missing-docstring
 # pylint: disable=invalid-name
 # pylint: disable=too-few-public-methods
-# need to be python 2 compatible pylint: disable=bad-option-value, raise-missing-from
+# need to be python 2 compatible pylint: disable=bad-option-value, raise-missing-from, import-outside-toplevel
 # pylint: enable=bad-option-value
 from __future__ import print_function
 
@@ -240,7 +239,7 @@ class weewx(object): # pylint: disable=invalid-name
         attribute 'record', which is the new archive record."""
 
     class engine(object):
-        class StdEngine:
+        class StdEngine(object):
             pass
         class StdService(object):
             def __init__(self, engine, config_dict):

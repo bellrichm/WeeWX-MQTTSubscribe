@@ -7,7 +7,8 @@
 # pylint: disable=invalid-name
 # pylint: disable=wrong-import-order
 # pylint: disable=missing-docstring
-# pylint: disable=import-outside-toplevel
+# pylint: disable=bad-option-value, import-outside-toplevel
+# pylint: enable=bad-option-value
 
 from __future__ import with_statement
 
