@@ -752,8 +752,9 @@ class TopicManager(object):
                 self.subscribed_topics[topic]['conversion_func']['source'] = 'lambda x: to_int(x)'
             else:
                 self.subscribed_topics[topic]['conversion_func']['source'] = 'lambda x: x'
-            self.subscribed_topics[topic]['conversion_func']['compiled'] =  \
-                eval(self.subscribed_topics[topic]['conversion_func']['source']) # pylint: disable=eval-used
+            # pylint: disable=eval-used
+            self.subscribed_topics[topic]['conversion_func']['compiled'] =  eval(self.subscribed_topics[topic]['conversion_func']['source'])
+            # pylint: enable=eval-used
             self.subscribed_topics[topic]['unit_system'] = unit_system
             self.subscribed_topics[topic]['msg_id_field'] = topic_dict.get('msg_id_field', topic_defaults['msg_id_field'])
             self.subscribed_topics[topic]['qos'] = to_int(topic_dict.get('qos', topic_defaults['qos']))
