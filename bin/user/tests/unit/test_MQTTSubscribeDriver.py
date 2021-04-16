@@ -263,7 +263,7 @@ class TestgenArchiveRecords(unittest.TestCase):
 
             SUT = MQTTSubscribeDriver(**self.config_dict)
 
-            for record in SUT.genArchiveRecords(int(time.time() + 10.5)):
+            for record in SUT.genArchiveRecords(int(time.time() - 10.5)):
                 records.append(record)
 
             self.assertListEqual(records, queue_list)

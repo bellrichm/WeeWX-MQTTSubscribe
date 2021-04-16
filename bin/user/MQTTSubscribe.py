@@ -1971,11 +1971,12 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice): # (methods not used) py
             self.logger.debug("No archive topic configured.")
             raise NotImplementedError
 
-        for data in self.subscriber.get_data(self.queue, lastgood_ts):
+        for data in self.subscriber.get_data(self.queue):
             if data:
                 self.logger.debug("data-> final archive record is %s %s: %s"
                                   % (self.archive_topic, weeutil.weeutil.timestamp_to_string(data['dateTime']), to_sorted_string(data)))
-                yield data
+                if lastgood_ts and data['dateTime'] > lastgood_ts:
+                    yield data
             else:
                 break
 
