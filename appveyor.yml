@@ -10,6 +10,11 @@ image:
   #- Ubuntu2004
 
 environment:
+  # secure values
+  SKEY:
+    secure: YyPit9bsTGKQYJEkmv6qAajHzVj+OV9UQKRL5b/sHyJ2SuzSDmjEZO0JRSLlbdyW
+  COVERALLS_REPO_TOKEN:
+    secure: tyj1Sii8/fPCjipAJUxxlXO1IhvCXFIyiZE0cPuYKHGGiyKgbUq5O0xD34VUq5E/
   # common values
   SONAR_SCANNER_VERSION: 4.2.0.1873
   SONAR_SCANNER_OPTS: -server
