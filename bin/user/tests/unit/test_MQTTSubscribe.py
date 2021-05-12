@@ -283,7 +283,6 @@ class  TestWeewx_configuration(unittest.TestCase):
         weewx.units.conversionDict = {}
         weewx.units.conversionDict['unit_name'] = {'foobar': lambda x: x / 1}
 
-    @unittest.skip('Message section not yet supported.')
     def test_configure_observation(self):
         mock_logger = mock.Mock(spec=Logger)
 
@@ -307,7 +306,6 @@ class  TestWeewx_configuration(unittest.TestCase):
         self.assertIn(name, weewx.units.obs_group_dict)
         self.assertEqual(value, weewx.units.obs_group_dict[name])
 
-    @unittest.skip('Message section not yet supported.')
     def test_missing_group(self):
         mock_logger = mock.Mock(spec=Logger)
 
@@ -329,7 +327,6 @@ class  TestWeewx_configuration(unittest.TestCase):
 
         self.assertEqual(error.exception.args[0], "%s is missing a group." % unit)
 
-    @unittest.skip('Message section not yet supported.')
     def test_missing_unit_system(self):
         mock_logger = mock.Mock(spec=Logger)
 
@@ -353,7 +350,6 @@ class  TestWeewx_configuration(unittest.TestCase):
 
         self.assertEqual(error.exception.args[0], "%s is missing an unit_system." % unit)
 
-    @unittest.skip('Message section not yet supported.')
     def test_invalid_unit_system(self):
         mock_logger = mock.Mock(spec=Logger)
 
@@ -379,7 +375,6 @@ class  TestWeewx_configuration(unittest.TestCase):
 
         self.assertEqual(error.exception.args[0], "Invalid unit_system %s for %s." % (unit_system, unit))
 
-    @unittest.skip('Message section not yet supported.')
     def test_configure_default_label(self):
         mock_logger = mock.Mock(spec=Logger)
 
@@ -409,7 +404,6 @@ class  TestWeewx_configuration(unittest.TestCase):
 
         self.assertDictEqual(weewx.units.default_unit_label_dict, default_unit_label_dict)
 
-    @unittest.skip('Message section not yet supported.')
     def test_configure_default_format(self):
         mock_logger = mock.Mock(spec=Logger)
 
@@ -439,7 +433,6 @@ class  TestWeewx_configuration(unittest.TestCase):
 
         self.assertDictEqual(weewx.units.default_unit_format_dict, default_unit_format_dict)
 
-    @unittest.skip('Message section not yet supported.')
     def test_configure_conversion(self):
         mock_logger = mock.Mock(spec=Logger)
 
@@ -477,7 +470,6 @@ class  TestWeewx_configuration(unittest.TestCase):
                 self.assertIn(key2, weewx.units.conversionDict[key])
                 self.assertIsInstance(weewx.units.conversionDict[key][key2], types.FunctionType)
 
-    @unittest.skip('Message section not yet supported.')
     def test_unit_system_us(self):
         mock_logger = mock.Mock(spec=Logger)
 
@@ -509,7 +501,6 @@ class  TestWeewx_configuration(unittest.TestCase):
             self.assertIn(key, weewx.units.USUnits)
             self.assertEqual(units[key], weewx.units.USUnits[key])
 
-    @unittest.skip('Message section not yet supported.')
     def test_unit_system_metric(self):
         mock_logger = mock.Mock(spec=Logger)
 
@@ -541,7 +532,6 @@ class  TestWeewx_configuration(unittest.TestCase):
             self.assertIn(key, weewx.units.MetricUnits)
             self.assertEqual(units[key], weewx.units.MetricUnits[key])
 
-    @unittest.skip('Message section not yet supported.')
     def test_unit_system_metricwx(self):
         mock_logger = mock.Mock(spec=Logger)
 

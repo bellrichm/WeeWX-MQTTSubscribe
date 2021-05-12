@@ -899,9 +899,7 @@ class TopicManager(object):
         default['offset_format'] = config.get('offset_format', None)
 
         default['max_queue'] = config.get('max_queue', MAXSIZE)
-        # To do - temporarily disable, until post 2.0.0
-        #default['callback_config_name'] = config.get('callback_config_name', 'message')
-        default['callback_config_name'] = config.get('callback_config_name', '')
+        default['callback_config_name'] = config.get('callback_config_name', 'message')
 
         return default
 
