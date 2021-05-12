@@ -23,18 +23,24 @@ export APPVEYOR_BUILD_WORKER_IMAGE="Ubuntu"
 
 # could not fake out codecov
 #export CODECOVIO_UPLOAD="true"
+#export CI="true"
 
 # doesn't show source because no commit
-# export COVERALLS_UPLOAD="true"
+#export COVERALLS_UPLOAD="true"
 
-# have not install sonar scanner
-#export SONAR_UPLOAD="true"
+# version of sonar runner installed locally
+export SONAR_SCANNER_VERSION="4.2.0.1873"
+# Run sonar locally
+# this is the most important to run locally, because it does additional analysis
+export SONAR_UPLOAD="true"
 
 export ENABLED="true"
 
+# set api keys
+# this is separate to help ensure it is not accidentally checked in
 source ./localtools/init.sh
 
-./appveyor/init.sh
+source ./appveyor/init.sh
 ./appveyor/build_script.sh
 ./appveyor/test_script.sh
 ./appveyor/after_test.sh
