@@ -858,7 +858,7 @@ class TopicManager(object):
         if self.collect_wind_across_loops:
             self.collector = CollectData(self.collected_fields, self.collected_units)
 
-        self.logger.debug("TopicManager self.subscribed_topics is %s" % self.subscribed_topics)
+        self.logger.debug("TopicManager self.subscribed_topics is %s" % json.dumps(self.subscribed_topics, default=str)) 
         self.logger.debug("TopicManager self.cached_fields is %s" % self.cached_fields)
 
     def _configure_topic_options(self, config):
