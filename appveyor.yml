@@ -75,7 +75,14 @@ environment:
       job_depends_on: initialize      
 
     - PYTHON: 3.8
-      ENABLED: false
+      WEEWX: development
+      job_group: build  
+      job_depends_on: initialize      
+
+    # Build/Test against a development/pre release of WeeWX
+    # These do not always exist
+    - ENABLED: false
+      PYTHON: 3.8
       WEEWX: 4.6.0
       WEEWX_URL: http://www.weewx.com/downloads/development_versions/
       job_group: build  
