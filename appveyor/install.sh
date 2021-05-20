@@ -33,6 +33,13 @@
       git show --oneline -s | tee master.txt
       detail=`cat master.txt`
       appveyor AddMessage "Testing against master " -Category Information -Details "$detail"
+    elif [ "$WEEWX" = "development" ]; then
+      git clone https://github.com/weewx/weewx.git weewx
+      cd weewx
+      git checkout development
+      git show --oneline -s | tee development.txt
+      detail=`cat development.txt`
+      appveyor AddMessage "Testing against development " -Category Information -Details "$detail"      
     else
       wget  $WEEWX_URL/weewx-$WEEWX.tar.gz
       mkdir weewx
