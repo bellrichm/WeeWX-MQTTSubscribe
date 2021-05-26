@@ -66,13 +66,17 @@ for the current WeeWX and python versions being tested.
 
 Install the Paho MQTT python client.
 
-* For python 2
+* For Debian based distributions (Ubuntu, Raspberry Pi OS, etc)
 
-    `pip install paho-mqtt`
+    For python 3: `sudo apt-get install python3-paho-mqtt`
 
-* For python 3
+    For python 2: `sudo apt-get install python-paho-mqtt`
 
-    `pip3 install paho-mqtt`
+* For other distributions or if the package install does not work
+
+    For python 3: `pip3 install paho-mqtt`
+
+    For python 2: `pip install paho-mqtt`
 
 ## Installation
 
