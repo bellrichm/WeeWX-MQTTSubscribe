@@ -1941,6 +1941,7 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice): # (methods not used) py
     def genLoopPackets(self): # need to override parent - pylint: disable=invalid-name
         """ Called to generate loop packets. """
         while True:
+            packet_count = 0
             for queue in self.subscriber.queues:
                 if queue['name'] == self.archive_topic:
                     continue
@@ -1952,16 +1953,16 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice): # (methods not used) py
                             self.logger.error("Ignoring record because %s archival start is before previous archive start %s: %s"
                                               % (archive_start, self.prev_archive_start, to_sorted_string(data)))
                         else:
+                            packet_count += 1
                             self.prev_archive_start = archive_start
                             self.logger.debug("data-> final loop packet is %s %s: %s"
                                               % (queue['name'], weeutil.weeutil.timestamp_to_string(data['dateTime']), to_sorted_string(data)))
                             yield data
-                    else:
-                        break
 
-            self.logger.trace("Queues are empty.")
+            if packet_count == 0:
+                self.logger.trace("Queues are empty.")
+                time.sleep(self.wait_before_retry)
 
-            time.sleep(self.wait_before_retry)
 
     def genArchiveRecords(self, lastgood_ts): # need to override parent - pylint: disable=invalid-name
         """ Called to generate the archive records. """

@@ -120,7 +120,7 @@ class TestgenLoopPackets(unittest.TestCase):
         with mock.patch('user.MQTTSubscribe.MQTTSubscriber') as mock_manager:
             with mock.patch('user.MQTTSubscribe.time') as mock_time:
                 type(mock_manager.return_value).queues = mock.PropertyMock(return_value=[queue])
-                type(mock_manager.return_value).get_data = mock.Mock(return_value=self.generator([None, self.queue_data]))
+                type(mock_manager.return_value).get_data = mock.Mock(side_effect=[self.generator([None]), self.generator([self.queue_data])])
 
                 SUT = MQTTSubscribeDriver(**self.config_dict)
                 gen = SUT.genLoopPackets()
