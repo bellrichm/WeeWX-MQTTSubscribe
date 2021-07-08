@@ -1,7 +1,16 @@
-V2.10
+V2.1.0
+Fixes:
+- Fixed 'HW generation' mode to pull data off queue and discard data that is too old.
 Enhancements:
 - Support configuring reconnect time out options. (#123)
+Beta Enhancements:
 - Support payload types by topic. (#113)
+- Option to create 'empty' loop packets when MQTT payloads arrive irregularly.
+Internal updates:
+- Improved logging.
+- Tests cleaned up.
+- Build cleanup.
+
 V2.0.0
 IMPORTANT
 Most deprecated options have been removed. 
