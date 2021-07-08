@@ -80,6 +80,12 @@ Configuration:
     # Only used by the driver
     wait_before_retry = 2
 
+    # When no loop packet has been generated in max_loop_interval, MQTTSubscribeDriver will generate an 'empty' packet.
+    # This can be useful to ensure that archive processing regulary happens when the MQTT payload arrives very irregularly.
+    # Default is 0 (off).
+    # Only used by the driver
+    max_loop_interval= 0
+
     # Payload in this topic is processed like an archive record.
     # Default is None.
     # Only used by the driver.
@@ -1900,13 +1906,18 @@ def confeditor_loader():
 
 class MQTTSubscribeDriver(weewx.drivers.AbstractDevice): # (methods not used) pylint: disable=abstract-method
     """weewx driver that reads data from MQTT"""
-
+    # pylint: disable=too-many-instance-attributes
     def __init__(self, **stn_dict):
         console = to_bool(stn_dict.get('console', False))
         logging_filename = stn_dict.get('logging_filename', None)
         logging_level = stn_dict.get('logging_level', 'NOTSET').upper()
         self.logger = Logger('Driver', level=logging_level, filename=logging_filename, console=console)
         self.logger.log_environment()
+
+        self.max_loop_interval = to_int(stn_dict.get('max_loop_interval', 0))
+        self.logger.info("Max loop interval is: %i" % self.max_loop_interval)
+        self.last_loop_packet_ts = 0
+        self.start_loop_period_ts = 0
 
         self.wait_before_retry = float(stn_dict.get('wait_before_retry', 2))
         self._archive_interval = to_int(stn_dict.get('archive_interval', 300))
@@ -1954,6 +1965,7 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice): # (methods not used) py
                                               % (archive_start, self.prev_archive_start, to_sorted_string(data)))
                         else:
                             packet_count += 1
+                            self.last_loop_packet_ts = data['dateTime']
                             self.prev_archive_start = archive_start
                             self.logger.debug("data-> final loop packet is %s %s: %s"
                                               % (queue['name'], weeutil.weeutil.timestamp_to_string(data['dateTime']), to_sorted_string(data)))
@@ -1961,8 +1973,23 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice): # (methods not used) py
 
             if packet_count == 0:
                 self.logger.trace("Queues are empty.")
-                time.sleep(self.wait_before_retry)
+                if self.max_loop_interval:
+                    now = int(time.time() + 0.5)
+                    start_loop_period_ts = weeutil.weeutil.startOfInterval(now, self.max_loop_interval)
+                    if start_loop_period_ts != self.start_loop_period_ts:
+                        if self.last_loop_packet_ts < self.start_loop_period_ts:
+                            data = {}
+                            data['dateTime'] = self.start_loop_period_ts
+                            data['MQTTSubscribe'] = None # WeeWX accumulator requires at least one observation
+                            data['usUnits'] = 1
+                            self.last_loop_packet_ts = data['dateTime']
+                            self.logger.trace("Creating empty loop packet %s: %s"
+                                              % (weeutil.weeutil.timestamp_to_string(data['dateTime']), to_sorted_string(data)))
+                            yield data
 
+                        self.start_loop_period_ts = start_loop_period_ts
+
+                time.sleep(self.wait_before_retry)
 
     def genArchiveRecords(self, lastgood_ts): # need to override parent - pylint: disable=invalid-name
         """ Called to generate the archive records. """
