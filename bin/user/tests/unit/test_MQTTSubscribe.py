@@ -824,33 +824,6 @@ class  Testtls_configuration(unittest.TestCase):
                         ssl.PROTOCOL_SSLv3 = saved_version
                     self.assertEqual(error.exception.args[0], "Invalid 'certs_required'., %s" % certs_required)
 
-    def test_missing_ca_certs(self):
-        config_dict = {
-            'message_callback': {},
-            'tls': {
-                random_string(): random_string()
-            },
-            'topics': {
-                random_string(): {}
-            }
-        }
-        config = configobj.ConfigObj(config_dict)
-        mock_logger = mock.Mock(spec=Logger)
-
-        with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client):
-            with mock.patch('user.MQTTSubscribe.MessageCallbackProvider'):
-                with mock.patch('user.MQTTSubscribe.TopicManager'):
-                    try:
-                        saved_version = ssl.PROTOCOL_SSLv3
-                        del ssl.PROTOCOL_SSLv3
-                    except AttributeError:
-                        saved_version = None
-                    with self.assertRaises(ValueError) as error:
-                        MQTTSubscriber(config, mock_logger)
-                    if saved_version:
-                        ssl.PROTOCOL_SSLv3 = saved_version
-                    self.assertEqual(error.exception.args[0], "'ca_certs' is required.")
-
 class TestDeprecatedOptions(unittest.TestCase):
     def test_topic_is_deprecated(self):
         config_dict = {}
