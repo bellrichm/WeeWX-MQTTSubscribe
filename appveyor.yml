@@ -26,7 +26,7 @@ environment:
 
   matrix:
     - PYTHON: 3.8
-      WEEWX: 4.5.1
+      WEEWX: 4.7.0
       CODECOVIO_UPLOAD: true
       COVERALLS_UPLOAD: true
       SONAR_UPLOAD: true
@@ -34,28 +34,28 @@ environment:
       job_depends_on: initialize
 
     - PYTHON: 2.7
-      WEEWX: 4.5.1
+      WEEWX: 4.7.0
       CODECOVIO_UPLOAD: true
       job_group: build  
       job_depends_on: initialize
 
     - PYTHON: 3.5.10
-      WEEWX: 4.5.1
+      WEEWX: 4.7.0
       job_group: build  
       job_depends_on: initialize      
 
     - PYTHON: 3.6
-      WEEWX: 4.5.1
+      WEEWX: 4.7.0
       job_group: build
       job_depends_on: initialize
 
     - PYTHON: 3.7
-      WEEWX: 4.5.1
+      WEEWX: 4.7.0
       job_group: build  
       job_depends_on: initialize
 
     - PYTHON: 3.9
-      WEEWX: 4.5.1
+      WEEWX: 4.7.0
       job_group: build  
       job_depends_on: initialize
 
