@@ -142,16 +142,26 @@ class TestService(unittest.TestCase):
 class TestAccumulatedRain(TestService):
     #@unittest.skip("")
     def test_accumulatedrain_individual(self):
+        # At WeeWX 4.6.1, the handling of 'sum' accumulators changed.
+        # In prior versions if there was no data a 0 was returned. Now None isvreturned.
+        # Only two old WeeWX versions sre tested. We just won't tests against these
+        if weewx.__version__ == '3.7.1' or weewx.__version__ == '3.9.0':
+            return
+        print(weewx.__version__)
         with open("bin/user/tests/integ/data/accumulatedrain.json") as file_pointer:
             self.runit('individual', file_pointer)
 
     #@unittest.skip("")
     def test_accumulatedrain_json(self):
+        if weewx.__version__ == '3.7.1' or weewx.__version__ == '3.9.0':
+            return           
         with open("bin/user/tests/integ/data/accumulatedrain.json") as file_pointer:
             self.runit('json', file_pointer)
 
     #@unittest.skip("")
     def test_accumulatedrain_keyword(self):
+        if weewx.__version__ == '3.7.1' or weewx.__version__ == '3.9.0':
+            return           
         with open("bin/user/tests/integ/data/accumulatedrain.json") as file_pointer:
             self.runit('keyword', file_pointer)
 

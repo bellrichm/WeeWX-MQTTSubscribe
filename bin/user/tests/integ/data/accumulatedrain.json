@@ -44,7 +44,7 @@
             {
               "dateTime": null,
               "usUnits": 17,
-              "rain": 0
+              "rain": "None"
             }
           ]
         },
@@ -56,7 +56,7 @@
             {
               "dateTime": null,
               "usUnits": 17,
-              "rain": 0
+              "rain": "None"
             }
           ]
         },
