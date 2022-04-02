@@ -253,9 +253,10 @@ class TestConfigureFields(unittest.TestCase):
         configured_field[topic] = {}
         configured_field[topic]['name'] = topic
         configured_field[topic]['contains_total'] = True
-        configured_field[topic]['ignore'] = False
+        #configured_field[topic]['ignore'] = False
         #configured_field[topic]['conversion_func'] = {}
         #configured_field[topic]['conversion_func']['source'] = 'lambda x: to_float(x)'
+        configured_field[topic]['conversion_type'] = 'float'
         configured_field[topic]['conversion_error_to_none'] = False
         config_dict = {}
 
@@ -266,6 +267,7 @@ class TestConfigureFields(unittest.TestCase):
         SUT = TopicManager(None, config, mock_logger)
 
         self.assertIn(topic, SUT.subscribed_topics[topic]['fields'])
+        # ToDo - figure out a more robust check
         self.assertGreaterEqual(SUT.subscribed_topics[topic]['fields'][topic].items(), configured_field[topic].items())
         self.assertEqual(SUT.subscribed_topics[topic]['fields'][topic]['conversion_func']['source'], 'lambda x: to_float(x)')
 

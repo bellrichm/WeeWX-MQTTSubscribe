@@ -395,7 +395,7 @@ import weewx
 import weewx.drivers
 from weewx.engine import StdEngine, StdService
 
-VERSION = '2.1.0-rc02'
+VERSION = '2.1.0-rc03'
 DRIVER_NAME = 'MQTTSubscribeDriver'
 DRIVER_VERSION = VERSION
 
@@ -810,6 +810,11 @@ class TopicManager(object):
                         continue
 
                     self.subscribed_topics[topic]['fields'][field] = self._configure_field(topic_dict, topic_dict[field], field, field_defaults)
+                    for subfield in self.subscribed_topics[topic]['fields'][field].get('subfields', []):
+                        self.subscribed_topics[topic]['fields'][subfield] = self._configure_field(topic_dict,
+                                                                                                  topic_dict[field]['subfields'][subfield],
+                                                                                                  subfield,
+                                                                                                  self.subscribed_topics[topic]['fields'][field])
                     self._configure_ignore_fields(topic_dict, topic_dict[field], topic, field, field_defaults)
                     filter_values = weeutil.weeutil.option_as_list(topic_dict[field].get('filter_out_message_when', None))
                     if filter_values:
@@ -922,6 +927,7 @@ class TopicManager(object):
         conversion_func = field_dict.get('conversion_func', None)
         conversion_type = field_dict.get('conversion_type', conversion_type)
         field['conversion_func'] = {}
+        field['conversion_type'] = conversion_type # todo - hack so that a field configuration can be used as a default for its subfields
         if conversion_func:
             field['conversion_func']['source'] = conversion_func
         elif conversion_type == 'bool':
@@ -940,6 +946,8 @@ class TopicManager(object):
             else:
                 raise ValueError("For %s invalid units, %s." % (field['name'], field_dict['units']))
 
+        if (field_dict).get('subfields', None):
+            field['subfields'] = (field_dict)['subfields'].sections
         return field
 
     def _configure_filter_out_message(self, topic, fieldname, filter_values, conversion_func):
@@ -1308,7 +1316,9 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
     def _byteify(self, data, ignore_dicts=False):
         if PY2:
             # if this is a unicode string, return its string representation
-            if isinstance(data, unicode): # (never called under python 3) pylint: disable=undefined-variable
+            # (only a python 3 error) pylint: disable=undefined-variable
+            if isinstance(data, unicode): # pyright: reportUndefinedVariable=false
+                # (only a python 3 error) pylint: enable=undefined-variable
                 return data.encode('utf-8')
         # if this is a list of values, return list of byteified values
         if isinstance(data, list):
@@ -1424,8 +1434,18 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
                                      % (msg.topic, msg.payload, lookup_key, filters[lookup_key]))
                     return
                 if not fields.get(lookup_key, {}).get('ignore', fields_ignore_default):
-                    (fieldname, value) = self._update_data(fields, fields_conversion_func, lookup_key, data_flattened[key], unit_system)
-                    data_final[fieldname] = value
+                    if isinstance(data_flattened[key], list):
+                        i = 0
+                        for subfield in  fields[key]['subfields']:
+                            (fieldname, value) = self._update_data(fields, fields_conversion_func,
+                                                                   subfield,
+                                                                   data_flattened[key][i],
+                                                                   unit_system)
+                            data_final[fieldname] = value
+                            i += 1
+                    else:
+                        (fieldname, value) = self._update_data(fields, fields_conversion_func, lookup_key, data_flattened[key], unit_system)
+                        data_final[fieldname] = value
                 else:
                     self.logger.trace("MessageCallbackProvider on_message_json ignoring field: %s" % lookup_key)
 
