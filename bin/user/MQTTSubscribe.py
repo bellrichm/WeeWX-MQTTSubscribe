@@ -395,7 +395,7 @@ import weewx
 import weewx.drivers
 from weewx.engine import StdEngine, StdService
 
-VERSION = '2.1.0-rc03'
+VERSION = '2.1.0-rc04'
 DRIVER_NAME = 'MQTTSubscribeDriver'
 DRIVER_VERSION = VERSION
 
@@ -1435,14 +1435,19 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
                     return
                 if not fields.get(lookup_key, {}).get('ignore', fields_ignore_default):
                     if isinstance(data_flattened[key], list):
-                        i = 0
-                        for subfield in  fields[key]['subfields']:
-                            (fieldname, value) = self._update_data(fields, fields_conversion_func,
-                                                                   subfield,
-                                                                   data_flattened[key][i],
-                                                                   unit_system)
-                            data_final[fieldname] = value
-                            i += 1
+                        if len(data_flattened[key]) > len(fields[key]['subfields']):
+                            self.logger.error("Skipping %s because array data too big. Array=%s subfields=%s" % (key, data_flattened[key], fields[key]['subfields']))
+                        elif len(data_flattened[key]) < len(fields[key]['subfields']):
+                            self.logger.error("Skipping %s because array data too small. Array=%s subfields=%s" % (key, data_flattened[key], fields[key]['subfields']))
+                        else:
+                            i = 0
+                            for subfield in  fields[key]['subfields']:
+                                (fieldname, value) = self._update_data(fields, fields_conversion_func,
+                                                                       subfield,
+                                                                       data_flattened[key][i],
+                                                                       unit_system)
+                                data_final[fieldname] = value
+                                i += 1
                     else:
                         (fieldname, value) = self._update_data(fields, fields_conversion_func, lookup_key, data_flattened[key], unit_system)
                         data_final[fieldname] = value
