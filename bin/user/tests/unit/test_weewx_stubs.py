@@ -218,7 +218,10 @@ class weewx(object): # pylint: disable=invalid-name
             'METRICWX' : METRICWX
         }
 
-        obs_group_dict = weeutil.ListOfDicts({'barfoo' : {}})
+        obs_group_dict = weeutil.ListOfDicts({
+            'barfoo' : {},
+            'subfield1': {}
+        })
 
         def to_std_system(self):
             pass

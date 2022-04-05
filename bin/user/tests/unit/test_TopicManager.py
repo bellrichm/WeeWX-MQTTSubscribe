@@ -351,6 +351,42 @@ class TestConfigureFields(unittest.TestCase):
         self.assertEqual(SUT.subscribed_topics[topic]['fields'][fieldname]['units'], unit_name)
         self.assertIsNone(SUT.cached_fields[weewx_name]['expires_after'])
 
+    def test_configure_subfields(self):
+        mock_logger = mock.Mock(spec=Logger)
+
+        topic = random_string()
+        config_dict = {}
+
+        config_dict[topic] = {}
+
+        fieldname = random_string()
+        config_dict[topic][fieldname] = {}
+        config_dict[topic][fieldname]['ignore'] = 'true'
+        config_dict[topic][fieldname]['ignore_msg_id_field'] = 'true'
+        config_dict[topic][fieldname]['contains_total'] = 'true'
+        config_dict[topic][fieldname]['conversion_type'] = 'int'
+        weewx_name = 'barfoo'
+        config_dict[topic][fieldname]['name'] = weewx_name
+        config_dict[topic][fieldname]['expires_after'] = 'none'
+        unit_name = 'unit_name'
+        config_dict[topic][fieldname]['units'] = unit_name
+        config_dict[topic][fieldname]['subfields'] = {}
+        subfield_name = 'subfield1'
+        config_dict[topic][fieldname]['subfields'][subfield_name] = {}
+
+        config = configobj.ConfigObj(config_dict)
+
+        SUT = TopicManager(None, config, mock_logger)
+
+        self.assertNotIn(fieldname, SUT.subscribed_topics[topic]['fields'])
+
+        self.assertTrue(SUT.subscribed_topics[topic]['fields'][subfield_name]['ignore'])
+        self.assertEqual(SUT.subscribed_topics[topic]['ignore_msg_id_field'], [subfield_name])
+        self.assertTrue(SUT.subscribed_topics[topic]['fields'][subfield_name]['contains_total'])
+        self.assertEqual(SUT.subscribed_topics[topic]['fields'][subfield_name]['conversion_func']['source'], 'lambda x: to_int(x)')
+        self.assertEqual(SUT.subscribed_topics[topic]['fields'][subfield_name]['units'], unit_name)
+        self.assertIsNone(SUT.cached_fields[weewx_name]['expires_after'])
+
     def test_field_conversion_type_bool(self):
         mock_logger = mock.Mock(spec=Logger)
 

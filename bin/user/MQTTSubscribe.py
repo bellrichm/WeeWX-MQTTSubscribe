@@ -395,7 +395,7 @@ import weewx
 import weewx.drivers
 from weewx.engine import StdEngine, StdService
 
-VERSION = '2.1.0-rc04'
+VERSION = '2.1.0-rc05'
 DRIVER_NAME = 'MQTTSubscribeDriver'
 DRIVER_VERSION = VERSION
 
@@ -809,13 +809,22 @@ class TopicManager(object):
                     if field == callback_config_name and topic_dict[field].get('type', None) is not None:
                         continue
 
-                    self.subscribed_topics[topic]['fields'][field] = self._configure_field(topic_dict, topic_dict[field], field, field_defaults)
-                    for subfield in self.subscribed_topics[topic]['fields'][field].get('subfields', []):
-                        self.subscribed_topics[topic]['fields'][subfield] = self._configure_field(topic_dict,
-                                                                                                  topic_dict[field]['subfields'][subfield],
-                                                                                                  subfield,
-                                                                                                  self.subscribed_topics[topic]['fields'][field])
-                    self._configure_ignore_fields(topic_dict, topic_dict[field], topic, field, field_defaults)
+                    field_config = self._configure_field(topic_dict, topic_dict[field], field, field_defaults)
+                    if field_config.get('subfields'):
+                        for subfield in field_config.get('subfields', []):
+                            # Add some additional default values to the field_config
+                            field_config['ignore_msg_id_field'] = field_defaults['ignore_msg_id_field']
+                            if 'units' in field_config:
+                                topic_dict[field]['subfields'][subfield]['units'] = field_config['units']
+                            
+                            self.subscribed_topics[topic]['fields'][subfield] = self._configure_field(topic_dict,
+                                                                                                    topic_dict[field]['subfields'][subfield],
+                                                                                                    subfield,
+                                                                                                    field_config)
+                            self._configure_ignore_fields(topic_dict, topic_dict[field], topic, subfield, field_config)
+                    else:
+                        self.subscribed_topics[topic]['fields'][field]  = field_config
+                        self._configure_ignore_fields(topic_dict, topic_dict[field], topic, field, field_defaults)
                     filter_values = weeutil.weeutil.option_as_list(topic_dict[field].get('filter_out_message_when', None))
                     if filter_values:
                         conversion_func = self.subscribed_topics[topic]['fields'][field]['conversion_func']['compiled']
@@ -1436,9 +1445,11 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
                 if not fields.get(lookup_key, {}).get('ignore', fields_ignore_default):
                     if isinstance(data_flattened[key], list):
                         if len(data_flattened[key]) > len(fields[key]['subfields']):
-                            self.logger.error("Skipping %s because array data too big. Array=%s subfields=%s" % (key, data_flattened[key], fields[key]['subfields']))
+                            self.logger.error("Skipping %s because array data too big. Array=%s subfields=%s" %
+                                              (key, data_flattened[key], fields[key]['subfields']))
                         elif len(data_flattened[key]) < len(fields[key]['subfields']):
-                            self.logger.error("Skipping %s because array data too small. Array=%s subfields=%s" % (key, data_flattened[key], fields[key]['subfields']))
+                            self.logger.error("Skipping %s because array data too small. Array=%s subfields=%s" %
+                                              (key, data_flattened[key], fields[key]['subfields']))
                         else:
                             i = 0
                             for subfield in  fields[key]['subfields']:
