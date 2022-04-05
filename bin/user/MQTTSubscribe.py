@@ -816,7 +816,7 @@ class TopicManager(object):
                             field_config['ignore_msg_id_field'] = field_defaults['ignore_msg_id_field']
                             if 'units' in field_config:
                                 topic_dict[field]['subfields'][subfield]['units'] = field_config['units']
-                            
+
                             self.subscribed_topics[topic]['fields'][subfield] = self._configure_field(topic_dict,
                                                                                                     topic_dict[field]['subfields'][subfield],
                                                                                                     subfield,
