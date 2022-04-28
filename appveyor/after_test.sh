@@ -9,6 +9,11 @@ if [ "$ENABLED" != "true" ]; then
   exit 0
 fi
 
+# do not run on pull requests
+if [ "$BUILDTYPE" != "LOCAL" && "APPVEYOR_PULL_REQUEST_NUMBER" == ""]; then
+  exit 0
+fi
+
 # only upload for one build image
 if [ "$APPVEYOR_BUILD_WORKER_IMAGE" != "Ubuntu" ]; then
   exit 0
