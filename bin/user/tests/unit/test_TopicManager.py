@@ -253,9 +253,10 @@ class TestConfigureFields(unittest.TestCase):
         configured_field[topic] = {}
         configured_field[topic]['name'] = topic
         configured_field[topic]['contains_total'] = True
-        configured_field[topic]['ignore'] = False
+        #configured_field[topic]['ignore'] = False
         #configured_field[topic]['conversion_func'] = {}
         #configured_field[topic]['conversion_func']['source'] = 'lambda x: to_float(x)'
+        configured_field[topic]['conversion_type'] = 'float'
         configured_field[topic]['conversion_error_to_none'] = False
         config_dict = {}
 
@@ -266,6 +267,7 @@ class TestConfigureFields(unittest.TestCase):
         SUT = TopicManager(None, config, mock_logger)
 
         self.assertIn(topic, SUT.subscribed_topics[topic]['fields'])
+        # ToDo - figure out a more robust check
         self.assertGreaterEqual(SUT.subscribed_topics[topic]['fields'][topic].items(), configured_field[topic].items())
         self.assertEqual(SUT.subscribed_topics[topic]['fields'][topic]['conversion_func']['source'], 'lambda x: to_float(x)')
 
@@ -347,6 +349,42 @@ class TestConfigureFields(unittest.TestCase):
         self.assertEqual(SUT.subscribed_topics[topic]['fields'][fieldname]['conversion_func']['source'], 'lambda x: to_int(x)')
         self.assertEqual(SUT.subscribed_topics[topic]['fields'][fieldname]['name'], weewx_name)
         self.assertEqual(SUT.subscribed_topics[topic]['fields'][fieldname]['units'], unit_name)
+        self.assertIsNone(SUT.cached_fields[weewx_name]['expires_after'])
+
+    def test_configure_subfields(self):
+        mock_logger = mock.Mock(spec=Logger)
+
+        topic = random_string()
+        config_dict = {}
+
+        config_dict[topic] = {}
+
+        fieldname = random_string()
+        config_dict[topic][fieldname] = {}
+        config_dict[topic][fieldname]['ignore'] = 'true'
+        config_dict[topic][fieldname]['ignore_msg_id_field'] = 'true'
+        config_dict[topic][fieldname]['contains_total'] = 'true'
+        config_dict[topic][fieldname]['conversion_type'] = 'int'
+        weewx_name = 'barfoo'
+        config_dict[topic][fieldname]['name'] = weewx_name
+        config_dict[topic][fieldname]['expires_after'] = 'none'
+        unit_name = 'unit_name'
+        config_dict[topic][fieldname]['units'] = unit_name
+        config_dict[topic][fieldname]['subfields'] = {}
+        subfield_name = 'subfield1'
+        config_dict[topic][fieldname]['subfields'][subfield_name] = {}
+
+        config = configobj.ConfigObj(config_dict)
+
+        SUT = TopicManager(None, config, mock_logger)
+
+        self.assertNotIn(fieldname, SUT.subscribed_topics[topic]['fields'])
+
+        self.assertTrue(SUT.subscribed_topics[topic]['fields'][subfield_name]['ignore'])
+        self.assertEqual(SUT.subscribed_topics[topic]['ignore_msg_id_field'], [subfield_name])
+        self.assertTrue(SUT.subscribed_topics[topic]['fields'][subfield_name]['contains_total'])
+        self.assertEqual(SUT.subscribed_topics[topic]['fields'][subfield_name]['conversion_func']['source'], 'lambda x: to_int(x)')
+        self.assertEqual(SUT.subscribed_topics[topic]['fields'][subfield_name]['units'], unit_name)
         self.assertIsNone(SUT.cached_fields[weewx_name]['expires_after'])
 
     def test_field_conversion_type_bool(self):

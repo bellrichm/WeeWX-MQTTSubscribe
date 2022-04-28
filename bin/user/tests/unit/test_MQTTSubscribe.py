@@ -302,7 +302,7 @@ class  TestWeewx_configuration(unittest.TestCase):
 
         MQTTSubscriber(config, mock_logger)
 
-        self.assertEqual(len(weewx.units.obs_group_dict), 2)
+        self.assertEqual(len(weewx.units.obs_group_dict), 3)
         self.assertIn(name, weewx.units.obs_group_dict)
         self.assertEqual(value, weewx.units.obs_group_dict[name])
 
