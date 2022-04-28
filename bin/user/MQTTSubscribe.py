@@ -395,7 +395,7 @@ import weewx
 import weewx.drivers
 from weewx.engine import StdEngine, StdService
 
-VERSION = '2.1.0-rc05'
+VERSION = '2.1.0'
 DRIVER_NAME = 'MQTTSubscribeDriver'
 DRIVER_VERSION = VERSION
 
@@ -818,12 +818,12 @@ class TopicManager(object):
                                 topic_dict[field]['subfields'][subfield]['units'] = field_config['units']
 
                             self.subscribed_topics[topic]['fields'][subfield] = self._configure_field(topic_dict,
-                                                                                                    topic_dict[field]['subfields'][subfield],
-                                                                                                    subfield,
-                                                                                                    field_config)
+                                                                                                      topic_dict[field]['subfields'][subfield],
+                                                                                                      subfield,
+                                                                                                      field_config)
                             self._configure_ignore_fields(topic_dict, topic_dict[field], topic, subfield, field_config)
                     else:
-                        self.subscribed_topics[topic]['fields'][field]  = field_config
+                        self.subscribed_topics[topic]['fields'][field] = field_config
                         self._configure_ignore_fields(topic_dict, topic_dict[field], topic, field, field_defaults)
                     filter_values = weeutil.weeutil.option_as_list(topic_dict[field].get('filter_out_message_when', None))
                     if filter_values:
