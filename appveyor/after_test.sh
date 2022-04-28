@@ -10,8 +10,6 @@ if [ "$ENABLED" != "true" ]; then
 fi
 
 # do not run on pull requests
-echo "'" + "'$BUILDTYPE'" + "'"
-echo "'" + "'$APPVEYOR_PULL_REQUEST_NUMBER'" + "'"
 if [ "$BUILDTYPE" != "LOCAL" ] && [ "$APPVEYOR_PULL_REQUEST_NUMBER" != "" ]; then
   exit 0
 fi
