@@ -25,7 +25,9 @@ environment:
   WEEWX_URL: http://www.weewx.com/downloads/released_versions/
 
   matrix:
-    - PYTHON: 3.8
+    # Run tests against latest WeeWX and Python
+    # Run first, so that completes early
+    - PYTHON: 3.10
       WEEWX: 4.8.0
       CODECOVIO_UPLOAD: true
       COVERALLS_UPLOAD: true
@@ -33,23 +35,31 @@ environment:
       job_group: build  
       job_depends_on: initialize
 
+    # Even though EOL, I'll support a bit longer
     - PYTHON: 2.7
       WEEWX: 4.8.0
       CODECOVIO_UPLOAD: true
       job_group: build  
       job_depends_on: initialize
 
+      # Even though EOL, I'll support a bit longer
     - PYTHON: 3.5.10
       WEEWX: 4.8.0
       job_group: build  
       job_depends_on: initialize      
 
-    - PYTHON: 3.6
+    # Even though EOL, I'll support a bit longer
+    - PYTHON: 3.6.15
       WEEWX: 4.8.0
       job_group: build
       job_depends_on: initialize
 
     - PYTHON: 3.7
+      WEEWX: 4.8.0
+      job_group: build  
+      job_depends_on: initialize
+
+    - PYTHON: 3.8
       WEEWX: 4.8.0
       job_group: build  
       job_depends_on: initialize
@@ -64,25 +74,28 @@ environment:
       job_group: build
       job_depends_on: initialize
 
+    # The earliest WeeWX version supported
     - PYTHON: 2.7 
       WEEWX: 3.7.1
       job_group: build
       job_depends_on: initialize
 
-    - PYTHON: 3.8
+    # Use latest Python release against WeeWX master branch
+    - PYTHON: 3.10
       WEEWX: master
       job_group: build  
       job_depends_on: initialize      
 
-    - PYTHON: 3.8
+    # Use latest Python release against WeeWX development branch
+    - PYTHON: 3.10
       WEEWX: development
       job_group: build  
       job_depends_on: initialize      
 
-    # Build/Test against a development/pre release of WeeWX
+    # Build/Test against a development/pre release of WeeWX with latest Python
     # These do not always exist
     - ENABLED: false
-      PYTHON: 3.8
+      PYTHON: 3.10
       WEEWX: 4.6.0a4
       WEEWX_URL: http://www.weewx.com/downloads/development_versions/
       job_group: build  

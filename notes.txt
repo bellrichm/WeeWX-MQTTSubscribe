@@ -22,6 +22,11 @@ pip3 install mock
 sudo pip install coverage
 sudo pip3 install coverage
 
+Debugging specific  MQTT payloads
+use pubmqtt.py to publish the payload
+- by default it reads from tmp/messages.txt
+- each line is an MQTT message
+- debug MQTTSubscribe using 'Driver: Loop'
 ==========================================================================
 PYTHONPATH=bin:../weewx/bin coverage2 run  -m unittest discover bin/user/tests; coverage html --include bin/user/MQTTSubscribe.py
 
