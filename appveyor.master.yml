@@ -27,7 +27,7 @@ environment:
   matrix:
     # Run tests against latest WeeWX and Python
     # Run first, so that completes early
-    - PYTHON: 3.10
+    - PYTHON: 3.9 # use 3.9 until migrate from nosetest
       WEEWX: 4.8.0
       CODECOVIO_UPLOAD: true
       COVERALLS_UPLOAD: true
@@ -64,10 +64,10 @@ environment:
       job_group: build  
       job_depends_on: initialize
 
-    - PYTHON: 3.9
-      WEEWX: 4.8.0
-      job_group: build  
-      job_depends_on: initialize
+    #- PYTHON: 3.9
+    #  WEEWX: 4.8.0
+    #  job_group: build  
+    #  job_depends_on: initialize
 
     - PYTHON: 2.7
       WEEWX: 3.9.0 
@@ -81,13 +81,13 @@ environment:
       job_depends_on: initialize
 
     # Use latest Python release against WeeWX master branch
-    - PYTHON: 3.10
+    - PYTHON: 3.9 # use 3.9 until migrate from nosetest
       WEEWX: master
       job_group: build  
       job_depends_on: initialize      
 
     # Use latest Python release against WeeWX development branch
-    - PYTHON: 3.10
+    - PYTHON: 3.9 # use 3.9 until migrate from nosetest
       WEEWX: development
       job_group: build  
       job_depends_on: initialize      
@@ -95,7 +95,7 @@ environment:
     # Build/Test against a development/pre release of WeeWX with latest Python
     # These do not always exist
     - ENABLED: false
-      PYTHON: 3.10
+      PYTHON: 3.9 # use 3.9 until migrate from nosetest
       WEEWX: 4.6.0a4
       WEEWX_URL: http://www.weewx.com/downloads/development_versions/
       job_group: build  
