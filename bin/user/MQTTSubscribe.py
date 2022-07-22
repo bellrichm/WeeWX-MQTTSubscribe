@@ -291,6 +291,11 @@ Configuration:
                 # Default is False.
                 contains_total = False
 
+                # True if the cumulative data can wrap around.
+                # Valid values: True, False.
+                # Default is False.
+                total_wrap_around = False
+
                 # The conversion type necessary for WeeWX compatibility.
                 # Valid values: bool, float, int, none.
                 # Default is float.
@@ -698,6 +703,7 @@ class TopicManager(object):
         field_defaults['ignore_msg_id_field'] = config.get('ignore_msg_id_field', False)
         field_defaults['ignore'] = to_bool(config.get('ignore', False))
         field_defaults['contains_total'] = to_bool(config.get('contains_total', False))
+        field_defaults['total_wrap_around'] = to_bool(config.get('total_wrap_around', False))
         field_defaults['conversion_type'] = config.get('conversion_type', 'float')
         field_defaults['conversion_error_to_none'] = to_bool(config.get('conversion_error_to_none', False))
 
@@ -927,12 +933,14 @@ class TopicManager(object):
     def _configure_field(topic_dict, field_dict, fieldname, defaults):
         ignore = to_bool(topic_dict.get('ignore', defaults['ignore']))
         contains_total = to_bool(topic_dict.get('contains_total', defaults['contains_total']))
+        total_wrap_around = to_bool(topic_dict.get('total_wrap_around', defaults['total_wrap_around']))
         conversion_type = topic_dict.get('conversion_type', defaults['conversion_type'])
         conversion_error_to_none = topic_dict.get('conversion_error_to_none', defaults['conversion_error_to_none'])
         field = {}
         field['name'] = (field_dict).get('name', fieldname)
         field['ignore'] = to_bool((field_dict).get('ignore', ignore))
         field['contains_total'] = to_bool((field_dict).get('contains_total', contains_total))
+        field['total_wrap_around'] = to_bool((field_dict).get('total_wrap_around', total_wrap_around))
         conversion_func = field_dict.get('conversion_func', None)
         conversion_type = field_dict.get('conversion_type', conversion_type)
         field['conversion_func'] = {}
@@ -1253,12 +1261,13 @@ class AbstractMessageCallbackProvider(object): # pylint: disable=too-few-public-
 
         if fields.get(orig_name, {}).get('contains_total', False):
             current_value = value
-            value = self._calc_increment(orig_name, current_value, self.previous_values.get(orig_name))
+            total_wrap_around = fields.get(orig_name, {}).get('total_wrap_around', False)
+            value = self._calc_increment(orig_name, current_value, self.previous_values.get(orig_name), total_wrap_around)
             self.previous_values[orig_name] = current_value
 
         return fieldname, value
 
-    def _calc_increment(self, observation, current_total, previous_total):
+    def _calc_increment(self, observation, current_total, previous_total, wrap_around):
         self.logger.trace("MessageCallbackProvider _calc_increment calculating increment " \
                          "for %s with current: %f and previous %s values."
                           % (observation, current_total, (previous_total is None and 'None' or str(previous_total))))
@@ -1266,6 +1275,13 @@ class AbstractMessageCallbackProvider(object): # pylint: disable=too-few-public-
         if current_total is not None and previous_total is not None:
             if current_total >= previous_total:
                 return current_total - previous_total
+
+            if wrap_around and current_total < previous_total:
+                self.logger.trace("MessageCallbackProvider _calc_increment wrap around detected " \
+                             "for %s with current: %f and previous %f values."
+                              % (observation, current_total, previous_total))
+
+                return current_total
 
             self.logger.trace("MessageCallbackProvider _calc_increment skipping calculating increment " \
                              "for %s with current: %f and previous %f values."
