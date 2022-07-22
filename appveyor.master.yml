@@ -19,7 +19,8 @@ environment:
   SONAR_SCANNER_VERSION: 4.2.0.1873
   SONAR_SCANNER_OPTS: -server
   # default values
-  PYTHON: 3.6
+  # default to oldest supported version of python
+  PYTHON: 3.7
   ENABLED: true
   
   WEEWX_URL: http://www.weewx.com/downloads/released_versions/
