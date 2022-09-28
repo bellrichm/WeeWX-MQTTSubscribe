@@ -400,7 +400,7 @@ import weewx
 import weewx.drivers
 from weewx.engine import StdEngine, StdService
 
-VERSION = '2.1.0'
+VERSION = '2.1.1-rc01a'
 DRIVER_NAME = 'MQTTSubscribeDriver'
 DRIVER_VERSION = VERSION
 
@@ -815,22 +815,20 @@ class TopicManager(object):
                     if field == callback_config_name and topic_dict[field].get('type', None) is not None:
                         continue
 
-                    field_config = self._configure_field(topic_dict, topic_dict[field], field, field_defaults)
-                    if field_config.get('subfields'):
-                        for subfield in field_config.get('subfields', []):
-                            # Add some additional default values to the field_config
-                            field_config['ignore_msg_id_field'] = field_defaults['ignore_msg_id_field']
-                            if 'units' in field_config:
-                                topic_dict[field]['subfields'][subfield]['units'] = field_config['units']
+                    self.subscribed_topics[topic]['fields'][field] = self._configure_field(topic_dict, topic_dict[field], field, field_defaults)
 
+                    if self.subscribed_topics[topic]['fields'][field].get('subfields'):
+                        self.subscribed_topics[topic]['fields'][field]['ignore_msg_id_field'] = field_defaults['ignore_msg_id_field']
+
+                        for subfield in self.subscribed_topics[topic]['fields'][field].get('subfields', []):
                             self.subscribed_topics[topic]['fields'][subfield] = self._configure_field(topic_dict,
-                                                                                                      topic_dict[field]['subfields'][subfield],
-                                                                                                      subfield,
-                                                                                                      field_config)
-                            self._configure_ignore_fields(topic_dict, topic_dict[field], topic, subfield, field_config)
-                    else:
-                        self.subscribed_topics[topic]['fields'][field] = field_config
-                        self._configure_ignore_fields(topic_dict, topic_dict[field], topic, field, field_defaults)
+                                                                                                    topic_dict[field]['subfields'][subfield],
+                                                                                                    subfield,
+                                                                                                    self.subscribed_topics[topic]['fields'][field])
+                            if 'units' in self.subscribed_topics[topic]['fields'][field]:
+                                topic_dict[field]['subfields'][subfield]['units'] = self.subscribed_topics[topic]['fields'][field]['units']
+
+                    self._configure_ignore_fields(topic_dict, topic_dict[field], topic, field, field_defaults)
                     filter_values = weeutil.weeutil.option_as_list(topic_dict[field].get('filter_out_message_when', None))
                     if filter_values:
                         conversion_func = self.subscribed_topics[topic]['fields'][field]['conversion_func']['compiled']
