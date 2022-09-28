@@ -42,7 +42,7 @@ def init_parser():
                         help='Maximum period in seconds allowed between communications with the broker.')
     parser.add_argument("--client-id", dest='client_id', default='clientid',
                         help="The clientid to connect with.")
-    parser.add_argument("--topic", dest='topic', default='test-topic',
+    parser.add_argument("--topic", dest='topic', default='debug-topic',
                         help="The topic to publish to.")
     parser.add_argument("--qos", default=0, type=int,
                         help="QOS desired. Currently one specified for all topics")
