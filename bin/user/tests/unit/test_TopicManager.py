@@ -378,7 +378,7 @@ class TestConfigureFields(unittest.TestCase):
 
         SUT = TopicManager(None, config, mock_logger)
 
-        self.assertNotIn(fieldname, SUT.subscribed_topics[topic]['fields'])
+        self.assertIn(fieldname, SUT.subscribed_topics[topic]['fields'])
 
         self.assertTrue(SUT.subscribed_topics[topic]['fields'][subfield_name]['ignore'])
         self.assertEqual(SUT.subscribed_topics[topic]['ignore_msg_id_field'], [subfield_name])
