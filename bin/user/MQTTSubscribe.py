@@ -826,9 +826,14 @@ class TopicManager(object):
                                                                                                     subfield,
                                                                                                     self.subscribed_topics[topic]['fields'][field])
                             if 'units' in self.subscribed_topics[topic]['fields'][field]:
-                                topic_dict[field]['subfields'][subfield]['units'] = self.subscribed_topics[topic]['fields'][field]['units']
-
-                    self._configure_ignore_fields(topic_dict, topic_dict[field], topic, field, field_defaults)
+                                self.subscribed_topics[topic]['fields'][subfield]['units'] = \
+                                    self.subscribed_topics[topic]['fields'][field]['units']
+                            self._configure_ignore_fields(topic_dict,
+                                                          topic_dict[field],
+                                                          topic, subfield,
+                                                          self.subscribed_topics[topic]['fields'][field])
+                    else:
+                        self._configure_ignore_fields(topic_dict, topic_dict[field], topic, field, field_defaults)
                     filter_values = weeutil.weeutil.option_as_list(topic_dict[field].get('filter_out_message_when', None))
                     if filter_values:
                         conversion_func = self.subscribed_topics[topic]['fields'][field]['conversion_func']['compiled']
