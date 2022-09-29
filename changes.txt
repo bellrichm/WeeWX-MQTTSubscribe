@@ -1,3 +1,9 @@
+V2.2.0
+Fixes:
+- Support arrays in json payload
+Enhancements:
+- total_wrap_around configuration option (#164)
+
 V2.1.0
 Fixes:
 - Fixed 'HW generation' mode to pull data off queue and discard data that is too old.
