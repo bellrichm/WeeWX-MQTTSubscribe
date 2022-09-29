@@ -6,7 +6,7 @@ branches:
 
 image:
   - Ubuntu
-  - Ubuntu1604
+  - Previous Ubuntu1604
   - Ubuntu2004
 
 environment:
