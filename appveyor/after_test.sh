@@ -21,8 +21,8 @@ fi
 
 # only upload once
 if [ "$CODECOVIO_UPLOAD" = "true" ]; then
-  bash <(curl -s https://codecov.io/bash) -f coverage.xml -F unitests -n unitests-$PYTHON #>/dev/null
-  bash <(curl -s https://codecov.io/bash) -f coverage2.xml -F integration -n integration-$PYTHON #/dev/null
+  bash <(curl -s https://codecov.io/bash) -f nosetest.xml -F unitests -n unitests-$PYTHON #>/dev/null
+  bash <(curl -s https://codecov.io/bash) -f nosetest2.xml -F integration -n integration-$PYTHON #/dev/null
 fi
 
 # only upload once
