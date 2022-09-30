@@ -12,7 +12,7 @@ if [ "$BUILDTYPE" = "LOCAL" ]; then
 	HTML_OPTIONS=" --cov-report html:cover "
 fi
  #PYTHONPATH=bin nosetests ./bin/user/tests/unit --exe --exclude=setup --cover-package=user.MQTTSubscribe --with-xunit --with-coverage --cover-branches --cover-xml --logging-level=ERROR --verbosity=1 $HTML_OPTIONS
- PYTHONPATH=bin pytest ./bin/user/tests/unit --junitxml=results.xml --cov-report xml:coverage.xml --verbosity=1 --log-level=ERROR --cov=user.MQTTSubscribe --cov-branch $HTML_OPTIONS
+ PYTHONPATH=bin pytest ./bin/user/tests/unit --junitxml=results.xml --cov-report xml:coverage.xml --verbosity=1 --log-level=ERROR --cov=user.MQTTSubscribe $HTML_OPTIONS
  rc=$?
  
 # ToDo - option to not exit on error - gor debugging
