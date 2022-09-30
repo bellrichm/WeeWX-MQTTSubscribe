@@ -15,7 +15,7 @@ fi
  PYTHONPATH=bin pytest ./bin/user/tests/unit --junitxml=results.xml --cov-report xml:coverage.xml --verbosity=1 --log-level=ERROR --cov=user.MQTTSubscribe --cov-branch $HTML_OPTIONS
  rc=$?
 
-rm .coverage
+#rm .coverage
 
 # ToDo - option to not exit on error - gor debugging
 if [ $rc -ne 0 ]; then
