@@ -8,10 +8,8 @@ if [ "$ENABLED" != "true" ]; then
 fi
 
 if [ "$BUILDTYPE" = "LOCAL" ]; then
-  #HTML_OPTIONS=" --cover-html --with-html "
 	HTML_OPTIONS=" --cov-report html:cover "
 fi
- #PYTHONPATH=bin nosetests ./bin/user/tests/unit --exe --exclude=setup --cover-package=user.MQTTSubscribe --with-xunit --with-coverage --cover-branches --cover-xml --logging-level=ERROR --verbosity=1 $HTML_OPTIONS
  PYTHONPATH=bin pytest ./bin/user/tests/unit --junitxml=results.xml --cov-report xml:coverage.xml --verbosity=1 --log-level=ERROR --cov=user.MQTTSubscribe --cov-branch $HTML_OPTIONS
  rc=$?
 
@@ -25,15 +23,13 @@ if [ $rc -ne 0 ]; then
 fi
 
 if [ "$BUILDTYPE" = "LOCAL" ]; then
-  #HTML_OPTIONS=" --cover-html --with-html --html-file=nosetests2.html --cover-html-dir=cover2 "
   HTML_OPTIONS=" --cov-report html:cover2 "
   PPATH="../weewx/bin/"
 else
   PPATH="./weewx/bin/"  
 fi
 
- #PYTHONPATH=bin:$PPATH nosetests ./bin/user/tests/integ --exe --exclude=setup --cover-package=user.MQTTSubscribe --with-xunit --with-coverage --cover-branches --cover-xml  --cover-xml-file=coverage2.xml --xunit-file=nosetests2.xml --logging-level=ERROR --verbosity=1 $HTML_OPTIONS
- #PYTHONPATH=bin:$PPATH pytest ./bin/user/tests/integ --junitxml=results2.xml --cov-report xml:coverage2.xml --verbosity=1 --log-level=ERROR --cov=user.MQTTSubscribe --cov-branch $HTML_OPTIONS
+ PYTHONPATH=bin:$PPATH pytest ./bin/user/tests/integ --junitxml=results2.xml --cov-report xml:coverage2.xml --verbosity=1 --log-level=ERROR --cov=user.MQTTSubscribe --cov-branch $HTML_OPTIONS
  rc=$?
 
  # coveralls uses this file, so stash a copy
