@@ -15,7 +15,8 @@ fi
  PYTHONPATH=bin pytest ./bin/user/tests/unit --junitxml=results.xml --cov-report xml:coverage.xml --verbosity=1 --log-level=ERROR --cov=user.MQTTSubscribe --cov-branch $HTML_OPTIONS
  rc=$?
 
-#rm .coverage
+# coveralls uses this file, so stash a copy
+mv .coverage .coverage1
 
 # ToDo - option to not exit on error - gor debugging
 if [ $rc -ne 0 ]; then
@@ -34,6 +35,9 @@ fi
  #PYTHONPATH=bin:$PPATH nosetests ./bin/user/tests/integ --exe --exclude=setup --cover-package=user.MQTTSubscribe --with-xunit --with-coverage --cover-branches --cover-xml  --cover-xml-file=coverage2.xml --xunit-file=nosetests2.xml --logging-level=ERROR --verbosity=1 $HTML_OPTIONS
  #PYTHONPATH=bin:$PPATH pytest ./bin/user/tests/integ --junitxml=results2.xml --cov-report xml:coverage2.xml --verbosity=1 --log-level=ERROR --cov=user.MQTTSubscribe --cov-branch $HTML_OPTIONS
  rc=$?
+
+ # coveralls uses this file, so stash a copy
+cp .coverage .coverage2
 
 if [ "$BUILDTYPE" != "LOCAL" ]; then
   find "$APPVEYOR_BUILD_FOLDER" -type f -name 'results.xml' -print0 | xargs -0 -I '{}' curl -F 'file=@{}' "https://ci.appveyor.com/api/testresults/junit/$APPVEYOR_JOB_ID"
