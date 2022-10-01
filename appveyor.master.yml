@@ -166,7 +166,7 @@ init:
         echo "$APPVEYOR_BUILD_WORKER_IMAGE with $PYTHON is broken on Appveyor."
         export ENABLED="false"
       fi;
-  - sh: appveyor exit 0
+  - sh: exit 0
 
 install:
   - sh: echo "install"
