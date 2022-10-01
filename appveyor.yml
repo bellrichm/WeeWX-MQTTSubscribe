@@ -44,7 +44,7 @@ environment:
       job_depends_on: initialize
 
       # Even though EOL, I'll support a bit longer
-    - PYTHON: 3.5.10
+    - PYTHON: 3.5
       WEEWX: 4.8.0
       job_group: build  
       job_depends_on: initialize      
