@@ -157,9 +157,9 @@ init:
   # Therefore cannot run scripts in Github
   - sh: echo "init"
   - sh: echo "$APPVEYOR_BUILD_WORKER_IMAGE"
-  -sh: echo "$APPVEYOR_BUILD_WORKER_IMAGE"
-  -sh: echo "$PYTHON"
-  -sh: echo "$ENABLED"
+  - sh: echo "$APPVEYOR_BUILD_WORKER_IMAGE"
+  - sh: echo "$PYTHON"
+  - sh: echo "$ENABLED"
   - sh: >-
       if [ "$APPVEYOR_BUILD_WORKER_IMAGE" = "Ubuntu" ] && [ "$PYTHON" = "3.10" ]; then
         echo "$APPVEYOR_BUILD_WORKER_IMAGE with $PYTHON is broken on Appveyor."
@@ -177,7 +177,7 @@ init:
         echo "$APPVEYOR_BUILD_WORKER_IMAGE with $PYTHON is broken on Appveyor."
         export ENABLED="false"
       fi
-  -sh: echo "$ENABLED"
+  - sh: echo "$ENABLED"
 
 
 install:
