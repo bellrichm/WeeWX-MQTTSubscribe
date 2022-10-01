@@ -156,11 +156,11 @@ init:
   # This runs before the commit is even checked out
   - sh: echo "init"
   - sh: echo "$APPVEYOR_BUILD_WORKER_IMAGE"
+  # 'source' so that variables are set in parent environment
+  - sh: source appveyor/init.sh 
 
 install:
   - sh: echo "install"
-  # 'source' so that variables are set in parent environment
-  - sh: source appveyor/init.sh 
   - sh: appveyor/install.sh    
    
 on_finish:
