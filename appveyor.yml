@@ -97,7 +97,7 @@ environment:
     # These do not always exist
     - ENABLED: false
       PYTHON: 3.10
-      WEEWX: 4.6.0a4
+      WEEWX: 4.9.0b1
       WEEWX_URL: http://www.weewx.com/downloads/development_versions/
       job_group: build  
       job_depends_on: initialize
