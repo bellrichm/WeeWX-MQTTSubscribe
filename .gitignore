@@ -8,10 +8,6 @@ cover
 cover2
 coverage.xml
 coverage2.xml
-nosetests.html
-nosetests.xml
-nosetests2.html
-nosetests2.xml
 pylint.txt
 localtools/
 .scannerwork/

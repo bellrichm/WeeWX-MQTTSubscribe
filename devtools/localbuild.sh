@@ -45,4 +45,4 @@ source ./appveyor/init.sh
 ./appveyor/test_script.sh
 ./appveyor/after_test.sh
 
-mv -f nosetests* tmp
+mv -f results* tmp
