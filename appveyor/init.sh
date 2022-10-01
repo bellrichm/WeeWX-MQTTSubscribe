@@ -11,13 +11,3 @@ if [ "$APPVEYOR_REPO_TAG" = "true" ]; then
   export APPVEYOR_BUILD_VERSION=release-$APPVEYOR_REPO_TAG_NAME
   appveyor UpdateBuild -Version "release-$APPVEYOR_REPO_TAG_NAME"
 fi
-
-if [ "$APPVEYOR_BUILD_WORKER_IMAGE" = "Previous Ubuntu1604" ] && [ "$PYTHON" = "3.6.15" ]; then
-  echo "$APPVEYOR_BUILD_WORKER_IMAGE with $PYTHON is broken on Appveyor."
-  export ENABLED="false"
-fi
-
-if [ "$APPVEYOR_BUILD_WORKER_IMAGE" = "Previous Ubuntu1604" ] && [ "$PYTHON" = "3.10" ]; then
-  echo "$APPVEYOR_BUILD_WORKER_IMAGE with $PYTHON is broken on Appveyor."
-  export ENABLED="false"
-fi
