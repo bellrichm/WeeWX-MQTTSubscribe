@@ -164,19 +164,15 @@ init:
       if [ "$APPVEYOR_BUILD_WORKER_IMAGE" = "Ubuntu" ] && [ "$PYTHON" = "3.10" ]; then
         echo "$APPVEYOR_BUILD_WORKER_IMAGE with $PYTHON is broken on Appveyor."
         export ENABLED="false"
-      fi
-      if [ "$APPVEYOR_BUILD_WORKER_IMAGE" = "Previous Ubuntu1604" ] && [ "$PYTHON" = "3.10" ]; then
-        echo "$APPVEYOR_BUILD_WORKER_IMAGE with $PYTHON is broken on Appveyor."
-        export ENABLED="false"
-      fi
+      fi;
       if [ "$APPVEYOR_BUILD_WORKER_IMAGE" = "Previous Ubuntu1604" ] && [ "$PYTHON" = "3.6.15" ]; then
         echo "$APPVEYOR_BUILD_WORKER_IMAGE with $PYTHON is broken on Appveyor."
         export ENABLED="false"
-      fi
+      fi;
       if [ "$APPVEYOR_BUILD_WORKER_IMAGE" = "Previous Ubuntu1604" ] && [ "$PYTHON" = "3.10" ]; then
         echo "$APPVEYOR_BUILD_WORKER_IMAGE with $PYTHON is broken on Appveyor."
         export ENABLED="false"
-      fi
+      fi;
   - sh: echo "$ENABLED"
 
 install:
