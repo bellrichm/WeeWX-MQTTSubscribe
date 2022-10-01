@@ -50,7 +50,7 @@ environment:
       job_depends_on: initialize      
 
     # Even though EOL, I'll support a bit longer
-    - PYTHON: 3.6.15
+    - PYTHON: 3.6
       WEEWX: 4.8.0
       job_group: build
       job_depends_on: initialize
@@ -158,7 +158,7 @@ init:
   - sh: echo "init"
   - sh: echo "$APPVEYOR_BUILD_WORKER_IMAGE $PYTHON"
   - sh: >-
-      if [ "$APPVEYOR_BUILD_WORKER_IMAGE" = "Previous Ubuntu1604" ] && [ "$PYTHON" = "3.6.15" ]; then
+      if [ "$APPVEYOR_BUILD_WORKER_IMAGE" = "Previous Ubuntu1604" ] && [ "$PYTHON" = "3.6" ]; then
         echo "$APPVEYOR_BUILD_WORKER_IMAGE with $PYTHON is broken on Appveyor."
         exit 0
       fi;
