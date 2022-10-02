@@ -1,5 +1,5 @@
 #
-#    Copyright (c) 2020-2021 Rich Bell <bellrichm@gmail.com>
+#    Copyright (c) 2020-2022 Rich Bell <bellrichm@gmail.com>
 #
 #    See the file LICENSE.txt for your full rights.
 #
@@ -869,6 +869,46 @@ class TestJsonPayload(unittest.TestCase):
         for key in second_arg:
             self.assertIsInstance(key, str)
 
+    def test_payload_array_nit_configured(self):
+        mock_manager = mock.Mock(spec=TopicManager)
+        mock_logger = mock.Mock(spec=Logger)
+        mock_manager.get_msg_id_field.return_value = None
+        mock_manager.get_ignore_value.return_value = True
+        mock_manager.get_ignore_msg_id_field.return_value = []
+        mock_manager.get_ignore_value.return_value = False
+        mock_manager.get_conversion_func.return_value = {
+            'source': 'lambda x: to_float(x)',
+            'compiled': eval('lambda x: to_float(x)')
+            }
+        fields = {}
+        mock_manager.get_fields.return_value = fields
+        mock_manager.get_filters.return_value = {}
+        mock_manager.get_filters.return_value = {}
+        mock_manager.get_message_dict.return_value = {'flatten_delimiter': '_'}
+        mock_manager.subscribed_topics = {}
+
+        SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
+
+        payload_dict = dict(self.payload_dict)
+        payload_dict['dateTime'] = time.time()
+        payload_dict['usUnits'] = random.randint(1, 10)
+        output_dict = copy.deepcopy(payload_dict)
+        payload_dict['extraTemps'] = [round(random.uniform(1, 100), 2), round(random.uniform(1, 100), 2)]
+
+        if PY2:
+            payload = json.dumps(payload_dict)
+        else:
+            payload = json.dumps(payload_dict).encode("utf-8")
+
+        output_dict['extraTemp1'] = payload_dict['extraTemps'][0]
+        output_dict['extraTemp2'] = payload_dict['extraTemps'][1]
+
+        msg = Msg(self.topic, payload, 0, 0)
+
+        SUT._on_message_json(None, None, msg)
+
+        self.assertEqual(mock_logger.error.call_count, 1)
+
     def test_payload_array_good(self):
         mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
@@ -883,6 +923,8 @@ class TestJsonPayload(unittest.TestCase):
         fields = {}
         fields['extraTemps'] = {}
         fields['extraTemps']['subfields'] = ['extraTemp1', 'extraTemp2']
+        fields['extraTemp1'] = {}
+        fields['extraTemp2'] = {}
         mock_manager.get_fields.return_value = fields
         mock_manager.get_filters.return_value = {}
         mock_manager.get_filters.return_value = {}
@@ -914,7 +956,6 @@ class TestJsonPayload(unittest.TestCase):
         second_arg = call_args_list[0].args[1]
         for key in second_arg:
             self.assertIsInstance(key, str)
-
 
     def test_payload_nested(self):
         mock_manager = mock.Mock(spec=TopicManager)
@@ -1011,6 +1052,49 @@ class TestJsonPayload(unittest.TestCase):
 
         mock_manager.append_data.assert_called_once_with(msg.topic, flattened_payload_dict)
 
+    def test_array_ignore_default_true(self):
+        mock_manager = mock.Mock(spec=TopicManager)
+        mock_logger = mock.Mock(spec=Logger)
+        mock_manager.get_msg_id_field.return_value = None
+        mock_manager.get_ignore_value.return_value = True
+        mock_manager.get_ignore_msg_id_field.return_value = []
+        mock_manager.get_ignore_value.return_value = False
+        mock_manager.get_conversion_func.return_value = {
+            'source': 'lambda x: to_float(x)',
+            'compiled': eval('lambda x: to_float(x)')
+            }
+        fields = {}
+        fields['extraTemps'] = {}
+        fields['extraTemps']['ignore'] = True
+        fields['extraTemps']['subfields'] = ['extraTemp1', 'extraTemp2']
+        fields['extraTemp1'] = {}
+        fields['extraTemp2'] = {}
+        mock_manager.get_fields.return_value = fields
+        mock_manager.get_filters.return_value = {}
+        mock_manager.get_filters.return_value = {}
+        mock_manager.get_message_dict.return_value = {'flatten_delimiter': '_'}
+        mock_manager.subscribed_topics = {}
+
+        SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
+
+        payload_dict = {}
+        output_dict = copy.deepcopy(payload_dict)
+        payload_dict['extraTemps'] = [round(random.uniform(1, 100), 2), round(random.uniform(1, 100), 2)]
+
+        if PY2:
+            payload = json.dumps(payload_dict)
+        else:
+            payload = json.dumps(payload_dict).encode("utf-8")
+
+        output_dict['extraTemp1'] = payload_dict['extraTemps'][0]
+        output_dict['extraTemp2'] = payload_dict['extraTemps'][1]
+
+        msg = Msg(self.topic, payload, 0, 0)
+
+        SUT._on_message_json(None, None, msg)
+
+        self.assertFalse(mock_manager.append_data.called)
+
     def test_ignore_default_true(self):
         mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
@@ -1018,6 +1102,7 @@ class TestJsonPayload(unittest.TestCase):
         mock_manager.get_ignore_msg_id_field.return_value = []
         mock_manager.get_message_dict.return_value = {'flatten_delimiter': '_'}
         mock_manager.subscribed_topics = {}
+        mock_manager.get_filters.return_value = {}
 
         message_handler_config_dict = {}
         message_handler_config_dict['type'] = 'json'

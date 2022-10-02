@@ -1,5 +1,5 @@
 #
-#    Copyright (c) 2020-2021 Rich Bell <bellrichm@gmail.com>
+#    Copyright (c) 2020-2022 Rich Bell <bellrichm@gmail.com>
 #
 #    See the file LICENSE.txt for your full rights.
 #
@@ -821,10 +821,11 @@ class TopicManager(object):
                         self.subscribed_topics[topic]['fields'][field]['ignore_msg_id_field'] = field_defaults['ignore_msg_id_field']
 
                         for subfield in self.subscribed_topics[topic]['fields'][field].get('subfields', []):
-                            self.subscribed_topics[topic]['fields'][subfield] = self._configure_field(topic_dict,
-                                                                                                    topic_dict[field]['subfields'][subfield],
-                                                                                                    subfield,
-                                                                                                    self.subscribed_topics[topic]['fields'][field])
+                            self.subscribed_topics[topic]['fields'][subfield] = \
+                                self._configure_field(self.subscribed_topics[topic]['fields'][field],
+                                                      topic_dict[field]['subfields'][subfield],
+                                                      subfield,
+                                                      self.subscribed_topics[topic]['fields'][field])
                             if 'units' in self.subscribed_topics[topic]['fields'][field]:
                                 self.subscribed_topics[topic]['fields'][subfield]['units'] = \
                                     self.subscribed_topics[topic]['fields'][field]['units']
@@ -1461,28 +1462,37 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
                     self.logger.info("MessageCallbackProvider on_message_json filtered out %s : %s with %s=%s"
                                      % (msg.topic, msg.payload, lookup_key, filters[lookup_key]))
                     return
-                if not fields.get(lookup_key, {}).get('ignore', fields_ignore_default):
-                    if isinstance(data_flattened[key], list):
+                if isinstance(data_flattened[key], list):
+                    if key in fields and 'subfields' in fields[key]:
                         if len(data_flattened[key]) > len(fields[key]['subfields']):
                             self.logger.error("Skipping %s because array data too big. Array=%s subfields=%s" %
-                                              (key, data_flattened[key], fields[key]['subfields']))
+                                                (key, data_flattened[key], fields[key]['subfields']))
                         elif len(data_flattened[key]) < len(fields[key]['subfields']):
                             self.logger.error("Skipping %s because array data too small. Array=%s subfields=%s" %
-                                              (key, data_flattened[key], fields[key]['subfields']))
+                                                (key, data_flattened[key], fields[key]['subfields']))
                         else:
                             i = 0
                             for subfield in  fields[key]['subfields']:
-                                (fieldname, value) = self._update_data(fields, fields_conversion_func,
-                                                                       subfield,
-                                                                       data_flattened[key][i],
-                                                                       unit_system)
-                                data_final[fieldname] = value
-                                i += 1
+                                subfield_ignore_default = fields.get(lookup_key, {}).get('ignore', fields_ignore_default)
+                                if not fields[subfield].get('ignore', subfield_ignore_default):
+                                    (fieldname, value) = self._update_data(fields, fields_conversion_func,
+                                                                            subfield,
+                                                                            data_flattened[key][i],
+                                                                            unit_system)
+                                    data_final[fieldname] = value
+                                    i += 1
+                                else:
+                                    self.logger.trace("MessageCallbackProvider on_message_json ignoring field: %s" % lookup_key)
                     else:
+                        if not fields.get(lookup_key, {}).get('ignore', fields_ignore_default):
+                            self.logger.error("Skipping %s because data is an array and has no configured subfields. Array=%s" %
+                                              (key, data_flattened[key]))
+                else:
+                    if not fields.get(lookup_key, {}).get('ignore', fields_ignore_default):
                         (fieldname, value) = self._update_data(fields, fields_conversion_func, lookup_key, data_flattened[key], unit_system)
                         data_final[fieldname] = value
-                else:
-                    self.logger.trace("MessageCallbackProvider on_message_json ignoring field: %s" % lookup_key)
+                    else:
+                        self.logger.trace("MessageCallbackProvider on_message_json ignoring field: %s" % lookup_key)
 
             if data_final:
                 self.topic_manager.append_data(msg.topic, data_final)
