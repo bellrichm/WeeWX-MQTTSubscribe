@@ -1,3 +1,12 @@
+V2.2.1
+Fixes:
+- Ability to opt in/out at the subfield level.
+Internal:
+- Migrate from nosetest to pytest.
+- Support for testing against Python 3.10.
+- Ability to not run tests against all Ubuntu and Python releases.
+  Useful if Appveyor images are broken.
+
 V2.2.0
 Fixes:
 - Support arrays in json payload
