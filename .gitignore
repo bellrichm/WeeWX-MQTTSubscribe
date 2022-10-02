@@ -1,5 +1,7 @@
 *.pyc
 .coverage
+.coverage1
+.coverage2
 .vscode/.ropeproject
 htmlcov
 tmp/
