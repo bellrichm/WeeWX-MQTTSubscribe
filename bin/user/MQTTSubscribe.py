@@ -400,7 +400,7 @@ import weewx
 import weewx.drivers
 from weewx.engine import StdEngine, StdService
 
-VERSION = '2.2.1'
+VERSION = '2.2.2'
 DRIVER_NAME = 'MQTTSubscribeDriver'
 DRIVER_VERSION = VERSION
 
@@ -1480,9 +1480,9 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
                                                                             data_flattened[key][i],
                                                                             unit_system)
                                     data_final[fieldname] = value
-                                    i += 1
                                 else:
                                     self.logger.trace("MessageCallbackProvider on_message_json ignoring field: %s" % lookup_key)
+                                i += 1
                     else:
                         if not fields.get(lookup_key, {}).get('ignore', fields_ignore_default):
                             self.logger.error("Skipping %s because data is an array and has no configured subfields. Array=%s" %
