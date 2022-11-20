@@ -46,7 +46,6 @@ in the WeeWX [User's Guide](http://weewx.com/docs/usersguide.htm") for the defin
 The following symbolic names are used to define the various locations:
 
 * *$DOWNLOAD_ROOT* - The directory containing the downloaded *MQTTSubscribe* extension.
-* *$BIN_ROOT* - The directory where WeeWX executables are located.
 * *$CONFIG_ROOT* - The directory where the configuration (typically, weewx.conf) is located.
 
 The notation vX.Y.Z designates the version being installed.
@@ -92,8 +91,8 @@ Install the Paho MQTT python client.
     * As a driver
 
         ```
-        $BIN_ROOT/wee_extension --install=$DOWNLOAD_ROOT/vX.Y.Z.tar.gz
-        $BIN_ROOT/wee_config --reconfig
+        wee_extension --install=$DOWNLOAD_ROOT/vX.Y.Z.tar.gz
+        wee_config --reconfig
         ```
 
         **Note:** By default when installing, the service is installed and configured, but not enabled.
@@ -101,32 +100,34 @@ Install the Paho MQTT python client.
         set the environment variable MQTTSubscribe_install_type to DRIVER. For example,
 
         ```
-        MQTTSubscribe_install_type=DRIVER $BIN_ROOT/wee_extension --install=$DOWNLOAD_ROOT/vX.Y.Z.tar.gz
+        MQTTSubscribe_install_type=DRIVER wee_extension --install=$DOWNLOAD_ROOT/vX.Y.Z.tar.gz
         ```
 
         And then configure the driver.
 
         ```
-        $BIN_ROOT/wee_config --reconfig
+        wee_config --reconfig
         ```
 
     * As a service
 
         ```
-        $BIN_ROOT/wee_extension --install=$DOWNLOAD_DIR/vX.Y.Z.tar.gz
+        wee_extension --install=$DOWNLOAD_DIR/vX.Y.Z.tar.gz
         ```
 
         **Note:** By default when installing, the service is installed and configured, but not enabled.
         To enable, set the environment variable MQTTSubscribe_install_type to SERVICE. For example,
 
         ```
-        MQTTSubscribe_install_type=SERVICE $BIN_ROOT/wee_extension --install=$DOWNLOAD_DIR/vX.Y.Z.tar.gz
+        MQTTSubscribe_install_type=SERVICE wee_extension --install=$DOWNLOAD_DIR/vX.Y.Z.tar.gz
         ```
 
     In either case, **edit the [MQTTSubscribeDriver] or [MQTTSubscribeService] stanza as required**.
     At the very least the [\[topics\]] stanza must be configured to the topics to subscribe to.
     Other settings such as host and port may need to be changed.
     See, [configuring MQTTSubscribe](https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/Configuring).
+
+    **Note:** For some WeeWX install types, the weew_extension and wee_config commands will neeed its path prepended to it.
 
 3. Restart WeeWX
 
