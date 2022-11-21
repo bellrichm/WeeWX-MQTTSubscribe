@@ -1,13 +1,17 @@
+control which branches use this file
 branches:
   #only:
     #- master
   except:
     - master
 
+# branch build uses a subset of appveyor images, master uses all
 image:
-  - Ubuntu1604
-  - Ubuntu1804
-  - Ubuntu2004
+  - Ubuntu
+  #- Ubuntu1604
+  #- Ubuntu2004
+
+# everything beliw this line should be identical when comparing branch build to master build
 
 environment:
   # secure values
@@ -166,7 +170,7 @@ init:
   # This runs before the commit is even checked out
   # Therefore cannot run scripts in Github
   - sh: echo "init"
-  - sh: echo "$APPVEYOR_BUILD_WORKER_IMAGE"
+  - sh: echo "$APPVEYOR_BUILD_WORKER_IMAGE $PYTHON"
   - sh: >-
       if [ "$APPVEYOR_BUILD_WORKER_IMAGE" = "Ubuntu1604" ] && [ "$PYTHON" = "3.10" ]; then
         echo "$APPVEYOR_BUILD_WORKER_IMAGE with $PYTHON is broken on Appveyor."
