@@ -5,9 +5,9 @@ branches:
     - master
 
 image:
-  #- Previous Ubuntu1604
   - Ubuntu1604
-  #- Ubuntu2004
+  - Ubuntu1804
+  - Ubuntu2004
 
 environment:
   # secure values
@@ -168,11 +168,11 @@ init:
   - sh: echo "init"
   - sh: echo "$APPVEYOR_BUILD_WORKER_IMAGE"
   - sh: >-
-      if [ "$APPVEYOR_BUILD_WORKER_IMAGE" = "Previous Ubuntu1604" ] && [ "$PYTHON" = "3.6" ]; then
+      if [ "$APPVEYOR_BUILD_WORKER_IMAGE" = "Ubuntu1604" ] && [ "$PYTHON" = "3.10" ]; then
         echo "$APPVEYOR_BUILD_WORKER_IMAGE with $PYTHON is broken on Appveyor."
         exit 0
       fi;
-      if [ "$APPVEYOR_BUILD_WORKER_IMAGE" = "Previous Ubuntu1604" ] && [ "$PYTHON" = "3.10" ]; then
+      if [ "$APPVEYOR_BUILD_WORKER_IMAGE" = "Ubuntu1604" ] && [ "$PYTHON" = "3.11" ]; then
         echo "$APPVEYOR_BUILD_WORKER_IMAGE with $PYTHON is broken on Appveyor."
         exit 0
       fi;
