@@ -1,4 +1,9 @@
 name: Stale Issues
+
+on:
+  schedule:
+  - cron: "0 0 * * *"
+
 jobs:
   stale:
     runs-on: ubuntu-latest
