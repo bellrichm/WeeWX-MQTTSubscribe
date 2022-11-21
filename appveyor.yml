@@ -70,6 +70,16 @@ environment:
       job_group: build  
       job_depends_on: initialize
 
+    - PYTHON: 3.10
+      WEEWX: 4.9.1
+      job_group: build  
+      job_depends_on: initialize
+
+    - PYTHON: 3.11
+      WEEWX: 4.9.1
+      job_group: build  
+      job_depends_on: initialize
+
     - PYTHON: 2.7
       WEEWX: 3.9.0 
       job_group: build
