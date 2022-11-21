@@ -5,7 +5,7 @@ branches:
     - master
 
 image:
-  - Previous Ubuntu1604
+  #- Previous Ubuntu1604
   - Ubuntu1604
   #- Ubuntu2004
 
