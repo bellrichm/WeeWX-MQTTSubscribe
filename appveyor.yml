@@ -1,13 +1,23 @@
+# control which branches use this file
 branches:
   #only:
     #- master
   except:
     - master
 
+# branch build uses a subset of appveyor images, master uses all
 image:
   - Ubuntu
   #- Ubuntu1604
   #- Ubuntu2004
+
+# everything beliw this line should be identical when comparing branch build to master build
+
+# Do not build on tags (GitHub, Bitbucket, GitLab, Gitea)
+skip_tags: true
+
+# Do not build feature branch with open Pull Requests
+skip_branch_with_pr: true
 
 environment:
   # secure values
@@ -28,8 +38,8 @@ environment:
   matrix:
     # Run tests against latest WeeWX and Python
     # Run first, so that completes early
-    - PYTHON: 3.10
-      WEEWX: 4.8.0
+    - PYTHON: 3.9
+      WEEWX: 4.9.1
       CODECOVIO_UPLOAD: true
       COVERALLS_UPLOAD: true
       SONAR_UPLOAD: true
@@ -38,35 +48,45 @@ environment:
 
     # Even though EOL, I'll support a bit longer
     - PYTHON: 2.7
-      WEEWX: 4.8.0
+      WEEWX: 4.9.1
       CODECOVIO_UPLOAD: true
       job_group: build  
       job_depends_on: initialize
 
       # Even though EOL, I'll support a bit longer
     - PYTHON: 3.5
-      WEEWX: 4.8.0
+      WEEWX: 4.9.1
       job_group: build  
       job_depends_on: initialize      
 
     # Even though EOL, I'll support a bit longer
     - PYTHON: 3.6
-      WEEWX: 4.8.0
+      WEEWX: 4.9.1
       job_group: build
       job_depends_on: initialize
 
     - PYTHON: 3.7
-      WEEWX: 4.8.0
+      WEEWX: 4.9.1
       job_group: build  
       job_depends_on: initialize
 
     - PYTHON: 3.8
-      WEEWX: 4.8.0
+      WEEWX: 4.9.1
       job_group: build  
       job_depends_on: initialize
 
     - PYTHON: 3.9
-      WEEWX: 4.8.0
+      WEEWX: 4.9.1
+      job_group: build  
+      job_depends_on: initialize
+
+    - PYTHON: 3.10
+      WEEWX: 4.9.1
+      job_group: build  
+      job_depends_on: initialize
+
+    - PYTHON: 3.11
+      WEEWX: 4.9.1
       job_group: build  
       job_depends_on: initialize
 
@@ -82,21 +102,21 @@ environment:
       job_depends_on: initialize
 
     # Use latest Python release against WeeWX master branch
-    - PYTHON: 3.10
+    - PYTHON: 3.9
       WEEWX: master
       job_group: build  
       job_depends_on: initialize      
 
     # Use latest Python release against WeeWX development branch
-    - PYTHON: 3.10
+    - PYTHON: 3.9
       WEEWX: development
       job_group: build  
       job_depends_on: initialize      
 
     # Build/Test against a development/pre release of WeeWX with latest Python
     # These do not always exist
-    - ENABLED: false
-      PYTHON: 3.10
+    - ENABLED: true
+      PYTHON: 3.9
       WEEWX: 4.9.0b1
       WEEWX_URL: http://www.weewx.com/downloads/development_versions/
       job_group: build  
@@ -156,13 +176,13 @@ init:
   # This runs before the commit is even checked out
   # Therefore cannot run scripts in Github
   - sh: echo "init"
-  - sh: echo "$APPVEYOR_BUILD_WORKER_IMAGE"
+  - sh: echo "$APPVEYOR_BUILD_WORKER_IMAGE $PYTHON"
   - sh: >-
-      if [ "$APPVEYOR_BUILD_WORKER_IMAGE" = "Previous Ubuntu1604" ] && [ "$PYTHON" = "3.6" ]; then
+      if [ "$APPVEYOR_BUILD_WORKER_IMAGE" = "Ubuntu1604" ] && [ "$PYTHON" = "3.10" ]; then
         echo "$APPVEYOR_BUILD_WORKER_IMAGE with $PYTHON is broken on Appveyor."
         exit 0
       fi;
-      if [ "$APPVEYOR_BUILD_WORKER_IMAGE" = "Previous Ubuntu1604" ] && [ "$PYTHON" = "3.10" ]; then
+      if [ "$APPVEYOR_BUILD_WORKER_IMAGE" = "Ubuntu1604" ] && [ "$PYTHON" = "3.11" ]; then
         echo "$APPVEYOR_BUILD_WORKER_IMAGE with $PYTHON is broken on Appveyor."
         exit 0
       fi;
