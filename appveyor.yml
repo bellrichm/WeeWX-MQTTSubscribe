@@ -13,6 +13,9 @@ image:
 
 # everything beliw this line should be identical when comparing branch build to master build
 
+# Do not build on tags (GitHub, Bitbucket, GitLab, Gitea)
+skip_tags: true
+
 # Do not build feature branch with open Pull Requests
 skip_branch_with_pr: true
 
