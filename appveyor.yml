@@ -1,4 +1,4 @@
-control which branches use this file
+# control which branches use this file
 branches:
   #only:
     #- master
