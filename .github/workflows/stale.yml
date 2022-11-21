@@ -1,0 +1,13 @@
+name: Stale Issues
+jobs:
+  stale:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/stale@v3
+      with:
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+        only-labels: 'Info Needed'
+        stale-issue-message: 'This issue has been marked stale because it has been waiting for more information for 4 weeks.'
+        close-issue-message: 'This issue has been closed because the requested information has not been provided.'
+        days-before-stale: 56
+        days-before-close: 7
