@@ -28,7 +28,7 @@ environment:
   matrix:
     # Run tests against latest WeeWX and Python
     # Run first, so that completes early
-    - PYTHON: 3.10
+    - PYTHON: 3.11
       WEEWX: 4.8.0
       CODECOVIO_UPLOAD: true
       COVERALLS_UPLOAD: true
