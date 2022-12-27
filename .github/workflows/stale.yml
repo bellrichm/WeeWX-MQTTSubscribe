@@ -14,5 +14,5 @@ jobs:
         only-labels: 'Info Needed'
         stale-issue-message: 'This issue has been marked stale because it has been waiting for more information for 4 weeks.'
         close-issue-message: 'This issue has been closed because the requested information has not been provided.'
-        days-before-stale: 56
+        days-before-stale: 28
         days-before-close: 7
