@@ -181,7 +181,7 @@ init:
   # Therefore cannot run scripts in Github
   - sh: echo "init"
   - sh: echo "$Ubuntu"
-  - sh: echo $"Ubuntu1604"
+  - sh: echo "$Ubuntu1604"
   - sh: echo "$APPVEYOR_BUILD_WORKER_IMAGE $PYTHON"
   - sh: >-
       if [ "$APPVEYOR_BUILD_WORKER_IMAGE" = "Ubuntu1604" ] && [ "$PYTHON" = "3.10" ]; then
