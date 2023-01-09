@@ -24,10 +24,9 @@ environment:
   # Lists of python versions that are broken in the appveyor build image
   # There must be a entry for every image being run. The values are a lust of broken python installs.
   # To allow easily checking/updating broken images, these are set in the GUI.
-  Ubuntu: 
-  Ubuntu1604: 3.10
-  Ubuntu2004:   
-  foo: 
+  #Ubuntu: 
+  #Ubuntu1604:
+  #Ubuntu2004:   
   # secure values
   SKEY:
     secure: YyPit9bsTGKQYJEkmv6qAajHzVj+OV9UQKRL5b/sHyJ2SuzSDmjEZO0JRSLlbdyW
