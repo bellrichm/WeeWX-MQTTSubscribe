@@ -35,6 +35,10 @@ environment:
   
   WEEWX_URL: http://www.weewx.com/downloads/released_versions/
 
+  Ubuntu: []
+  Ubuntu1604: ["3.10", "3.11"]
+  Ubuntu2004: []
+
   matrix:
     # Run tests against latest WeeWX and Python
     # Run first, so that completes early
@@ -176,6 +180,8 @@ init:
   # This runs before the commit is even checked out
   # Therefore cannot run scripts in Github
   - sh: echo "init"
+  - sh: echo "$Ubuntu"
+  - sh: echo $"Ubuntu1604"
   - sh: echo "$APPVEYOR_BUILD_WORKER_IMAGE $PYTHON"
   - sh: >-
       if [ "$APPVEYOR_BUILD_WORKER_IMAGE" = "Ubuntu1604" ] && [ "$PYTHON" = "3.10" ]; then
