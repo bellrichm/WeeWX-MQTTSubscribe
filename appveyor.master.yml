@@ -36,7 +36,7 @@ environment:
   WEEWX_URL: http://www.weewx.com/downloads/released_versions/
 
   Ubuntu: 
-  Ubuntu1604: 3.10, 3.11
+  Ubuntu1604: 3.10 3.11
   Ubuntu2004: 
 
   matrix:
@@ -184,11 +184,7 @@ init:
   - sh: echo "$Ubuntu1604"
   - sh: echo "$APPVEYOR_BUILD_WORKER_IMAGE $PYTHON"
   - sh: >-
-      if [ "$APPVEYOR_BUILD_WORKER_IMAGE" = "Ubuntu1604" ] && [ "$PYTHON" = "3.10" ]; then
-        echo "$APPVEYOR_BUILD_WORKER_IMAGE with $PYTHON is broken on Appveyor."
-        exit 0
-      fi;
-      if [ "$APPVEYOR_BUILD_WORKER_IMAGE" = "Ubuntu1604" ] && [ "$PYTHON" = "3.11" ]; then
+      if [[ ${!APPVEYOR_BUILD_WORKER_IMAGE} == *$PYTHON* ]]; then
         echo "$APPVEYOR_BUILD_WORKER_IMAGE with $PYTHON is broken on Appveyor."
         exit 0
       fi;
