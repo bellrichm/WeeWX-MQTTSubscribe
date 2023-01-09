@@ -189,6 +189,7 @@ init:
   # This runs before the commit is even checked out
   # Therefore cannot run scripts in Github
   - sh: echo "init"
+  - sh: echo "$foo"
   - sh: echo "$APPVEYOR_BUILD_WORKER_IMAGE $PYTHON"
   - sh: echo "${!APPVEYOR_BUILD_WORKER_IMAGE}"
   - sh: >-
