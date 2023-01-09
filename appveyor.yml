@@ -120,6 +120,12 @@ environment:
       job_group: build  
       job_depends_on: initialize      
 
+    # Use latest Python release against WeeWX V5 branch
+    - PYTHON: 3.9
+      WEEWX: V5
+      job_group: build  
+      job_depends_on: initialize            
+
     # Build/Test against a development/pre release of WeeWX with latest Python
     # These do not always exist
     - ENABLED: true

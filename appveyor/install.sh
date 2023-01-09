@@ -39,7 +39,14 @@
       git checkout development
       git show --oneline -s | tee development.txt
       detail=`cat development.txt`
-      appveyor AddMessage "Testing against development " -Category Information -Details "$detail"      
+      appveyor AddMessage "Testing against V5 " -Category Information -Details "$detail"      
+    elif [ "$WEEWX" = "V5" ]; then
+      git clone https://github.com/weewx/weewx.git weewx
+      cd weewx
+      git checkout V5
+      git show --oneline -s | tee V5.txt
+      detail=`cat V5.txt`
+      appveyor AddMessage "Testing against V5 " -Category Information -Details "$detail"            
     else
       wget  $WEEWX_URL/weewx-$WEEWX.tar.gz
       mkdir weewx
