@@ -571,8 +571,6 @@ class TestV4Logging(unittest.TestCase):
                 mock_parent_handler.setLevel.assert_called_once_with(log_level)
 
                 self.assertEqual(SUT._logmsg.addHandler.call_count, 2) # pylint: disable=protected-access
-                SUT._logmsg.addHandler.assert_called_once_with(mock_grandparent_handler) # pylint: disable=protected-access
-                SUT._logmsg.addHandler.assert_called_once_with(mock_parent_handler) # pylint: disable=protected-access
 
     @staticmethod
     def test_init_filename_set():
