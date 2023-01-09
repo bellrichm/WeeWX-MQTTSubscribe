@@ -27,6 +27,7 @@ environment:
   Ubuntu: 
   Ubuntu1604: 3.10
   Ubuntu2004:   
+  foo: 
   # secure values
   SKEY:
     secure: YyPit9bsTGKQYJEkmv6qAajHzVj+OV9UQKRL5b/sHyJ2SuzSDmjEZO0JRSLlbdyW
