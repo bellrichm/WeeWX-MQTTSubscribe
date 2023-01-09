@@ -8,9 +8,9 @@ branches:
 # branch build uses a subset of appveyor images, master uses all
 # Don't forget to set the same named (for example, Ubuntu) environment variable below
 image:
-  - Ubuntu
+  #- Ubuntu
   - Ubuntu1604
-  - Ubuntu2004
+  #- Ubuntu2004
 
 # everything beliw this line should be identical when comparing branch build to master build
 
