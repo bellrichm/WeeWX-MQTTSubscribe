@@ -6,6 +6,7 @@ branches:
     - master
 
 # branch build uses a subset of appveyor images, master uses all
+# Don't forget to set the same named (for example, Ubuntu) environment variable below
 image:
   - Ubuntu
   #- Ubuntu1604
@@ -20,6 +21,11 @@ skip_tags: true
 skip_branch_with_pr: true
 
 environment:
+  # Lists of python versions that are broken in the appveyor build image
+  # There must be a entry for every image being run
+  Ubuntu: 
+  Ubuntu1604: 3.10 3.11
+  Ubuntu2004:   
   # secure values
   SKEY:
     secure: YyPit9bsTGKQYJEkmv6qAajHzVj+OV9UQKRL5b/sHyJ2SuzSDmjEZO0JRSLlbdyW
@@ -178,11 +184,7 @@ init:
   - sh: echo "init"
   - sh: echo "$APPVEYOR_BUILD_WORKER_IMAGE $PYTHON"
   - sh: >-
-      if [ "$APPVEYOR_BUILD_WORKER_IMAGE" = "Ubuntu1604" ] && [ "$PYTHON" = "3.10" ]; then
-        echo "$APPVEYOR_BUILD_WORKER_IMAGE with $PYTHON is broken on Appveyor."
-        exit 0
-      fi;
-      if [ "$APPVEYOR_BUILD_WORKER_IMAGE" = "Ubuntu1604" ] && [ "$PYTHON" = "3.11" ]; then
+      if [[ ${!APPVEYOR_BUILD_WORKER_IMAGE} == *$PYTHON* ]]; then
         echo "$APPVEYOR_BUILD_WORKER_IMAGE with $PYTHON is broken on Appveyor."
         exit 0
       fi;

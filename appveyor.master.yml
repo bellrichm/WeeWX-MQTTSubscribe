@@ -6,6 +6,7 @@ branches:
     #- master
 
 # branch build uses a subset of appveyor images, master uses all
+# Don't forget to set the same named (for example, Ubuntu) environment variable below
 image:
   - Ubuntu
   - Ubuntu1604
@@ -20,6 +21,11 @@ skip_tags: true
 skip_branch_with_pr: true
 
 environment:
+  # Lists of python versions that are broken in the appveyor build image
+  # There must be a entry for every image being run
+  Ubuntu: 
+  Ubuntu1604: 3.10 3.11
+  Ubuntu2004:   
   # secure values
   SKEY:
     secure: YyPit9bsTGKQYJEkmv6qAajHzVj+OV9UQKRL5b/sHyJ2SuzSDmjEZO0JRSLlbdyW
@@ -34,10 +40,6 @@ environment:
   ENABLED: true
   
   WEEWX_URL: http://www.weewx.com/downloads/released_versions/
-
-  Ubuntu: 
-  Ubuntu1604: 3.10 3.11
-  Ubuntu2004: 
 
   matrix:
     # Run tests against latest WeeWX and Python
@@ -180,8 +182,6 @@ init:
   # This runs before the commit is even checked out
   # Therefore cannot run scripts in Github
   - sh: echo "init"
-  - sh: echo "$Ubuntu"
-  - sh: echo "$Ubuntu1604"
   - sh: echo "$APPVEYOR_BUILD_WORKER_IMAGE $PYTHON"
   - sh: >-
       if [[ ${!APPVEYOR_BUILD_WORKER_IMAGE} == *$PYTHON* ]]; then
