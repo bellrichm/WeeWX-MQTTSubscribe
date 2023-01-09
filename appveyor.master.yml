@@ -36,7 +36,7 @@ environment:
   WEEWX_URL: http://www.weewx.com/downloads/released_versions/
 
   Ubuntu: []
-  Ubuntu1604: ["3.10", "3.11"]
+  Ubuntu1604: ["3.10" "3.11"]
   Ubuntu2004: []
 
   matrix:
