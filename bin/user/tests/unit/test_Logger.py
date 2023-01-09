@@ -565,14 +565,14 @@ class TestV4Logging(unittest.TestCase):
                 SUT = Logger(random_string(), level=random_string())
 
                 mock_logging.addLevelName.assert_called_once_with(log_level, 'TRACE')
-                SUT._logmsg.setLevel.called_once_with(log_level) # pylint: disable=protected-access
+                SUT._logmsg.setLevel.assert_called_once_with(log_level) # pylint: disable=protected-access
 
-                mock_grandparent_handler.setLevel.called_once_with(log_level)
-                mock_parent_handler.setLevel.called_once_with(log_level)
+                mock_grandparent_handler.setLevel.assert_called_once_with(log_level)
+                mock_parent_handler.setLevel.assert_called_once_with(log_level)
 
                 self.assertEqual(SUT._logmsg.addHandler.call_count, 2) # pylint: disable=protected-access
-                SUT._logmsg.addHandler.called_once_with(mock_grandparent_handler) # pylint: disable=protected-access
-                SUT._logmsg.addHandler.called_once_with(mock_parent_handler) # pylint: disable=protected-access
+                SUT._logmsg.addHandler.assert_called_once_with(mock_grandparent_handler) # pylint: disable=protected-access
+                SUT._logmsg.addHandler.assert_called_once_with(mock_parent_handler) # pylint: disable=protected-access
 
     @staticmethod
     def test_init_filename_set():
