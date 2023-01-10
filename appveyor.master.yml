@@ -49,7 +49,6 @@ environment:
       SONAR_UPLOAD: true
       job_group: build  
       job_depends_on: initialize
-      ENABLED: false
 
     # Even though EOL, I'll support a bit longer
     - PYTHON: 2.7
@@ -57,57 +56,48 @@ environment:
       CODECOVIO_UPLOAD: true
       job_group: build  
       job_depends_on: initialize
-      ENABLED: false
 
       # Even though EOL, I'll support a bit longer
     - PYTHON: 3.5
       WEEWX: 4.9.1
       job_group: build  
       job_depends_on: initialize
-      ENABLED: false    
 
     # Even though EOL, I'll support a bit longer
     - PYTHON: 3.6
       WEEWX: 4.9.1
       job_group: build
       job_depends_on: initialize
-      ENABLED: false
 
     - PYTHON: 3.7
       WEEWX: 4.9.1
       job_group: build  
       job_depends_on: initialize
-      ENABLED: false
 
     - PYTHON: 3.8
       WEEWX: 4.9.1
       job_group: build  
       job_depends_on: initialize
-      ENABLED: false
 
     - PYTHON: 3.9
       WEEWX: 4.9.1
       job_group: build  
       job_depends_on: initialize
-      ENABLED: false
 
     - PYTHON: 3.10
       WEEWX: 4.9.1
       job_group: build  
       job_depends_on: initialize
-      ENABLED: false
 
     - PYTHON: 3.11
       WEEWX: 4.9.1
       job_group: build  
       job_depends_on: initialize
-      ENABLED: false
 
     - PYTHON: 2.7
       WEEWX: 3.9.0 
       job_group: build
       job_depends_on: initialize
-      ENABLED: false
 
     # The earliest WeeWX version supported
     - PYTHON: 2.7 
