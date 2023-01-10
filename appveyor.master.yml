@@ -107,8 +107,8 @@ environment:
 
     # Use latest Python release against WeeWX master branch
     - PYTHON: 3.9
-      BRANCH:
-      WEEWX: %BRANCH%
+      BRANCH: master
+      WEEWX: $BRANCH
       job_group: build  
       job_depends_on: initialize      
 
