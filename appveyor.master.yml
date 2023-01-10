@@ -114,6 +114,7 @@ environment:
       WEEWX: 3.7.1
       job_group: build
       job_depends_on: initialize
+      ENABLED: false
 
     # Use latest Python release against WeeWX master branch 
     - PYTHON: 3.9
@@ -124,13 +125,15 @@ environment:
 
     # Use latest Python release against WeeWX development branch
     - PYTHON: 3.9
-      WEEWX: development
+      BRANCH: development
+      WEEWX: '%BRANCH%'
       job_group: build  
       job_depends_on: initialize      
 
     # Use latest Python release against WeeWX V5 branch
     - PYTHON: 3.9
-      WEEWX: V5
+      BRANCH: V5
+      WEEWX: '%BRANCH%'
       job_group: build  
       job_depends_on: initialize            
 

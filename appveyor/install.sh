@@ -27,27 +27,13 @@
     pip install coveralls --quiet --no-python-version-warning
 
     echo "Running weewx install"
-    echo "$BRANCH $WEEWX"
-    if [ "$WEEWX" = "master" ]; then
+    echo "$WEEWX"
+    if [ "$WEEWX" = "$BRANCH" ]; then
       git clone https://github.com/weewx/weewx.git weewx
       cd weewx
-      git show --oneline -s | tee master.txt
-      detail=`cat master.txt`
-      appveyor AddMessage "Testing against master " -Category Information -Details "$detail"
-    elif [ "$WEEWX" = "development" ]; then
-      git clone https://github.com/weewx/weewx.git weewx
-      cd weewx
-      git checkout development
-      git show --oneline -s | tee development.txt
-      detail=`cat development.txt`
-      appveyor AddMessage "Testing against V5 " -Category Information -Details "$detail"      
-    elif [ "$WEEWX" = "V5" ]; then
-      git clone https://github.com/weewx/weewx.git weewx
-      cd weewx
-      git checkout V5
-      git show --oneline -s | tee V5.txt
-      detail=`cat V5.txt`
-      appveyor AddMessage "Testing against V5 " -Category Information -Details "$detail"            
+      git show --oneline -s | tee $BRANCH.txt
+      detail=`cat $BRANCH.txt`
+      appveyor AddMessage "Testing against $BRANCH " -Category Information -Details "$detail"       
     else
       wget  $WEEWX_URL/weewx-$WEEWX.tar.gz
       mkdir weewx
