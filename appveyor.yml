@@ -187,6 +187,7 @@ init:
   # Therefore cannot run scripts in Github
   - sh: echo "init"
   - sh: echo "$APPVEYOR_BUILD_WORKER_IMAGE $PYTHON"
+  - sh: echo "${!APPVEYOR_BUILD_WORKER_IMAGE}"
   - sh: >-
       if [[ ${!APPVEYOR_BUILD_WORKER_IMAGE} == *$PYTHON* ]]; then
         echo "$APPVEYOR_BUILD_WORKER_IMAGE with $PYTHON is broken on Appveyor."
