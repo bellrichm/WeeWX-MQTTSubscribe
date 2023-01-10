@@ -27,7 +27,7 @@
     pip install coveralls --quiet --no-python-version-warning
 
     echo "Running weewx install"
-    echo "$BRANCH"
+    echo "$BRANCH $WEEWX"
     if [ "$WEEWX" = "master" ]; then
       git clone https://github.com/weewx/weewx.git weewx
       cd weewx
