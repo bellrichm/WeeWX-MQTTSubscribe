@@ -61,7 +61,7 @@ environment:
     - PYTHON: 3.5
       WEEWX: 4.9.1
       job_group: build  
-      job_depends_on: initialize      
+      job_depends_on: initialize
 
     # Even though EOL, I'll support a bit longer
     - PYTHON: 3.6
@@ -107,19 +107,22 @@ environment:
 
     # Use latest Python release against WeeWX master branch
     - PYTHON: 3.9
-      WEEWX: master
+      BRANCH: master
+      WEEWX: '%BRANCH%'
       job_group: build  
       job_depends_on: initialize      
 
     # Use latest Python release against WeeWX development branch
     - PYTHON: 3.9
-      WEEWX: development
+      BRANCH: development
+      WEEWX: '%BRANCH%'
       job_group: build  
       job_depends_on: initialize      
 
     # Use latest Python release against WeeWX V5 branch
     - PYTHON: 3.9
-      WEEWX: V5
+      BRANCH: V5
+      WEEWX: '%BRANCH%'
       job_group: build  
       job_depends_on: initialize            
 

@@ -116,7 +116,7 @@ environment:
       job_depends_on: initialize
       ENABLED: false
 
-    # Use latest Python release against WeeWX master branch 
+    # Use latest Python release against WeeWX master branch
     - PYTHON: 3.9
       BRANCH: master
       WEEWX: '%BRANCH%'
