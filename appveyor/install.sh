@@ -31,6 +31,7 @@
     if [ "$WEEWX" = "$BRANCH" ]; then
       git clone https://github.com/weewx/weewx.git weewx
       cd weewx
+      git checkout $BRANCH
       git show --oneline -s | tee $BRANCH.txt
       detail=`cat $BRANCH.txt`
       appveyor AddMessage "Testing against $BRANCH " -Category Information -Details "$detail"       
