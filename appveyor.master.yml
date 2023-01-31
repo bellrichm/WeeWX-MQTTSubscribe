@@ -43,7 +43,7 @@ environment:
     # Run tests against latest WeeWX and Python
     # Run first, so that completes early
     - PYTHON: 3.9
-      WEEWX: 4.9.1
+      WEEWX: 4.10.1
       CODECOVIO_UPLOAD: true
       COVERALLS_UPLOAD: true
       SONAR_UPLOAD: true
@@ -52,45 +52,45 @@ environment:
 
     # Even though EOL, I'll support a bit longer
     - PYTHON: 2.7
-      WEEWX: 4.9.1
+      WEEWX: 4.10.1
       CODECOVIO_UPLOAD: true
       job_group: build  
       job_depends_on: initialize
 
       # Even though EOL, I'll support a bit longer
     - PYTHON: 3.5
-      WEEWX: 4.9.1
+      WEEWX: 4.10.1
       job_group: build  
       job_depends_on: initialize
 
     # Even though EOL, I'll support a bit longer
     - PYTHON: 3.6
-      WEEWX: 4.9.1
+      WEEWX: 4.10.1
       job_group: build
       job_depends_on: initialize
 
     - PYTHON: 3.7
-      WEEWX: 4.9.1
+      WEEWX: 4.10.1
       job_group: build  
       job_depends_on: initialize
 
     - PYTHON: 3.8
-      WEEWX: 4.9.1
+      WEEWX: 4.10.1
       job_group: build  
       job_depends_on: initialize
 
     - PYTHON: 3.9
-      WEEWX: 4.9.1
+      WEEWX: 4.10.1
       job_group: build  
       job_depends_on: initialize
 
     - PYTHON: 3.10
-      WEEWX: 4.9.1
+      WEEWX: 4.10.1
       job_group: build  
       job_depends_on: initialize
 
     - PYTHON: 3.11
-      WEEWX: 4.9.1
+      WEEWX: 4.10.1
       job_group: build  
       job_depends_on: initialize
 
