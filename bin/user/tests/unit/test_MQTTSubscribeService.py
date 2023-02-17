@@ -60,6 +60,7 @@ class atestInitialization(unittest.TestCase):
         mock_StdEngine.stn_info.hardware = 'MQTTSubscribeDriver'
 
         config_dict = {
+            'StdArchive': { 'record_generation': 'software'},
             'MQTTSubscribeService': {}
         }
 
@@ -272,6 +273,7 @@ class Testnew_archive_record(unittest.TestCase):
         unit_system = random.randint(1, 10)
         fieldname = random_string()
         config_dict = {}
+        config_dict['StdArchive'] = { 'record_generation': 'software'}
         config_dict['MQTTSubscribeService'] = {}
 
         config = configobj.ConfigObj(config_dict)
@@ -305,6 +307,7 @@ class Testnew_archive_record(unittest.TestCase):
         unit_system = random.randint(1, 10)
         fieldname = random_string()
         config_dict = {}
+        config_dict['StdArchive'] = { 'record_generation': 'software'}
         config_dict['MQTTSubscribeService'] = {}
 
         config = configobj.ConfigObj(config_dict)
