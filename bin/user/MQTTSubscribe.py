@@ -1930,6 +1930,9 @@ class MQTTSubscribeService(StdService):
     # If this is important, bind to the loop packet.
     def new_archive_record(self, event):
         """ Handle the new archive record event. """
+        self.logger.debug("data-> incoming record is %s: %s"
+                          % (weeutil.weeutil.timestamp_to_string(event.record['dateTime']),
+                             to_sorted_string(event.record)))        
         if self.binding == 'archive':
             end_ts = event.record['dateTime']
             start_ts = end_ts - event.record['interval'] * 60
