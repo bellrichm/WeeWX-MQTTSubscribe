@@ -26,8 +26,10 @@ from user.MQTTSubscribe import MQTTSubscribeDriver
 class TestclosePort(unittest.TestCase):
     @staticmethod
     def test_close_port():
+        stn_dict = {}
+        stn_dict['topic'] = random_string()
         config_dict = {}
-        config_dict['topic'] = random_string()
+        config_dict['MQTTSubscribeDriver'] = stn_dict
 
         with mock.patch('user.MQTTSubscribe.MQTTSubscriber'):
             SUT = MQTTSubscribeDriver(**config_dict)
@@ -36,8 +38,10 @@ class TestclosePort(unittest.TestCase):
 
 class TestArchiveInterval(unittest.TestCase):
     def test_no_archive_topic(self):
+        stn_dict = {}
+        stn_dict['topic'] = random_string()
         config_dict = {}
-        config_dict['topic'] = random_string()
+        config_dict['MQTTSubscribeDriver'] = stn_dict
 
         with mock.patch('user.MQTTSubscribe.MQTTSubscriber'):
             with self.assertRaises(NotImplementedError) as error:
@@ -49,10 +53,12 @@ class TestArchiveInterval(unittest.TestCase):
     def test_archive_topic(self):
         topic = random_string()
         default_archive_interval = 900
+        stn_dict = {}
+        stn_dict['topic'] = topic
+        stn_dict['archive_topic'] = topic
+        stn_dict['archive_interval'] = 900
         config_dict = {}
-        config_dict['topic'] = topic
-        config_dict['archive_topic'] = topic
-        config_dict['archive_interval'] = 900
+        config_dict['MQTTSubscribeDriver'] = stn_dict
 
         with mock.patch('user.MQTTSubscribe.MQTTSubscriber'):
             SUT = MQTTSubscribeDriver(**config_dict)
@@ -65,7 +71,9 @@ class TestgenLoopPackets(unittest.TestCase):
     def __init__(self, methodName):
         super(TestgenLoopPackets, self).__init__(methodName)
         self.queue_data = {}
+        stn_dict = {}
         self.config_dict = {}
+        self.config_dict['MQTTSubscribeDriver'] = stn_dict
 
     def setup_queue_tests(self, topic):
         current_time = int(time.time() + 0.5)
@@ -79,7 +87,7 @@ class TestgenLoopPackets(unittest.TestCase):
             'dateTime': current_time
         }
 
-        self.config_dict['topic'] = topic
+        self.config_dict['MQTTSubscribeDriver']['topic'] = topic
 
     @staticmethod
     def generator(test_data):
@@ -137,9 +145,11 @@ class TestgenLoopPackets(unittest.TestCase):
 
         topic = random_string()
 
+        stn_dict = {}
+        stn_dict['topic'] = topic
+        stn_dict['archive_topic'] = topic
         config_dict = {}
-        config_dict['topic'] = topic
-        config_dict['archive_topic'] = topic
+        config_dict['MQTTSubscribeDriver'] = stn_dict
 
         packet = None
 
@@ -182,7 +192,9 @@ class TestgenArchiveRecords(unittest.TestCase):
     def __init__(self, methodName):
         super(TestgenArchiveRecords, self).__init__(methodName)
         self.queue_data = {}
+        stn_dict = {}
         self.config_dict = {}
+        self.config_dict['MQTTSubscribeDriver'] = stn_dict
 
     def setup_archive_queue_tests(self, archive_topic):
         current_time = int(time.time() + 0.5)
@@ -196,10 +208,10 @@ class TestgenArchiveRecords(unittest.TestCase):
             'dateTime': current_time
         }
 
-        self.config_dict['archive_topic'] = archive_topic
-        self.config_dict['topics'] = {}
-        self.config_dict['topics'][random_string()] = {}
-        self.config_dict['topics'][archive_topic] = {}
+        self.config_dict['MQTTSubscribeDriver']['archive_topic'] = archive_topic
+        self.config_dict['MQTTSubscribeDriver']['topics'] = {}
+        self.config_dict['MQTTSubscribeDriver']['topics'][random_string()] = {}
+        self.config_dict['MQTTSubscribeDriver']['topics'][archive_topic] = {}
 
     @staticmethod
     def generator(test_data):
@@ -238,8 +250,10 @@ class TestgenArchiveRecords(unittest.TestCase):
             self.assertIsNone(data)
 
     def test_archive_topic_not_set(self):
+        stn_dict = {}
+        stn_dict['topics'] = {}
         config_dict = {}
-        config_dict['topics'] = {}
+        config_dict['MQTTSubscribeDriver'] = stn_dict
 
         records = list()
 
