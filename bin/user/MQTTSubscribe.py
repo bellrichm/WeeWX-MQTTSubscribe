@@ -400,7 +400,7 @@ import weewx
 import weewx.drivers
 from weewx.engine import StdEngine, StdService
 
-VERSION = '2.2.2'
+VERSION = '2.2.3-rc01'
 DRIVER_NAME = 'MQTTSubscribeDriver'
 DRIVER_VERSION = VERSION
 
@@ -443,13 +443,20 @@ class AbstractLogger(object):
         # check that the level configured is valid
         self.level = logging._checkLevel(level) # not sure there is a better way pylint: disable=protected-access
 
-    def log_environment(self):
+    def log_environment(self, config_dict):
         """ Log the environment we are running in. """
         # Since WeeWX logs this, only log it when debugging
         self.debug("Using weewx version %s" % weewx.__version__)
         self.debug("Using Python %s" % sys.version)
         self.debug("Platform %s" % platform.platform())
         self.debug("Locale is '%s'" % locale.setlocale(locale.LC_ALL))
+
+        self.debug(config_dict)
+        archive_dict = config_dict.get('StdArchive', {})
+        record_augmentation = archive_dict.get('record_augmentation', None)
+        record_generation = archive_dict.get('record_generation', None)
+        self.debug("Record Augmentation is: %s" % record_augmentation)
+        self.debug("Record Generation is: %s" % record_generation)
         self.info("Version is %s" % VERSION)
         self.info("Log level: %i" % self.level)
         self.info("Log debug setting: %i" % self.weewx_debug)
@@ -1855,7 +1862,7 @@ class MQTTSubscribeService(StdService):
         logging_level = service_dict.get('logging_level', 'NOTSET')
         console = to_bool(service_dict.get('console', False))
         self.logger = Logger('Service', level=logging_level, filename=logging_filename, console=console)
-        self.logger.log_environment()
+        self.logger.log_environment(config_dict)
 
         self.enable = to_bool(service_dict.get('enable', True))
         if not self.enable:
@@ -1961,7 +1968,7 @@ class MQTTSubscribeService(StdService):
 
 def loader(config_dict, engine): # (Need to match function signature) pylint: disable=unused-argument
     """ Load and return the driver. """
-    return MQTTSubscribeDriver(**config_dict[DRIVER_NAME]) # pragma: no cover
+    return MQTTSubscribeDriver(**config_dict) # pragma: no cover
 
 def confeditor_loader():
     """ Load and return the configuration editor. """
@@ -1970,12 +1977,13 @@ def confeditor_loader():
 class MQTTSubscribeDriver(weewx.drivers.AbstractDevice): # (methods not used) pylint: disable=abstract-method
     """weewx driver that reads data from MQTT"""
     # pylint: disable=too-many-instance-attributes
-    def __init__(self, **stn_dict):
+    def __init__(self, **config_dict):
+        stn_dict = config_dict[DRIVER_NAME]
         console = to_bool(stn_dict.get('console', False))
         logging_filename = stn_dict.get('logging_filename', None)
         logging_level = stn_dict.get('logging_level', 'NOTSET').upper()
         self.logger = Logger('Driver', level=logging_level, filename=logging_filename, console=console)
-        self.logger.log_environment()
+        self.logger.log_environment(config_dict)
 
         self.max_loop_interval = to_int(stn_dict.get('max_loop_interval', 0))
         self.logger.info("Max loop interval is: %i" % self.max_loop_interval)
