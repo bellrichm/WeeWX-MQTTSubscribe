@@ -1885,12 +1885,13 @@ class MQTTSubscribeService(StdService):
 
         self.subscriber.start()
 
+        self.cache = RecordCache()
+
         if self.binding == 'archive':
             self.bind(weewx.NEW_ARCHIVE_RECORD, self.new_archive_record)
         elif self.binding == 'loop':
             self.bind(weewx.NEW_LOOP_PACKET, self.new_loop_packet)
             if self.subscriber.cached_fields is not None:
-                self.cache = RecordCache()
                 self.bind(weewx.NEW_ARCHIVE_RECORD, self.new_archive_record)
         else:
             raise ValueError("MQTTSubscribeService: Unknown binding: %s" % self.binding)
