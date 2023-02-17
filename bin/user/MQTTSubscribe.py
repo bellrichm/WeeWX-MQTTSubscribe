@@ -1886,13 +1886,19 @@ class MQTTSubscribeService(StdService):
         self.subscriber.start()
 
         self.cache = RecordCache()
+        archive_dict = config_dict.get('StdArchive', {})
+        record_generation = archive_dict.get('record_generation', "none").lower()
 
         if self.binding == 'archive':
             self.bind(weewx.NEW_ARCHIVE_RECORD, self.new_archive_record)
         elif self.binding == 'loop':
             self.bind(weewx.NEW_LOOP_PACKET, self.new_loop_packet)
             if self.subscriber.cached_fields is not None:
-                self.bind(weewx.NEW_ARCHIVE_RECORD, self.new_archive_record)
+                if record_generation == 'software':
+                    self.bind(weewx.NEW_ARCHIVE_RECORD, self.new_archive_record)
+                else:
+                    raise ValueError("cacheing is not availble with record generation of type: , %s" % record_generation)
+
         else:
             raise ValueError("MQTTSubscribeService: Unknown binding: %s" % self.binding)
 
