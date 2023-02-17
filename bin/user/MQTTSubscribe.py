@@ -1897,7 +1897,7 @@ class MQTTSubscribeService(StdService):
                 if record_generation == 'software':
                     self.bind(weewx.NEW_ARCHIVE_RECORD, self.new_archive_record)
                 else:
-                    raise ValueError("cacheing is not availble with record generation of type: , %s" % record_generation)
+                    raise ValueError("cacheing is not availble with record generation of type '%s' and and binding of type 'loop'" % record_generation)
 
         else:
             raise ValueError("MQTTSubscribeService: Unknown binding: %s" % self.binding)
