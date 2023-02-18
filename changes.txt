@@ -1,3 +1,17 @@
+V2.2.3
+Fixes:
+- Failing when binding is archive and caching is configured because RecordCache was not instantiated.
+- Fail when record generation is hardware, binding is loop, and caching is configured.
+  As of now this configuration is not supported.
+Enhancements:
+- Align instructions to a package install. Package installs set the path.
+  The use of $BIN_ROOT was misleading/wrong.
+- Additional/improved logging.
+Internal:
+- Issues waiting for information from submitter are automatcally marked stale and closed.
+- Ability to configure python versions to not test with.
+  Useful if Appveyor images are broken.
+
 V2.2.2
 Fixes:
 - When a subset of subfields is ignored, wrong values are extracted from message. 
