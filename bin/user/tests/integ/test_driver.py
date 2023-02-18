@@ -30,11 +30,12 @@ class TestDriver(unittest.TestCase):
         config_dict = configobj.ConfigObj(test_data['config'])
         testruns = test_data['testruns']
 
-        cdict = config_dict['MQTTSubscribeService']
+        stndict = config_dict['MQTTSubscribeService']
         if not 'message_callback' in config_dict['MQTTSubscribeService']:
             config_dict['MQTTSubscribeService']['message_callback'] = {}
         config_dict['MQTTSubscribeService']['message_callback']['type'] = payload
 
+        cdict = {'MQTTSubscribeDriver': stndict}
         driver = MQTTSubscribeDriver(**cdict)
 
         host = 'localhost'
@@ -59,7 +60,7 @@ class TestDriver(unittest.TestCase):
             i += 1
 
         userdata2 = {
-            'topics': cdict['topics'].sections,
+            'topics': stndict['topics'].sections,
             'connected_flag': False,
             'msg': False,
             'max_msg_wait': 1 # ToDo - configure
