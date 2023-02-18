@@ -1893,7 +1893,7 @@ class MQTTSubscribeService(StdService):
             self.bind(weewx.NEW_ARCHIVE_RECORD, self.new_archive_record)
         elif self.binding == 'loop':
             self.bind(weewx.NEW_LOOP_PACKET, self.new_loop_packet)
-            if self.subscriber.cached_fields is not None:
+            if self.subscriber.cached_fields:
                 if record_generation == 'software':
                     self.bind(weewx.NEW_ARCHIVE_RECORD, self.new_archive_record)
                 else:
