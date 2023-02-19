@@ -1923,6 +1923,7 @@ class MQTTSubscribeService(StdService):
                                      to_sorted_string(event.packet)))
                 target_data = self.subscriber.get_accumulated_data(queue,
                                                                    start_ts, self.end_ts, event.packet['usUnits'])
+                self.logger.trace("Queue %s has data: %s" % (queue['name'], target_data))
                 event.packet.update(target_data)
                 self.logger.trace("Packet after update is: %s %s"
                                   % (weeutil.weeutil.timestamp_to_string(event.packet['dateTime']),
@@ -1949,6 +1950,7 @@ class MQTTSubscribeService(StdService):
                                   % (weeutil.weeutil.timestamp_to_string(event.record['dateTime']),
                                      to_sorted_string(event.record)))
                 target_data = self.subscriber.get_accumulated_data(queue, start_ts, end_ts, event.record['usUnits'])
+                self.logger.trace("Queue %s has data: %s" % (queue['name'], target_data))
                 event.record.update(target_data)
                 self.logger.trace("Record after update is: %s %s"
                                   % (weeutil.weeutil.timestamp_to_string(event.record['dateTime']),
