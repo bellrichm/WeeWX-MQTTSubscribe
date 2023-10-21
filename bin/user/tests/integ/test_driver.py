@@ -21,6 +21,8 @@ import paho.mqtt.client as mqtt
 
 import utils
 
+import weewx
+
 from user.MQTTSubscribe import MQTTSubscribeDriver
 from user.MQTTSubscribe import setup_logging
 
@@ -36,7 +38,24 @@ class TestDriver(unittest.TestCase):
         config_dict['MQTTSubscribeService']['message_callback']['type'] = payload
 
         cdict = {'MQTTSubscribeDriver': stndict}
-        driver = MQTTSubscribeDriver(**cdict)
+
+        min_config_dict = {
+            'Station': {
+                'altitude': [0, 'foot'],
+                'latitude': 0,
+                'station_type': 'Simulator',
+                'longitude': 0
+            },
+            'Simulator': {
+                'driver': 'weewx.drivers.simulator',
+            },
+            'Engine': {
+                'Services': {}
+            }
+        }
+
+        engine = weewx.engine.DummyEngine(min_config_dict)
+        driver = MQTTSubscribeDriver(cdict, engine)
 
         host = 'localhost'
         port = 1883
