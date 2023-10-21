@@ -7,6 +7,8 @@ branches:
 
 # branch build uses a subset of appveyor images, master uses all
 # Environment variables with names that match build image can be a list of broken python versions.
+# These are typically set in the appveyor ui, environment tab.
+# This makes it easy to modify and rebuild.
 # For example Ubuntu1604="3.10 3.11"
 # This is used in the 'init script' below
 # To allow easily checking/updating broken images, these are set in the GUI.
