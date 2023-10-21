@@ -54,7 +54,7 @@ class TestDriver(unittest.TestCase):
             }
         }
 
-        engine = weewx.engine.DummyEngine(min_config_dict)
+        engine = weewx.engine.StdEngine(min_config_dict)
         driver = MQTTSubscribeDriver(cdict, engine)
 
         host = 'localhost'
