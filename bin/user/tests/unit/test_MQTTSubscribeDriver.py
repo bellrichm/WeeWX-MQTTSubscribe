@@ -26,18 +26,20 @@ from user.MQTTSubscribe import MQTTSubscribeDriver
 class TestclosePort(unittest.TestCase):
     @staticmethod
     def test_close_port():
+        mock_engine = mock.Mock()
         stn_dict = {}
         stn_dict['topic'] = random_string()
         config_dict = {}
         config_dict['MQTTSubscribeDriver'] = stn_dict
 
         with mock.patch('user.MQTTSubscribe.MQTTSubscriber'):
-            SUT = MQTTSubscribeDriver(**config_dict)
+            SUT = MQTTSubscribeDriver(config_dict, mock_engine)
             SUT.closePort()
             SUT.subscriber.disconnect.assert_called_once() # pylint: disable=no-member
 
 class TestArchiveInterval(unittest.TestCase):
     def test_no_archive_topic(self):
+        mock_engine = mock.Mock()
         stn_dict = {}
         stn_dict['topic'] = random_string()
         config_dict = {}
@@ -45,12 +47,13 @@ class TestArchiveInterval(unittest.TestCase):
 
         with mock.patch('user.MQTTSubscribe.MQTTSubscriber'):
             with self.assertRaises(NotImplementedError) as error:
-                SUT = MQTTSubscribeDriver(**config_dict)
+                SUT = MQTTSubscribeDriver(config_dict, mock_engine)
                 SUT.archive_interval # pylint: disable=pointless-statement
 
             self.assertEqual(len(error.exception.args), 0)
 
     def test_archive_topic(self):
+        mock_engine = mock.Mock()
         topic = random_string()
         default_archive_interval = 900
         stn_dict = {}
@@ -61,7 +64,7 @@ class TestArchiveInterval(unittest.TestCase):
         config_dict['MQTTSubscribeDriver'] = stn_dict
 
         with mock.patch('user.MQTTSubscribe.MQTTSubscriber'):
-            SUT = MQTTSubscribeDriver(**config_dict)
+            SUT = MQTTSubscribeDriver(config_dict, mock_engine)
             archive_interval = SUT.archive_interval
             self.assertEqual(archive_interval, default_archive_interval)
 
@@ -100,6 +103,7 @@ class TestgenLoopPackets(unittest.TestCase):
         yield # needed to make this a generator # pylint: disable=unreachable
 
     def test_queue_empty(self):
+        mock_engine = mock.Mock()
         topic = random_string()
         self.setup_queue_tests(topic)
         queue = dict(
@@ -111,7 +115,7 @@ class TestgenLoopPackets(unittest.TestCase):
                 type(mock_manager.return_value).queues = mock.PropertyMock(return_value=[queue])
                 type(mock_manager.return_value).get_data = mock.Mock(side_effect=[self.empty_generator(), self.generator([self.queue_data])])
 
-                SUT = MQTTSubscribeDriver(**self.config_dict)
+                SUT = MQTTSubscribeDriver(self.config_dict, mock_engine)
                 gen = SUT.genLoopPackets()
                 next(gen, None)
 
@@ -119,6 +123,7 @@ class TestgenLoopPackets(unittest.TestCase):
                 self.assertEqual(mock_manager.return_value.get_data.call_count, 2)
 
     def test_queue_returns_none(self):
+        mock_engine = mock.Mock()
         topic = random_string()
         self.setup_queue_tests(topic)
         queue = dict(
@@ -130,7 +135,7 @@ class TestgenLoopPackets(unittest.TestCase):
                 type(mock_manager.return_value).queues = mock.PropertyMock(return_value=[queue])
                 type(mock_manager.return_value).get_data = mock.Mock(side_effect=[self.generator([None]), self.generator([self.queue_data])])
 
-                SUT = MQTTSubscribeDriver(**self.config_dict)
+                SUT = MQTTSubscribeDriver(self.config_dict, mock_engine)
                 gen = SUT.genLoopPackets()
                 next(gen, None)
 
@@ -143,6 +148,7 @@ class TestgenLoopPackets(unittest.TestCase):
                     continue
         """
 
+        mock_engine = mock.Mock()
         topic = random_string()
 
         stn_dict = {}
@@ -158,7 +164,7 @@ class TestgenLoopPackets(unittest.TestCase):
                 type(mock_manager.return_value).subscribed_topics = mock.PropertyMock(return_value=[topic])
                 mock_time.sleep.side_effect = mock.Mock(side_effect=SystemExit()) # Hack one, use this to escape the infinit loop
                 with self.assertRaises(SystemExit):
-                    SUT = MQTTSubscribeDriver(**config_dict)
+                    SUT = MQTTSubscribeDriver(config_dict, mock_engine)
 
                     gen = SUT.genLoopPackets()
                     packet = next(gen)
@@ -167,6 +173,7 @@ class TestgenLoopPackets(unittest.TestCase):
                 self.assertIsNone(packet) # hack two, the generator never really returns because of the side effect exception
 
     def test_queue(self):
+        mock_engine = mock.Mock()
         topic = random_string()
         self.setup_queue_tests(topic)
         queue = dict(
@@ -178,7 +185,7 @@ class TestgenLoopPackets(unittest.TestCase):
                 type(mock_manager.return_value).queues = mock.PropertyMock(return_value=[queue])
                 type(mock_manager.return_value).get_data = mock.Mock(return_value=self.generator([self.queue_data]))
 
-                SUT = MQTTSubscribeDriver(**self.config_dict)
+                SUT = MQTTSubscribeDriver(self.config_dict, mock_engine)
 
                 gen = SUT.genLoopPackets()
                 packet = next(gen)
@@ -224,32 +231,35 @@ class TestgenArchiveRecords(unittest.TestCase):
         yield # needed to make this a generator # pylint: disable=unreachable
 
     def test_empty_queue(self):
+        mock_engine = mock.Mock()
         archive_topic = 'archive'
         self.setup_archive_queue_tests(archive_topic)
 
         with mock.patch('user.MQTTSubscribe.MQTTSubscriber') as mock_manager:
             type(mock_manager.return_value).get_data = mock.Mock(return_value=self.empty_generator())
 
-            SUT = MQTTSubscribeDriver(**self.config_dict)
+            SUT = MQTTSubscribeDriver(self.config_dict, mock_engine)
             gen = SUT.genArchiveRecords(0)
             data = next(gen, None)
 
             self.assertIsNone(data)
 
     def test_queuereturns_none(self):
+        mock_engine = mock.Mock()
         archive_topic = 'archive'
         self.setup_archive_queue_tests(archive_topic)
 
         with mock.patch('user.MQTTSubscribe.MQTTSubscriber') as mock_manager:
             type(mock_manager.return_value).get_data = mock.Mock(return_value=self.generator([None]))
 
-            SUT = MQTTSubscribeDriver(**self.config_dict)
+            SUT = MQTTSubscribeDriver(self.config_dict, mock_engine)
             gen = SUT.genArchiveRecords(0)
             data = next(gen, None)
 
             self.assertIsNone(data)
 
     def test_archive_topic_not_set(self):
+        mock_engine = mock.Mock()
         stn_dict = {}
         stn_dict['topics'] = {}
         config_dict = {}
@@ -259,7 +269,7 @@ class TestgenArchiveRecords(unittest.TestCase):
 
         with mock.patch('user.MQTTSubscribe.MQTTSubscriber'):
             with self.assertRaises(NotImplementedError) as error:
-                SUT = MQTTSubscribeDriver(**config_dict)
+                SUT = MQTTSubscribeDriver(config_dict, mock_engine)
 
                 for record in SUT.genArchiveRecords(int(time.time() + 10.5)):
                     records.append(record)
@@ -267,6 +277,7 @@ class TestgenArchiveRecords(unittest.TestCase):
             self.assertEqual(len(error.exception.args), 0)
 
     def test_queue(self):
+        mock_engine = mock.Mock()
         archive_topic = 'archive'
         self.setup_archive_queue_tests(archive_topic)
         queue_list = [self.queue_data, self.queue_data]
@@ -275,7 +286,7 @@ class TestgenArchiveRecords(unittest.TestCase):
             type(mock_manager.return_value).get_data = mock.Mock(return_value=self.generator([self.queue_data, self.queue_data, None]))
             records = list()
 
-            SUT = MQTTSubscribeDriver(**self.config_dict)
+            SUT = MQTTSubscribeDriver(self.config_dict, mock_engine)
 
             for record in SUT.genArchiveRecords(int(time.time() - 10.5)):
                 records.append(record)
