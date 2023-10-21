@@ -400,7 +400,7 @@ import weewx
 import weewx.drivers
 from weewx.engine import StdEngine, StdService
 
-VERSION = '2.2.3-rc01'
+VERSION = '2.2.3-rc02'
 DRIVER_NAME = 'MQTTSubscribeDriver'
 DRIVER_VERSION = VERSION
 
@@ -415,8 +415,9 @@ def gettid():
     """Get TID as displayed by htop.
        This is architecture dependent."""
     import ctypes #  need to be python 2 compatible, Want to keep this piece of code self contained. pylint: disable=bad-option-value, import-outside-toplevel
+    from ctypes.util import find_library
     # pylint: enable=bad-option-value
-    libc = 'libc.so.6'
+    libc = ctypes.CDLL(find_library('c'))
     for cmd in (186, 224, 178):
         tid = ctypes.CDLL(libc).syscall(cmd)
         if tid != -1:
