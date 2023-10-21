@@ -1890,18 +1890,16 @@ class MQTTSubscribeService(StdService):
         archive_dict = config_dict.get('StdArchive', {})
         record_generation = archive_dict.get('record_generation', "none").lower()
 
-        if self.binding == 'archive':
-            self.bind(weewx.NEW_ARCHIVE_RECORD, self.new_archive_record)
-        elif self.binding == 'loop':
-            self.bind(weewx.NEW_LOOP_PACKET, self.new_loop_packet)
-            if self.subscriber.cached_fields:
-                if record_generation == 'software':
-                    self.bind(weewx.NEW_ARCHIVE_RECORD, self.new_archive_record)
-                else:
-                    raise ValueError("cacheing is not available with record generation of type '%s' and and binding of type 'loop'" % record_generation)
-
-        else:
+        if self.binding != 'loop' and self.binding != 'archive':
             raise ValueError("MQTTSubscribeService: Unknown binding: %s" % self.binding)
+
+        self.bind(weewx.NEW_ARCHIVE_RECORD, self.new_archive_record)
+
+        if self.binding == 'loop':
+            self.bind(weewx.NEW_LOOP_PACKET, self.new_loop_packet)
+
+        if self.subscriber.cached_fields and record_generation != 'software':
+            raise ValueError("cacheing is not available with record generation of type '%s' and and binding of type 'loop'" % record_generation)
 
     def shutDown(self): # need to override parent - pylint: disable=invalid-name
         """Run when an engine shutdown is requested."""
@@ -1957,31 +1955,33 @@ class MQTTSubscribeService(StdService):
                                   % (weeutil.weeutil.timestamp_to_string(event.record['dateTime']),
                                      to_sorted_string(event.record)))
 
-        target_data = {}
-        for field in self.subscriber.cached_fields:
-            if field in event.record:
-                timestamp = time.time()
-                self.logger.trace("Update cache %s to %s with units of %i and timestamp of %i"
-                                  % (event.record[field], field, event.record['usUnits'], timestamp))
-                self.cache.update_value(field,
-                                        event.record[field],
-                                        event.record['usUnits'],
-                                        timestamp)
-            else:
-                target_data[field] = self.cache.get_value(field,
-                                                          time.time(),
-                                                          self.subscriber.cached_fields[field]['expires_after'])
-                self.logger.trace("target_data after cache lookup is: %s"
-                                  % to_sorted_string(target_data))
+        if self.subscriber.cached_fields:
+            target_data = {}
+            for field in self.subscriber.cached_fields:
+                if field in event.record:
+                    timestamp = time.time()
+                    self.logger.trace("Update cache %s to %s with units of %i and timestamp of %i"
+                                    % (event.record[field], field, event.record['usUnits'], timestamp))
+                    self.cache.update_value(field,
+                                            event.record[field],
+                                            event.record['usUnits'],
+                                            timestamp)
+                else:
+                    target_data[field] = self.cache.get_value(field,
+                                                            time.time(),
+                                                            self.subscriber.cached_fields[field]['expires_after'])
+                    self.logger.trace("target_data after cache lookup is: %s"
+                                    % to_sorted_string(target_data))
 
-        event.record.update(target_data)
+            event.record.update(target_data)
+
         self.logger.debug("data-> final record is %s: %s"
                           % (weeutil.weeutil.timestamp_to_string(event.record['dateTime']),
                              to_sorted_string(event.record)))
 
 def loader(config_dict, engine): # (Need to match function signature) pylint: disable=unused-argument
     """ Load and return the driver. """
-    return MQTTSubscribeDriver(**config_dict) # pragma: no cover
+    return MQTTSubscribeDriver(config_dict, engine) # pragma: no cover
 
 def confeditor_loader():
     """ Load and return the configuration editor. """
@@ -1990,7 +1990,7 @@ def confeditor_loader():
 class MQTTSubscribeDriver(weewx.drivers.AbstractDevice): # (methods not used) pylint: disable=abstract-method
     """weewx driver that reads data from MQTT"""
     # pylint: disable=too-many-instance-attributes
-    def __init__(self, **config_dict):
+    def __init__(self, config_dict, engine):
         stn_dict = config_dict[DRIVER_NAME]
         console = to_bool(stn_dict.get('console', False))
         logging_filename = stn_dict.get('logging_filename', None)
@@ -2007,6 +2007,8 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice): # (methods not used) py
         self._archive_interval = to_int(stn_dict.get('archive_interval', 300))
         self.archive_topic = stn_dict.get('archive_topic', None)
         self.prev_archive_start = 0
+
+        engine.bind(weewx.NEW_ARCHIVE_RECORD, self.new_archive_record)  
 
         self.subscriber = MQTTSubscriber(stn_dict, self.logger)
 
@@ -2032,6 +2034,12 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice): # (methods not used) py
     def closePort(self): # need to override parent - pylint: disable=invalid-name
         """ Called to perform any close/cleanup before termination. """
         self.subscriber.disconnect()
+
+    def new_archive_record(self, event):
+        """ Handle the new archive record event. """
+        self.logger.debug("data-> final record is %s: %s"
+                          % (weeutil.weeutil.timestamp_to_string(event.record['dateTime']),
+                             to_sorted_string(event.record)))
 
     def genLoopPackets(self): # need to override parent - pylint: disable=invalid-name
         """ Called to generate loop packets. """
