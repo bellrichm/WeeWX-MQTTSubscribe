@@ -15,7 +15,7 @@ image:
   - Ubuntu2004
   - Ubuntu2204
 
-# everything beliw this line should be identical when comparing branch build to master build
+# everything below this line should be identical when comparing branch build to master build
 
 # Do not build on tags (GitHub, Bitbucket, GitLab, Gitea)
 skip_tags: true
