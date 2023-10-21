@@ -259,6 +259,7 @@ class Testnew_archive_record(unittest.TestCase):
         with mock.patch('user.MQTTSubscribe.MQTTSubscriber') as mock_manager:
             type(mock_manager.return_value).queues = mock.PropertyMock(return_value=[queue])
             type(mock_manager.return_value).get_accumulated_data = mock.Mock(return_value=self.target_data)
+            type(mock_manager.return_value).cached_fields = mock.PropertyMock(return_value=None)
 
             SUT = user.MQTTSubscribe.MQTTSubscribeService(self.mock_StdEngine, self.config_dict)
             SUT.end_ts = start_ts
