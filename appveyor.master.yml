@@ -12,8 +12,8 @@ branches:
 # To allow easily checking/updating broken images, these are set in the GUI.
 image:
   - Ubuntu
-  - Ubuntu1604
   - Ubuntu2004
+  - Ubuntu2204
 
 # everything beliw this line should be identical when comparing branch build to master build
 
