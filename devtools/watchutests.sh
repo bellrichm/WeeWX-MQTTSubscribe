@@ -1,11 +1,16 @@
 #! /bin/bash
 #
-#    Copyright (c) 2020-2021 Rich Bell <bellrichm@gmail.com>
+#    Copyright (c) 2020-2023 Rich Bell <bellrichm@gmail.com>
 #
 #    See the file LICENSE.txt for your full rights.
 #
+source ./devtools/python_versions.sh
+
 while inotifywait -e modify devtools/watchutests.sh bin/user/MQTTSubscribe.py bin/user/tests/unit
 do
-PYTHONPATH=bin python2 -m unittest discover bin/user/tests/unit
-PYTHONPATH=bin python3 -m unittest discover bin/user/tests/unit
+    export PYENV_VERSION=$weewx3_default_python_version
+    PYTHONPATH=bin python -m unittest discover bin/user/tests/unit
+
+    export PYENV_VERSION=$weewx4_default_python_version
+    PYTHONPATH=bin python -m unittest discover bin/user/tests/unit
 done

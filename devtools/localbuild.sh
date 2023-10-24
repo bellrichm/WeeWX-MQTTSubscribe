@@ -1,8 +1,16 @@
 #
-#    Copyright (c) 2020-2021 Rich Bell <bellrichm@gmail.com>
+#    Copyright (c) 2020-2023 Rich Bell <bellrichm@gmail.com>
 #
 #    See the file LICENSE.txt for your full rights.
 #
+source ./devtools/python_versions.sh
+
+if [ -z "$1" ]; then
+        export PYENV_VERSION=$weewx_default_python_version    
+else
+    export PYENV_VERSION=$22
+fi
+
 export BUILDTYPE="LOCAL"
 
 export APPVEYOR_BUILD_VERSION="local"

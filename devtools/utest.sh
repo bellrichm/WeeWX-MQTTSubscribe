@@ -1,6 +1,6 @@
 #! /bin/bash
 #
-#    Copyright (c) 2020-2021 Rich Bell <bellrichm@gmail.com>
+#    Copyright (c) 2020-2023 Rich Bell <bellrichm@gmail.com>
 #
 #    See the file LICENSE.txt for your full rights.
 #
@@ -11,22 +11,25 @@ else
     TEST=$1
 fi
 
-export PYENV_VERSION=2.7.17
-export WEEWX=weewx4
-echo "Running python $PYENV_VERSION $WEEWX"
-PYTHONPATH=bin:../$WEEWX/bin python bin/user/tests/unit/$TEST
+source ./devtools/python_versions.sh
 
-export PYENV_VERSION=3.6.9
-export WEEWX=weewx4
-echo "Running python $PYENV_VERSION $WEEWX"
-PYTHONPATH=bin:../$WEEWX/bin python bin/user/tests/unit/$TEST
+for version in ${weewx4_python_versions[@]}; do
+    export PYENV_VERSION=$version
+    export WEEWX=weewx4
+    echo "Running python $PYENV_VERSION $WEEWX"
+    PYTHONPATH=bin:../$WEEWX/bin python bin/user/tests/unit/$TEST
+done
 
-export PYENV_VERSION=3.5.9
-export WEEWX=weewx4
-echo "Running python $PYENV_VERSION $WEEWX"
-PYTHONPATH=bin:../$WEEWX/bin python bin/user/tests/unit/$TEST
+for version in ${weewx3_python_versions[@]}; do
+    export PYENV_VERSION=$version
+    export WEEWX=weewx3
+    echo "Running python $PYENV_VERSION $WEEWX"
+    PYTHONPATH=bin:../$WEEWX/bin python bin/user/tests/unit/$TEST
+done
 
-export PYENV_VERSION=2.7.17
-export WEEWX=weewx3
-echo "Running python $PYENV_VERSION $WEEWX"
-PYTHONPATH=bin:../$WEEWX/bin python bin/user/tests/unit/$TEST
+if [ -z "$1" ]
+then
+    exit 4
+else
+    TEST=$1
+fi
