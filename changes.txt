@@ -8,6 +8,7 @@ Enhancements:
   The use of $BIN_ROOT was misleading/wrong.
 - Additional/improved logging.
 Internal:
+- Revamped management of multiple python versions in local development enviroment.
 - Issues waiting for information from submitter are automatcally marked stale and closed.
 - Ability to configure python versions to not test with.
   Useful if Appveyor images are broken.
