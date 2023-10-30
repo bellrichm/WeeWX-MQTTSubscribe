@@ -7,7 +7,18 @@ if [ "$ENABLED" != "true" ]; then
   exit 0
 fi
 
-WEEWXBIN="bin"
+if [ "$BUILDTYPE" = "LOCAL" ]; then
+  PPATH="../weewx/"
+else
+  PPATH="./weewx/"
+fi
+
+WEEWXBIN="src"
+if [ -d "../weewx/$WEEWXBIN" ]; then
+  PPATH="$PPATH""$WEEWXBIN/"
+else
+  PPATH="$PPATH"bin/
+fi
 
 if [ "$BUILDTYPE" = "LOCAL" ]; then
 	HTML_OPTIONS=" --cov-report html:cover "
@@ -26,9 +37,6 @@ fi
 
 if [ "$BUILDTYPE" = "LOCAL" ]; then
   HTML_OPTIONS=" --cov-report html:cover2 "
-  PPATH="../weewx/$WEEWXBIN/"
-else
-  PPATH="./weewx/$WEEWXBIN/"  
 fi
 
  PYTHONPATH=bin:$PPATH pytest ./bin/user/tests/integ --junitxml=results2.xml --cov-report xml:coverage2.xml --verbosity=1 --log-level=ERROR --cov=user.MQTTSubscribe --cov-branch $HTML_OPTIONS
