@@ -12,6 +12,7 @@ Internal:
 - Issues waiting for information from submitter are automatcally marked stale and closed.
 - Ability to configure python versions to not test with.
   Useful if Appveyor images are broken.
+- Update Appveyor build to work with WeeWX v5.
 
 V2.2.2
 Fixes:
