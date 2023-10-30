@@ -7,10 +7,12 @@ if [ "$ENABLED" != "true" ]; then
   exit 0
 fi
 
+WEEWXBIN="bin"
+
 if [ "$BUILDTYPE" = "LOCAL" ]; then
-  PPATH="../weewx/bin/"
+  PPATH="../weewx/$WEEWXBIN/"
 else
-  PPATH="./weewx/bin/"  
+  PPATH="./weewx/$WEEWXBIN/"  
 fi
 
 PYTHONPATH=$PPATH pylint ./bin/user/MQTTSubscribe.py -r n --msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}" | tee pylint.txt
