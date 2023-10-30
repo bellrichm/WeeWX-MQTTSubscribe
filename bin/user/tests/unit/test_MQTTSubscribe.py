@@ -300,11 +300,12 @@ class  TestWeewx_configuration(unittest.TestCase):
 
         config = configobj.ConfigObj(config_dict)
 
-        MQTTSubscriber(config, mock_logger)
+        with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client):
+            MQTTSubscriber(config, mock_logger)
 
-        self.assertEqual(len(weewx.units.obs_group_dict), 3)
-        self.assertIn(name, weewx.units.obs_group_dict)
-        self.assertEqual(value, weewx.units.obs_group_dict[name])
+            self.assertEqual(len(weewx.units.obs_group_dict), 3)
+            self.assertIn(name, weewx.units.obs_group_dict)
+            self.assertEqual(value, weewx.units.obs_group_dict[name])
 
     def test_missing_group(self):
         mock_logger = mock.Mock(spec=Logger)
@@ -400,9 +401,10 @@ class  TestWeewx_configuration(unittest.TestCase):
         default_unit_label_dict = {}
         default_unit_label_dict[unit] = label
 
-        MQTTSubscriber(config, mock_logger)
+        with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client):
+            MQTTSubscriber(config, mock_logger)
 
-        self.assertDictEqual(weewx.units.default_unit_label_dict, default_unit_label_dict)
+            self.assertDictEqual(weewx.units.default_unit_label_dict, default_unit_label_dict)
 
     def test_configure_default_format(self):
         mock_logger = mock.Mock(spec=Logger)
@@ -429,9 +431,10 @@ class  TestWeewx_configuration(unittest.TestCase):
         default_unit_format_dict = {}
         default_unit_format_dict[unit] = format_value
 
-        MQTTSubscriber(config, mock_logger)
+        with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client):
+            MQTTSubscriber(config, mock_logger)
 
-        self.assertDictEqual(weewx.units.default_unit_format_dict, default_unit_format_dict)
+            self.assertDictEqual(weewx.units.default_unit_format_dict, default_unit_format_dict)
 
     def test_configure_conversion(self):
         mock_logger = mock.Mock(spec=Logger)
@@ -460,15 +463,16 @@ class  TestWeewx_configuration(unittest.TestCase):
         conversionDict['unit_name'] = {'foobar': lambda x: x / 1}
         conversionDict[unit] = {to_unit: lambda x: x / 1}
 
-        MQTTSubscriber(config, mock_logger)
+        with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client):
+            MQTTSubscriber(config, mock_logger)
 
-        self.assertEqual(len(weewx.units.conversionDict), len(conversionDict))
-        for key in conversionDict:
-            self.assertIn(key, weewx.units.conversionDict)
-            self.assertEqual(len(weewx.units.conversionDict[key]), len(conversionDict[key]))
-            for key2 in conversionDict[key]:
-                self.assertIn(key2, weewx.units.conversionDict[key])
-                self.assertIsInstance(weewx.units.conversionDict[key][key2], types.FunctionType)
+            self.assertEqual(len(weewx.units.conversionDict), len(conversionDict))
+            for key in conversionDict:
+                self.assertIn(key, weewx.units.conversionDict)
+                self.assertEqual(len(weewx.units.conversionDict[key]), len(conversionDict[key]))
+                for key2 in conversionDict[key]:
+                    self.assertIn(key2, weewx.units.conversionDict[key])
+                    self.assertIsInstance(weewx.units.conversionDict[key][key2], types.FunctionType)
 
     def test_unit_system_us(self):
         mock_logger = mock.Mock(spec=Logger)
@@ -494,12 +498,13 @@ class  TestWeewx_configuration(unittest.TestCase):
         units = weeutil.ListOfDicts({})
         units.extend({group: unit})
 
-        MQTTSubscriber(config, mock_logger)
+        with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client):
+            MQTTSubscriber(config, mock_logger)
 
-        self.assertEqual(len(weewx.units.USUnits), len(units))
-        for key in units:
-            self.assertIn(key, weewx.units.USUnits)
-            self.assertEqual(units[key], weewx.units.USUnits[key])
+            self.assertEqual(len(weewx.units.USUnits), len(units))
+            for key in units:
+                self.assertIn(key, weewx.units.USUnits)
+                self.assertEqual(units[key], weewx.units.USUnits[key])
 
     def test_unit_system_metric(self):
         mock_logger = mock.Mock(spec=Logger)
@@ -525,12 +530,13 @@ class  TestWeewx_configuration(unittest.TestCase):
         units = weeutil.ListOfDicts({})
         units.extend({group: unit})
 
-        MQTTSubscriber(config, mock_logger)
+        with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client):
+            MQTTSubscriber(config, mock_logger)
 
-        self.assertEqual(len(weewx.units.MetricUnits), len(units))
-        for key in units:
-            self.assertIn(key, weewx.units.MetricUnits)
-            self.assertEqual(units[key], weewx.units.MetricUnits[key])
+            self.assertEqual(len(weewx.units.MetricUnits), len(units))
+            for key in units:
+                self.assertIn(key, weewx.units.MetricUnits)
+                self.assertEqual(units[key], weewx.units.MetricUnits[key])
 
     def test_unit_system_metricwx(self):
         mock_logger = mock.Mock(spec=Logger)
@@ -556,12 +562,13 @@ class  TestWeewx_configuration(unittest.TestCase):
         units = weeutil.ListOfDicts({})
         units.extend({group: unit})
 
-        MQTTSubscriber(config, mock_logger)
+        with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client):
+            MQTTSubscriber(config, mock_logger)
 
-        self.assertEqual(len(weewx.units.MetricWXUnits), len(units))
-        for key in units:
-            self.assertIn(key, weewx.units.MetricWXUnits)
-            self.assertEqual(units[key], weewx.units.MetricWXUnits[key])
+            self.assertEqual(len(weewx.units.MetricWXUnits), len(units))
+            for key in units:
+                self.assertIn(key, weewx.units.MetricWXUnits)
+                self.assertEqual(units[key], weewx.units.MetricWXUnits[key])
 
 class  Testtls_configuration(unittest.TestCase):
     @staticmethod
