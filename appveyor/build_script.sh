@@ -14,7 +14,7 @@ else
 fi
 
 WEEWXBIN="src"
-if [ -d "../weewx/$WEEWXBIN" ]; then
+if [ -d "$PPATH""$WEEWXBIN" ]; then
   PPATH="$PPATH""$WEEWXBIN/"
 else
   PPATH="$PPATH"bin/
