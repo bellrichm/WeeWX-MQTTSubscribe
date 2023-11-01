@@ -7,17 +7,11 @@
 source ./devtools/python_versions.sh
 
 for version in ${weewx4_python_versions[@]}; do
-    export PYENV_VERSION=$version
-    export WEEWX=weewx4
-    echo "Running python $PYENV_VERSION $WEEWX"
-    PYTHONPATH=bin:../$WEEWX/bin python -m unittest discover bin/user/tests/unit
+    ./devtools/runutests.sh weewx4 $version
 done
 
 for version in ${weewx3_python_versions[@]}; do
-    export PYENV_VERSION=$version
-    export WEEWX=weewx3
-    echo "Running python $PYENV_VERSION $WEEWX"
-    PYTHONPATH=bin:../$WEEWX/bin python -m unittest discover bin/user/tests/unit
+    ./devtools/runutests.sh weewx3 $version
 done
 
 
