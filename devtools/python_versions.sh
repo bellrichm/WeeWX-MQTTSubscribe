@@ -5,6 +5,7 @@
 #    See the file LICENSE.txt for your full rights.
 #
 weewx_default_python_version='3.10'
+weewx_default_version='weewx4'
 
 weewx3_python_versions=('2.7')
 weewx3_default_python_version='2.7'

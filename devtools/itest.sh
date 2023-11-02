@@ -4,25 +4,26 @@
 #
 #    See the file LICENSE.txt for your full rights.
 #
-if [ -z "$1" ]
-then
-    exit 4
-else
-    TEST=$1
-fi
-
 source ./devtools/python_versions.sh
 
-for version in ${weewx4_python_versions[@]}; do
-    export PYENV_VERSION=$version
-    export WEEWX=weewx4
-    echo "Running python $PYENV_VERSION $WEEWX"
-    PYTHONPATH=bin:../$WEEWX/bin python bin/user/tests/integ/$TEST
-done
+if [ -z "$1" ]; then
+    exit 4
+elif [ -z "$2" ]; then
+    WEEWX_VERSION=$weewx_default_version
+    PY_VERSION=$weewx_default_python_version
+    TEST=$1
+elif [ -z "$3" ]; then
+    WEEWX_VERSION=$weewx_default_version
+    PY_VERSION=$1
+    TEST=$2
+else
+    WEEWX_VERSION=$1
+    PY_VERSION=$2
+    TEST=$3
+fi
 
-for version in ${weewx3_python_versions[@]}; do
-    export PYENV_VERSION=$version
-    export WEEWX=weewx3
-    echo "Running python $PYENV_VERSION $WEEWX"
-    PYTHONPATH=bin:../$WEEWX/bin python bin/user/tests/integ/$TEST
-done
+export PYENV_VERSION=$PY_VERSION
+export WEEWX=$WEEWX_VERSION
+echo "Running python $PY_VERSION $WEEWX_VERSION"
+PYTHONPATH=bin:../$WEEWX_VERSION/bin python bin/user/tests/integ/$TEST
+
