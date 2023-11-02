@@ -81,7 +81,7 @@
                 "--records", "1",
                 "--verbose",
                 //"--console",
-                "${workspaceFolder}/weewx.archive.conf"
+                "${workspaceFolder}/devtools/weewx.archive.conf"
             ],            
             "console": "integratedTerminal"
         },
