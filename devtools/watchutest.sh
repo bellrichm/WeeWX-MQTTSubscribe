@@ -6,18 +6,23 @@
 #
 source ./devtools/python_versions.sh
 
-if [ -z "$1" ]
-then
+if [ -z "$1" ]; then
     exit 4
-else
+elif [ -z "$2" ]; then
+    WEEWX_VERSION=$weewx_default_version
+    PY_VERSION=$weewx_default_python_version
     TEST=$1
+elif [ -z "$3" ]; then
+    WEEWX_VERSION=$weewx_default_version
+    PY_VERSION=$1
+    TEST=$2
+else
+    WEEWX_VERSION=$1
+    PY_VERSION=$2
+    TEST=$3
 fi
 
 while inotifywait -e modify devtools/watchutest.sh bin/user/MQTTSubscribe.py bin/user/tests/integ/utils.py bin/user/tests/integ/data bin/user/tests/unit/$TEST
 do
-    export PYENV_VERSION=$weewx3_default_python_version
-    PYTHONPATH=bin:../weewx3/bin python bin/user/tests/unit/$TEST
-
-    export PYENV_VERSION=$weewx4_default_python_version
-    PYTHONPATH=bin:../weewx4/bin python bin/user/tests/unit/$TEST
+    ./devtools/utest.sh $WEEWX_VERSION $PY_VERSION $TEST
 done
