@@ -35,5 +35,5 @@ PYTHONPATH=bin:../$WEEWX/bin python bin/user/MQTTSubscribe.py devtools/weewx.loo
 
 echo "Running as service bound to archive"
 PYTHONPATH=bin:../$WEEWX/bin python bin/user/MQTTSubscribe.py devtools/weewx.archive.conf --type service --binding archive --records 3 --interval 60 --delay 5 --verbose
-echo "Running as dtiver bound to archive"
-#PYTHONPATH=bin:../$WEEWX/bin python bin/user/MQTTSubscribe.py devtools/weewx.archive.conf --type driver --binding archive --records 3 --interval 2 --delay 0 --verbose
+echo "Running as driver bound to archive"
+PYTHONPATH=bin:../$WEEWX/bin python bin/user/MQTTSubscribe.py devtools/weewx.archive.conf --type driver --binding archive --records 3 --interval 60 --delay 5 --verbose
