@@ -31,7 +31,7 @@ echo "Running $python_version $WEEWX"
 echo "Running as service bound to loop"
 PYTHONPATH=bin:../$WEEWX/bin python bin/user/MQTTSubscribe.py devtools/weewx.loop.conf --type service --binding loop --records 3 --interval 2 --delay 0 --verbose
 echo "Running as driver bound to loop"
-#PYTHONPATH=bin:../$WEEWX/bin python bin/user/MQTTSubscribe.py devtools/weewx.loop.conf --type driver --binding loop --records 3 --interval 2 --delay 0 --verbose
+PYTHONPATH=bin:../$WEEWX/bin python bin/user/MQTTSubscribe.py devtools/weewx.loop.conf --type driver --binding loop --records 3 --interval 2 --delay 0 --verbose
 
 echo "Running as service bound to archive"
 PYTHONPATH=bin:../$WEEWX/bin python bin/user/MQTTSubscribe.py devtools/weewx.archive.conf --type service --binding archive --records 3 --interval 60 --delay 5 --verbose
