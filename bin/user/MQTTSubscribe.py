@@ -1350,38 +1350,33 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
         """ Get the MQTT callback. """
         return self._on_message_multi
 
-    def _byteify(self, data, ignore_dicts=False):
-        if PY2:
-            # if this is a unicode string, return its string representation
-            # (only a python 3 error) pylint: disable=undefined-variable
-            if isinstance(data, unicode): # pyright: reportUndefinedVariable=false
-                # (only a python 3 error) pylint: enable=undefined-variable
-                return data.encode('utf-8')
-        # if this is a list of values, return list of byteified values
-        if isinstance(data, list):
-            return [self._byteify(item, ignore_dicts=True) for item in data]
-        # if this is a dictionary, return dictionary of byteified keys and values
-        # but only if we haven't already byteified it
-        if isinstance(data, dict) and not ignore_dicts:
-            data2 = {}
-            for key, value in data.items():
-                key2 = self._byteify(key, ignore_dicts=True)
-                value2 = self._byteify(value, ignore_dicts=True)
-                data2[key2] = value2
-            return data2
-        # if it's anything else, return it in its original form
-        return data
-
-    def _flatten_dict(self, dictionary, separator):
-        def _items():
-            for key, value in dictionary.items():
+    def _flatten(self, fields, fields_ignore_default, delim, prefix, new_dict, old_dict):
+        for key, value in old_dict.items():
+            new_key = prefix + key
+            if not fields.get(new_key, {}).get('ignore', fields_ignore_default):
                 if isinstance(value, dict):
-                    for subkey, subvalue in self._flatten_dict(value, separator).items():
-                        yield key + separator + subkey, subvalue
+                    self._flatten(fields, fields_ignore_default, delim, new_key + '_', new_dict, value)
+                elif isinstance(value, list):
+                    if new_key in fields and 'subfields' in fields[new_key]:
+                        if len(value) > len(fields[new_key]['subfields']):
+                            self.logger.error("Skipping %s because array data too big. Array=%s subfields=%s" %
+                                                (new_key, value, fields[new_key]['subfields']))
+                        elif len(value) < len(fields[new_key]['subfields']):
+                            self.logger.error("Skipping %s because array data too small. Array=%s subfields=%s" %
+                                                (new_key, value, fields[new_key]['subfields']))
+                        else:
+                            i = 0
+                            for subvalue in value:
+                                if isinstance(subvalue, dict) or isinstance(subvalue, list):
+                                    self._flatten(fields, fields_ignore_default, delim, prefix + fields[new_key]['subfields'][i] + '_', new_dict, subvalue)
+                                else:
+                                    new_dict[prefix + fields[new_key]['subfields'][i]] = subvalue
+                                i += 1
+                    else:
+                        #if not fields.get(lookup_key, {}).get('ignore', fields_ignore_default):
+                        self.logger.error("Skipping %s because data is an array and has no configured subfields. Array=%s" % (new_key, value))
                 else:
-                    yield key, value
-
-        return dict(_items())
+                    new_dict[new_key] = value
 
     def _log_message(self, msg):
         self.logger.debug("MessageCallbackProvider data-> incoming topic: %s, QOS: %i, retain: %s, payload: %s"
@@ -1452,15 +1447,15 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
             else:
                 payload_str = msg.payload.decode('utf-8')
 
-            data = self._byteify(json.loads(payload_str, object_hook=self._byteify), ignore_dicts=True)
-
-            data_flattened = self._flatten_dict(data, message_dict['flatten_delimiter'])
+            data_flattened = {}
+            self._flatten(fields, fields_ignore_default, message_dict['flatten_delimiter'], '', data_flattened, json.loads(payload_str))
+            print(data_flattened)
 
             unit_system = self.topic_manager.get_unit_system(msg.topic)
             data_final = {}
             if msg_id_field:
                 msg_id = data_flattened[msg_id_field]
-            # ToDo - if I have to loop, removes benefit of _bytefy, time to remove it?
+
             for key in data_flattened:
                 if msg_id_field and key not in ignore_msg_id_field:
                     lookup_key = key + "_" + str(msg_id) # todo - cleanup
@@ -1470,37 +1465,11 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
                     self.logger.info("MessageCallbackProvider on_message_json filtered out %s : %s with %s=%s"
                                      % (msg.topic, msg.payload, lookup_key, filters[lookup_key]))
                     return
-                if isinstance(data_flattened[key], list):
-                    if key in fields and 'subfields' in fields[key]:
-                        if len(data_flattened[key]) > len(fields[key]['subfields']):
-                            self.logger.error("Skipping %s because array data too big. Array=%s subfields=%s" %
-                                                (key, data_flattened[key], fields[key]['subfields']))
-                        elif len(data_flattened[key]) < len(fields[key]['subfields']):
-                            self.logger.error("Skipping %s because array data too small. Array=%s subfields=%s" %
-                                                (key, data_flattened[key], fields[key]['subfields']))
-                        else:
-                            i = 0
-                            for subfield in  fields[key]['subfields']:
-                                subfield_ignore_default = fields.get(lookup_key, {}).get('ignore', fields_ignore_default)
-                                if not fields[subfield].get('ignore', subfield_ignore_default):
-                                    (fieldname, value) = self._update_data(fields, fields_conversion_func,
-                                                                            subfield,
-                                                                            data_flattened[key][i],
-                                                                            unit_system)
-                                    data_final[fieldname] = value
-                                else:
-                                    self.logger.trace("MessageCallbackProvider on_message_json ignoring field: %s" % lookup_key)
-                                i += 1
-                    else:
-                        if not fields.get(lookup_key, {}).get('ignore', fields_ignore_default):
-                            self.logger.error("Skipping %s because data is an array and has no configured subfields. Array=%s" %
-                                              (key, data_flattened[key]))
+                if not fields.get(lookup_key, {}).get('ignore', fields_ignore_default):
+                    (fieldname, value) = self._update_data(fields, fields_conversion_func, lookup_key, data_flattened[key], unit_system)
+                    data_final[fieldname] = value
                 else:
-                    if not fields.get(lookup_key, {}).get('ignore', fields_ignore_default):
-                        (fieldname, value) = self._update_data(fields, fields_conversion_func, lookup_key, data_flattened[key], unit_system)
-                        data_final[fieldname] = value
-                    else:
-                        self.logger.trace("MessageCallbackProvider on_message_json ignoring field: %s" % lookup_key)
+                    self.logger.trace("MessageCallbackProvider on_message_json ignoring field: %s" % lookup_key)
 
             if data_final:
                 self.topic_manager.append_data(msg.topic, data_final)
