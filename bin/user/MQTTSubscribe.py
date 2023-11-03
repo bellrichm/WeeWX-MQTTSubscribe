@@ -1353,30 +1353,29 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
     def _flatten(self, fields, fields_ignore_default, delim, prefix, new_dict, old_dict):
         for key, value in old_dict.items():
             new_key = prefix + key
-            if not fields.get(new_key, {}).get('ignore', fields_ignore_default):
-                if isinstance(value, dict):
-                    self._flatten(fields, fields_ignore_default, delim, new_key + '_', new_dict, value)
-                elif isinstance(value, list):
-                    if new_key in fields and 'subfields' in fields[new_key]:
-                        if len(value) > len(fields[new_key]['subfields']):
-                            self.logger.error("Skipping %s because array data too big. Array=%s subfields=%s" %
-                                                (new_key, value, fields[new_key]['subfields']))
-                        elif len(value) < len(fields[new_key]['subfields']):
-                            self.logger.error("Skipping %s because array data too small. Array=%s subfields=%s" %
-                                                (new_key, value, fields[new_key]['subfields']))
-                        else:
-                            i = 0
-                            for subvalue in value:
-                                if isinstance(subvalue, dict) or isinstance(subvalue, list):
-                                    self._flatten(fields, fields_ignore_default, delim, prefix + fields[new_key]['subfields'][i] + '_', new_dict, subvalue)
-                                else:
-                                    new_dict[prefix + fields[new_key]['subfields'][i]] = subvalue
-                                i += 1
+            if isinstance(value, dict):
+                self._flatten(fields, fields_ignore_default, delim, new_key + '_', new_dict, value)
+            elif isinstance(value, list):
+                if new_key in fields and 'subfields' in fields[new_key]:
+                    if len(value) > len(fields[new_key]['subfields']):
+                        self.logger.error("Skipping %s because array data too big. Array=%s subfields=%s" %
+                                            (new_key, value, fields[new_key]['subfields']))
+                    elif len(value) < len(fields[new_key]['subfields']):
+                        self.logger.error("Skipping %s because array data too small. Array=%s subfields=%s" %
+                                            (new_key, value, fields[new_key]['subfields']))
                     else:
-                        #if not fields.get(lookup_key, {}).get('ignore', fields_ignore_default):
-                        self.logger.error("Skipping %s because data is an array and has no configured subfields. Array=%s" % (new_key, value))
+                        i = 0
+                        for subvalue in value:
+                            if isinstance(subvalue, dict) or isinstance(subvalue, list):
+                                self._flatten(fields, fields_ignore_default, delim, prefix + fields[new_key]['subfields'][i] + '_', new_dict, subvalue)
+                            else:
+                                new_dict[prefix + fields[new_key]['subfields'][i]] = subvalue
+                            i += 1
                 else:
-                    new_dict[new_key] = value
+                    #if not fields.get(lookup_key, {}).get('ignore', fields_ignore_default):
+                    self.logger.error("Skipping %s because data is an array and has no configured subfields. Array=%s" % (new_key, value))
+            else:
+                new_dict[new_key] = value
 
     def _log_message(self, msg):
         self.logger.debug("MessageCallbackProvider data-> incoming topic: %s, QOS: %i, retain: %s, payload: %s"
@@ -1449,7 +1448,6 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
 
             data_flattened = {}
             self._flatten(fields, fields_ignore_default, message_dict['flatten_delimiter'], '', data_flattened, json.loads(payload_str))
-            print(data_flattened)
 
             unit_system = self.topic_manager.get_unit_system(msg.topic)
             data_final = {}
