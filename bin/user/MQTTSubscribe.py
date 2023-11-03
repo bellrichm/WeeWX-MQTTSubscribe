@@ -1369,13 +1369,35 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
                             if isinstance(subvalue, dict) or isinstance(subvalue, list):
                                 self._flatten(fields, fields_ignore_default, delim, prefix + fields[new_key]['subfields'][i] + '_', new_dict, subvalue)
                             else:
-                                new_dict[prefix + fields[new_key]['subfields'][i]] = subvalue
+                                str_value = subvalue
+                                str_key = prefix + fields[new_key]['subfields'][i]
+                                if PY2:
+                                    # if this is a unicode string, return its string representation
+                                    # (only a python 3 error) pylint: disable=undefined-variable
+                                    if isinstance(str_value, unicode): # pyright: reportUndefinedVariable=false
+                                        # (only a python 3 error) pylint: enable=undefined-variable
+                                        str_value  = str_value.encode('utf-8')
+                                    if isinstance(str_key, unicode): # pyright: reportUndefinedVariable=false
+                                        # (only a python 3 error) pylint: enable=undefined-variable
+                                        str_key  = str_key.encode('utf-8')
+                                new_dict[str_key] = str_value                          
                             i += 1
                 else:
                     #if not fields.get(lookup_key, {}).get('ignore', fields_ignore_default):
                     self.logger.error("Skipping %s because data is an array and has no configured subfields. Array=%s" % (new_key, value))
             else:
-                new_dict[new_key] = value
+                str_value = value
+                str_key = new_key
+                if PY2:
+                    # if this is a unicode string, return its string representation
+                    # (only a python 3 error) pylint: disable=undefined-variable
+                    if isinstance(str_value, unicode): # pyright: reportUndefinedVariable=false
+                        # (only a python 3 error) pylint: enable=undefined-variable
+                        str_value  = str_value.encode('utf-8')
+                    if isinstance(str_key, unicode): # pyright: reportUndefinedVariable=false
+                        # (only a python 3 error) pylint: enable=undefined-variable
+                        str_key  = str_key.encode('utf-8')                
+                new_dict[str_key] = str_value
 
     def _log_message(self, msg):
         self.logger.debug("MessageCallbackProvider data-> incoming topic: %s, QOS: %i, retain: %s, payload: %s"
