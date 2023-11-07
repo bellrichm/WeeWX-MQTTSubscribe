@@ -49,20 +49,12 @@ class TestJSONMessage(unittest.TestCase):
             [[[[message]]]]
                 type = json
 '''
-
-    def test_basic_message(self):
+    def run_test(self, payload_dict, expected_data):
         config = configobj.ConfigObj(StringIO(self.config_str % self.topic))
 
         topic_manager = TopicManager(None, config['MQTTSubscribe']['topics'], self.logger)
 
         message_callback = MessageCallbackProvider(None, self.logger, topic_manager)
-
-        payload_dict = {
-            'dateTime': time.time(),
-            'usUnits': random.randint(1, 10),
-            'inTemp': round(random.uniform(10, 100), 2),
-            'outTemp': round(random.uniform(1, 100), 2),
-        }
 
         payload = json.dumps(payload_dict).encode("utf-8")
 
@@ -71,15 +63,20 @@ class TestJSONMessage(unittest.TestCase):
 
         queue = topic_manager._get_queue(self.topic)
         data = queue['data'].popleft()['data']
-        self.assertDictEqual(data, payload_dict)
+
+        self.assertDictEqual(data, expected_data)  
+
+    def test_basic_message(self):
+        payload_dict = {
+            'dateTime': time.time(),
+            'usUnits': random.randint(1, 10),
+            'inTemp': round(random.uniform(10, 100), 2),
+            'outTemp': round(random.uniform(1, 100), 2),
+        }
+
+        self.run_test(payload_dict, payload_dict)
 
     def test_nested_json_message(self):
-        config = configobj.ConfigObj(StringIO(self.config_str % self.topic))
-
-        topic_manager = TopicManager(None, config['MQTTSubscribe']['topics'], self.logger)
-
-        message_callback = MessageCallbackProvider(None, self.logger, topic_manager)
-
         payload_dict = {
             'dateTime': time.time(),
             'usUnits': random.randint(1, 10),
@@ -89,8 +86,6 @@ class TestJSONMessage(unittest.TestCase):
             },
         }
 
-        payload = json.dumps(payload_dict).encode("utf-8")
-
         expected_data = {
             'dateTime': payload_dict['dateTime'],
             'usUnits': payload_dict['usUnits'],
@@ -98,20 +93,9 @@ class TestJSONMessage(unittest.TestCase):
             'temps_temp2': payload_dict['temps']['temp2'],
         }
 
-        msg = Msg(self.topic, payload, 0, 0)
-        message_callback._on_message_json(None, None, msg)
-
-        queue = topic_manager._get_queue(self.topic)
-        data = queue['data'].popleft()['data']
-        self.assertDictEqual(data, expected_data)
+        self.run_test(payload_dict, expected_data)
 
     def test_multi_nested_json_message(self):
-        config = configobj.ConfigObj(StringIO(self.config_str % self.topic))
-
-        topic_manager = TopicManager(None, config['MQTTSubscribe']['topics'], self.logger)
-
-        message_callback = MessageCallbackProvider(None, self.logger, topic_manager)
-
         payload_dict = {
             'dateTime': time.time(),
             'usUnits': random.randint(1, 10),
@@ -125,8 +109,6 @@ class TestJSONMessage(unittest.TestCase):
             },
         }
 
-        payload = json.dumps(payload_dict).encode("utf-8")
-
         expected_data = {
             'dateTime': payload_dict['dateTime'],
             'usUnits': payload_dict['usUnits'],
@@ -134,12 +116,7 @@ class TestJSONMessage(unittest.TestCase):
             'level1_level2_temps_temp2': payload_dict['level1']['level2']['temps']['temp2'],
         }
 
-        msg = Msg(self.topic, payload, 0, 0)
-        message_callback._on_message_json(None, None, msg)
-
-        queue = topic_manager._get_queue(self.topic)
-        data = queue['data'].popleft()['data']
-        self.assertDictEqual(data, expected_data)
+        self.run_test(payload_dict, expected_data)
 
     def test_array_of_values(self):
         self.config_str += '''
@@ -149,19 +126,11 @@ class TestJSONMessage(unittest.TestCase):
                     [[[[[[temp2]]]]]]
 '''
 
-        config = configobj.ConfigObj(StringIO(self.config_str % self.topic))
-
-        topic_manager = TopicManager(None, config['MQTTSubscribe']['topics'], self.logger)
-
-        message_callback = MessageCallbackProvider(None, self.logger, topic_manager)
-
         payload_dict = {
             'dateTime': time.time(),
             'usUnits': random.randint(1, 10),
             'temps': [round(random.uniform(10, 100), 2),  round(random.uniform(1, 100), 2),]
         }
-
-        payload = json.dumps(payload_dict).encode("utf-8")
 
         expected_data = {
             'dateTime': payload_dict['dateTime'],
@@ -170,12 +139,7 @@ class TestJSONMessage(unittest.TestCase):
             'temp2': payload_dict['temps'][1],
         }
 
-        msg = Msg(self.topic, payload, 0, 0)
-        message_callback._on_message_json(None, None, msg)
-
-        queue = topic_manager._get_queue(self.topic)
-        data = queue['data'].popleft()['data']
-        self.assertDictEqual(data, expected_data)
+        self.run_test(payload_dict, expected_data)
 
 if __name__ == '__main__':
     # test_suite = unittest.TestSuite()
