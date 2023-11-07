@@ -141,6 +141,37 @@ class TestJSONMessage(unittest.TestCase):
 
         self.run_test(payload_dict, expected_data)
 
+    def test_array_of_objects(self):
+        self.config_str += '''
+            [[[[temps]]]]
+                [[[[[subfields]]]]]
+                    [[[[[[temp]]]]]]
+            [[[[temp_temp1]]]]
+                name = temp1
+            [[[[temp_temp2]]]]
+                name = temp2                              
+'''
+
+        payload_dict = {
+            'dateTime': time.time(),
+            'usUnits': random.randint(1, 10),
+            'temps': [
+                {
+                    'temp1': round(random.uniform(10, 100), 2),
+                    'temp2': round(random.uniform(1, 100), 2),
+                },
+            ],
+        }
+
+        expected_data = {
+            'dateTime': payload_dict['dateTime'],
+            'usUnits': payload_dict['usUnits'],
+            'temp1': payload_dict['temps'][0]['temp1'],
+            'temp2': payload_dict['temps'][0]['temp2'],
+        }
+
+        self.run_test(payload_dict, expected_data)
+
 if __name__ == '__main__':
     # test_suite = unittest.TestSuite()
     # test_suite.addTest(TestConfigureFields('test_use_topic_as_fieldname'))
