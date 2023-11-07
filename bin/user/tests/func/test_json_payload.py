@@ -81,11 +81,6 @@ class TestJSONMessage(unittest.TestCase):
         [[[%s]]]
             [[[[message]]]]
                 type = json
-
-            [[[[temps]]]]
-                [[[[[subfields]]]]]
-                    [[[[[[temp1]]]]]]
-                    [[[[[[temp2]]]]]]
 '''
 
         config = configobj.ConfigObj(StringIO(config_str % topic))
@@ -110,6 +105,53 @@ class TestJSONMessage(unittest.TestCase):
             'usUnits': payload_dict['usUnits'],
             'temps_temp1': payload_dict['temps']['temp1'],
             'temps_temp2': payload_dict['temps']['temp2'],
+        }
+
+        msg = Msg(topic, payload, 0, 0)
+        SUT._on_message_json(None, None, msg)
+
+        queue = topic_manager._get_queue(topic)
+        data = queue['data'].popleft()['data']
+        self.assertDictEqual(data, expected_data)
+
+    def test_multi_nested_json_message(self):
+        logger = Logger('FuncTest', level='ERROR', console=True)
+
+        topic = random_string()
+        config_str = '''
+[MQTTSubscribe]
+    [[topics]]
+        [[[%s]]]
+            [[[[message]]]]
+                type = json
+'''
+
+        config = configobj.ConfigObj(StringIO(config_str % topic))
+
+        topic_manager = TopicManager(None, config['MQTTSubscribe']['topics'], logger)
+
+        SUT = MessageCallbackProvider(None, logger, topic_manager)
+
+        payload_dict = {
+            'dateTime': time.time(),
+            'usUnits': random.randint(1, 10),
+            'level1': {
+                'level2': {
+                    'temps': {
+                        'temp1': round(random.uniform(10, 100), 2),
+                        'temp2': round(random.uniform(1, 100), 2),
+                    },
+                },
+            },
+        }
+
+        payload = json.dumps(payload_dict).encode("utf-8")
+
+        expected_data = {
+            'dateTime': payload_dict['dateTime'],
+            'usUnits': payload_dict['usUnits'],
+            'level1_level2_temps_temp1': payload_dict['level1']['level2']['temps']['temp1'],
+            'level1_level2_temps_temp2': payload_dict['level1']['level2']['temps']['temp2'],
         }
 
         msg = Msg(topic, payload, 0, 0)
