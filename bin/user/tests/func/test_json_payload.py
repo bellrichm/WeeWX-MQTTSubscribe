@@ -37,11 +37,12 @@ class Msg(object):
         self.retain = retain
 
 class TestJSONMessage(unittest.TestCase):
-    def test_basic_message(self):
-        logger = Logger('FuncTest', level='ERROR', console=True)
+    def __init__(self, methodName: str = "runTest") -> None:
+        super().__init__(methodName)
+        self.logger = Logger('FuncTest', level='ERROR', console=True)
 
-        topic = random_string()
-        config_str = '''
+        self.topic = random_string()
+        self.config_str = '''
 [MQTTSubscribe]
     [[topics]]
         [[[%s]]]
@@ -49,11 +50,12 @@ class TestJSONMessage(unittest.TestCase):
                 type = json
 '''
 
-        config = configobj.ConfigObj(StringIO(config_str % topic))
+    def test_basic_message(self):
+        config = configobj.ConfigObj(StringIO(self.config_str % self.topic))
 
-        topic_manager = TopicManager(None, config['MQTTSubscribe']['topics'], logger)
+        topic_manager = TopicManager(None, config['MQTTSubscribe']['topics'], self.logger)
 
-        SUT = MessageCallbackProvider(None, logger, topic_manager)
+        message_callback = MessageCallbackProvider(None, self.logger, topic_manager)
 
         payload_dict = {
             'dateTime': time.time(),
@@ -64,30 +66,19 @@ class TestJSONMessage(unittest.TestCase):
 
         payload = json.dumps(payload_dict).encode("utf-8")
 
-        msg = Msg(topic, payload, 0, 0)
-        SUT._on_message_json(None, None, msg)
+        msg = Msg(self.topic, payload, 0, 0)
+        message_callback._on_message_json(None, None, msg)
 
-        queue = topic_manager._get_queue(topic)
+        queue = topic_manager._get_queue(self.topic)
         data = queue['data'].popleft()['data']
         self.assertDictEqual(data, payload_dict)
 
     def test_nested_json_message(self):
-        logger = Logger('FuncTest', level='ERROR', console=True)
+        config = configobj.ConfigObj(StringIO(self.config_str % self.topic))
 
-        topic = random_string()
-        config_str = '''
-[MQTTSubscribe]
-    [[topics]]
-        [[[%s]]]
-            [[[[message]]]]
-                type = json
-'''
+        topic_manager = TopicManager(None, config['MQTTSubscribe']['topics'], self.logger)
 
-        config = configobj.ConfigObj(StringIO(config_str % topic))
-
-        topic_manager = TopicManager(None, config['MQTTSubscribe']['topics'], logger)
-
-        SUT = MessageCallbackProvider(None, logger, topic_manager)
+        message_callback = MessageCallbackProvider(None, self.logger, topic_manager)
 
         payload_dict = {
             'dateTime': time.time(),
@@ -107,30 +98,19 @@ class TestJSONMessage(unittest.TestCase):
             'temps_temp2': payload_dict['temps']['temp2'],
         }
 
-        msg = Msg(topic, payload, 0, 0)
-        SUT._on_message_json(None, None, msg)
+        msg = Msg(self.topic, payload, 0, 0)
+        message_callback._on_message_json(None, None, msg)
 
-        queue = topic_manager._get_queue(topic)
+        queue = topic_manager._get_queue(self.topic)
         data = queue['data'].popleft()['data']
         self.assertDictEqual(data, expected_data)
 
     def test_multi_nested_json_message(self):
-        logger = Logger('FuncTest', level='ERROR', console=True)
+        config = configobj.ConfigObj(StringIO(self.config_str % self.topic))
 
-        topic = random_string()
-        config_str = '''
-[MQTTSubscribe]
-    [[topics]]
-        [[[%s]]]
-            [[[[message]]]]
-                type = json
-'''
+        topic_manager = TopicManager(None, config['MQTTSubscribe']['topics'], self.logger)
 
-        config = configobj.ConfigObj(StringIO(config_str % topic))
-
-        topic_manager = TopicManager(None, config['MQTTSubscribe']['topics'], logger)
-
-        SUT = MessageCallbackProvider(None, logger, topic_manager)
+        message_callback = MessageCallbackProvider(None, self.logger, topic_manager)
 
         payload_dict = {
             'dateTime': time.time(),
@@ -154,35 +134,26 @@ class TestJSONMessage(unittest.TestCase):
             'level1_level2_temps_temp2': payload_dict['level1']['level2']['temps']['temp2'],
         }
 
-        msg = Msg(topic, payload, 0, 0)
-        SUT._on_message_json(None, None, msg)
+        msg = Msg(self.topic, payload, 0, 0)
+        message_callback._on_message_json(None, None, msg)
 
-        queue = topic_manager._get_queue(topic)
+        queue = topic_manager._get_queue(self.topic)
         data = queue['data'].popleft()['data']
         self.assertDictEqual(data, expected_data)
 
     def test_array_of_values(self):
-        logger = Logger('FuncTest', level='ERROR', console=True)
-
-        topic = random_string()
-        config_str = '''
-[MQTTSubscribe]
-    [[topics]]
-        [[[%s]]]
-            [[[[message]]]]
-                type = json
-
+        self.config_str += '''
             [[[[temps]]]]
                 [[[[[subfields]]]]]
                     [[[[[[temp1]]]]]]
                     [[[[[[temp2]]]]]]
 '''
 
-        config = configobj.ConfigObj(StringIO(config_str % topic))
+        config = configobj.ConfigObj(StringIO(self.config_str % self.topic))
 
-        topic_manager = TopicManager(None, config['MQTTSubscribe']['topics'], logger)
+        topic_manager = TopicManager(None, config['MQTTSubscribe']['topics'], self.logger)
 
-        SUT = MessageCallbackProvider(None, logger, topic_manager)
+        message_callback = MessageCallbackProvider(None, self.logger, topic_manager)
 
         payload_dict = {
             'dateTime': time.time(),
@@ -199,13 +170,12 @@ class TestJSONMessage(unittest.TestCase):
             'temp2': payload_dict['temps'][1],
         }
 
-        msg = Msg(topic, payload, 0, 0)
-        SUT._on_message_json(None, None, msg)
+        msg = Msg(self.topic, payload, 0, 0)
+        message_callback._on_message_json(None, None, msg)
 
-        queue = topic_manager._get_queue(topic)
+        queue = topic_manager._get_queue(self.topic)
         data = queue['data'].popleft()['data']
         self.assertDictEqual(data, expected_data)
-
 
 if __name__ == '__main__':
     # test_suite = unittest.TestSuite()
