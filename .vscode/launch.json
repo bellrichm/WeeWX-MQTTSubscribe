@@ -22,7 +22,7 @@
             "--binding", "loop",
             "--interval", "2",
             "--delay", "0",
-            "--records", "1",
+            "--records", "2",
             //"--host", "localhost",
             //"--topics", "weather/rain",
             //"--callback", "individual",
