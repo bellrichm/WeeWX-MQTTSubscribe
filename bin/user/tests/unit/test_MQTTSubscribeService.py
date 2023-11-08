@@ -92,14 +92,14 @@ class atestInitialization(unittest.TestCase):
 class Testnew_loop_packet(unittest.TestCase):
     mock_StdEngine = mock.Mock()
 
-    def __init__(self, methodName):
-        super(Testnew_loop_packet, self).__init__(methodName)
-        self.queue_data = {}
-        self.aggregate_data = {}
-        self.packet_data = {}
-        self.final_packet_data = {}
-        self.target_data = {}
-        self.config_dict = {}
+    @classmethod
+    def setUpClass(cls):
+        cls.queue_data = {}
+        cls.aggregate_data = {}
+        cls.packet_data = {}
+        cls.final_packet_data = {}
+        cls.target_data = {}
+        cls.config_dict = {}
 
     def setup_queue_tests(self, start_ts, end_period_ts):
         in_temp = random.uniform(1, 100)
@@ -193,15 +193,15 @@ class Testnew_loop_packet(unittest.TestCase):
 
 
 class Testnew_archive_record(unittest.TestCase):
-    def __init__(self, methodName):
-        super(Testnew_archive_record, self).__init__(methodName)
-        self.mock_StdEngine = mock.Mock()
-        self.queue_data = {}
-        self.aggregate_data = {}
-        self.record_data = {}
-        self.target_data = {}
-        self.final_record_data = {}
-        self.config_dict = {}
+    @classmethod
+    def setUpClass(cls):
+        cls.mock_StdEngine = mock.Mock()
+        cls.queue_data = {}
+        cls.aggregate_data = {}
+        cls.record_data = {}
+        cls.target_data = {}
+        cls.final_record_data = {}
+        cls.config_dict = {}
 
     def setup_archive_queue_tests(self, start_ts, end_period_ts, topic):
         in_temp = random.uniform(1, 100)

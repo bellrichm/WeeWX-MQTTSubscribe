@@ -71,12 +71,12 @@ class TestArchiveInterval(unittest.TestCase):
 class TestgenLoopPackets(unittest.TestCase):
     mock_StdEngine = mock.Mock()
 
-    def __init__(self, methodName):
-        super(TestgenLoopPackets, self).__init__(methodName)
-        self.queue_data = {}
+    @classmethod
+    def setUpClass(cls):
+        cls.queue_data = {}
         stn_dict = {}
-        self.config_dict = {}
-        self.config_dict['MQTTSubscribeDriver'] = stn_dict
+        cls.config_dict = {}
+        cls.config_dict['MQTTSubscribeDriver'] = stn_dict
 
     def setup_queue_tests(self, topic):
         current_time = int(time.time() + 0.5)
@@ -196,12 +196,12 @@ class TestgenLoopPackets(unittest.TestCase):
 class TestgenArchiveRecords(unittest.TestCase):
     mock_StdEngine = mock.Mock()
 
-    def __init__(self, methodName):
-        super(TestgenArchiveRecords, self).__init__(methodName)
-        self.queue_data = {}
+    @classmethod
+    def setUpClass(cls):
+        cls.queue_data = {}
         stn_dict = {}
-        self.config_dict = {}
-        self.config_dict['MQTTSubscribeDriver'] = stn_dict
+        cls.config_dict = {}
+        cls.config_dict['MQTTSubscribeDriver'] = stn_dict
 
     def setup_archive_queue_tests(self, archive_topic):
         current_time = int(time.time() + 0.5)
