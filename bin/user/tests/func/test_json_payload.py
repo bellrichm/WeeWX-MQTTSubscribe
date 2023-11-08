@@ -37,12 +37,12 @@ class Msg(object):
         self.retain = retain
 
 class TestJSONMessage(unittest.TestCase):
-    def __init__(self, methodName):
-        super(TestJSONMessage, self).__init__(methodName)
-        self.logger = Logger('FuncTest', level='ERROR', console=True)
+    @classmethod
+    def setUpClass(cls):
+        cls.logger = Logger('FuncTest', level='ERROR', console=True)
 
-        self.topic = random_string()
-        self.config_str = '''
+        cls.topic = random_string()
+        cls.config_str = '''
 [MQTTSubscribe]
     [[topics]]
         [[[%s]]]
