@@ -26,7 +26,7 @@ fi
  PYTHONPATH=bin pytest ./bin/user/tests/unit --junitxml=results.xml --cov-report xml:coverage.xml --verbosity=1 --log-level=ERROR --cov=user.MQTTSubscribe --cov-branch $HTML_OPTIONS
  rc=$?
 
-PYTHONPATH=bin:$PPATH pytest ./bin/user/tests/func --verbosity=1 --log-level=ERROR 
+PYTHONPATH=bin:$PPATH pytest ./bin/user/tests/func --junitxml=results3.xml --verbosity=1 --log-level=ERROR 
 
 # coveralls uses this file, so stash a copy
 mv .coverage .coverage1
