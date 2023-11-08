@@ -11,6 +11,29 @@
         "program": "${file}",
         "console": "integratedTerminal"
     },
+    {
+        "justMyCode": true,
+        "name": "Debug",
+        "type": "python",
+        "request": "launch",
+        "program": "${workspaceFolder}/bin/user/MQTTSubscribe.py",
+        "args": [
+            "--type", "driver",
+            "--binding", "loop",
+            "--interval", "2",
+            "--delay", "0",
+            "--records", "2",
+            //"--host", "localhost",
+            //"--topics", "weather/rain",
+            //"--callback", "individual",
+            //"--topics", "test-topic",
+            //"--callback", "keyword",                
+            "--verbose",
+            "--console",
+            "${workspaceFolder}/devtools/debug.loop.conf"
+        ],            
+        "console": "integratedTerminal"
+    },    
         {
             "justMyCode": true,
             "name": "Service: Loop",

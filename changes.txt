@@ -1,3 +1,8 @@
+V2.3.0
+Enhancements:
+- Support more complex json messages.
+  For an example see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/json-example#complex-json
+
 V2.2.3
 Fixes:
 - Failing when binding is archive and caching is configured because RecordCache was not instantiated.
