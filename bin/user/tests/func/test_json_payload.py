@@ -37,8 +37,8 @@ class Msg(object):
         self.retain = retain
 
 class TestJSONMessage(unittest.TestCase):
-    def __init__(self, methodName: str = "runTest") -> None:
-        super().__init__(methodName)
+    def __init__(self, methodName):
+        super(TestJSONMessage, self).__init__(methodName)
         self.logger = Logger('FuncTest', level='ERROR', console=True)
 
         self.topic = random_string()
