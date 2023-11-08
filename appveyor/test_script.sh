@@ -49,7 +49,7 @@ cp .coverage .coverage2
 
 if [ "$BUILDTYPE" != "LOCAL" ]; then
   find "$APPVEYOR_BUILD_FOLDER" -type f -name 'results.xml' -print0 | xargs -0 -I '{}' curl -F 'file=@{}' "https://ci.appveyor.com/api/testresults/junit/$APPVEYOR_JOB_ID"
-  find "$APPVEYOR_BUILD_FOLDER" -type f -name 'results3.xml' -print0 | xargs -0 -I '{}' curl -F 'file=@{}' "https://ci.appveyor.com/api/testresults/xunit/$APPVEYOR_JOB_ID"
+  find "$APPVEYOR_BUILD_FOLDER" -type f -name 'results3.xml' -print0 | xargs -0 -I '{}' curl -F 'file=@{}' "https://ci.appveyor.com/api/testresults/junit/$APPVEYOR_JOB_ID"
   find "$APPVEYOR_BUILD_FOLDER" -type f -name 'results2.xml' -print0 | xargs -0 -I '{}' curl -F 'file=@{}' "https://ci.appveyor.com/api/testresults/junit/$APPVEYOR_JOB_ID"
 fi
 exit $rc
