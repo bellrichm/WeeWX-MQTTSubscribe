@@ -26,12 +26,19 @@ fi
  PYTHONPATH=bin pytest ./bin/user/tests/unit --junitxml=results.xml --cov-report xml:coverage.xml --verbosity=1 --log-level=ERROR --cov=user.MQTTSubscribe --cov-branch $HTML_OPTIONS
  rc=$?
 
-PYTHONPATH=bin:$PPATH pytest ./bin/user/tests/func --junitxml=results3.xml --verbosity=1 --log-level=ERROR 
-
 # coveralls uses this file, so stash a copy
 mv .coverage .coverage1
 
-# ToDo - option to not exit on error - gor debugging
+# ToDo - option to not exit on error - for debugging
+if [ $rc -ne 0 ]; then
+  echo "$rc"
+  exit $rc
+fi
+
+PYTHONPATH=bin:$PPATH pytest ./bin/user/tests/func --junitxml=results3.xml --verbosity=1 --log-level=ERROR
+rc=$?
+
+# ToDo - option to not exit on error - for debugging
 if [ $rc -ne 0 ]; then
   echo "$rc"
   exit $rc
