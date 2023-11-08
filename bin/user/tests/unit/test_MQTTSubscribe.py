@@ -1,5 +1,5 @@
 #
-#    Copyright (c) 2020-2021 Rich Bell <bellrichm@gmail.com>
+#    Copyright (c) 2020-2023 Rich Bell <bellrichm@gmail.com>
 #
 #    See the file LICENSE.txt for your full rights.
 #
@@ -972,13 +972,25 @@ class TestStart(unittest.TestCase):
 
     def test_bad_connection_return_code(self):
         mock_logger = mock.Mock(spec=Logger)
-
+        rc_strings = {
+            0: "Connection Accepted.",
+            1: "Connection Refused: unacceptable protocol version.",
+            2: "Connection Refused: identifier rejected.",
+            3: "Connection Refused: broker unavailable.",
+            4: "Connection Refused: bad user name or password.",
+            5: "Connection Refused: not authorised.",
+        }
+        
         config_dict = {}
         config_dict['message_callback'] = {}
         config_dict['topics'] = {}
         config = configobj.ConfigObj(config_dict)
         connect_rc = random.randint(1, 10)
         flags = random.randint(0, 255)
+        if connect_rc in rc_strings:
+            rc_string = rc_strings[connect_rc]
+        else:
+            rc_string = "Connection Refused: unknown reason."
 
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client):
             with mock.patch('user.MQTTSubscribe.MessageCallbackProvider'):
@@ -996,7 +1008,7 @@ class TestStart(unittest.TestCase):
                             SUT.start()
 
                         SUT.client.loop_start.assert_called_once()
-                        self.assertEqual(error.exception.args[0], "Unable to connect. Return code is %i flags are %s." % (connect_rc, flags))
+                        self.assertEqual(error.exception.args[0], "Unable to connect. Return code is %i, '%s', flags are %s." % (connect_rc, rc_string, flags))
 
     @staticmethod
     def test_immediate_connection():

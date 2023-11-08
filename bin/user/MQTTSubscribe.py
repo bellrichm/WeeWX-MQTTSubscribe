@@ -387,6 +387,7 @@ from collections import deque
 
 import configobj
 import paho.mqtt.client as mqtt
+from paho.mqtt.client import connack_string
 
 import weeutil
 from weeutil.weeutil import to_bool, to_float, to_int, to_sorted_string
@@ -1804,8 +1805,8 @@ class MQTTSubscriber(object):
             time.sleep(1)
 
         if self.userdata['connect_rc'] > 0:
-            raise weewx.WeeWxIOError("Unable to connect. Return code is %i flags are %s."
-                                     % (self.userdata['connect_rc'], self.userdata['connect_flags']))
+            raise weewx.WeeWxIOError("Unable to connect. Return code is %i, '%s', flags are %s."
+                                     % (self.userdata['connect_rc'], connack_string(self.userdata['connect_rc']), self.userdata['connect_flags']))
 
         self.logger.info("MQTT initialization complete.")
 
