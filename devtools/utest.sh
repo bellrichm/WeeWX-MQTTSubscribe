@@ -25,4 +25,5 @@ fi
 export PYENV_VERSION=$PY_VERSION
 export WEEWX=$WEEWX_VERSION
 echo "Running python $PY_VERSION $WEEWX_VERSION"
-PYTHONPATH=bin:../$WEEWX_VERSION/bin python bin/user/tests/unit/$TEST
+PYTHONPATH=bin:../$WEEWX_VERSION/bin pytest bin/user/tests/unit/$TEST
+date

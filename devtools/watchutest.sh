@@ -22,7 +22,7 @@ else
     TEST=$3
 fi
 
-while inotifywait -e modify devtools/watchutest.sh bin/user/MQTTSubscribe.py bin/user/tests/integ/utils.py bin/user/tests/integ/data bin/user/tests/unit/$TEST
+while inotifywait -e modify devtools/watchutest.sh devtools/utest.sh bin/user/MQTTSubscribe.py bin/user/tests/integ/utils.py bin/user/tests/integ/data bin/user/tests/unit/$TEST
 do
     ./devtools/utest.sh $WEEWX_VERSION $PY_VERSION $TEST
 done
