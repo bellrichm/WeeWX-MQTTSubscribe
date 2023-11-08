@@ -26,4 +26,4 @@ python_command='python'$PYENV_VERSION
 python_version=$(pyenv which $python_command)
 echo "Running $python_version $WEEWX"
 
-PYTHONPATH=bin:../$WEEWX/bin python -m unittest discover bin/user/tests/func
+PYTHONPATH=bin:../$WEEWX/bin pytest bin/user/tests/func
