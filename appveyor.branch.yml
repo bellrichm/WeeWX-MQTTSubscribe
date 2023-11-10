@@ -93,7 +93,7 @@ environment:
 
     # The earliest WeeWX version supported
     - PYTHON: '%PYTHON_LATEST%'
-      WEEWX: 4.0.0
+      WEEWX: 4.6.1
       job_group: build
       job_depends_on: initialize
 
