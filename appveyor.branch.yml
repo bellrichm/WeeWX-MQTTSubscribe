@@ -92,27 +92,27 @@ environment:
     # End of runs against latest WeeWX release and supported versions of Python
 
     # The earliest WeeWX version supported
-    - PYTHON: 3.9
+    - PYTHON: '%PYTHON_LATEST%'
       WEEWX: 4.0.0
       job_group: build
       job_depends_on: initialize
 
     # Use latest Python release against WeeWX master branch
-    - PYTHON: 3.9
+    - PYTHON: '%PYTHON_LATEST%'
       BRANCH: master
       WEEWX: '%BRANCH%'
       job_group: build  
       job_depends_on: initialize      
 
     # Use latest Python release against WeeWX development branch
-    - PYTHON: 3.9
+    - PYTHON: '%PYTHON_LATEST%'
       BRANCH: development
       WEEWX: '%BRANCH%'
       job_group: build  
       job_depends_on: initialize      
 
     # Use latest Python release against WeeWX V5 branch
-    - PYTHON: 3.9
+    - PYTHON: '%PYTHON_LATEST%'
       BRANCH: V5
       WEEWX: '%BRANCH%'
       job_group: build  
@@ -121,7 +121,7 @@ environment:
     # Build/Test against a development/pre release of WeeWX with latest Python
     # These do not always exist
     - ENABLED: false
-      PYTHON: 3.9
+    - PYTHON: '%PYTHON_LATEST%'
       WEEWX: 4.9.0b1
       WEEWX_URL: http://www.weewx.com/downloads/development_versions/
       job_group: build  
