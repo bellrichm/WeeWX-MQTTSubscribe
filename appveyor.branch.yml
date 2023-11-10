@@ -5,7 +5,6 @@ branches:
   except:
     - master
 
-
 # Environment variables with names that match build image can be a list of broken python versions.
 # For example Ubuntu1604="3.10 3.11"
 # These are typically set in the appveyor ui, environment tab.
@@ -38,6 +37,7 @@ environment:
   SONAR_SCANNER_OPTS: -server
   # default values
   # default to oldest supported version of python
+  PYTHON_LATEST: 3.11
   PYTHON: 3.7
   ENABLED: true
   
@@ -45,8 +45,9 @@ environment:
 
   matrix:
     # Run tests against latest WeeWX and Python
+    # This run uploads test results and sonar results
     # Run first, so that completes early
-    - PYTHON: 3.9
+    - PYTHON: %PYTHON_LATEST%
       WEEWX: 4.10.2
       CODECOVIO_UPLOAD: true
       COVERALLS_UPLOAD: true
@@ -54,24 +55,8 @@ environment:
       job_group: build  
       job_depends_on: initialize
 
+    # Start of runs against latest WeeWX release and supported versions of Python
     # Even though EOL, I'll support a bit longer
-    - PYTHON: 2.7
-      WEEWX: 4.10.2
-      CODECOVIO_UPLOAD: true
-      job_group: build  
-      job_depends_on: initialize
-
-      # Even though EOL, I'll support a bit longer
-    - PYTHON: 3.5
-      WEEWX: 4.10.2
-      job_group: build  
-      job_depends_on: initialize
-
-    # Even though EOL, I'll support a bit longer
-    - PYTHON: 3.6
-      WEEWX: 4.10.2
-      job_group: build
-      job_depends_on: initialize
 
     - PYTHON: 3.7
       WEEWX: 4.10.2
@@ -104,14 +89,11 @@ environment:
       #job_group: build  
       #job_depends_on: initialize
 
-    - PYTHON: 2.7
-      WEEWX: 3.9.0 
-      job_group: build
-      job_depends_on: initialize
+    # End of runs against latest WeeWX release and supported versions of Python
 
     # The earliest WeeWX version supported
-    - PYTHON: 2.7 
-      WEEWX: 3.7.1
+    - PYTHON: 3.9
+      WEEWX: 4.0.0
       job_group: build
       job_depends_on: initialize
 
