@@ -5,13 +5,15 @@ branches:
   except:
     - master
 
-# branch build uses a subset of appveyor images, master uses all
+
 # Environment variables with names that match build image can be a list of broken python versions.
+# For example Ubuntu1604="3.10 3.11"
 # These are typically set in the appveyor ui, environment tab.
 # This makes it easy to modify and rebuild.
-# For example Ubuntu1604="3.10 3.11"
 # This is used in the 'init script' below
 # To allow easily checking/updating broken images, these are set in the GUI.
+
+# branch build uses a subset of appveyor images, master uses all
 image:
   - Ubuntu
   #- Ubuntu2004
@@ -20,7 +22,7 @@ image:
 # everything below this line should be identical when comparing branch build to master build
 
 # Do not build on tags (GitHub, Bitbucket, GitLab, Gitea)
-skip_tags: true
+# skip_tags: true
 
 # Do not build feature branch with open Pull Requests
 skip_branch_with_pr: true
