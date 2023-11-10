@@ -17,7 +17,7 @@ else
     PY_VERSION=$2
 fi
 
-while inotifywait -e modify devtools/watchlint.sh devtools/lint.sh ./*.py ./bin/user ./bin/user/tests/unit/*.py ./bin/user/tests/func/*.py ./bin/user/tests/integ/*.py
+while inotifywait -e modify devtools/watchlint.sh devtools/lint.sh .pylintrc ./*.py ./bin/user ./bin/user/tests/unit/*.py ./bin/user/tests/func/*.py ./bin/user/tests/integ/*.py
 do
     ./devtools/lint.sh $WEEWX_VERSION $PY_VERSION
 done
