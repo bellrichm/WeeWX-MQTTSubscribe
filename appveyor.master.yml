@@ -38,6 +38,7 @@ environment:
   SONAR_SCANNER_OPTS: -server
   # default values
   # default to oldest supported version of python
+  PYTHON_LATEST: 3.11
   PYTHON: 3.7
   ENABLED: true
   
@@ -45,8 +46,9 @@ environment:
 
   matrix:
     # Run tests against latest WeeWX and Python
+    # This run uploads test results and sonar results
     # Run first, so that completes early
-    - PYTHON: 3.9
+    - PYTHON: '%PYTHON_LATEST%'
       WEEWX: 4.10.2
       CODECOVIO_UPLOAD: true
       COVERALLS_UPLOAD: true
@@ -54,24 +56,8 @@ environment:
       job_group: build  
       job_depends_on: initialize
 
+    # Start of runs against latest WeeWX release and supported versions of Python
     # Even though EOL, I'll support a bit longer
-    - PYTHON: 2.7
-      WEEWX: 4.10.2
-      CODECOVIO_UPLOAD: true
-      job_group: build  
-      job_depends_on: initialize
-
-      # Even though EOL, I'll support a bit longer
-    - PYTHON: 3.5
-      WEEWX: 4.10.2
-      job_group: build  
-      job_depends_on: initialize
-
-    # Even though EOL, I'll support a bit longer
-    - PYTHON: 3.6
-      WEEWX: 4.10.2
-      job_group: build
-      job_depends_on: initialize
 
     - PYTHON: 3.7
       WEEWX: 4.10.2
@@ -104,33 +90,30 @@ environment:
       #job_group: build  
       #job_depends_on: initialize
 
-    - PYTHON: 2.7
-      WEEWX: 3.9.0 
-      job_group: build
-      job_depends_on: initialize
+    # End of runs against latest WeeWX release and supported versions of Python
 
     # The earliest WeeWX version supported
-    - PYTHON: 2.7 
-      WEEWX: 3.7.1
+    - PYTHON: '%PYTHON_LATEST%'
+      WEEWX: 4.0.0
       job_group: build
       job_depends_on: initialize
 
     # Use latest Python release against WeeWX master branch
-    - PYTHON: 3.9
+    - PYTHON: '%PYTHON_LATEST%'
       BRANCH: master
       WEEWX: '%BRANCH%'
       job_group: build  
       job_depends_on: initialize      
 
     # Use latest Python release against WeeWX development branch
-    - PYTHON: 3.9
+    - PYTHON: '%PYTHON_LATEST%'
       BRANCH: development
       WEEWX: '%BRANCH%'
       job_group: build  
       job_depends_on: initialize      
 
     # Use latest Python release against WeeWX V5 branch
-    - PYTHON: 3.9
+    - PYTHON: '%PYTHON_LATEST%'
       BRANCH: V5
       WEEWX: '%BRANCH%'
       job_group: build  
@@ -139,7 +122,7 @@ environment:
     # Build/Test against a development/pre release of WeeWX with latest Python
     # These do not always exist
     - ENABLED: false
-      PYTHON: 3.9
+    - PYTHON: '%PYTHON_LATEST%'
       WEEWX: 4.9.0b1
       WEEWX_URL: http://www.weewx.com/downloads/development_versions/
       job_group: build  
