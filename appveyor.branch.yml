@@ -121,7 +121,7 @@ environment:
     # Build/Test against a development/pre release of WeeWX with latest Python
     # These do not always exist
     - ENABLED: false
-    - PYTHON: '%PYTHON_LATEST%'
+      PYTHON: '%PYTHON_LATEST%'
       WEEWX: 4.9.0b1
       WEEWX_URL: http://www.weewx.com/downloads/development_versions/
       job_group: build  
