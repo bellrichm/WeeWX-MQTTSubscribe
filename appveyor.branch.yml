@@ -47,7 +47,7 @@ environment:
     # Run tests against latest WeeWX and Python
     # This run uploads test results and sonar results
     # Run first, so that completes early
-    - PYTHON: %PYTHON_LATEST%
+    - PYTHON: '%PYTHON_LATEST%''
       WEEWX: 4.10.2
       CODECOVIO_UPLOAD: true
       COVERALLS_UPLOAD: true
