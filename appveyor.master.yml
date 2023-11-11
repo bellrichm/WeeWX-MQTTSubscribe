@@ -40,6 +40,7 @@ environment:
   # default to oldest supported version of python
   PYTHON_LATEST: 3.11
   PYTHON: 3.7
+  WEEWX_OLDES: 4.6.1
   WEEWX_LATEST: 4.10.2
   ENABLED: true
   
@@ -95,7 +96,7 @@ environment:
 
     # The earliest WeeWX version supported
     - PYTHON: '%PYTHON_LATEST%'
-      WEEWX: 4.6.1
+      WEEWX: '%WEEWX_OLDEST%'
       job_group: build
       job_depends_on: initialize
 
