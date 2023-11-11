@@ -13,11 +13,7 @@ else
 fi
 
 if [ -z "$2" ]; then
-    if [ "$WEEWX" = "weewx3" ]; then
-        export PYENV_VERSION=$weewx3_default_python_version
-    else
-        export PYENV_VERSION=$weewx_default_python_version    
-    fi    
+    export PYENV_VERSION=$weewx_default_python_version    
 else
     export PYENV_VERSION=$2
 fi

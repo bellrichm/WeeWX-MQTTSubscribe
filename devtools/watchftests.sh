@@ -14,11 +14,7 @@ else
 fi
 
 if [ -z "$2" ]; then
-    if [ "$WEEWX" = "weewx3" ]; then
-        PY_VERSION=$weewx3_default_python_version
-    else
-        PY_VERSION=$weewx_default_python_version
-    fi    
+    PY_VERSION=$weewx_default_python_version
 else
     PY_VERSION=$2
 fi
