@@ -190,6 +190,10 @@ good-names=i,
            k,
            ex,
            Run,
+           # The following are for MQTTSubscribe
+           rc,
+           MQTTSubscribe,
+           ExampleMessageCallbackProvider,
            _
 
 # Good variable names regexes, separated by a comma. If names match any regex,
@@ -340,7 +344,7 @@ indent-string='    '
 max-line-length=145 # MQTTSubscribe override from 100
 
 # Maximum number of lines in a module.
-max-module-lines=1000
+max-module-lines=2500 # MQTTSubscribe, up limit
 
 # Allow the body of a class to be on the same line as the declaration if body
 # contains single statement.
