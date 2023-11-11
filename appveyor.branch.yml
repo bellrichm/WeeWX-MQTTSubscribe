@@ -86,7 +86,7 @@ environment:
 
     # not yet supported
     #- PYTHON: 3.12
-      #WEEWX: 4.10.2
+      #WEEWX: '%WEEWX_LATEST%'
       #job_group: build  
       #job_depends_on: initialize
 
