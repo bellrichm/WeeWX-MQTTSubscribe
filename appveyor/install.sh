@@ -18,6 +18,7 @@
     sudo apt-get -qq --assume-yes install mosquitto
 
     echo "Running pip installs"
+    pip install pip --quiet --upgrade
     pip install configobj --quiet --no-python-version-warning
     pip install paho-mqtt --quiet --no-python-version-warning
     pip install mock --quiet --no-python-version-warning
