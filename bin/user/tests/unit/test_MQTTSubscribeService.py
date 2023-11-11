@@ -89,6 +89,73 @@ class atestInitialization(unittest.TestCase):
 
             self.assertEqual(error.exception.args[0], "archive_topic, %s, is invalid when running as a service" % archive_topic)
 
+    def test_caching_valid_archive_binding(self):
+        mock_StdEngine = mock.Mock()
+
+        fieldname = random_string()
+
+        config_dict = {
+            'MQTTSubscribeService': {
+                'binding': 'archive'
+            }
+        }        
+
+        with mock.patch('user.MQTTSubscribe.MQTTSubscriber') as mock_MQTTSubscribe:
+            with mock.patch('user.MQTTSubscribe.Logger'):
+                type(mock_MQTTSubscribe.return_value).cached_fields = \
+                    mock.PropertyMock(return_value={fieldname:{'expires_after':random.randint(1, 10)}})
+
+                try:
+                    user.MQTTSubscribe.MQTTSubscribeService(mock_StdEngine, config_dict)
+                except ValueError:
+                    self.fail("ValueError exception raised.")
+
+    def test_caching_valid_software_generation(self):
+        mock_StdEngine = mock.Mock()
+
+        fieldname = random_string()
+
+        config_dict = {
+            'StdArchive': {
+                'record_generation': 'software'
+            },
+            'MQTTSubscribeService': {
+                'binding': 'loop'
+            }
+        }        
+
+        with mock.patch('user.MQTTSubscribe.MQTTSubscriber') as mock_MQTTSubscribe:
+            with mock.patch('user.MQTTSubscribe.Logger'):
+                type(mock_MQTTSubscribe.return_value).cached_fields = \
+                    mock.PropertyMock(return_value={fieldname:{'expires_after':random.randint(1, 10)}})
+
+                try:
+                    user.MQTTSubscribe.MQTTSubscribeService(mock_StdEngine, config_dict)
+                except ValueError:
+                    self.fail("ValueError exception raised.")
+
+
+    def test_caching_not_valid(self):
+        mock_StdEngine = mock.Mock()
+
+        fieldname = random_string()
+
+        config_dict = {
+            'MQTTSubscribeService': {
+                'binding': 'loop'
+            }
+        }        
+
+        with mock.patch('user.MQTTSubscribe.MQTTSubscriber') as mock_MQTTSubscribe:
+            with mock.patch('user.MQTTSubscribe.Logger'):
+                with self.assertRaises(ValueError) as error:
+                    type(mock_MQTTSubscribe.return_value).cached_fields = \
+                        mock.PropertyMock(return_value={fieldname:{'expires_after':random.randint(1, 10)}})
+
+                    user.MQTTSubscribe.MQTTSubscribeService(mock_StdEngine, config_dict)
+
+                self.assertEqual(error.exception.args[0], "caching is not available with record generation of type '%s' and and binding of type 'loop'" % 'none')
+
 class Testnew_loop_packet(unittest.TestCase):
     mock_StdEngine = mock.Mock()
 

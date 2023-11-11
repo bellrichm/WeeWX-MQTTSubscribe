@@ -401,7 +401,7 @@ import weewx
 import weewx.drivers
 from weewx.engine import StdEngine, StdService
 
-VERSION = '2.3.0-rc01'
+VERSION = '2.3.0-rc02'
 DRIVER_NAME = 'MQTTSubscribeDriver'
 DRIVER_VERSION = VERSION
 
@@ -1894,8 +1894,8 @@ class MQTTSubscribeService(StdService):
         if self.binding == 'loop':
             self.bind(weewx.NEW_LOOP_PACKET, self.new_loop_packet)
 
-        if self.subscriber.cached_fields and record_generation != 'software':
-            raise ValueError("cacheing is not available with record generation of type '%s' and and binding of type 'loop'" % record_generation)
+        if self.subscriber.cached_fields and record_generation != 'software' and self.binding == 'loop':
+            raise ValueError("caching is not available with record generation of type '%s' and and binding of type 'loop'" % record_generation)
 
     def shutDown(self): # need to override parent - pylint: disable=invalid-name
         """Run when an engine shutdown is requested."""
