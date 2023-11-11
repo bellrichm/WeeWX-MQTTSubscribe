@@ -85,10 +85,10 @@ environment:
       job_depends_on: initialize
 
     # not yet supported
-    - PYTHON: 3.12
-      WEEWX: 4.10.2
-      job_group: build  
-      job_depends_on: initialize
+    #- PYTHON: 3.12
+      #WEEWX: 4.10.2
+      #job_group: build  
+      #job_depends_on: initialize
 
     # End of runs against latest WeeWX release and supported versions of Python
 
