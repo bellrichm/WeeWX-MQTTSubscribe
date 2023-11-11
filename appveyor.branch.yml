@@ -39,7 +39,7 @@ environment:
   # default to oldest supported version of python
   PYTHON_LATEST: 3.11
   PYTHON: 3.7
-  WEEWX_OLDES: 4.6.1
+  WEEWX_OLDEST: 4.6.1
   WEEWX_LATEST: 4.10.2
   ENABLED: true
   
