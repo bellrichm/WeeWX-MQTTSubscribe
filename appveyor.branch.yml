@@ -14,9 +14,9 @@ branches:
 
 # branch build uses a subset of appveyor images, master uses all
 image:
-  - Ubuntu
+  #- Ubuntu
   #- Ubuntu2004
-  #- Ubuntu2204
+  - Ubuntu2204
 
 # everything below this line should be identical when comparing branch build to master build
 
