@@ -14,6 +14,8 @@ import string
 import sys
 import time
 
+from collections import ChainMap
+
 def random_string(length=32):
     return ''.join([random.choice(string.ascii_letters + string.digits) for n in range(length)]) # pylint: disable=unused-variable
 
@@ -26,8 +28,6 @@ class weeutil(object):
             pass
     class logger(object):
         pass
-
-    from collections import ChainMap
 
     class ListOfDicts(ChainMap):
         # pylint: disable=too-many-ancestors
@@ -199,6 +199,9 @@ class NEW_ARCHIVE_RECORD(object):
 class Event(object):
     """Represents an event."""
     def __init__(self, event_type, **argv):
+        self.packet = None
+        self.record = None
+
         self.event_type = event_type
 
         for key in argv:

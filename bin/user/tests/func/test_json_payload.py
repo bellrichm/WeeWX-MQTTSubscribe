@@ -64,7 +64,7 @@ class TestJSONMessage(unittest.TestCase):
         queue = topic_manager._get_queue(self.topic)
         data = queue['data'].popleft()['data']
 
-        self.assertDictEqual(data, expected_data)  
+        self.assertDictEqual(data, expected_data)
 
     def test_basic_message(self):
         payload_dict = {

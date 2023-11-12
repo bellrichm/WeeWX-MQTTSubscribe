@@ -98,7 +98,7 @@ class atestInitialization(unittest.TestCase):
             'MQTTSubscribeService': {
                 'binding': 'archive'
             }
-        }        
+        }
 
         with mock.patch('user.MQTTSubscribe.MQTTSubscriber') as mock_MQTTSubscribe:
             with mock.patch('user.MQTTSubscribe.Logger'):
@@ -122,7 +122,7 @@ class atestInitialization(unittest.TestCase):
             'MQTTSubscribeService': {
                 'binding': 'loop'
             }
-        }        
+        }
 
         with mock.patch('user.MQTTSubscribe.MQTTSubscriber') as mock_MQTTSubscribe:
             with mock.patch('user.MQTTSubscribe.Logger'):
@@ -144,7 +144,7 @@ class atestInitialization(unittest.TestCase):
             'MQTTSubscribeService': {
                 'binding': 'loop'
             }
-        }        
+        }
 
         with mock.patch('user.MQTTSubscribe.MQTTSubscriber') as mock_MQTTSubscribe:
             with mock.patch('user.MQTTSubscribe.Logger'):
@@ -154,7 +154,8 @@ class atestInitialization(unittest.TestCase):
 
                     user.MQTTSubscribe.MQTTSubscribeService(mock_StdEngine, config_dict)
 
-                self.assertEqual(error.exception.args[0], "caching is not available with record generation of type '%s' and and binding of type 'loop'" % 'none')
+                self.assertEqual(error.exception.args[0],
+                                 "caching is not available with record generation of type '%s' and and binding of type 'loop'" % 'none')
 
 class Testnew_loop_packet(unittest.TestCase):
     mock_StdEngine = mock.Mock()

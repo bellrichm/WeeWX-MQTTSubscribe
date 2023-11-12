@@ -17,7 +17,6 @@ import configobj
 import copy
 import json
 import random
-import sys
 import time
 
 import test_weewx_stubs # used to set up stubs - pylint: disable=unused-import

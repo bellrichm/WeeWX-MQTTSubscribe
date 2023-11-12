@@ -27,7 +27,7 @@ from user.MQTTSubscribe import MQTTSubscriber, Logger
 
 class Msg(object):
     # pylint: disable=too-few-public-methods
-    def __init(self):
+    def __init__(self):
         pass
 
 class TestInitialization(unittest.TestCase):
@@ -977,7 +977,7 @@ class TestStart(unittest.TestCase):
             4: "Connection Refused: bad user name or password.",
             5: "Connection Refused: not authorised.",
         }
-        
+
         config_dict = {}
         config_dict['message_callback'] = {}
         config_dict['topics'] = {}
@@ -1005,7 +1005,8 @@ class TestStart(unittest.TestCase):
                             SUT.start()
 
                         SUT.client.loop_start.assert_called_once()
-                        self.assertEqual(error.exception.args[0], "Unable to connect. Return code is %i, '%s', flags are %s." % (connect_rc, rc_string, flags))
+                        self.assertEqual(error.exception.args[0],
+                                        "Unable to connect. Return code is %i, '%s', flags are %s." % (connect_rc, rc_string, flags))
 
     @staticmethod
     def test_immediate_connection():
