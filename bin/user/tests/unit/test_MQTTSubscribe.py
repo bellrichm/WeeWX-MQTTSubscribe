@@ -467,7 +467,7 @@ class  TestWeewx_configuration(unittest.TestCase):
             for key, value in conversionDict.items():
                 self.assertIn(key, weewx.units.conversionDict)
                 self.assertEqual(len(weewx.units.conversionDict[key]), len(value))
-                for key2 in conversionDict[key]:
+                for key2 in value:
                     self.assertIn(key2, weewx.units.conversionDict[key])
                     self.assertIsInstance(weewx.units.conversionDict[key][key2], types.FunctionType)
 
