@@ -53,7 +53,7 @@ class TestGetData(unittest.TestCase):
                         if payload in result['payloads']:
                             found = True
                             break
-                self.assertTrue(found, "No results for %s" %payload)
+                self.assertTrue(found, f"No results for {payload}")
 
                 utils.check(self, payload, records, result['records'])
             else:

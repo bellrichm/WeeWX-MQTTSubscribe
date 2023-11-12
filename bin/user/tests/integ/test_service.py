@@ -36,7 +36,7 @@ class TestService(unittest.TestCase):
 
         unit_system_name = cdict['topics'].get('unit_system', 'US').strip().upper()
         if unit_system_name not in weewx.units.unit_constants:
-            raise ValueError("MQTTSubscribe: Unknown unit system: %s" % unit_system_name)
+            raise ValueError(f"MQTTSubscribe: Unknown unit system: {unit_system_name}")
         unit_system = weewx.units.unit_constants[unit_system_name]
 
         min_config_dict = {
@@ -126,7 +126,7 @@ class TestService(unittest.TestCase):
                         if payload in result['payloads']:
                             found = True
                             break
-                self.assertTrue(found, "No results for %s" %payload)
+                self.assertTrue(found, f"No results for {payload}")
 
                 utils.check(self, payload, records, result['records'])
             else:

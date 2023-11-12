@@ -55,7 +55,7 @@ def send_mqtt_msg(publisher, topic, payload, userdata, self):
     i = 1
     time.sleep(.5) # give it a bit of time before checking
     while not userdata['msg']:
-        print("waiting for mqtt message %i" % i)
+        print("fwaiting for mqtt message {i}")
         if i > max_msg_wait:
             self.fail("Timed out waiting for MQTT message.")
         time.sleep(1)
@@ -73,7 +73,7 @@ def send_msg(sender, msg_type, publisher, topic, topic_info, userdata=None, self
             payload = topic_info['data'][field]
             if isinstance(payload, int):
                 payload = str(payload).encode("utf-8")
-            sender(publisher, "%s/%s" % (topic, field), payload, userdata, self)
+            sender(publisher, f"{topic}/{field}", payload, userdata, self)
             i += 1
     elif msg_type == 'json':
         payload = json.dumps(topic_info['data']).encode("utf-8")
@@ -82,7 +82,7 @@ def send_msg(sender, msg_type, publisher, topic, topic_info, userdata=None, self
     elif msg_type == 'keyword':
         msg = ''
         for field in topic_info['data']:
-            msg = "%s%s%s%s%s" % (msg, field, topic_info['delimiter'], topic_info['data'][field], topic_info['separator'])
+            msg = f"{msg}{field}{topic_info['delimiter']}{topic_info['data'][field]}{topic_info['separator']}"
         msg = msg[:-1]
         msg = msg.encode("utf-8")
         sender(publisher, topic, msg, userdata, self)
@@ -127,22 +127,22 @@ def wait_on_queue(provider, msg_count, max_waits, sleep_time):
 
 def check(self, test_type, results, expected_results):
     self.longMessage = True
-    msg = "\n\t%s\n\t%s" % (results, expected_results)
+    msg = f"\n\t{results}\n\t{expected_results}"
     self.assertEqual(len(results), len(expected_results), msg)
     i = 0
     for expected_result in expected_results:
         # print("testing %s %s" % (test_type, expected_result))
-        msg = "\n\t%s\n\t%s" %(expected_result, results[i])
+        msg = f"\n\t{expected_results}\n\t{results[i]}"
         self.assertEqual(len(expected_result), len(results[i]), msg)
         for field in expected_result:
             self.assertIn(field, results[i])
             if expected_result[field] is not None:
-                msg = "for payload of %s and field %s in record %i\n" % (test_type, field, i+1)
+                msg = f"for payload of {test_type} and field {field} in record {i+1}\n"
                 if expected_result[field] == "None":
-                    msg = "\n\t for field %s" % field
+                    msg = f"\n\t for field {field}"
                     self.assertIsNone(results[i][field], msg)
                 else:
-                    msg = "\n\t for field %s" % field
+                    msg = f"\n\t for field {field}"
                     self.assertEqual(results[i][field], expected_result[field], msg)
         i += 1
 
