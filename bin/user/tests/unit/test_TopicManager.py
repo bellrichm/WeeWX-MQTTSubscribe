@@ -855,8 +855,8 @@ class TestGetQueueData(unittest.TestCase):
             SUT = TopicManager(None, self.config, mock_logger)
 
             collector_topic = ""
-            for topic in SUT.subscribed_topics:
-                if SUT.subscribed_topics[topic]['queue']['type'] == 'collector':
+            for topic, detail in SUT.subscribed_topics.items():
+                if detail['queue']['type'] == 'collector':
                     collector_topic = topic
                     break
 

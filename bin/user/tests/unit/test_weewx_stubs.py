@@ -204,13 +204,13 @@ class Event:
 
         self.event_type = event_type
 
-        for key in argv:
-            setattr(self, key, argv[key])
+        for key, value in argv.items():
+            setattr(self, key, value)
 
     def __str__(self):
         """Return a string with a reasonable representation of the event."""
         et = f"Event type: {self.event_type} | "
-        s = "; ".join(f"{k}: {self.__dict__[k]}" for k in self.__dict__ if k != "event_type")
+        s = "; ".join(f"{k}: {v}" for k,v in self.__dict__.items() if k != "event_type")
         return et + s
 
 try:

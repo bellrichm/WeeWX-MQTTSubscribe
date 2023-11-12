@@ -464,9 +464,9 @@ class  TestWeewx_configuration(unittest.TestCase):
             MQTTSubscriber(config, mock_logger)
 
             self.assertEqual(len(weewx.units.conversionDict), len(conversionDict))
-            for key in conversionDict:
+            for key, value in conversionDict.items():
                 self.assertIn(key, weewx.units.conversionDict)
-                self.assertEqual(len(weewx.units.conversionDict[key]), len(conversionDict[key]))
+                self.assertEqual(len(weewx.units.conversionDict[key]), len(value))
                 for key2 in conversionDict[key]:
                     self.assertIn(key2, weewx.units.conversionDict[key])
                     self.assertIsInstance(weewx.units.conversionDict[key][key2], types.FunctionType)

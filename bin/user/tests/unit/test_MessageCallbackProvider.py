@@ -325,8 +325,8 @@ class TestKeywordload(unittest.TestCase):
 
         payload_str = ""
         delim = ""
-        for key in payload_dict:
-            payload_str = f"{payload_str}{delim}{key}={payload_dict[key]:f}"
+        for key, value in payload_dict.items():
+            payload_str = f"{payload_str}{delim}{key}={value:f}"
             delim = ","
 
         payload_str = payload_str.encode('UTF-8')
@@ -358,8 +358,8 @@ class TestKeywordload(unittest.TestCase):
 
         payload_str = ""
         delim = ""
-        for key in payload_dict:
-            payload_str = f"{payload_str}{delim}{key}={payload_dict[key]:f}"
+        for key, value in payload_dict.items():
+            payload_str = f"{payload_str}{delim}{key}={value:f}"
             delim = ","
 
         payload_str = payload_str.encode('UTF-8')
@@ -391,8 +391,8 @@ class TestKeywordload(unittest.TestCase):
 
         payload_str = ""
         delim = ""
-        for key in payload_dict:
-            payload_str = f"{payload_str}{delim}{key}={payload_dict[key]:f}"
+        for key, value in payload_dict.items():
+            payload_str = f"{payload_str}{delim}{key}={value:f}"
             delim = ","
 
         payload_str = payload_str.encode('UTF-8')
@@ -426,8 +426,8 @@ class TestKeywordload(unittest.TestCase):
 
         payload_str = ""
         delim = ""
-        for key in payload_dict:
-            payload_str = f"{payload_str}{delim}{key}={payload_dict[key]:f}"
+        for key, value in payload_dict.items():
+            payload_str = f"{payload_str}{delim}{key}={value:f}"
             delim = ","
 
         payload_str = payload_str.encode('UTF-8')
@@ -475,8 +475,8 @@ class TestKeywordload(unittest.TestCase):
 
         payload_str = ""
         delim = ""
-        for key in payload_dict:
-            payload_str = f"{payload_str}{delim}{key}={payload_dict[key]:f}"
+        for key, value in payload_dict.items():
+            payload_str = f"{payload_str}{delim}{key}={value:f}"
             delim = ","
 
         payload_str = payload_str.encode('UTF-8')
@@ -520,8 +520,8 @@ class TestKeywordload(unittest.TestCase):
 
         payload_str = ""
         delim = ""
-        for key in payload_dict:
-            payload_str = f"{payload_str}{delim}{key}={payload_dict[key]:f}"
+        for key, value in payload_dict.items():
+            payload_str = f"{payload_str}{delim}{key}={value:f}"
             delim = ","
 
         payload_str = payload_str.encode('UTF-8')
@@ -699,10 +699,10 @@ class TestJsonPayload(unittest.TestCase):
         payload = json.dumps(payload_dict).encode("utf-8")
 
         final_dict = {}
-        for key in payload_dict:
+        for key, value in payload_dict.items():
             #if key == msg_id_field:
             #    continue
-            final_dict[key + '_' + str(msg_id)] = payload_dict[key]
+            final_dict[key + '_' + str(msg_id)] = value
 
         msg = Msg(self.topic, payload, 0, 0)
 
