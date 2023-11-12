@@ -984,10 +984,7 @@ class TestStart(unittest.TestCase):
         config = configobj.ConfigObj(config_dict)
         connect_rc = random.randint(1, 10)
         flags = random.randint(0, 255)
-        if connect_rc in rc_strings:
-            rc_string = rc_strings[connect_rc]
-        else:
-            rc_string = "Connection Refused: unknown reason."
+        rc_string = rc_strings.get(connect_rc, "Connection Refused: unknown reason.")
 
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client):
             with mock.patch('user.MQTTSubscribe.MessageCallbackProvider'):
