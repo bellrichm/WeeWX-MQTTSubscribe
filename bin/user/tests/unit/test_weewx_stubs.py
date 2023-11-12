@@ -67,10 +67,10 @@ class weeutil(object):
             try:
                 for part in parts[1:]:
                     mod = getattr(mod, part)
-            except AttributeError:
+            except AttributeError as exception:
                 # Can't find something. Give a more informative error message:
-                raise AttributeError(
-                    "Module '%s' has no attribute '%s' when searching for '%s'" % (mod.__name__, part, module_class))
+                raise AttributeError( "Module '%s' has no attribute '%s' when searching for '%s'" % (mod.__name__, part, module_class)) \
+                      from exception
             return mod
 
         @staticmethod
