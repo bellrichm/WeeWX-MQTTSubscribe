@@ -401,7 +401,7 @@ import weewx
 import weewx.drivers
 from weewx.engine import StdEngine, StdService
 
-VERSION = '2.3.0-rc02'
+VERSION = '2.3.0-rc03'
 DRIVER_NAME = 'MQTTSubscribeDriver'
 DRIVER_VERSION = VERSION
 
@@ -416,7 +416,7 @@ def gettid():
     """Get TID as displayed by htop.
        This is architecture dependent."""
     import ctypes #  need to be python 2 compatible, Want to keep this piece of code self contained. pylint: disable=bad-option-value, import-outside-toplevel
-    from ctypes.util import find_library
+    from ctypes.util import find_library # pylint: disable=import-outside-toplevel
     # pylint: enable=bad-option-value
     libc = ctypes.CDLL(find_library('c'))
     for cmd in (186, 224, 178):
@@ -567,7 +567,7 @@ except ImportError:
 
             self.file = None
             if self.filename is not None:
-                self.file = open(filename, 'w')
+                self.file = open(filename, 'w', encoding='UTF-8')
 
         def trace(self, msg):
             """ Log trace messages. """
@@ -689,7 +689,7 @@ class CollectData(object):
 
     def get_data(self):
         """ Return the collection. """
-        if self.data != {}:
+        if self.data:
             self.data['usUnits'] = self.unit_system
             self.data['dateTime'] = self.date_time
         return self.data
@@ -1365,17 +1365,17 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
                     if PY2:
                         # if this is a unicode string, return its string representation
                         # (only a python 3 error) pylint: disable=undefined-variable
-                        if isinstance(str_value, unicode): # pyright: reportUndefinedVariable=false
+                        if isinstance(str_value, unicode): # pyright: ignore[reportUndefinedVariable]
                             # (only a python 3 error) pylint: enable=undefined-variable
                             str_value  = str_value.encode('utf-8')
-                        if isinstance(str_key, unicode): # pyright: reportUndefinedVariable=false
+                        if isinstance(str_key, unicode): # pyright: ignore[reportUndefinedVariable]
                             # (only a python 3 error) pylint: enable=undefined-variable
-                            str_key  = str_key.encode('utf-8')                
-                    new_dict[str_key] = str_value              
+                            str_key  = str_key.encode('utf-8')
+                    new_dict[str_key] = str_value
         else:
             self._flatten_list(fields, fields_ignore_default, delim, prefix, prefix[:-1], old_dict, new_dict)
 
-    def _flatten_list(self, fields, fields_ignore_default, delim, prefix, new_key, value, new_dict):  
+    def _flatten_list(self, fields, fields_ignore_default, delim, prefix, new_key, value, new_dict):
         if new_key in fields and 'subfields' in fields[new_key]:
             if len(value) > len(fields[new_key]['subfields']):
                 self.logger.error("Skipping %s because array data too big. Array=%s subfields=%s" %
@@ -1394,13 +1394,13 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
                         if PY2:
                             # if this is a unicode string, return its string representation
                             # (only a python 3 error) pylint: disable=undefined-variable
-                            if isinstance(str_value, unicode): # pyright: reportUndefinedVariable=false
+                            if isinstance(str_value, unicode): # pyright: ignore[reportUndefinedVariable]
                                 # (only a python 3 error) pylint: enable=undefined-variable
                                 str_value  = str_value.encode('utf-8')
-                            if isinstance(str_key, unicode): # pyright: reportUndefinedVariable=false
+                            if isinstance(str_key, unicode): # pyright: ignore[reportUndefinedVariable]
                                 # (only a python 3 error) pylint: enable=undefined-variable
                                 str_key  = str_key.encode('utf-8')
-                        new_dict[str_key] = str_value                          
+                        new_dict[str_key] = str_value
                     i += 1
         else:
             #if not fields.get(lookup_key, {}).get('ignore', fields_ignore_default):
@@ -1806,7 +1806,9 @@ class MQTTSubscriber(object):
 
         if self.userdata['connect_rc'] > 0:
             raise weewx.WeeWxIOError("Unable to connect. Return code is %i, '%s', flags are %s."
-                                     % (self.userdata['connect_rc'], connack_string(self.userdata['connect_rc']), self.userdata['connect_flags']))
+                                     % (self.userdata['connect_rc'],
+                                        connack_string(self.userdata['connect_rc']),
+                                        self.userdata['connect_flags']))
 
         self.logger.info("MQTT initialization complete.")
 
@@ -1935,7 +1937,7 @@ class MQTTSubscribeService(StdService):
         """ Handle the new archive record event. """
         self.logger.debug("data-> incoming record is %s: %s"
                           % (weeutil.weeutil.timestamp_to_string(event.record['dateTime']),
-                             to_sorted_string(event.record)))        
+                             to_sorted_string(event.record)))
         if self.binding == 'archive':
             end_ts = event.record['dateTime']
             start_ts = end_ts - event.record['interval'] * 60
@@ -2004,7 +2006,7 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice): # (methods not used) py
         self.archive_topic = stn_dict.get('archive_topic', None)
         self.prev_archive_start = 0
 
-        engine.bind(weewx.NEW_ARCHIVE_RECORD, self.new_archive_record)  
+        engine.bind(weewx.NEW_ARCHIVE_RECORD, self.new_archive_record)
 
         self.subscriber = MQTTSubscriber(stn_dict, self.logger)
 
