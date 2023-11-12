@@ -13,9 +13,9 @@ else
 fi
 
 if [ -z "$2" ]; then
-    $PY_VERSION=$weewx_default_python_version    
+    PY_VERSION=$weewx_default_python_version    
 else
-    $PY_VERSIONION=$2
+    PY_VERSION=$2
 fi
 
 while inotifywait -e modify devtools/watchutests.sh devtools/runutests.sh bin/user/MQTTSubscribe.py bin/user/tests/unit
