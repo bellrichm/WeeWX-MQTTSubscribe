@@ -1,5 +1,5 @@
 #
-#    Copyright (c) 2020-2021 Rich Bell <bellrichm@gmail.com>
+#    Copyright (c) 2020-2023 Rich Bell <bellrichm@gmail.com>
 #
 #    See the file LICENSE.txt for your full rights.
 #
@@ -7,8 +7,6 @@
 # pylint: disable=wrong-import-order
 # pylint: disable=missing-docstring
 # pylint: disable=invalid-name
-
-from __future__ import with_statement
 
 import unittest
 import mock
@@ -22,12 +20,7 @@ from test_weewx_stubs import random_string
 
 import user.MQTTSubscribe
 
-# Stole from six module. Added to eliminate dependency on six when running under WeeWX 3.x
-PY2 = sys.version_info[0] == 2
-if PY2:
-    builtins_module_name = '__builtin__'
-else:
-    builtins_module_name = 'builtins'
+builtins_module_name = 'builtins'
 
 class DriverLoaderStub():
     # pylint: disable=too-few-public-methods

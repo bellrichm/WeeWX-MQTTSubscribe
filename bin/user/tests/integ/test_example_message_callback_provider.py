@@ -1,13 +1,11 @@
 #
-#    Copyright (c) 2020-2021 Rich Bell <bellrichm@gmail.com>
+#    Copyright (c) 2020-2023 Rich Bell <bellrichm@gmail.com>
 #
 #    See the file LICENSE.txt for your full rights.
 #
 
 # pylint: disable=missing-docstring
 # pylint: disable=invalid-name
-
-from __future__ import print_function
 
 import unittest
 

@@ -1,5 +1,5 @@
 #
-#    Copyright (c) 2020-2021 Rich Bell <bellrichm@gmail.com>
+#    Copyright (c) 2020-2023 Rich Bell <bellrichm@gmail.com>
 #
 #    See the file LICENSE.txt for your full rights.
 #
@@ -10,8 +10,7 @@
 # pylint: disable=bad-option-value, import-outside-toplevel
 # pylint: enable=bad-option-value
 
-from __future__ import with_statement
-
+import importlib
 import unittest
 import mock
 
@@ -20,18 +19,11 @@ import sys
 
 from test_weewx_stubs import weeutil, weewx, random_string
 
-# Stole from six module. Added to eliminate dependency on six when running under WeeWX 3.x
-PY2 = sys.version_info[0] == 2
-
 class TestV3Logging(unittest.TestCase):
     def test_init_filename(self):
         with mock.patch.dict(sys.modules, {'weeutil.logger':None}):
             import user.MQTTSubscribe
-            if PY2:
-                reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
-            else:
-                import importlib
-                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
+            importlib.reload(user.MQTTSubscribe) 
             with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
                 with mock.patch('user.MQTTSubscribe.open') as mock_open:
                     from user.MQTTSubscribe import Logger
@@ -44,20 +36,13 @@ class TestV3Logging(unittest.TestCase):
                     self.assertEqual(mock_open.call_count, 1)
                     mock_open.assert_called_once_with(filename, 'w')
 
-            if PY2:
-                reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
-            else:
-                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
+            importlib.reload(user.MQTTSubscribe) 
 
     @staticmethod
     def test_error_not_logged():
         with mock.patch.dict(sys.modules, {'weeutil.logger':None}):
             import user.MQTTSubscribe
-            if PY2:
-                reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
-            else:
-                import importlib
-                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
+            importlib.reload(user.MQTTSubscribe) 
             with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
                 with mock.patch('user.MQTTSubscribe.syslog') as mock_syslog:
                     from user.MQTTSubscribe import Logger
@@ -72,20 +57,13 @@ class TestV3Logging(unittest.TestCase):
 
                     mock_syslog.syslog.assert_not_called()
 
-            if PY2:
-                reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
-            else:
-                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
+            importlib.reload(user.MQTTSubscribe) 
 
     @staticmethod
     def test_error_logged():
         with mock.patch.dict(sys.modules, {'weeutil.logger':None}):
             import user.MQTTSubscribe
-            if PY2:
-                reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
-            else:
-                import importlib
-                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
+            importlib.reload(user.MQTTSubscribe) 
             with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
                 with mock.patch('user.MQTTSubscribe.syslog') as mock_syslog:
                     from user.MQTTSubscribe import Logger
@@ -101,20 +79,13 @@ class TestV3Logging(unittest.TestCase):
 
                     mock_syslog.syslog.assert_called_once_with(log_level, '(%s) user.MQTTSubscribe: %s' % (mode, message))
 
-            if PY2:
-                reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
-            else:
-                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
+            importlib.reload(user.MQTTSubscribe) 
 
     @staticmethod
     def test_error_logged_to_file():
         with mock.patch.dict(sys.modules, {'weeutil.logger':None}):
             import user.MQTTSubscribe
-            if PY2:
-                reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
-            else:
-                import importlib
-                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
+            importlib.reload(user.MQTTSubscribe) 
             with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
                 with mock.patch('user.MQTTSubscribe.open') as mock_open:
                     with mock.patch('user.MQTTSubscribe.syslog') as mock_syslog:
@@ -135,20 +106,13 @@ class TestV3Logging(unittest.TestCase):
                         mock_syslog.syslog.assert_called_once_with(log_level, '(%s) user.MQTTSubscribe: %s' % (mode, message))
                         mock_file.write.assert_called_once_with('user.MQTTSubscribe: %s\n' % message)
 
-            if PY2:
-                reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
-            else:
-                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
+            importlib.reload(user.MQTTSubscribe) 
 
     @staticmethod
     def test_error_logged_to_console():
         with mock.patch.dict(sys.modules, {'weeutil.logger':None}):
             import user.MQTTSubscribe
-            if PY2:
-                reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
-            else:
-                import importlib
-                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
+            importlib.reload(user.MQTTSubscribe) 
             with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
                 with mock.patch('user.MQTTSubscribe.print') as mock_print:
                     with mock.patch('user.MQTTSubscribe.syslog') as mock_syslog:
@@ -166,20 +130,13 @@ class TestV3Logging(unittest.TestCase):
                         mock_syslog.syslog.assert_called_once_with(log_level, '(%s) user.MQTTSubscribe: %s' % (mode, message))
                         mock_print.assert_called_once_with('user.MQTTSubscribe: %s' % message)
 
-            if PY2:
-                reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
-            else:
-                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
+                importlib.reload(user.MQTTSubscribe) 
 
     @staticmethod
     def test_info_not_logged():
         with mock.patch.dict(sys.modules, {'weeutil.logger':None}):
             import user.MQTTSubscribe
-            if PY2:
-                reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
-            else:
-                import importlib
-                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
+            importlib.reload(user.MQTTSubscribe) 
             with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
                 with mock.patch('user.MQTTSubscribe.syslog') as mock_syslog:
                     from user.MQTTSubscribe import Logger
@@ -194,20 +151,13 @@ class TestV3Logging(unittest.TestCase):
 
                     mock_syslog.syslog.assert_not_called()
 
-            if PY2:
-                reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
-            else:
-                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
+            importlib.reload(user.MQTTSubscribe) 
 
     @staticmethod
     def test_info_logged():
         with mock.patch.dict(sys.modules, {'weeutil.logger':None}):
             import user.MQTTSubscribe
-            if PY2:
-                reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
-            else:
-                import importlib
-                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
+            importlib.reload(user.MQTTSubscribe) 
             with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
                 with mock.patch('user.MQTTSubscribe.syslog') as mock_syslog:
                     from user.MQTTSubscribe import Logger
@@ -223,20 +173,13 @@ class TestV3Logging(unittest.TestCase):
 
                     mock_syslog.syslog.assert_called_once_with(log_level, '(%s) user.MQTTSubscribe: %s' % (mode, message))
 
-            if PY2:
-                reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
-            else:
-                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
+            importlib.reload(user.MQTTSubscribe) 
 
     @staticmethod
     def test_info_logged_to_file():
         with mock.patch.dict(sys.modules, {'weeutil.logger':None}):
             import user.MQTTSubscribe
-            if PY2:
-                reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
-            else:
-                import importlib
-                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
+            importlib.reload(user.MQTTSubscribe) 
             with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
                 with mock.patch('user.MQTTSubscribe.open') as mock_open:
                     with mock.patch('user.MQTTSubscribe.syslog') as mock_syslog:
@@ -257,20 +200,13 @@ class TestV3Logging(unittest.TestCase):
                         mock_syslog.syslog.assert_called_once_with(log_level, '(%s) user.MQTTSubscribe: %s' % (mode, message))
                         mock_file.write.assert_called_once_with('user.MQTTSubscribe: %s\n' % message)
 
-            if PY2:
-                reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
-            else:
-                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
+            importlib.reload(user.MQTTSubscribe) 
 
     @staticmethod
     def test_info_logged_to_console():
         with mock.patch.dict(sys.modules, {'weeutil.logger':None}):
             import user.MQTTSubscribe
-            if PY2:
-                reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
-            else:
-                import importlib
-                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
+            importlib.reload(user.MQTTSubscribe) 
             with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
                 with mock.patch('user.MQTTSubscribe.print') as mock_print:
                     with mock.patch('user.MQTTSubscribe.syslog') as mock_syslog:
@@ -288,20 +224,13 @@ class TestV3Logging(unittest.TestCase):
                         mock_syslog.syslog.assert_called_once_with(log_level, '(%s) user.MQTTSubscribe: %s' % (mode, message))
                         mock_print.assert_called_once_with('user.MQTTSubscribe: %s' % message)
 
-            if PY2:
-                reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
-            else:
-                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
+            importlib.reload(user.MQTTSubscribe) 
 
     @staticmethod
     def test_debug_not_logged():
         with mock.patch.dict(sys.modules, {'weeutil.logger':None}):
             import user.MQTTSubscribe
-            if PY2:
-                reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
-            else:
-                import importlib
-                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
+            importlib.reload(user.MQTTSubscribe) 
             with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
                 with mock.patch('user.MQTTSubscribe.syslog') as mock_syslog:
                     from user.MQTTSubscribe import Logger
@@ -316,20 +245,13 @@ class TestV3Logging(unittest.TestCase):
 
                     mock_syslog.syslog.assert_not_called()
 
-            if PY2:
-                reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
-            else:
-                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
+            importlib.reload(user.MQTTSubscribe) 
 
     @staticmethod
     def test_debug_logged():
         with mock.patch.dict(sys.modules, {'weeutil.logger':None}):
             import user.MQTTSubscribe
-            if PY2:
-                reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
-            else:
-                import importlib
-                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
+            importlib.reload(user.MQTTSubscribe) 
             with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
                 with mock.patch('user.MQTTSubscribe.syslog') as mock_syslog:
                     from user.MQTTSubscribe import Logger
@@ -345,20 +267,13 @@ class TestV3Logging(unittest.TestCase):
 
                     mock_syslog.syslog.assert_called_once_with(log_level, '(%s) user.MQTTSubscribe: %s' % (mode, message))
 
-            if PY2:
-                reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
-            else:
-                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
+            importlib.reload(user.MQTTSubscribe) 
 
     @staticmethod
     def test_debug_logged_to_file():
         with mock.patch.dict(sys.modules, {'weeutil.logger':None}):
             import user.MQTTSubscribe
-            if PY2:
-                reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
-            else:
-                import importlib
-                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
+            importlib.reload(user.MQTTSubscribe) 
             with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
                 with mock.patch('user.MQTTSubscribe.open') as mock_open:
                     with mock.patch('user.MQTTSubscribe.syslog') as mock_syslog:
@@ -379,20 +294,13 @@ class TestV3Logging(unittest.TestCase):
                         mock_syslog.syslog.assert_called_once_with(log_level, '(%s) user.MQTTSubscribe: %s' % (mode, message))
                         mock_file.write.assert_called_once_with('user.MQTTSubscribe: %s\n' % message)
 
-            if PY2:
-                reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
-            else:
-                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
+            importlib.reload(user.MQTTSubscribe) 
 
     @staticmethod
     def test_debug_logged_to_console():
         with mock.patch.dict(sys.modules, {'weeutil.logger':None}):
             import user.MQTTSubscribe
-            if PY2:
-                reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
-            else:
-                import importlib
-                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
+            importlib.reload(user.MQTTSubscribe) 
             with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
                 with mock.patch('user.MQTTSubscribe.print') as mock_print:
                     with mock.patch('user.MQTTSubscribe.syslog') as mock_syslog:
@@ -410,20 +318,13 @@ class TestV3Logging(unittest.TestCase):
                         mock_syslog.syslog.assert_called_once_with(log_level, '(%s) user.MQTTSubscribe: %s' % (mode, message))
                         mock_print.assert_called_once_with('user.MQTTSubscribe: %s' % message)
 
-            if PY2:
-                reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
-            else:
-                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
+            importlib.reload(user.MQTTSubscribe) 
 
     @staticmethod
     def test_trace_not_logged():
         with mock.patch.dict(sys.modules, {'weeutil.logger':None}):
             import user.MQTTSubscribe
-            if PY2:
-                reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
-            else:
-                import importlib
-                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
+            importlib.reload(user.MQTTSubscribe) 
             with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
                 with mock.patch('user.MQTTSubscribe.syslog') as mock_syslog:
                     from user.MQTTSubscribe import Logger
@@ -438,20 +339,13 @@ class TestV3Logging(unittest.TestCase):
 
                     mock_syslog.syslog.assert_not_called()
 
-            if PY2:
-                reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
-            else:
-                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
+            importlib.reload(user.MQTTSubscribe) 
 
     @staticmethod
     def test_trace_logged():
         with mock.patch.dict(sys.modules, {'weeutil.logger':None}):
             import user.MQTTSubscribe
-            if PY2:
-                reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
-            else:
-                import importlib
-                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
+            importlib.reload(user.MQTTSubscribe) 
             with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
                 with mock.patch('user.MQTTSubscribe.syslog') as mock_syslog:
                     from user.MQTTSubscribe import Logger
@@ -467,20 +361,13 @@ class TestV3Logging(unittest.TestCase):
 
                     mock_syslog.syslog.assert_called_once_with(log_level, '(%s) user.MQTTSubscribe: %s' % (mode, message))
 
-            if PY2:
-                reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
-            else:
-                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
+            importlib.reload(user.MQTTSubscribe) 
 
     @staticmethod
     def test_trace_logged_to_file():
         with mock.patch.dict(sys.modules, {'weeutil.logger':None}):
             import user.MQTTSubscribe
-            if PY2:
-                reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
-            else:
-                import importlib
-                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
+            importlib.reload(user.MQTTSubscribe) 
             with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
                 with mock.patch('user.MQTTSubscribe.open') as mock_open:
                     with mock.patch('user.MQTTSubscribe.syslog') as mock_syslog:
@@ -501,20 +388,13 @@ class TestV3Logging(unittest.TestCase):
                         mock_syslog.syslog.assert_called_once_with(log_level, '(%s) user.MQTTSubscribe: %s' % (mode, message))
                         mock_file.write.assert_called_once_with('user.MQTTSubscribe: %s\n' % message)
 
-            if PY2:
-                reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
-            else:
-                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
+            importlib.reload(user.MQTTSubscribe) 
 
     @staticmethod
     def test_trace_logged_to_console():
         with mock.patch.dict(sys.modules, {'weeutil.logger':None}):
             import user.MQTTSubscribe
-            if PY2:
-                reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
-            else:
-                import importlib
-                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
+            importlib.reload(user.MQTTSubscribe) 
             with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
                 with mock.patch('user.MQTTSubscribe.print') as mock_print:
                     with mock.patch('user.MQTTSubscribe.syslog') as mock_syslog:
@@ -532,10 +412,7 @@ class TestV3Logging(unittest.TestCase):
                         mock_syslog.syslog.assert_called_once_with(log_level, '(%s) user.MQTTSubscribe: %s' % (mode, message))
                         mock_print.assert_called_once_with('user.MQTTSubscribe: %s' % message)
 
-            if PY2:
-                reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
-            else:
-                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
+            importlib.reload(user.MQTTSubscribe) 
 
 class TestV4Logging(unittest.TestCase):
     def test_init_set_trace_log_level(self):
@@ -597,11 +474,7 @@ class TestV4Logging(unittest.TestCase):
     def test_init_console_set():
         with mock.patch.dict(sys.modules, {'weeutil.logger':weeutil.logger}):
             import user.MQTTSubscribe
-            if PY2:
-                reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
-            else:
-                import importlib
-                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
+            importlib.reload(user.MQTTSubscribe) 
             with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
                 from user.MQTTSubscribe import Logger
 
@@ -612,20 +485,13 @@ class TestV4Logging(unittest.TestCase):
 
                 SUT._logmsg.addHandler.assert_called_once() # pylint: disable=protected-access
 
-            if PY2:
-                reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
-            else:
-                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
+            importlib.reload(user.MQTTSubscribe) 
 
     @staticmethod
     def test_error_logged():
         with mock.patch.dict(sys.modules, {'weeutil.logger':weeutil.logger}):
             import user.MQTTSubscribe
-            if PY2:
-                reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
-            else:
-                import importlib
-                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
+            importlib.reload(user.MQTTSubscribe) 
             with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
                 from user.MQTTSubscribe import Logger
 
@@ -639,20 +505,13 @@ class TestV4Logging(unittest.TestCase):
 
                 SUT._logmsg.error.assert_called_once_with(SUT.MSG_FORMAT, mode, message) # pylint: disable=protected-access
 
-            if PY2:
-                reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
-            else:
-                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
+            importlib.reload(user.MQTTSubscribe) 
 
     @staticmethod
     def test_info_logged():
         with mock.patch.dict(sys.modules, {'weeutil.logger':weeutil.logger}):
             import user.MQTTSubscribe
-            if PY2:
-                reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
-            else:
-                import importlib
-                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
+            importlib.reload(user.MQTTSubscribe) 
             with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
                 from user.MQTTSubscribe import Logger
 
@@ -666,20 +525,13 @@ class TestV4Logging(unittest.TestCase):
 
                 SUT._logmsg.info.assert_called_once_with(SUT.MSG_FORMAT, mode, message) # pylint: disable=protected-access
 
-            if PY2:
-                reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
-            else:
-                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
+            importlib.reload(user.MQTTSubscribe) 
 
     @staticmethod
     def test_debug_logged():
         with mock.patch.dict(sys.modules, {'weeutil.logger':weeutil.logger}):
             import user.MQTTSubscribe
-            if PY2:
-                reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
-            else:
-                import importlib
-                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
+            importlib.reload(user.MQTTSubscribe) 
             with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
                 from user.MQTTSubscribe import Logger
 
@@ -693,20 +545,13 @@ class TestV4Logging(unittest.TestCase):
 
                 SUT._logmsg.debug.assert_called_once_with(SUT.MSG_FORMAT, mode, message) # pylint: disable=protected-access
 
-            if PY2:
-                reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
-            else:
-                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
+            importlib.reload(user.MQTTSubscribe) 
 
     @staticmethod
     def test_trace_logged_with_debug_set():
         with mock.patch.dict(sys.modules, {'weeutil.logger':weeutil.logger}):
             import user.MQTTSubscribe
-            if PY2:
-                reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
-            else:
-                import importlib
-                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
+            importlib.reload(user.MQTTSubscribe) 
             with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
                 from user.MQTTSubscribe import Logger
 
@@ -721,20 +566,13 @@ class TestV4Logging(unittest.TestCase):
 
                 SUT._logmsg.debug.assert_called_once_with(SUT.MSG_FORMAT, mode, message) # pylint: disable=protected-access
 
-            if PY2:
-                reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
-            else:
-                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
+            importlib.reload(user.MQTTSubscribe) 
 
     @staticmethod
     def test_trace_logged_with_debug_not_set():
         with mock.patch.dict(sys.modules, {'weeutil.logger':weeutil.logger}):
             import user.MQTTSubscribe
-            if PY2:
-                reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
-            else:
-                import importlib
-                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
+            importlib.reload(user.MQTTSubscribe) 
             with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
                 from user.MQTTSubscribe import Logger
 
@@ -749,10 +587,7 @@ class TestV4Logging(unittest.TestCase):
 
                 SUT._logmsg.log.assert_called_once_with(5, SUT.MSG_FORMAT, mode, message) # pylint: disable=protected-access
 
-            if PY2:
-                reload(user.MQTTSubscribe) # (only a python 3 error) pylint: disable=undefined-variable
-            else:
-                importlib.reload(user.MQTTSubscribe) # (only a python 2 error) pylint: disable=no-member
+            importlib.reload(user.MQTTSubscribe) 
 
 if __name__ == '__main__':
     # test_suite = unittest.TestSuite()

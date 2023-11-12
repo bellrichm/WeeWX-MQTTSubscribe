@@ -9,8 +9,6 @@
 # pylint: disable=missing-docstring
 # pylint: disable=invalid-name
 
-from __future__ import with_statement
-
 import unittest
 import mock
 
@@ -98,7 +96,6 @@ class TestInitialization(unittest.TestCase):
                         MQTTSubscriber(config, mock_logger)
 
                 self.assertEqual(error.exception.args[0], exception)
-
 
     def test_missing_topics(self):
         config_dict = {

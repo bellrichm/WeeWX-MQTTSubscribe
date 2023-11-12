@@ -1,5 +1,5 @@
 #
-#    Copyright (c) 2020-2021 Rich Bell <bellrichm@gmail.com>
+#    Copyright (c) 2020-2023 Rich Bell <bellrichm@gmail.com>
 #
 #    See the file LICENSE.txt for your full rights.
 #
@@ -7,10 +7,6 @@
 # pylint: disable=wrong-import-order
 # pylint: disable=missing-docstring
 # pylint: disable=invalid-name
-# need to be python 2 compatible pylint: disable=bad-option-value, super-with-arguments
-# pylint: enable=bad-option-value
-
-from __future__ import with_statement
 
 import unittest
 import mock

@@ -1,28 +1,20 @@
 #
-#    Copyright (c) 2020-2021 Rich Bell <bellrichm@gmail.com>
+#    Copyright (c) 2020-2023 Rich Bell <bellrichm@gmail.com>
 #
 #    See the file LICENSE.txt for your full rights.
 #
 
 # pylint: disable=missing-docstring
 # pylint: disable=fixme
-from __future__ import print_function
 
 import json
-import sys
 import time
 
 import configobj
 
 import weeutil
 
-PY2 = sys.version_info[0] == 2
-
 def byteify(data, ignore_dicts=False):
-    if PY2:
-        # if this is a unicode string, return its string representation
-        if isinstance(data, unicode): # (never called under python 3) pylint: disable=undefined-variable
-            return data.encode('utf-8')
     # if this is a list of values, return list of byteified values
     if isinstance(data, list):
         return [byteify(item, ignore_dicts=True) for item in data]
@@ -84,10 +76,7 @@ def send_msg(sender, msg_type, publisher, topic, topic_info, userdata=None, self
             sender(publisher, "%s/%s" % (topic, field), payload, userdata, self)
             i += 1
     elif msg_type == 'json':
-        if PY2:
-            payload = json.dumps(topic_info['data'])
-        else:
-            payload = json.dumps(topic_info['data']).encode("utf-8")
+        payload = json.dumps(topic_info['data']).encode("utf-8")
         sender(publisher, topic, payload, userdata, self)
         i += 1
     elif msg_type == 'keyword':

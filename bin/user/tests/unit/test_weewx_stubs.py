@@ -1,5 +1,5 @@
 #
-#    Copyright (c) 2020-2021 Rich Bell <bellrichm@gmail.com>
+#    Copyright (c) 2020-2023 Rich Bell <bellrichm@gmail.com>
 #
 #    See the file LICENSE.txt for your full rights.
 #
@@ -7,9 +7,6 @@
 # pylint: disable=missing-docstring
 # pylint: disable=invalid-name
 # pylint: disable=too-few-public-methods
-# need to be python 2 compatible pylint: disable=bad-option-value, raise-missing-from, import-outside-toplevel
-# pylint: enable=bad-option-value
-from __future__ import print_function
 
 import locale
 import random
@@ -30,81 +27,15 @@ class weeutil(object):
     class logger(object):
         pass
 
-    try:
-        # Python 3
-        from collections import ChainMap
+    from collections import ChainMap
 
-        class ListOfDicts(ChainMap):
-            # pylint: disable=too-many-ancestors
-            def extend(self, m):
-                self.maps.append(m)
-            def prepend(self, m):
-                self.maps.insert(0, m)
+    class ListOfDicts(ChainMap):
+        # pylint: disable=too-many-ancestors
+        def extend(self, m):
+            self.maps.append(m)
+        def prepend(self, m):
+            self.maps.insert(0, m)
 
-    except ImportError:
-
-        # Python 2. We'll have to supply our own
-        class ListOfDicts(object):
-            """A near clone of ChainMap"""
-
-            def __init__(self, *maps):
-                self.maps = list(maps) or [{}]
-
-            def __missing__(self, key):
-                raise KeyError(key)
-
-            def __getitem__(self, key):
-                for mapping in self.maps:
-                    try:
-                        return mapping[key]
-                    except KeyError:
-                        pass
-                return self.__missing__(key)
-
-            def get(self, key, default=None):
-                return self[key] if key in self else default
-
-            def __len__(self):
-                return len(set().union(*self.maps))
-
-            def __iter__(self):
-                return iter(set().union(*self.maps))
-
-            def __contains__(self, key):
-                return any(key in m for m in self.maps)
-
-            def __bool__(self):
-                return any(self.maps)
-
-            def __setitem__(self, key, value):
-                """Set a key, value on the first map. """
-                self.maps[0][key] = value
-
-            def __delitem__(self, key):
-                try:
-                    del self.maps[0][key]
-                except KeyError:
-                    raise KeyError('Key not found in the first mapping: {!r}'.format(key))
-
-            def popitem(self):
-                'Remove and return an item pair from maps[0]. Raise KeyError is maps[0] is empty.'
-                try:
-                    return self.maps[0].popitem()
-                except KeyError:
-                    raise KeyError('No keys found in the first mapping.')
-
-            def pop(self, key, *args):
-                'Remove *key* from maps[0] and return its value. Raise KeyError if *key* not in maps[0].'
-                try:
-                    return self.maps[0].pop(key, *args)
-                except KeyError:
-                    raise KeyError('Key not found in the first mapping: {!r}'.format(key))
-
-            def extend(self, m):
-                self.maps.append(m)
-
-            def prepend(self, m):
-                self.maps.insert(0, m)
     class weeutil(object):
         class TimeSpan(tuple):
             """Represents a time span, exclusive on the left, inclusive on the right."""
