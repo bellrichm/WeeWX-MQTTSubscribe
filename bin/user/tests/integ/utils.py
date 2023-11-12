@@ -146,7 +146,7 @@ def check(self, test_type, results, expected_results):
                     self.assertEqual(results[i][field], expected_result[field], msg)
         i += 1
 
-class Msg(object):
+class Msg:
     # pylint: disable=too-few-public-methods
     def __init__(self, topic, payload, qos, retain):
         self.topic = topic
