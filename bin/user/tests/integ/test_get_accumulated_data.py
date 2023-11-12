@@ -72,75 +72,75 @@ class TestAccumulatedRain(TestAccumulatedData):
         # Only two old WeeWX versions sre tested. We just won't tests against these
         if weewx.__version__ == '3.7.1' or weewx.__version__ == '3.9.0':
             return
-        with open("bin/user/tests/integ/data/accumulatedrain.json") as file_pointer:
+        with open("bin/user/tests/integ/data/accumulatedrain.json", encoding="UTF-8") as file_pointer:
             self.runit('individual', file_pointer)
 
     #@unittest.skip("")
     def test_accumulatedrain_json(self):
         if weewx.__version__ == '3.7.1' or weewx.__version__ == '3.9.0':
             return
-        with open("bin/user/tests/integ/data/accumulatedrain.json") as file_pointer:
+        with open("bin/user/tests/integ/data/accumulatedrain.json", encoding="UTF-8") as file_pointer:
             self.runit('json', file_pointer)
 
     #@unittest.skip("")
     def test_accumulatedrain_keyword(self):
         if weewx.__version__ == '3.7.1' or weewx.__version__ == '3.9.0':
             return
-        with open("bin/user/tests/integ/data/accumulatedrain.json") as file_pointer:
+        with open("bin/user/tests/integ/data/accumulatedrain.json", encoding="UTF-8") as file_pointer:
             self.runit('keyword', file_pointer)
 
 class TestBasic(TestAccumulatedData):
     #@unittest.skip("")
     def test_basic_individual(self):
-        with open("bin/user/tests/integ/data/basic.json") as file_pointer:
+        with open("bin/user/tests/integ/data/basic.json", encoding="UTF-8") as file_pointer:
             self.runit('individual', file_pointer)
 
     #@unittest.skip("")
     def test_basic_json(self):
-        with open("bin/user/tests/integ/data/basic.json") as file_pointer:
+        with open("bin/user/tests/integ/data/basic.json", encoding="UTF-8") as file_pointer:
             self.runit('json', file_pointer)
 
     #@unittest.skip("")
     def test_basic_keyword(self):
-        with open("bin/user/tests/integ/data/basic.json") as file_pointer:
+        with open("bin/user/tests/integ/data/basic.json", encoding="UTF-8") as file_pointer:
             self.runit('keyword', file_pointer)
 
 class TestEmpty(TestAccumulatedData):
     #@unittest.skip("")
     def test_empty_individual(self):
-        with open("bin/user/tests/integ/data/empty.json") as file_pointer:
+        with open("bin/user/tests/integ/data/empty.json", encoding="UTF-8") as file_pointer:
             self.runit('individual', file_pointer)
 
     #@unittest.skip("")
     def test_empty_json(self):
-        with open("bin/user/tests/integ/data/empty.json") as file_pointer:
+        with open("bin/user/tests/integ/data/empty.json", encoding="UTF-8") as file_pointer:
             self.runit('json', file_pointer)
 
     #@unittest.skip("")
     def test_empty_keyword(self):
-        with open("bin/user/tests/integ/data/empty.json") as file_pointer:
+        with open("bin/user/tests/integ/data/empty.json", encoding="UTF-8") as file_pointer:
             self.runit('keyword', file_pointer)
 
 class TestWindIndividualTopics(TestAccumulatedData):
     #@unittest.skip("")
     def test_wind_individual_topic(self):
-        with open("bin/user/tests/integ/data/wind-individual.json") as file_pointer:
+        with open("bin/user/tests/integ/data/wind-individual.json", encoding="UTF-8") as file_pointer:
             self.runit('individual', file_pointer)
 
 class TestWind(TestAccumulatedData):
     #@unittest.skip("")
     def test_wind_individual(self):
-        with open("bin/user/tests/integ/data/wind.json") as file_pointer:
+        with open("bin/user/tests/integ/data/wind.json", encoding="UTF-8") as file_pointer:
             self.runit('individual', file_pointer)
 
     #@unittest.skip("")
     def test_wind_json(self):
-        with open("bin/user/tests/integ/data/wind.json") as file_pointer:
+        with open("bin/user/tests/integ/data/wind.json", encoding="UTF-8") as file_pointer:
             self.runit('json', file_pointer)
 
     #@unittest.skip("")
     def test_wind_keyword(self):
-        with open("bin/user/tests/integ/data/wind.json") as file_pointer:
+        with open("bin/user/tests/integ/data/wind.json", encoding="UTF-8") as file_pointer:
             self.runit('keyword', file_pointer)
 
 if __name__ == '__main__':
