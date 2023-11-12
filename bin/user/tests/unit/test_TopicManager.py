@@ -51,7 +51,7 @@ class TestInit(unittest.TestCase):
         with self.assertRaises(ValueError) as error:
             TopicManager(None, config, mock_logger)
 
-        self.assertEqual(error.exception.args[0], "MQTTSubscribe: Unknown unit system: %s" % unit_system_name.upper())
+        self.assertEqual(error.exception.args[0], f"MQTTSubscribe: Unknown unit system: {unit_system_name.upper()}")
 
     def test_invalid_unit_system_topic(self):
         mock_logger = mock.Mock(spec=Logger)
@@ -68,7 +68,7 @@ class TestInit(unittest.TestCase):
         with self.assertRaises(ValueError) as error:
             TopicManager(None, config, mock_logger)
 
-        self.assertEqual(error.exception.args[0], "MQTTSubscribe: Unknown unit system: %s" % unit_system_name.upper())
+        self.assertEqual(error.exception.args[0], f"MQTTSubscribe: Unknown unit system: {unit_system_name.upper()}")
 
     def test_invalid_units(self):
         mock_logger = mock.Mock(spec=Logger)
@@ -92,7 +92,7 @@ class TestInit(unittest.TestCase):
         with self.assertRaises(ValueError) as error:
             TopicManager(None, config, mock_logger)
 
-        self.assertEqual(error.exception.args[0], "For %s invalid units, %s." % (field, config_dict[topic][field]['units']))
+        self.assertEqual(error.exception.args[0], f"For {field} invalid units, {config_dict[topic][field]['units']}.")
 
 class TestConfigureMessage(unittest.TestCase):
     def test_default_message_configuration(self):
@@ -679,11 +679,11 @@ class TestAppendData(unittest.TestCase):
         offset_minute = random.randint(1, 59)
         offset_hour_str = str(offset_hour).rjust(2, '0')
         offset_minute_str = str(offset_minute).rjust(2, '0')
-        offset_str = "%s%s" % (offset_hour_str, offset_minute_str)
+        offset_str = f"{offset_hour_str}{offset_minute_str}"
 
         current_datetime = datetime.datetime.fromtimestamp(current_epoch).strftime(datetime_format)
 
-        queue_data['dateTime'] = "%s+%s" % (current_datetime, offset_str)
+        queue_data['dateTime'] = f"{current_datetime}+{offset_str}"
 
         adjusted_epoch = current_epoch + (offset_hour * 60 + offset_minute) * 60
 
@@ -722,11 +722,11 @@ class TestAppendData(unittest.TestCase):
         offset_minute = random.randint(1, 59)
         offset_hour_str = str(offset_hour).rjust(2, '0')
         offset_minute_str = str(offset_minute).rjust(2, '0')
-        offset_str = "%s:%s" % (offset_hour_str, offset_minute_str)
+        offset_str = f"{offset_hour_str}:{offset_minute_str}"
 
         current_datetime = datetime.datetime.fromtimestamp(current_epoch).strftime(datetime_format)
 
-        queue_data['dateTime'] = "%s -%s" % (current_datetime, offset_str)
+        queue_data['dateTime'] = f"{current_datetime} -{offset_str}"
 
         adjusted_epoch = current_epoch - (offset_hour * 60 + offset_minute) * 60
 

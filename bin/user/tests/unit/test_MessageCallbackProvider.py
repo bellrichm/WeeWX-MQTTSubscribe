@@ -82,7 +82,7 @@ class TestInitialization(unittest.TestCase):
         with self.assertRaises(ValueError) as error:
             user.MQTTSubscribe.MessageCallbackProvider(None, mock_logger, mock_manager)
 
-        self.assertEqual(error.exception.args[0], "%s topic is missing '[[[[message]]]]' section" % topic)
+        self.assertEqual(error.exception.args[0], f"{topic} topic is missing '[[[[message]]]]' section")
 
     def test_message_callback_configuration_defaults_not_set(self):
         mock_logger = mock.Mock(spec=Logger)
@@ -181,7 +181,7 @@ class TestInitialization(unittest.TestCase):
         with self.assertRaises(ValueError) as error:
             user.MQTTSubscribe.MessageCallbackProvider(None, mock_logger, mock_manager)
 
-        self.assertEqual(error.exception.args[0], "Invalid type configured: %s" % message_type)
+        self.assertEqual(error.exception.args[0], f"Invalid type configured: {message_type}")
 
     def test_message_configuration_missing_type(self):
         mock_logger = mock.Mock(spec=Logger)
@@ -203,7 +203,7 @@ class TestInitialization(unittest.TestCase):
         with self.assertRaises(ValueError) as error:
             user.MQTTSubscribe.MessageCallbackProvider(None, mock_logger, mock_manager)
 
-        self.assertEqual(error.exception.args[0], "%s topic is missing '[[[[message]]]] type=' section" % topic)
+        self.assertEqual(error.exception.args[0], f"{topic} topic is missing '[[[[message]]]] type=' section")
 
 # missing message section? todo
 
@@ -326,7 +326,7 @@ class TestKeywordload(unittest.TestCase):
         payload_str = ""
         delim = ""
         for key in payload_dict:
-            payload_str = "%s%s%s=%f" % (payload_str, delim, key, payload_dict[key])
+            payload_str = f"{payload_str}{delim}{key}={payload_dict[key]:f}"
             delim = ","
 
         payload_str = payload_str.encode('UTF-8')
@@ -359,7 +359,7 @@ class TestKeywordload(unittest.TestCase):
         payload_str = ""
         delim = ""
         for key in payload_dict:
-            payload_str = "%s%s%s=%f" % (payload_str, delim, key, payload_dict[key])
+            payload_str = f"{payload_str}{delim}{key}={payload_dict[key]:f}"
             delim = ","
 
         payload_str = payload_str.encode('UTF-8')
@@ -392,7 +392,7 @@ class TestKeywordload(unittest.TestCase):
         payload_str = ""
         delim = ""
         for key in payload_dict:
-            payload_str = "%s%s%s=%f" % (payload_str, delim, key, payload_dict[key])
+            payload_str = f"{payload_str}{delim}{key}={payload_dict[key]:f}"
             delim = ","
 
         payload_str = payload_str.encode('UTF-8')
@@ -427,7 +427,7 @@ class TestKeywordload(unittest.TestCase):
         payload_str = ""
         delim = ""
         for key in payload_dict:
-            payload_str = "%s%s%s=%f" % (payload_str, delim, key, payload_dict[key])
+            payload_str = f"{payload_str}{delim}{key}={payload_dict[key]:f}"
             delim = ","
 
         payload_str = payload_str.encode('UTF-8')
@@ -476,7 +476,7 @@ class TestKeywordload(unittest.TestCase):
         payload_str = ""
         delim = ""
         for key in payload_dict:
-            payload_str = "%s%s%s=%f" % (payload_str, delim, key, payload_dict[key])
+            payload_str = f"{payload_str}{delim}{key}={payload_dict[key]:f}"
             delim = ","
 
         payload_str = payload_str.encode('UTF-8')
@@ -521,7 +521,7 @@ class TestKeywordload(unittest.TestCase):
         payload_str = ""
         delim = ""
         for key in payload_dict:
-            payload_str = "%s%s%s=%f" % (payload_str, delim, key, payload_dict[key])
+            payload_str = f"{payload_str}{delim}{key}={payload_dict[key]:f}"
             delim = ","
 
         payload_str = payload_str.encode('UTF-8')
@@ -1177,8 +1177,8 @@ class TestJsonPayload(unittest.TestCase):
         SUT._on_message_json(None, None, msg)
 
         mock_manager.append_data.assert_not_called()
-        SUT.logger.info.assert_called_with("MessageCallbackProvider on_message_json filtered out %s : %s with %s=%s"
-                                           % (msg.topic, msg.payload, lookup_key, filters[lookup_key]))
+        SUT.logger.info.assert_called_with(\
+            f"MessageCallbackProvider on_message_json filtered out {msg.topic} : {msg.payload} with {lookup_key}={filters[lookup_key]}")
 
 class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
     topic_end = random_string()

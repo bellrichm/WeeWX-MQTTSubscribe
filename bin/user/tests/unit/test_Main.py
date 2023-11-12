@@ -70,7 +70,7 @@ class test_simulate_driver(unittest.TestCase):
                 with mock.patch('user.MQTTSubscribe.time') as mock_time:
                     with mock.patch('user.MQTTSubscribe.weeutil'):
                         with mock.patch('user.MQTTSubscribe.to_sorted_string'):
-                            with mock.patch('%s.%s' % (builtins_module_name, '__import__')):
+                            with mock.patch(f'{builtins_module_name}.__import__'):
                                 with mock.patch.dict(sys.modules, {'user.MQTTSubscribe':driver_loader_stub}):
                                     mock_parser = mock.Mock()
                                     mock_parser.parse_args.return_value = options
@@ -116,7 +116,7 @@ class test_simulate_driver(unittest.TestCase):
             with mock.patch('user.MQTTSubscribe.print'):
                 with mock.patch('user.MQTTSubscribe.weeutil'):
                     with mock.patch('user.MQTTSubscribe.to_sorted_string'):
-                        with mock.patch('%s.%s' % (builtins_module_name, '__import__')):
+                        with mock.patch(f'{builtins_module_name}.__import__'):
                             with mock.patch.dict(sys.modules, {'user.MQTTSubscribe':driver_loader_stub}):
                                 mock_parser = mock.Mock()
                                 mock_parser.parse_args.return_value = options

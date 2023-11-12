@@ -42,14 +42,14 @@ class weeutil(object):
 
             def __new__(cls, *args):
                 if args[0] > args[1]:
-                    raise ValueError("start time (%d) is greater than stop time (%d)" % (args[0], args[1]))
+                    raise ValueError(f"start time ({int(args[0])}) is greater than stop time ({int(args[1])})")
                 return tuple.__new__(cls, args)
 
         @staticmethod
         def timestamp_to_string(ts, format_str="%Y-%m-%d %H:%M:%S %Z"):
             # pylint: disable=no-else-return
             if ts is not None:
-                return "%s (%d)" % (time.strftime(format_str, time.localtime(ts)), ts)
+                return f"{time.strftime(format_str, time.localtime(ts))} ({int(ts)})"
             else:
                 return "******* N/A *******     (    N/A   )"
 
@@ -69,7 +69,7 @@ class weeutil(object):
                     mod = getattr(mod, part)
             except AttributeError as exception:
                 # Can't find something. Give a more informative error message:
-                raise AttributeError( "Module '%s' has no attribute '%s' when searching for '%s'" % (mod.__name__, part, module_class)) \
+                raise AttributeError( f"Module '{mod.__name__}' has no attribute '{part}' when searching for '{module_class}'") \
                       from exception
             return mod
 
@@ -81,7 +81,7 @@ class weeutil(object):
 
         @staticmethod
         def to_sorted_string(rec):
-            return ", ".join(["%s: %s" % (k, rec.get(k)) for k in sorted(rec, key=locale.strxfrm)])
+            return ", ".join([f"{k}: {rec.get(k)}" for k in sorted(rec, key=locale.strxfrm)])
 
         @staticmethod
         def to_bool(value):
@@ -97,7 +97,7 @@ class weeutil(object):
                 return bool(int(value))
             except (ValueError, TypeError):
                 pass
-            raise ValueError("Unknown boolean specifier: '%s'." % value)
+            raise ValueError(f"Unknown boolean specifier: '{value}'.")
 
         @staticmethod
         def to_float(value):
@@ -209,8 +209,8 @@ class Event(object):
 
     def __str__(self):
         """Return a string with a reasonable representation of the event."""
-        et = "Event type: %s | " % self.event_type
-        s = "; ".join("%s: %s" %(k, self.__dict__[k]) for k in self.__dict__ if k != "event_type")
+        et = f"Event type: {self.event_type} | "
+        s = "; ".join(f"{k}: {self.__dict__[k]}" for k in self.__dict__ if k != "event_type")
         return et + s
 
 try:
@@ -264,9 +264,9 @@ except ImportError: # pragma: no cover
             self._logmsg(syslog.LOG_ERR, msg)
 
         def _logmsg(self, dst, msg):
-            syslog.syslog(dst, '%s: %s' % (__name__, msg))
+            syslog.syslog(dst, f'{__name__}: {msg}')
             if self.console:
-                print('%s: %s' % (__name__, msg))
+                print(f'{__name__}: {msg}')
 
 
 sys.modules['weewx'] = weewx

@@ -77,7 +77,7 @@ class TestV3Logging(unittest.TestCase):
 
                     SUT.error(message)
 
-                    mock_syslog.syslog.assert_called_once_with(log_level, '(%s) user.MQTTSubscribe: %s' % (mode, message))
+                    mock_syslog.syslog.assert_called_once_with(log_level, f'({mode}) user.MQTTSubscribe: {message}')
 
             importlib.reload(user.MQTTSubscribe)
 
@@ -103,8 +103,8 @@ class TestV3Logging(unittest.TestCase):
 
                         SUT.error(message)
 
-                        mock_syslog.syslog.assert_called_once_with(log_level, '(%s) user.MQTTSubscribe: %s' % (mode, message))
-                        mock_file.write.assert_called_once_with('user.MQTTSubscribe: %s\n' % message)
+                        mock_syslog.syslog.assert_called_once_with(log_level, f'({mode}) user.MQTTSubscribe: {message}')
+                        mock_file.write.assert_called_once_with(f'user.MQTTSubscribe: {message}\n')
 
             importlib.reload(user.MQTTSubscribe)
 
@@ -127,8 +127,8 @@ class TestV3Logging(unittest.TestCase):
 
                         SUT.error(message)
 
-                        mock_syslog.syslog.assert_called_once_with(log_level, '(%s) user.MQTTSubscribe: %s' % (mode, message))
-                        mock_print.assert_called_once_with('user.MQTTSubscribe: %s' % message)
+                        mock_syslog.syslog.assert_called_once_with(log_level, f'({mode}) user.MQTTSubscribe: {message}')
+                        mock_print.assert_called_once_with(f'user.MQTTSubscribe: {message}')
 
                 importlib.reload(user.MQTTSubscribe)
 
@@ -171,7 +171,7 @@ class TestV3Logging(unittest.TestCase):
 
                     SUT.info(message)
 
-                    mock_syslog.syslog.assert_called_once_with(log_level, '(%s) user.MQTTSubscribe: %s' % (mode, message))
+                    mock_syslog.syslog.assert_called_once_with(log_level, f'({mode}) user.MQTTSubscribe: {message}')
 
             importlib.reload(user.MQTTSubscribe)
 
@@ -197,8 +197,8 @@ class TestV3Logging(unittest.TestCase):
 
                         SUT.info(message)
 
-                        mock_syslog.syslog.assert_called_once_with(log_level, '(%s) user.MQTTSubscribe: %s' % (mode, message))
-                        mock_file.write.assert_called_once_with('user.MQTTSubscribe: %s\n' % message)
+                        mock_syslog.syslog.assert_called_once_with(log_level, f'({mode}) user.MQTTSubscribe: {message}')
+                        mock_file.write.assert_called_once_with(f'user.MQTTSubscribe: {message}\n')
 
             importlib.reload(user.MQTTSubscribe)
 
@@ -221,8 +221,8 @@ class TestV3Logging(unittest.TestCase):
 
                         SUT.info(message)
 
-                        mock_syslog.syslog.assert_called_once_with(log_level, '(%s) user.MQTTSubscribe: %s' % (mode, message))
-                        mock_print.assert_called_once_with('user.MQTTSubscribe: %s' % message)
+                        mock_syslog.syslog.assert_called_once_with(log_level, f'({mode}) user.MQTTSubscribe: {message}')
+                        mock_print.assert_called_once_with(f'user.MQTTSubscribe: {message}')
 
             importlib.reload(user.MQTTSubscribe)
 
@@ -265,7 +265,7 @@ class TestV3Logging(unittest.TestCase):
 
                     SUT.debug(message)
 
-                    mock_syslog.syslog.assert_called_once_with(log_level, '(%s) user.MQTTSubscribe: %s' % (mode, message))
+                    mock_syslog.syslog.assert_called_once_with(log_level, f'({mode}) user.MQTTSubscribe: {message}')
 
             importlib.reload(user.MQTTSubscribe)
 
@@ -291,8 +291,8 @@ class TestV3Logging(unittest.TestCase):
 
                         SUT.debug(message)
 
-                        mock_syslog.syslog.assert_called_once_with(log_level, '(%s) user.MQTTSubscribe: %s' % (mode, message))
-                        mock_file.write.assert_called_once_with('user.MQTTSubscribe: %s\n' % message)
+                        mock_syslog.syslog.assert_called_once_with(log_level, f'({mode}) user.MQTTSubscribe: {message}')
+                        mock_file.write.assert_called_once_with(f'user.MQTTSubscribe: {message}\n')
 
             importlib.reload(user.MQTTSubscribe)
 
@@ -315,8 +315,8 @@ class TestV3Logging(unittest.TestCase):
 
                         SUT.debug(message)
 
-                        mock_syslog.syslog.assert_called_once_with(log_level, '(%s) user.MQTTSubscribe: %s' % (mode, message))
-                        mock_print.assert_called_once_with('user.MQTTSubscribe: %s' % message)
+                        mock_syslog.syslog.assert_called_once_with(log_level, f'({mode}) user.MQTTSubscribe: {message}')
+                        mock_print.assert_called_once_with(f'user.MQTTSubscribe: {message}')
 
             importlib.reload(user.MQTTSubscribe)
 
@@ -359,7 +359,7 @@ class TestV3Logging(unittest.TestCase):
 
                     SUT.trace(message)
 
-                    mock_syslog.syslog.assert_called_once_with(log_level, '(%s) user.MQTTSubscribe: %s' % (mode, message))
+                    mock_syslog.syslog.assert_called_once_with(log_level, f'({mode}) user.MQTTSubscribe: {message}')
 
             importlib.reload(user.MQTTSubscribe)
 
@@ -385,8 +385,8 @@ class TestV3Logging(unittest.TestCase):
 
                         SUT.trace(message)
 
-                        mock_syslog.syslog.assert_called_once_with(log_level, '(%s) user.MQTTSubscribe: %s' % (mode, message))
-                        mock_file.write.assert_called_once_with('user.MQTTSubscribe: %s\n' % message)
+                        mock_syslog.syslog.assert_called_once_with(log_level, f'({mode}) user.MQTTSubscribe: {message}')
+                        mock_file.write.assert_called_once_with(f'user.MQTTSubscribe: {message}\n')
 
             importlib.reload(user.MQTTSubscribe)
 
@@ -409,8 +409,8 @@ class TestV3Logging(unittest.TestCase):
 
                         SUT.trace(message)
 
-                        mock_syslog.syslog.assert_called_once_with(log_level, '(%s) user.MQTTSubscribe: %s' % (mode, message))
-                        mock_print.assert_called_once_with('user.MQTTSubscribe: %s' % message)
+                        mock_syslog.syslog.assert_called_once_with(log_level, f'({mode}) user.MQTTSubscribe: {message}')
+                        mock_print.assert_called_once_with(f'user.MQTTSubscribe: {message}')
 
             importlib.reload(user.MQTTSubscribe)
 
@@ -423,7 +423,7 @@ class TestV4Logging(unittest.TestCase):
                 from user.MQTTSubscribe import Logger
 
                 mock_logging._checkLevel.return_value = log_level # pylint: disable=protected-access
-                mock_logging.getLevelName.return_value = 'Level %i' % log_level
+                mock_logging.getLevelName.return_value = f'Level {int(log_level)}'
 
                 mock_grandparent_handler = mock.Mock()
                 mock_grandparent_logger = mock.Mock()

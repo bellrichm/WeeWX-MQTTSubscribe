@@ -36,7 +36,7 @@ class atestInitialization(unittest.TestCase):
             with self.assertRaises(ValueError) as error:
                 user.MQTTSubscribe.MQTTSubscribeService(mock_StdEngine, config_dict)
 
-            self.assertEqual(error.exception.args[0], "MQTTSubscribeService: Unknown binding: %s" % binding)
+            self.assertEqual(error.exception.args[0], f"MQTTSubscribeService: Unknown binding: {binding}")
 
     @staticmethod
     def test_not_enable():
@@ -87,7 +87,7 @@ class atestInitialization(unittest.TestCase):
                 with self.assertRaises(ValueError) as error:
                     user.MQTTSubscribe.MQTTSubscribeService(mock_StdEngine, config_dict)
 
-            self.assertEqual(error.exception.args[0], "archive_topic, %s, is invalid when running as a service" % archive_topic)
+            self.assertEqual(error.exception.args[0], f"archive_topic, {archive_topic}, is invalid when running as a service")
 
     def test_caching_valid_archive_binding(self):
         mock_StdEngine = mock.Mock()
@@ -155,7 +155,7 @@ class atestInitialization(unittest.TestCase):
                     user.MQTTSubscribe.MQTTSubscribeService(mock_StdEngine, config_dict)
 
                 self.assertEqual(error.exception.args[0],
-                                 "caching is not available with record generation of type '%s' and and binding of type 'loop'" % 'none')
+                                 "caching is not available with record generation of type 'none' and and binding of type 'loop'")
 
 class Testnew_loop_packet(unittest.TestCase):
     mock_StdEngine = mock.Mock()
