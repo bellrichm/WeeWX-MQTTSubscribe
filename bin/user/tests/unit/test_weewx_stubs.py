@@ -22,11 +22,11 @@ def random_string(length=32):
 def random_ascii_letters(length=32):
     return''.join([random.choice(string.ascii_letters) for n in range(length)]) # pylint: disable=unused-variable
 
-class weeutil(object):
-    class config(object):
+class weeutil:
+    class config:
         def merge_config(self):
             pass
-    class logger(object):
+    class logger:
         pass
 
     class ListOfDicts(ChainMap):
@@ -36,7 +36,7 @@ class weeutil(object):
         def prepend(self, m):
             self.maps.insert(0, m)
 
-    class weeutil(object):
+    class weeutil:
         class TimeSpan(tuple):
             """Represents a time span, exclusive on the left, inclusive on the right."""
 
@@ -117,7 +117,7 @@ class weeutil(object):
                 start_interval_ts -= interval
             return start_interval_ts
 
-class weewx(object): # pylint: disable=invalid-name
+class weewx: # pylint: disable=invalid-name
     __version__ = "unknown"
     debug = 2
 
@@ -125,7 +125,7 @@ class weewx(object): # pylint: disable=invalid-name
         """Base class of exceptions thrown when encountering an input/output error
         with the hardware."""
 
-    class units(object):
+    class units:
         METRIC = 0x10
         METRICWX = 0x11
         US = 0x01
@@ -157,46 +157,46 @@ class weewx(object): # pylint: disable=invalid-name
         def to_std_system(self):
             pass
 
-    class accum(object):
+    class accum:
         def Accum(self):
             pass
 
         class OutOfSpan(ValueError):
             """Raised when attempting to add a record outside of the timespan held by an acumulator"""
 
-    class NEW_LOOP_PACKET(object):
+    class NEW_LOOP_PACKET:
         """Event issued when a new LOOP packet is available. The event contains
         attribute 'packet', which is the new LOOP packet."""
 
-    class NEW_ARCHIVE_RECORD(object):
+    class NEW_ARCHIVE_RECORD:
         """Event issued when a new archive record is available. The event contains
         attribute 'record', which is the new archive record."""
 
-    class engine(object):
-        class StdEngine(object):
+    class engine:
+        class StdEngine:
             pass
-        class StdService(object):
+        class StdService:
             def __init__(self, engine, config_dict):
                 pass
             def bind(self, p1, p2):
                 pass
-    class drivers(object): # pylint: disable=invalid-name
-        class AbstractDevice(object):
+    class drivers: # pylint: disable=invalid-name
+        class AbstractDevice:
             pass
-        class AbstractConfEditor(object):
+        class AbstractConfEditor:
             pass
 
 
 UNITS_CONSTANTS = {'US': 1}
 
-class NEW_LOOP_PACKET(object):
+class NEW_LOOP_PACKET:
     """Event issued when a new LOOP packet is available. The event contains
     attribute 'packet', which is the new LOOP packet."""
-class NEW_ARCHIVE_RECORD(object):
+class NEW_ARCHIVE_RECORD:
     """Event issued when a new archive record is available. The event contains
     attribute 'record', which is the new archive record."""
 
-class Event(object):
+class Event:
     """Represents an event."""
     def __init__(self, event_type, **argv):
         self.packet = None
@@ -216,7 +216,7 @@ class Event(object):
 try:
     import logging
 
-    class Logger(object):
+    class Logger:
         """ The logging class. """
         def __init__(self, console=None):
             self._logmsg = logging.getLogger(__name__)
@@ -241,7 +241,7 @@ try:
 except ImportError: # pragma: no cover
     import syslog
 
-    class Logger(object):
+    class Logger:
         """ The logging class. """
         def __init__(self, console=None):
             syslog.setlogmask(syslog.LOG_UPTO(syslog.LOG_ERR))

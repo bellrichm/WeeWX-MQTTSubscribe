@@ -25,7 +25,7 @@ from test_weewx_stubs import weeutil
 
 from user.MQTTSubscribe import MQTTSubscriber, Logger
 
-class Msg(object):
+class Msg:
     # pylint: disable=too-few-public-methods
     def __init__(self):
         pass

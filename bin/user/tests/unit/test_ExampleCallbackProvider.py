@@ -19,7 +19,7 @@ from test_weewx_stubs import random_ascii_letters
 
 from user.ExampleMessageCallbackProvider import MessageCallbackProvider
 
-class Msg(object):
+class Msg:
     # pylint: disable=too-few-public-methods
     def __init__(self, topic, payload, qos, retain):
         self.topic = topic

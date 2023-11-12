@@ -28,7 +28,7 @@ from user.MQTTSubscribe import Logger, MessageCallbackProvider, TopicManager
 def random_string(length=32):
     return ''.join([random.choice(string.ascii_letters + string.digits) for n in range(length)]) # pylint: disable=unused-variable
 
-class Msg(object):
+class Msg:
     # pylint: disable=too-few-public-methods
     def __init__(self, topic, payload, qos, retain):
         self.topic = topic

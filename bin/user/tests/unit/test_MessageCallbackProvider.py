@@ -31,7 +31,7 @@ def to_float(x):
         x = None
     return float(x) if x is not None else None
 
-class Msg(object):
+class Msg:
     # pylint: disable=too-few-public-methods
     def __init__(self, topic, payload, qos, retain):
         self.topic = topic
