@@ -71,8 +71,8 @@ def on_connect(client, userdata, flags, rc):  # (match callback signature) pylin
     # 4: Connection refused - bad username or password
     # 5: Connection refused - not authorised
     # 6-255: Currently unused.
-    print("Connected with result code %i" % rc)
-    print("Connected flags %s" % str(flags))
+    print(f"Connected with result code {int(rc)}")
+    print(f"Connected flags {str(flags)}")
 
 
 def on_disconnect(client, userdata, rc):  # (match callback signature) pylint: disable=unused-argument
@@ -81,15 +81,15 @@ def on_disconnect(client, userdata, rc):  # (match callback signature) pylint: d
     # The rc parameter indicates the disconnection state.
     # If MQTT_ERR_SUCCESS (0), the callback was called in response to a disconnect() call. If any other value the disconnection was unexpected,
     # such as might be caused by a network error.
-    print("Disconnected with result code %i" % rc)
+    print(f"Disconnected with result code {int(rc)}")
 
 def on_publish(client, userdata, mid):  # (match callback signature) pylint: disable=unused-argument
     """ The on_publish callback. """
-    print("Published: %s" % mid)
+    print(f"Published: {mid}")
 
 def on_log(client, userdata, level, msg): # (match callback signature) pylint: disable=unused-argument
     """ The on_log callback. """
-    print("MQTT log %s" % msg)
+    print(f"MQTT log {msg}")
 
 def main():
     # pylint: disable=too-many-locals
@@ -119,7 +119,7 @@ def main():
 
     publish_time = 0
 
-    with open(filename) as file_object:
+    with open(filename, encoding='UTF-8') as file_object:
         message = file_object.readline().rstrip()
         while message:
             interval = random.randint(min_interval, max_interval)
@@ -132,12 +132,9 @@ def main():
             message = message.replace("{DATETIME}", str(publish_time))
             if prompt_to_send:
                 print("press enter to send next message.")
-                if PY2:
-                    raw_input() # (only a python 3 error) pylint: disable=undefined-variable
-                else:
-                    input()
+                input()
             mqtt_message_info = client.publish(topic, message, qos=qos)
-            print("Publish: %s has return code %i, %s" % (mqtt_message_info.mid, mqtt_message_info.rc, mqtt.error_string(mqtt_message_info.rc)))
+            print(f"Publish: {mqtt_message_info.mid} has return code {int(mqtt_message_info.rc)}, {mqtt.error_string(mqtt_message_info.rc)}")
 
             if mqtt_message_info.rc != mqtt.MQTT_ERR_SUCCESS:
                 raise ValueError(mqtt.error_string(mqtt_message_info.rc))
