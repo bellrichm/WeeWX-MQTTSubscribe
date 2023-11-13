@@ -674,7 +674,7 @@ class CollectData(object):
             old_data = dict(self.data)
             old_data['usUnits'] = self.unit_system
             old_data['dateTime'] = self.date_time
-            self.data = dict()
+            self.data = {}
 
         target_data = dict(in_dict)
         target_data = weewx.units.to_std_system(target_data, self.unit_system)
@@ -1386,7 +1386,7 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
             else:
                 i = 0
                 for subvalue in value:
-                    if isinstance(subvalue, dict) or isinstance(subvalue, list):
+                    if isinstance(subvalue, (dict, list)):
                         self._flatten(fields, fields_ignore_default, delim, prefix + fields[new_key]['subfields'][i] + '_', new_dict, subvalue)
                     else:
                         str_value = subvalue
