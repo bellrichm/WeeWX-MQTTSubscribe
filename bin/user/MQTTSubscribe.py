@@ -567,7 +567,7 @@ except ImportError:
 
             self.file = None
             if self.filename is not None:
-                self.file = open(filename, 'w', encoding='UTF-8')
+                self.file = open(filename, 'w')
 
         def trace(self, msg):
             """ Log trace messages. """
