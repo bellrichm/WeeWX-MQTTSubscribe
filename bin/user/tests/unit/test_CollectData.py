@@ -1,5 +1,5 @@
 #
-#    Copyright (c) 2020-2021 Rich Bell <bellrichm@gmail.com>
+#    Copyright (c) 2020-2023 Rich Bell <bellrichm@gmail.com>
 #
 #    See the file LICENSE.txt for your full rights.
 #
@@ -7,8 +7,6 @@
 # pylint: disable=wrong-import-order
 # pylint: disable=missing-docstring
 # pylint: disable=invalid-name
-
-from __future__ import with_statement
 
 import unittest
 
@@ -20,7 +18,6 @@ import mock
 import test_weewx_stubs # used to set up stubs - pylint: disable=unused-import
 
 from user.MQTTSubscribe import CollectData
-
 
 class Test_add_data(unittest.TestCase):
     wind_fields = ['windGust', 'windGustDir', 'windDir', 'windSpeed']

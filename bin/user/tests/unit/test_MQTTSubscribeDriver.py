@@ -1,5 +1,5 @@
 #
-#    Copyright (c) 2020-2021 Rich Bell <bellrichm@gmail.com>
+#    Copyright (c) 2020-2023 Rich Bell <bellrichm@gmail.com>
 #
 #    See the file LICENSE.txt for your full rights.
 #
@@ -7,10 +7,6 @@
 # pylint: disable=wrong-import-order
 # pylint: disable=missing-docstring
 # pylint: disable=invalid-name
-# need to be python 2 compatible pylint: disable=bad-option-value, super-with-arguments
-# pylint: enable=bad-option-value
-
-from __future__ import with_statement
 
 import unittest
 import mock
@@ -265,7 +261,7 @@ class TestgenArchiveRecords(unittest.TestCase):
         config_dict = {}
         config_dict['MQTTSubscribeDriver'] = stn_dict
 
-        records = list()
+        records = []
 
         with mock.patch('user.MQTTSubscribe.MQTTSubscriber'):
             with self.assertRaises(NotImplementedError) as error:
@@ -284,7 +280,7 @@ class TestgenArchiveRecords(unittest.TestCase):
 
         with mock.patch('user.MQTTSubscribe.MQTTSubscriber') as mock_manager:
             type(mock_manager.return_value).get_data = mock.Mock(return_value=self.generator([self.queue_data, self.queue_data, None]))
-            records = list()
+            records = []
 
             SUT = MQTTSubscribeDriver(self.config_dict, mock_engine)
 

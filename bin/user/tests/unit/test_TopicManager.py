@@ -1,5 +1,5 @@
 #
-#    Copyright (c) 2020-2021 Rich Bell <bellrichm@gmail.com>
+#    Copyright (c) 2020-2023 Rich Bell <bellrichm@gmail.com>
 #
 #    See the file LICENSE.txt for your full rights.
 #
@@ -7,8 +7,6 @@
 # pylint: disable=wrong-import-order
 # pylint: disable=missing-docstring
 # pylint: disable=invalid-name
-
-from __future__ import with_statement
 
 import unittest
 import mock
@@ -23,8 +21,8 @@ import time
 import test_weewx_stubs
 from test_weewx_stubs import random_string
 
-
 from user.MQTTSubscribe import TopicManager, Logger
+
 class TestInit(unittest.TestCase):
     def test_missing_topic(self):
         mock_logger = mock.Mock(spec=Logger)
@@ -53,7 +51,7 @@ class TestInit(unittest.TestCase):
         with self.assertRaises(ValueError) as error:
             TopicManager(None, config, mock_logger)
 
-        self.assertEqual(error.exception.args[0], "MQTTSubscribe: Unknown unit system: %s" % unit_system_name.upper())
+        self.assertEqual(error.exception.args[0], f"MQTTSubscribe: Unknown unit system: {unit_system_name.upper()}")
 
     def test_invalid_unit_system_topic(self):
         mock_logger = mock.Mock(spec=Logger)
@@ -70,7 +68,7 @@ class TestInit(unittest.TestCase):
         with self.assertRaises(ValueError) as error:
             TopicManager(None, config, mock_logger)
 
-        self.assertEqual(error.exception.args[0], "MQTTSubscribe: Unknown unit system: %s" % unit_system_name.upper())
+        self.assertEqual(error.exception.args[0], f"MQTTSubscribe: Unknown unit system: {unit_system_name.upper()}")
 
     def test_invalid_units(self):
         mock_logger = mock.Mock(spec=Logger)
@@ -94,7 +92,7 @@ class TestInit(unittest.TestCase):
         with self.assertRaises(ValueError) as error:
             TopicManager(None, config, mock_logger)
 
-        self.assertEqual(error.exception.args[0], "For %s invalid units, %s." % (field, config_dict[topic][field]['units']))
+        self.assertEqual(error.exception.args[0], f"For {field} invalid units, {config_dict[topic][field]['units']}.")
 
 class TestConfigureMessage(unittest.TestCase):
     def test_default_message_configuration(self):
@@ -681,11 +679,11 @@ class TestAppendData(unittest.TestCase):
         offset_minute = random.randint(1, 59)
         offset_hour_str = str(offset_hour).rjust(2, '0')
         offset_minute_str = str(offset_minute).rjust(2, '0')
-        offset_str = "%s%s" % (offset_hour_str, offset_minute_str)
+        offset_str = f"{offset_hour_str}{offset_minute_str}"
 
         current_datetime = datetime.datetime.fromtimestamp(current_epoch).strftime(datetime_format)
 
-        queue_data['dateTime'] = "%s+%s" % (current_datetime, offset_str)
+        queue_data['dateTime'] = f"{current_datetime}+{offset_str}"
 
         adjusted_epoch = current_epoch + (offset_hour * 60 + offset_minute) * 60
 
@@ -724,11 +722,11 @@ class TestAppendData(unittest.TestCase):
         offset_minute = random.randint(1, 59)
         offset_hour_str = str(offset_hour).rjust(2, '0')
         offset_minute_str = str(offset_minute).rjust(2, '0')
-        offset_str = "%s:%s" % (offset_hour_str, offset_minute_str)
+        offset_str = f"{offset_hour_str}:{offset_minute_str}"
 
         current_datetime = datetime.datetime.fromtimestamp(current_epoch).strftime(datetime_format)
 
-        queue_data['dateTime'] = "%s -%s" % (current_datetime, offset_str)
+        queue_data['dateTime'] = f"{current_datetime} -{offset_str}"
 
         adjusted_epoch = current_epoch - (offset_hour * 60 + offset_minute) * 60
 
@@ -857,8 +855,8 @@ class TestGetQueueData(unittest.TestCase):
             SUT = TopicManager(None, self.config, mock_logger)
 
             collector_topic = ""
-            for topic in SUT.subscribed_topics:
-                if SUT.subscribed_topics[topic]['queue']['type'] == 'collector':
+            for topic, detail in SUT.subscribed_topics.items():
+                if detail['queue']['type'] == 'collector':
                     collector_topic = topic
                     break
 
@@ -868,7 +866,6 @@ class TestGetQueueData(unittest.TestCase):
                 'usUnits': 1,
                 'dateTime': time.time()
             }
-
 
             SUT.append_data(collector_topic, data, fieldname)
 

@@ -1,5 +1,5 @@
 #
-#    Copyright (c) 2020-2021 Rich Bell <bellrichm@gmail.com>
+#    Copyright (c) 2020-2023 Rich Bell <bellrichm@gmail.com>
 #
 #    See the file LICENSE.txt for your full rights.
 #
@@ -9,14 +9,11 @@
 # pylint: disable=invalid-name
 # pylint: disable=eval-used
 
-from __future__ import with_statement
-
 import unittest
 import mock
 
 import random
 
-import six
 import test_weewx_stubs # needed to import AbstractMessageCallbackProvider pylint: disable=unused-import
 from test_weewx_stubs import random_string
 
@@ -24,7 +21,7 @@ from user.MQTTSubscribe import AbstractMessageCallbackProvider, Logger, TopicMan
 
 # todo - mock?
 def to_float(x):
-    if isinstance(x, six.string_types) and x.lower() == 'none':
+    if isinstance(x, str) and x.lower() == 'none':
         x = None
     return float(x) if x is not None else None
 
