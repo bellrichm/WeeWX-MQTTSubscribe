@@ -9,8 +9,6 @@
 # pylint: disable=missing-docstring
 # pylint: disable=invalid-name
 
-from __future__ import with_statement
-
 import unittest
 import mock
 
@@ -27,9 +25,9 @@ from test_weewx_stubs import weeutil
 
 from user.MQTTSubscribe import MQTTSubscriber, Logger
 
-class Msg(object):
+class Msg:
     # pylint: disable=too-few-public-methods
-    def __init(self):
+    def __init__(self):
         pass
 
 class TestInitialization(unittest.TestCase):
@@ -99,7 +97,6 @@ class TestInitialization(unittest.TestCase):
 
                 self.assertEqual(error.exception.args[0], exception)
 
-
     def test_missing_topics(self):
         config_dict = {
 
@@ -129,7 +126,7 @@ class TestInitialization(unittest.TestCase):
             with mock.patch('user.MQTTSubscribe.TopicManager'):
                 MQTTSubscriber(config, mock_logger)
 
-        self.assertEqual(error.exception.args[0], ("Archive topic %s must be in [[topics]]" % archive_topic))
+        self.assertEqual(error.exception.args[0], (f"Archive topic {archive_topic} must be in [[topics]]"))
 
     @staticmethod
     def test_username_None():
@@ -326,7 +323,7 @@ class  TestWeewx_configuration(unittest.TestCase):
         with self.assertRaises(ValueError) as error:
             MQTTSubscriber(config, mock_logger)
 
-        self.assertEqual(error.exception.args[0], "%s is missing a group." % unit)
+        self.assertEqual(error.exception.args[0], f"{unit} is missing a group.")
 
     def test_missing_unit_system(self):
         mock_logger = mock.Mock(spec=Logger)
@@ -349,7 +346,7 @@ class  TestWeewx_configuration(unittest.TestCase):
         with self.assertRaises(ValueError) as error:
             MQTTSubscriber(config, mock_logger)
 
-        self.assertEqual(error.exception.args[0], "%s is missing an unit_system." % unit)
+        self.assertEqual(error.exception.args[0], f"{unit} is missing an unit_system.")
 
     def test_invalid_unit_system(self):
         mock_logger = mock.Mock(spec=Logger)
@@ -374,7 +371,7 @@ class  TestWeewx_configuration(unittest.TestCase):
         with self.assertRaises(ValueError) as error:
             MQTTSubscriber(config, mock_logger)
 
-        self.assertEqual(error.exception.args[0], "Invalid unit_system %s for %s." % (unit_system, unit))
+        self.assertEqual(error.exception.args[0], f"Invalid unit_system {unit_system} for {unit}.")
 
     def test_configure_default_label(self):
         mock_logger = mock.Mock(spec=Logger)
@@ -467,10 +464,10 @@ class  TestWeewx_configuration(unittest.TestCase):
             MQTTSubscriber(config, mock_logger)
 
             self.assertEqual(len(weewx.units.conversionDict), len(conversionDict))
-            for key in conversionDict:
+            for key, value in conversionDict.items():
                 self.assertIn(key, weewx.units.conversionDict)
-                self.assertEqual(len(weewx.units.conversionDict[key]), len(conversionDict[key]))
-                for key2 in conversionDict[key]:
+                self.assertEqual(len(weewx.units.conversionDict[key]), len(value))
+                for key2 in value:
                     self.assertIn(key2, weewx.units.conversionDict[key])
                     self.assertIsInstance(weewx.units.conversionDict[key][key2], types.FunctionType)
 
@@ -625,7 +622,7 @@ class  Testtls_configuration(unittest.TestCase):
                         MQTTSubscriber(config, mock_logger)
                     if saved_version:
                         ssl.PROTOCOL_TLS = saved_version
-                    self.assertEqual(error.exception.args[0], "Invalid 'tls_version'., %s" % tls_version)
+                    self.assertEqual(error.exception.args[0], f"Invalid 'tls_version'., {tls_version}")
 
     def test_missing_PROTOCOL_TLSv1(self):
         tls_version = 'tlsv1'
@@ -654,7 +651,7 @@ class  Testtls_configuration(unittest.TestCase):
                         MQTTSubscriber(config, mock_logger)
                     if saved_version:
                         ssl.PROTOCOL_TLSv1 = saved_version
-                    self.assertEqual(error.exception.args[0], "Invalid 'tls_version'., %s" % tls_version)
+                    self.assertEqual(error.exception.args[0], f"Invalid 'tls_version'., {tls_version}")
 
     def test_missing_PROTOCOL_TLSv1_1(self):
         tls_version = 'tlsv1_1'
@@ -683,7 +680,7 @@ class  Testtls_configuration(unittest.TestCase):
                         MQTTSubscriber(config, mock_logger)
                     if saved_version:
                         ssl.PROTOCOL_TLSv1_1 = saved_version
-                    self.assertEqual(error.exception.args[0], "Invalid 'tls_version'., %s" % tls_version)
+                    self.assertEqual(error.exception.args[0], f"Invalid 'tls_version'., {tls_version}")
 
     def test_missing_PROTOCOL_TLSv1_2(self):
         tls_version = 'tlsv1_2'
@@ -712,7 +709,7 @@ class  Testtls_configuration(unittest.TestCase):
                         MQTTSubscriber(config, mock_logger)
                     if saved_version:
                         ssl.PROTOCOL_TLSv1_2 = saved_version
-                    self.assertEqual(error.exception.args[0], "Invalid 'tls_version'., %s" % tls_version)
+                    self.assertEqual(error.exception.args[0], f"Invalid 'tls_version'., {tls_version}")
 
     def test_missing_PROTOCOL_SSLv2(self):
         tls_version = 'sslv2'
@@ -741,7 +738,7 @@ class  Testtls_configuration(unittest.TestCase):
                         MQTTSubscriber(config, mock_logger)
                     if saved_version:
                         ssl.PROTOCOL_SSLv2 = saved_version
-                    self.assertEqual(error.exception.args[0], "Invalid 'tls_version'., %s" % tls_version)
+                    self.assertEqual(error.exception.args[0], f"Invalid 'tls_version'., {tls_version}")
 
     def test_missing_PROTOCOL_SSLv23(self):
         tls_version = 'sslv23'
@@ -770,7 +767,7 @@ class  Testtls_configuration(unittest.TestCase):
                         MQTTSubscriber(config, mock_logger)
                     if saved_version:
                         ssl.PROTOCOL_SSLv23 = saved_version
-                    self.assertEqual(error.exception.args[0], "Invalid 'tls_version'., %s" % tls_version)
+                    self.assertEqual(error.exception.args[0], f"Invalid 'tls_version'., {tls_version}")
 
     def test_missing_PROTOCOL_SSLv3(self):
         tls_version = 'sslv3'
@@ -800,7 +797,7 @@ class  Testtls_configuration(unittest.TestCase):
                         MQTTSubscriber(config, mock_logger)
                     if saved_version:
                         ssl.PROTOCOL_SSLv3 = saved_version
-                    self.assertEqual(error.exception.args[0], "Invalid 'tls_version'., %s" % tls_version)
+                    self.assertEqual(error.exception.args[0], f"Invalid 'tls_version'., {tls_version}")
 
     def test_invalid_certs_required(self):
         certs_required = random_string()
@@ -829,7 +826,7 @@ class  Testtls_configuration(unittest.TestCase):
                         MQTTSubscriber(config, mock_logger)
                     if saved_version:
                         ssl.PROTOCOL_SSLv3 = saved_version
-                    self.assertEqual(error.exception.args[0], "Invalid 'certs_required'., %s" % certs_required)
+                    self.assertEqual(error.exception.args[0], f"Invalid 'certs_required'., {certs_required}")
 
 class TestDeprecatedOptions(unittest.TestCase):
     def test_topic_is_deprecated(self):
@@ -980,17 +977,14 @@ class TestStart(unittest.TestCase):
             4: "Connection Refused: bad user name or password.",
             5: "Connection Refused: not authorised.",
         }
-        
+
         config_dict = {}
         config_dict['message_callback'] = {}
         config_dict['topics'] = {}
         config = configobj.ConfigObj(config_dict)
         connect_rc = random.randint(1, 10)
         flags = random.randint(0, 255)
-        if connect_rc in rc_strings:
-            rc_string = rc_strings[connect_rc]
-        else:
-            rc_string = "Connection Refused: unknown reason."
+        rc_string = rc_strings.get(connect_rc, "Connection Refused: unknown reason.")
 
         with mock.patch('paho.mqtt.client.Client', spec=paho.mqtt.client.Client):
             with mock.patch('user.MQTTSubscribe.MessageCallbackProvider'):
@@ -1008,7 +1002,8 @@ class TestStart(unittest.TestCase):
                             SUT.start()
 
                         SUT.client.loop_start.assert_called_once()
-                        self.assertEqual(error.exception.args[0], "Unable to connect. Return code is %i, '%s', flags are %s." % (connect_rc, rc_string, flags))
+                        self.assertEqual(error.exception.args[0],
+                                        f"Unable to connect. Return code is {int(connect_rc)}, '{rc_string}', flags are {flags}.")
 
     @staticmethod
     def test_immediate_connection():
@@ -1099,7 +1094,7 @@ class TestCallbacks(unittest.TestCase):
 
                     SUT._on_disconnect(None, None, rc)
 
-                    SUT.logger.info.assert_called_with("Disconnected with result code %i" % rc)
+                    SUT.logger.info.assert_called_with(f"Disconnected with result code {int(rc)}")
 
     @staticmethod
     def test_on_subscribe():
@@ -1121,9 +1116,7 @@ class TestCallbacks(unittest.TestCase):
 
                     SUT._on_subscribe(None, None, mid, granted_qos)
 
-                    SUT.logger.info.assert_called_with("Subscribed to mid: %i is size %i has a QOS of %i" \
-                                                        %(mid, len(granted_qos), granted_qos[0]))
-
+                    SUT.logger.info.assert_called_with(f"Subscribed to mid: {mid} is size {len(granted_qos)} has a QOS of {granted_qos[0]}")
     @staticmethod
     def test_on_log():
         mock_logger = mock.Mock(spec=Logger)
@@ -1144,7 +1137,7 @@ class TestCallbacks(unittest.TestCase):
 
                     SUT._on_log(None, None, level, msg)
 
-                    SUT.logger.info.assert_called_with("MQTTSubscribe MQTT: %s" % msg)
+                    SUT.logger.info.assert_called_with(f"MQTTSubscribe MQTT: {msg}")
 
 class Teston_connect(unittest.TestCase):
     unit_system_name = 'US'

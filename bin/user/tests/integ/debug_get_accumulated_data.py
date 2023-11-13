@@ -13,17 +13,17 @@ from test_get_accumulated_data import TestAccumulatedData
 class DebugAccumulated(TestAccumulatedData):
     @unittest.skip("")
     def debug_individual(self):
-        with open("bin/user/tests/integ/data/debug.json") as file_pointer:
+        with open("bin/user/tests/integ/data/debug.json", encoding="UTF-8") as file_pointer:
             self.runit('individual', file_pointer)
 
     #@unittest.skip("")
     def debug_json(self):
-        with open("bin/user/tests/integ/data/debug.json") as file_pointer:
+        with open("bin/user/tests/integ/data/debug.json", encoding="UTF-8") as file_pointer:
             self.runit('json', file_pointer)
 
     @unittest.skip("")
     def debug_keyword(self):
-        with open("bin/user/tests/integ/data/debug.json") as file_pointer:
+        with open("bin/user/tests/integ/data/debug.json", encoding="UTF-8") as file_pointer:
             self.runit('keyword', file_pointer)
 
 if __name__ == '__main__':

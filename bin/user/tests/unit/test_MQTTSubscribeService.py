@@ -1,12 +1,12 @@
-
+#
+#    Copyright (c) 2020-2023 Rich Bell <bellrichm@gmail.com>
+#
+#    See the file LICENSE.txt for your full rights.
+#
 
 # pylint: disable=wrong-import-order
 # pylint: disable=missing-docstring
 # pylint: disable=invalid-name
-# need to be python 2 compatible pylint: disable=bad-option-value, super-with-arguments
-# pylint: enable=bad-option-value
-
-from __future__ import with_statement
 
 import unittest
 import mock
@@ -36,7 +36,7 @@ class atestInitialization(unittest.TestCase):
             with self.assertRaises(ValueError) as error:
                 user.MQTTSubscribe.MQTTSubscribeService(mock_StdEngine, config_dict)
 
-            self.assertEqual(error.exception.args[0], "MQTTSubscribeService: Unknown binding: %s" % binding)
+            self.assertEqual(error.exception.args[0], f"MQTTSubscribeService: Unknown binding: {binding}")
 
     @staticmethod
     def test_not_enable():
@@ -87,7 +87,7 @@ class atestInitialization(unittest.TestCase):
                 with self.assertRaises(ValueError) as error:
                     user.MQTTSubscribe.MQTTSubscribeService(mock_StdEngine, config_dict)
 
-            self.assertEqual(error.exception.args[0], "archive_topic, %s, is invalid when running as a service" % archive_topic)
+            self.assertEqual(error.exception.args[0], f"archive_topic, {archive_topic}, is invalid when running as a service")
 
     def test_caching_valid_archive_binding(self):
         mock_StdEngine = mock.Mock()
@@ -98,7 +98,7 @@ class atestInitialization(unittest.TestCase):
             'MQTTSubscribeService': {
                 'binding': 'archive'
             }
-        }        
+        }
 
         with mock.patch('user.MQTTSubscribe.MQTTSubscriber') as mock_MQTTSubscribe:
             with mock.patch('user.MQTTSubscribe.Logger'):
@@ -122,7 +122,7 @@ class atestInitialization(unittest.TestCase):
             'MQTTSubscribeService': {
                 'binding': 'loop'
             }
-        }        
+        }
 
         with mock.patch('user.MQTTSubscribe.MQTTSubscriber') as mock_MQTTSubscribe:
             with mock.patch('user.MQTTSubscribe.Logger'):
@@ -144,7 +144,7 @@ class atestInitialization(unittest.TestCase):
             'MQTTSubscribeService': {
                 'binding': 'loop'
             }
-        }        
+        }
 
         with mock.patch('user.MQTTSubscribe.MQTTSubscriber') as mock_MQTTSubscribe:
             with mock.patch('user.MQTTSubscribe.Logger'):
@@ -154,7 +154,8 @@ class atestInitialization(unittest.TestCase):
 
                     user.MQTTSubscribe.MQTTSubscribeService(mock_StdEngine, config_dict)
 
-                self.assertEqual(error.exception.args[0], "caching is not available with record generation of type '%s' and and binding of type 'loop'" % 'none')
+                self.assertEqual(error.exception.args[0],
+                                 "caching is not available with record generation of type 'none' and and binding of type 'loop'")
 
 class Testnew_loop_packet(unittest.TestCase):
     mock_StdEngine = mock.Mock()
@@ -257,7 +258,6 @@ class Testnew_loop_packet(unittest.TestCase):
                 SUT.logger.error.assert_called_once()
 
                 SUT.shutDown()
-
 
 class Testnew_archive_record(unittest.TestCase):
     @classmethod

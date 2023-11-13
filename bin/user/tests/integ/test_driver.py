@@ -1,5 +1,5 @@
 #
-#    Copyright (c) 2020-2021 Rich Bell <bellrichm@gmail.com>
+#    Copyright (c) 2020-2023 Rich Bell <bellrichm@gmail.com>
 #
 #    See the file LICENSE.txt for your full rights.
 #
@@ -9,8 +9,6 @@
 # pylint: disable=too-many-locals
 # pylint: disable=too-many-statements
 # pylint: disable=too-many-branches
-
-from __future__ import print_function
 
 import json
 import time
@@ -141,7 +139,7 @@ class TestDriver(unittest.TestCase):
                         if payload in result['payloads']:
                             found = True
                             break
-                self.assertTrue(found, "No results for %s" %payload)
+                self.assertTrue(found, f"No results for {payload}")
 
                 utils.check(self, payload, records, result['records'])
             else:
@@ -155,71 +153,71 @@ class TestDriver(unittest.TestCase):
 class TestAccumulatedRain(TestDriver):
     #@unittest.skip("")
     def test_accumulatedrain_individual(self):
-        with open("bin/user/tests/integ/data/accumulatedrain.json") as file_pointer:
+        with open("bin/user/tests/integ/data/accumulatedrain.json", encoding="UTF-8") as file_pointer:
             self.runit('individual', file_pointer)
 
     #@unittest.skip("")
     def test_accumulatedrain_json(self):
-        with open("bin/user/tests/integ/data/accumulatedrain.json") as file_pointer:
+        with open("bin/user/tests/integ/data/accumulatedrain.json", encoding="UTF-8") as file_pointer:
             self.runit('json', file_pointer)
 
     #@unittest.skip("")
     def test_accumulatedrain_keyword(self):
-        with open("bin/user/tests/integ/data/accumulatedrain.json") as file_pointer:
+        with open("bin/user/tests/integ/data/accumulatedrain.json", encoding="UTF-8") as file_pointer:
             self.runit('keyword', file_pointer)
 
 class TestBasic(TestDriver):
     #@unittest.skip("")
     def test_basic_individual(self):
-        with open("bin/user/tests/integ/data/basic.json") as file_pointer:
+        with open("bin/user/tests/integ/data/basic.json", encoding="UTF-8") as file_pointer:
             self.runit('individual', file_pointer)
 
     #@unittest.skip("")
     def test_basic_json(self):
-        with open("bin/user/tests/integ/data/basic.json") as file_pointer:
+        with open("bin/user/tests/integ/data/basic.json", encoding="UTF-8") as file_pointer:
             self.runit('json', file_pointer)
 
     #@unittest.skip("")
     def test_basic_keyword(self):
-        with open("bin/user/tests/integ/data/basic.json") as file_pointer:
+        with open("bin/user/tests/integ/data/basic.json", encoding="UTF-8") as file_pointer:
             self.runit('keyword', file_pointer)
 
 class TestEmpty(TestDriver):
     #@unittest.skip("")
     def test_empty_individual(self):
-        with open("bin/user/tests/integ/data/empty.json") as file_pointer:
+        with open("bin/user/tests/integ/data/empty.json", encoding="UTF-8") as file_pointer:
             self.runit('individual', file_pointer)
 
     #@unittest.skip("")
     def test_empty_json(self):
-        with open("bin/user/tests/integ/data/empty.json") as file_pointer:
+        with open("bin/user/tests/integ/data/empty.json", encoding="UTF-8") as file_pointer:
             self.runit('json', file_pointer)
 
     #@unittest.skip("")
     def test_empty_keyword(self):
-        with open("bin/user/tests/integ/data/empty.json") as file_pointer:
+        with open("bin/user/tests/integ/data/empty.json", encoding="UTF-8") as file_pointer:
             self.runit('keyword', file_pointer)
 
 class TestWindIndividualTopics(TestDriver):
     #@unittest.skip("")
     def test_wind_individual_topic(self):
-        with open("bin/user/tests/integ/data/wind-individual.json") as file_pointer:
+        with open("bin/user/tests/integ/data/wind-individual.json", encoding="UTF-8") as file_pointer:
             self.runit('individual', file_pointer)
 
 class TestWindIndividualWind(TestDriver):
     #@unittest.skip("")
     def test_wind_individual(self):
-        with open("bin/user/tests/integ/data/wind.json") as file_pointer:
+        with open("bin/user/tests/integ/data/wind.json", encoding="UTF-8") as file_pointer:
             self.runit('individual', file_pointer)
 
     #@unittest.skip("")
     def test_wind_json(self):
-        with open("bin/user/tests/integ/data/wind.json") as file_pointer:
+        with open("bin/user/tests/integ/data/wind.json", encoding="UTF-8") as file_pointer:
             self.runit('json', file_pointer)
 
     #@unittest.skip("")
     def test_wind_keyword(self):
-        with open("bin/user/tests/integ/data/wind.json") as file_pointer:
+        with open("bin/user/tests/integ/data/wind.json", encoding="UTF-8") as file_pointer:
             self.runit('keyword', file_pointer)
 
 if __name__ == '__main__':
