@@ -52,8 +52,8 @@ if [ "$SONAR_UPLOAD" = "true" ]; then
     -Dsonar.python.xunit.skipDetails=false \
     -Dsonar.python.coverage.reportPaths=coverage.xml \
     -Dsonar.python.coveragePlugin=cobertura \
-    -Dsonar.python.pylint.reportPath=pylint.txt \
+    -Dsonar.python.pylint.reportPaths=pylint.txt \
     -Dsonar.host.url=https://sonarcloud.io \
-    -Dsonar.login=$SKEY \
+    -Dsonar.token=$SKEY \
     # -X
 fi
