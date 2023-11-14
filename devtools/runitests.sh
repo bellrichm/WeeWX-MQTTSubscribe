@@ -23,3 +23,4 @@ python_version=$(pyenv which $python_command)
 echo "Running $python_version $WEEWX"
 
 PYTHONPATH=bin:../$WEEWX/bin pytest bin/user/tests/integ
+date
