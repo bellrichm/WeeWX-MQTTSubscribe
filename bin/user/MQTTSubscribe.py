@@ -234,8 +234,7 @@ Configuration:
         # between the driver creating packets is large and the MQTT broker publishes frequently.
         # Or if subscribing to 'individual' payloads with wildcards. This results in many topic
         # in a single queue.
-        # Default is: sys.maxsize for python 3 and sys.maxint for python 2.
-        max_queue = MAXSIZE
+        max_queue = sys.maxsize
 
         # Configuration information about the MQTT message format for this topic
         [[[message]]]
@@ -396,11 +395,6 @@ from weewx.engine import StdEngine, StdService
 VERSION = '3.0.0-rc01'
 DRIVER_NAME = 'MQTTSubscribeDriver'
 DRIVER_VERSION = VERSION
-
-# Stole from six module. Added to eliminate dependency on six when running under WeeWX 3.x
-PY2 = sys.version_info[0] == 2
-
-MAXSIZE = sys.maxsize
 
 def gettid():
     """Get TID as displayed by htop.
@@ -933,7 +927,7 @@ class TopicManager():
         default['datetime_format'] = config.get('datetime_format', None)
         default['offset_format'] = config.get('offset_format', None)
 
-        default['max_queue'] = config.get('max_queue', MAXSIZE)
+        default['max_queue'] = config.get('max_queue', sys.maxsize)
         default['callback_config_name'] = config.get('callback_config_name', 'message')
 
         return default
@@ -1050,7 +1044,7 @@ class TopicManager():
         """ Return True if queue has data. """
         return bool(self._get_queue(topic)['data'])
 
-    def get_data(self, queue, end_ts=MAXSIZE):
+    def get_data(self, queue, end_ts=sys.maxsize):
         # pylint: disable=too-many-branches
         """ Get data off the queue of MQTT data. """
         queue_name = queue['name']
@@ -1357,18 +1351,7 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
                 elif isinstance(value, list):
                     self._flatten_list(fields, fields_ignore_default, delim, prefix, new_key, value, new_dict)
                 else:
-                    str_value = value
-                    str_key = new_key
-                    if PY2:
-                        # if this is a unicode string, return its string representation
-                        # (only a python 3 error) pylint: disable=undefined-variable
-                        if isinstance(str_value, unicode): # pyright: ignore[reportUndefinedVariable]
-                            # (only a python 3 error) pylint: enable=undefined-variable
-                            str_value  = str_value.encode('utf-8')
-                        if isinstance(str_key, unicode): # pyright: ignore[reportUndefinedVariable]
-                            # (only a python 3 error) pylint: enable=undefined-variable
-                            str_key  = str_key.encode('utf-8')
-                    new_dict[str_key] = str_value
+                    new_dict[new_key] = value
         else:
             self._flatten_list(fields, fields_ignore_default, delim, prefix, prefix[:-1], old_dict, new_dict)
 
@@ -1385,18 +1368,7 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
                     if isinstance(subvalue, (dict, list)):
                         self._flatten(fields, fields_ignore_default, delim, prefix + fields[new_key]['subfields'][i] + '_', new_dict, subvalue)
                     else:
-                        str_value = subvalue
-                        str_key = prefix + fields[new_key]['subfields'][i]
-                        if PY2:
-                            # if this is a unicode string, return its string representation
-                            # (only a python 3 error) pylint: disable=undefined-variable
-                            if isinstance(str_value, unicode): # pyright: ignore[reportUndefinedVariable]
-                                # (only a python 3 error) pylint: enable=undefined-variable
-                                str_value  = str_value.encode('utf-8')
-                            if isinstance(str_key, unicode): # pyright: ignore[reportUndefinedVariable]
-                                # (only a python 3 error) pylint: enable=undefined-variable
-                                str_key  = str_key.encode('utf-8')
-                        new_dict[str_key] = str_value
+                        new_dict[prefix + fields[new_key]['subfields'][i]] = subvalue
                     i += 1
         else:
             #if not fields.get(lookup_key, {}).get('ignore', fields_ignore_default):
@@ -1420,10 +1392,7 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
             fields_ignore_default = self.topic_manager.get_ignore_value(msg.topic)
             fields_conversion_func = self.topic_manager.get_conversion_func(msg.topic)
 
-            if PY2:
-                payload_str = msg.payload
-            else:
-                payload_str = msg.payload.decode('utf-8')
+            payload_str = msg.payload.decode('utf-8')
 
             fielddata = payload_str.split(message_dict['keyword_delimiter'])
             data = {}
@@ -1466,10 +1435,7 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
             msg_id_field = self.topic_manager.get_msg_id_field(msg.topic)
             ignore_msg_id_field = self.topic_manager.get_ignore_msg_id_field(msg.topic)
 
-            if PY2:
-                payload_str = msg.payload
-            else:
-                payload_str = msg.payload.decode('utf-8')
+            payload_str = msg.payload.decode('utf-8')
 
             data_flattened = {}
             self._flatten(fields, fields_ignore_default, message_dict['flatten_delimiter'], '', data_flattened, json.loads(payload_str))
@@ -1517,11 +1483,8 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
             if topic_tail_is_fieldname:
                 key = key.rpartition('/')[2]
 
-            if PY2:
-                key = key.encode('utf-8')
-            else:
-                if msg.payload is not None:
-                    payload_str = msg.payload.decode('utf-8')
+            if msg.payload is not None:
+                payload_str = msg.payload.decode('utf-8')
 
             unit_system = self.topic_manager.get_unit_system(msg.topic)
             if not fields.get(key, {}).get('ignore', fields_ignore_default):
@@ -1784,7 +1747,7 @@ class MQTTSubscriber():
                             tls_version=tls_version,
                             ciphers=tls_dict.get('ciphers'))
 
-    def get_data(self, queue, end_ts=MAXSIZE):
+    def get_data(self, queue, end_ts=sys.maxsize):
         """ Get data off the queue of MQTT data. """
         return self.manager.get_data(queue, end_ts) # pragma: no cover
 
