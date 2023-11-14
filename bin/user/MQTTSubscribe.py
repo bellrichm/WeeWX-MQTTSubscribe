@@ -565,9 +565,16 @@ except ImportError:
         def __init__(self, mode, level='NOTSET', filename=None, console=None):
             super(Logger, self).__init__(mode, level, filename=filename, console=console)
 
-            self.file = None
-            if self.filename is not None:
-                self.file = open(filename, 'w')
+            self.file = self._open_file(filename)
+
+        def __del__(self):
+            if self.file:
+                self.file.close()
+
+        def _open_file(self, filename):
+            if filename is not None:
+                return open(filename, 'w')
+            return None
 
         def trace(self, msg):
             """ Log trace messages. """
