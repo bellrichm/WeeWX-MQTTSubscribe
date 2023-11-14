@@ -15,7 +15,7 @@ if [ "$BUILDTYPE" != "LOCAL" ] && [ "$APPVEYOR_PULL_REQUEST_NUMBER" != "" ]; the
 fi
 
 # only upload for one build image
-if [ "$APPVEYOR_BUILD_WORKER_IMAGE" != "Ubuntu" ]; then
+if [ "$APPVEYOR_BUILD_WORKER_IMAGE" != "Ubuntu2204" ]; then
   exit 0
 fi
 
