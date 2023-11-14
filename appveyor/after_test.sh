@@ -60,5 +60,5 @@ if [ "$SONAR_UPLOAD" = "true" ]; then
     -Dsonar.python.pylint.reportPath=pylint.txt \
     -Dsonar.host.url=https://sonarcloud.io \
     -Dsonar.login=$SKEY \
-    # -X
+    -X
 fi
