@@ -6,6 +6,8 @@
 export SONAR_SCANNER_HOME=$HOME/.sonar/sonar-scanner-$SONAR_SCANNER_VERSION-linux
 export PATH=$SONAR_SCANNER_HOME/bin:$PATH
 
+export SONAR_JAVA_PATH=/usr/lib/jvm/java-17-openjdk-amd64/bin/java
+
 export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
 export PATH=$JAVA_HOME/bin:$PATH
 
