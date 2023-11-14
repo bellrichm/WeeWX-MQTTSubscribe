@@ -137,7 +137,8 @@ environment:
       WEEWX_URL: http://www.weewx.com/downloads/development_versions/
 
 stack: 
-  - python %PYTHON%      
+  - python %PYTHON%
+  - jdk 17
 
 for:
 - 
