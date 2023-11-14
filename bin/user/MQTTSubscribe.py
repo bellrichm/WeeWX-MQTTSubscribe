@@ -750,7 +750,7 @@ class TopicManager():
             )
             self.queues.append(single_queue_obj)
 
-        for topic in config.sections:
+        for topic in config.sections: # pylint: disable=too-many-nested-blocks
             topic_dict = config.get(topic, {})
             callback_config_name = topic_dict.get('callback_config_name', topic_defaults['callback_config_name'])
 
@@ -1359,6 +1359,7 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
         return self._on_message_multi
 
     def _flatten(self, fields, fields_ignore_default, delim, prefix, new_dict, old_dict):
+        # pylint: disable=too-many-arguments
         if isinstance(old_dict, dict):
             for key, value in old_dict.items():
                 new_key = prefix + key
@@ -1383,7 +1384,8 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
             self._flatten_list(fields, fields_ignore_default, delim, prefix, prefix[:-1], old_dict, new_dict)
 
     def _flatten_list(self, fields, fields_ignore_default, delim, prefix, new_key, value, new_dict):
-        if new_key in fields and 'subfields' in fields[new_key]:
+        # pylint: disable=too-many-arguments
+        if new_key in fields and 'subfields' in fields[new_key]: # pylint: disable=too-many-nested-blocks
             if len(value) > len(fields[new_key]['subfields']):
                 self.logger.error("Skipping %s because array data too big. Array=%s subfields=%s" %
                                     (new_key, value, fields[new_key]['subfields']))
