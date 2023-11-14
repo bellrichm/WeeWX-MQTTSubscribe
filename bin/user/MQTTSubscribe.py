@@ -364,11 +364,6 @@ Configuration:
                 unit_system = metric, metricwx
 """
 
-# need to be python 2 compatible pylint: disable=bad-option-value, raise-missing-from, super-with-arguments
-# pylint: enable=bad-option-value
-
-from __future__ import with_statement
-from __future__ import print_function
 import argparse
 import copy
 import datetime
@@ -392,10 +387,7 @@ from paho.mqtt.client import connack_string
 import weeutil
 from weeutil.weeutil import to_bool, to_float, to_int, to_sorted_string
 
-try:
-    from weeutil.config import merge_config
-except ImportError:
-    from weecfg import merge_config # pre WeeWX 3.9
+from weeutil.config import merge_config
 
 import weewx
 import weewx.drivers
@@ -407,15 +399,13 @@ DRIVER_VERSION = VERSION
 
 # Stole from six module. Added to eliminate dependency on six when running under WeeWX 3.x
 PY2 = sys.version_info[0] == 2
-if PY2:
-    MAXSIZE = sys.maxint # (only a python 3 error) pylint: disable=no-member
-else:
-    MAXSIZE = sys.maxsize
+
+MAXSIZE = sys.maxsize
 
 def gettid():
     """Get TID as displayed by htop.
        This is architecture dependent."""
-    import ctypes #  need to be python 2 compatible, Want to keep this piece of code self contained. pylint: disable=bad-option-value, import-outside-toplevel
+    import ctypes # pylint: disable=import-outside-toplevel
     from ctypes.util import find_library # pylint: disable=import-outside-toplevel
     # pylint: enable=bad-option-value
     libc = ctypes.CDLL(find_library('c'))
@@ -495,7 +485,7 @@ try:
         MSG_FORMAT = "(%s) %s"
 
         def __init__(self, mode, level='NOTSET', filename=None, console=None):
-            super(Logger, self).__init__(mode, level, filename=filename, console=console)
+            super().__init__(mode, level, filename=filename, console=console)
             self._logmsg = logging.getLogger(__name__)
             if self.console:
                 self._logmsg.addHandler(logging.StreamHandler(sys.stdout))
@@ -563,7 +553,7 @@ except ImportError:
     class Logger(AbstractLogger):
         """ The logging class. """
         def __init__(self, mode, level='NOTSET', filename=None, console=None):
-            super(Logger, self).__init__(mode, level, filename=filename, console=console)
+            super().__init__(mode, level, filename=filename, console=console)
 
             self.file = self._open_file(filename)
 
@@ -1317,13 +1307,14 @@ class AbstractMessageCallbackProvider(): # pylint: disable=too-few-public-method
             if conversion_error_to_none:
                 return None
             raise ConversionError(
-                f"Failed converting field {field} with value {value} using '{conversion_func['source']}' with reason {exception}.")
+                f"Failed converting field {field} with value {value} using '{conversion_func['source']}' with reason {exception}.")\
+                    from exception
 
 class MessageCallbackProvider(AbstractMessageCallbackProvider):
     # pylint: disable=too-many-instance-attributes, too-few-public-methods, too-many-locals
     """ Provide the MQTT callback. """
     def __init__(self, config, logger, topic_manager):
-        super(MessageCallbackProvider, self).__init__(logger, topic_manager)
+        super().__init__(logger, topic_manager)
 
         for topic in topic_manager.subscribed_topics:
             if topic_manager.subscribed_topics[topic]['queue']['type'] == 'collector':
@@ -1857,7 +1848,7 @@ class MQTTSubscriber():
 class MQTTSubscribeService(StdService):
     """ The MQTT subscribe service. """
     def __init__(self, engine, config_dict):
-        super(MQTTSubscribeService, self).__init__(engine, config_dict)
+        super().__init__(engine, config_dict)
 
         self.subscriber = None
         service_dict = config_dict.get('MQTTSubscribeService', {})
