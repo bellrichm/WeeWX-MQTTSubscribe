@@ -34,7 +34,7 @@ class TestV3Logging(unittest.TestCase):
                     Logger(mode, filename=filename)
 
                     self.assertEqual(mock_open.call_count, 1)
-                    mock_open.assert_called_once_with(filename, 'w')
+                    mock_open.assert_called_once_with(filename, 'w', encoding='UTF-8')
 
             importlib.reload(user.MQTTSubscribe)
 

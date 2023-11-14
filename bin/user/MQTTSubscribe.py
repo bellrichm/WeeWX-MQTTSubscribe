@@ -1840,7 +1840,7 @@ class MQTTSubscriber():
         userdata['connect_rc'] = rc
         userdata['connect_flags'] = flags
 
-        for topic, info in self.manager.subscribed_topics:
+        for topic, info in self.manager.subscribed_topics.items():
             if not info['subscribe']:
                 continue
 
@@ -1895,7 +1895,7 @@ class MQTTSubscribeService(StdService):
         archive_dict = config_dict.get('StdArchive', {})
         record_generation = archive_dict.get('record_generation', "none").lower()
 
-        if self.binding != 'loop' and self.binding != 'archive':
+        if self.binding not in ('loop', 'archive'):
             raise ValueError("MQTTSubscribeService: Unknown binding: %s" % self.binding)
 
         self.bind(weewx.NEW_ARCHIVE_RECORD, self.new_archive_record)
