@@ -573,7 +573,7 @@ except ImportError:
 
         def _open_file(self, filename):
             if filename is not None:
-                return open(filename, 'w')
+                return open(filename, 'w', encoding='UTF-8')
             return None
 
         def trace(self, msg):
@@ -1490,17 +1490,17 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
             if msg_id_field:
                 msg_id = data_flattened[msg_id_field]
 
-            for key in data_flattened:
+            for key, value in data_flattened.items():
                 if msg_id_field and key not in ignore_msg_id_field:
                     lookup_key = key + "_" + str(msg_id) # todo - cleanup
                 else:
                     lookup_key = key
-                if lookup_key in filters and data_flattened[key] in filters[lookup_key]:
+                if lookup_key in filters and value in filters[lookup_key]:
                     self.logger.info("MessageCallbackProvider on_message_json filtered out %s : %s with %s=%s"
                                      % (msg.topic, msg.payload, lookup_key, filters[lookup_key]))
                     return
                 if not fields.get(lookup_key, {}).get('ignore', fields_ignore_default):
-                    (fieldname, value) = self._update_data(fields, fields_conversion_func, lookup_key, data_flattened[key], unit_system)
+                    (fieldname, value) = self._update_data(fields, fields_conversion_func, lookup_key, value, unit_system)
                     data_final[fieldname] = value
                 else:
                     self.logger.trace("MessageCallbackProvider on_message_json ignoring field: %s" % lookup_key)
@@ -1840,8 +1840,8 @@ class MQTTSubscriber(object):
         userdata['connect_rc'] = rc
         userdata['connect_flags'] = flags
 
-        for topic in self.manager.subscribed_topics:
-            if not self.manager.subscribed_topics[topic]['subscribe']:
+        for topic, info in self.manager.subscribed_topics:
+            if not info['subscribe']:
                 continue
 
             (result, mid) = client.subscribe(topic, self.manager.get_qos(topic))
