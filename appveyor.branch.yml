@@ -85,10 +85,11 @@ environment:
       job_group: build  
       job_depends_on: initialize
 
-    - PYTHON: 3.12
-      WEEWX: '%WEEWX_LATEST%'
-      job_group: build  
-      job_depends_on: initialize
+    # Need WeeWX v5
+    #- PYTHON: 3.12
+      #WEEWX: '%WEEWX_LATEST%'
+      #job_group: build  
+      #job_depends_on: initialize
 
     # End of runs against latest WeeWX release and supported versions of Python
 
