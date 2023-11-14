@@ -5,6 +5,11 @@
 #
 # Reminder, tags are uploaded to both coveralls and sonar as a branch with the tag name
 
+echo $PATH
+echo $JAVA_HOME
+which java
+java -version
+
 if [ "$ENABLED" != "true" ]; then
   exit 0
 fi

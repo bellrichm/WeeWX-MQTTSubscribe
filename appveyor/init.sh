@@ -9,6 +9,11 @@ export PATH=$SONAR_SCANNER_HOME/bin:$PATH
 export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
 export PATH=$JAVA_HOME/bin:$PATH
 
+echo $PATH
+echo $JAVA_HOME
+which java
+java -version
+
 if [ "$APPVEYOR_REPO_TAG" = "true" ]; then
   export APPVEYOR_REPO_BRANCH=$APPVEYOR_REPO_TAG_NAME # hack
   export APPVEYOR_BUILD_VERSION=release-$APPVEYOR_REPO_TAG_NAME
