@@ -191,8 +191,6 @@ init:
         exit 0
       fi;
 
-  - sh: ls /usr/lib/jvm
-
 install:
   - sh: echo "install"
   # 'source' so that variables are set in parent environment
