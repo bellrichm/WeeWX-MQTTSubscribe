@@ -5,11 +5,6 @@
 #
 # Reminder, tags are uploaded to both coveralls and sonar as a branch with the tag name
 
-echo $PATH
-echo $JAVA_HOME
-which java
-java -version
-
 if [ "$ENABLED" != "true" ]; then
   exit 0
 fi
@@ -60,5 +55,5 @@ if [ "$SONAR_UPLOAD" = "true" ]; then
     -Dsonar.python.pylint.reportPath=pylint.txt \
     -Dsonar.host.url=https://sonarcloud.io \
     -Dsonar.login=$SKEY \
-    -X
+    # -X
 fi
