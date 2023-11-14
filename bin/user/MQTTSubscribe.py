@@ -624,8 +624,7 @@ class RecordCache():
         if self.unit_system is None:
             self.unit_system = unit_system
         if unit_system != self.unit_system:
-            raise ValueError("Unit system does not match unit system of the cache. %s vs %s"
-                             % (unit_system, self.unit_system))
+            raise ValueError(f"Unit system does not match unit system of the cache. {unit_system} vs {self.unit_system}")
         self.cached_values[key] = {}
         self.cached_values[key]['value'] = value
         self.cached_values[key]['timestamp'] = timestamp
@@ -1008,8 +1007,7 @@ class TopicManager():
 
     def append_data(self, topic, in_data, fieldname=None):
         """ Add the MQTT data to the queue. """
-        self.logger.debug("TopicManager data-> incoming %s: %s"
-                          %(topic, to_sorted_string(in_data)))
+        self.logger.debug(f"TopicManager data-> incoming {topic}: {to_sorted_string(in_data)}")
         data = dict(in_data)
         payload = {}
 
@@ -1029,15 +1027,15 @@ class TopicManager():
 
         if fieldname in self.collected_fields:
             self._queue_size_check(self.collected_queue, queue['max_size'])
-            self.logger.trace("TopicManager Adding wind data %s %s: %s"
-                              % (fieldname, weeutil.weeutil.timestamp_to_string(data['dateTime']), to_sorted_string(data)))
+            self.logger.trace(
+                f"TopicManager Adding wind data {fieldname} {weeutil.weeutil.timestamp_to_string(data['dateTime'])}: {to_sorted_string(data)}")
             payload['fieldname'] = fieldname
             self.collected_queue.append(payload)
         else:
             self._queue_size_check(queue, queue['max_size'])
-            self.logger.trace("TopicManager Added to queue %s %s %s: %s"
-                              %(topic, self._lookup_topic(topic),
-                                weeutil.weeutil.timestamp_to_string(data['dateTime']), to_sorted_string(data)))
+            self.logger.trace(
+                (f"TopicManager Added to queue {topic} {self._lookup_topic(topic)} {weeutil.weeutil.timestamp_to_string(data['dateTime'])}: "
+                f"{to_sorted_string(data)}"))
             queue['data'].append(payload,)
 
     def peek_datetime(self, queue):
@@ -1084,8 +1082,9 @@ class TopicManager():
             payload = data_queue.popleft()
             if queue_type == 'collector':
                 fieldname = payload['fieldname']
-                self.logger.trace("TopicManager processing wind data %s %s: %s."
-                                  %(fieldname, weeutil.weeutil.timestamp_to_string(payload['data']['dateTime']), to_sorted_string(payload)))
+                self.logger.trace(
+                    (f"TopicManager processing wind data {fieldname} {weeutil.weeutil.timestamp_to_string(payload['data']['dateTime'])}: "
+                    f"{to_sorted_string(payload)}."))
                 data = collector.add_data(fieldname, payload['data'])
             elif self.collect_observations:
                 data = observation_collector.add_dict(payload['data'])
@@ -1093,22 +1092,19 @@ class TopicManager():
                 data = payload['data']
 
             if data:
-                self.logger.debug("TopicManager data-> outgoing %s: %s"
-                                  %(queue_name, to_sorted_string(data)))
+                self.logger.debug(f"TopicManager data-> outgoing {queue_name}: {to_sorted_string(data)}")
                 yield data
 
         if not self.collect_wind_across_loops:
             data = collector.get_data()
             if data:
-                self.logger.debug("TopicManager data-> outgoing wind %s: %s"
-                                  % (queue_name, to_sorted_string(data)))
+                self.logger.debug(f"TopicManager data-> outgoing wind {queue_name}: {to_sorted_string(data)}")
                 yield data
 
         if self.collect_observations:
             data = observation_collector.get_data()
             if data:
-                self.logger.debug("TopicManager data-> outgoing collected %s: %s"
-                                  % (queue_name, to_sorted_string(data)))
+                self.logger.debug(f"TopicManager data-> outgoing collected {queue_name}: {to_sorted_string(data)}")
                 yield data
 
     def get_accumulated_data(self, queue, start_time, end_time, units):
@@ -1141,21 +1137,24 @@ class TopicManager():
 
         for data in self.get_data(queue, end_ts):
             try:
-                self.logger.trace("TopicManager input to accumulate %s %s: %s"
-                                  % (queue_name, weeutil.weeutil.timestamp_to_string(data['dateTime']), to_sorted_string(data)))
+                self.logger.trace(
+                    (f"TopicManager input to accumulate {queue_name} {weeutil.weeutil.timestamp_to_string(data['dateTime'])}: "
+                    f"{to_sorted_string(data)}"))
                 accumulator.addRecord(data)
             except weewx.accum.OutOfSpan:
-                self.logger.info("TopicManager ignoring record outside of interval %f %f %f %s"
-                                 %(start_ts, end_ts, data['dateTime'], (to_sorted_string(data))))
+                self.logger.info(
+                    f"TopicManager ignoring record outside of interval {start_ts:f} {end_ts:f} {data['dateTime']:f} {to_sorted_string(data)}")
 
         target_data = {}
         if not accumulator.isEmpty:
             aggregate_data = accumulator.getRecord()
-            self.logger.trace("TopicManager prior to conversion is %s %s: %s"
-                              % (queue_name, weeutil.weeutil.timestamp_to_string(aggregate_data['dateTime']), to_sorted_string(aggregate_data)))
+            self.logger.trace(
+                (f"TopicManager prior to conversion is {queue_name} {weeutil.weeutil.timestamp_to_string(aggregate_data['dateTime'])}: "
+                f"{to_sorted_string(aggregate_data)}"))
             target_data = weewx.units.to_std_system(aggregate_data, units)
-            self.logger.trace("TopicManager after conversion is %s %s: %s"
-                              % (queue_name, weeutil.weeutil.timestamp_to_string(target_data['dateTime']), to_sorted_string(target_data)))
+            self.logger.trace(
+                (f"TopicManager after conversion is {queue_name} {weeutil.weeutil.timestamp_to_string(target_data['dateTime'])}: "
+                f"{to_sorted_string(target_data)}"))
         else:
             self.logger.trace("TopicManager accumulator was empty")
 
@@ -1163,8 +1162,7 @@ class TopicManager():
         if ignore_end_time:
             target_data['dateTime'] = end_time
 
-        self.logger.debug("TopicManager data-> outgoing accumulated %s: %s"
-                          % (queue_name, to_sorted_string(target_data)))
+        self.logger.debug(f"TopicManager data-> outgoing accumulated {queue_name}: {to_sorted_string(target_data)}")
         return target_data
 
     def _queue_size_check(self, queue, max_queue):
@@ -1236,8 +1234,8 @@ class TopicManager():
         raise ValueError(f"Did not find topic, {topic}.")
 
     def _to_epoch(self, datetime_input, datetime_format, offset_format=None):
-        self.logger.trace("TopicManager datetime conversion datetime_input:%s datetime_format:%s offset_format:%s"
-                          %(datetime_input, datetime_format, offset_format))
+        self.logger.trace(
+            f"TopicManager datetime conversion datetime_input:{datetime_input} datetime_format:{datetime_format} offset_format:{offset_format}")
         if offset_format:
             offset_start = len(datetime_input)-len(offset_format)
             offset = re.sub(r"\D", "", datetime_input[offset_start:]) #remove everything but the numbers from the UTC offset
@@ -1288,24 +1286,24 @@ class AbstractMessageCallbackProvider(): # pylint: disable=too-few-public-method
         return fieldname, value
 
     def _calc_increment(self, observation, current_total, previous_total, wrap_around):
-        self.logger.trace("MessageCallbackProvider _calc_increment calculating increment " \
-                         "for %s with current: %f and previous %s values."
-                          % (observation, current_total, (previous_total is None and 'None' or str(previous_total))))
+        self.logger.trace(
+            (f"MessageCallbackProvider _calc_increment calculating increment for {observation} with current: "
+            f"{current_total:f} and previous {previous_total is None and 'None' or str(previous_total)} values."))
 
         if current_total is not None and previous_total is not None:
             if current_total >= previous_total:
                 return current_total - previous_total
 
             if wrap_around and current_total < previous_total:
-                self.logger.trace("MessageCallbackProvider _calc_increment wrap around detected " \
-                             "for %s with current: %f and previous %f values."
-                              % (observation, current_total, previous_total))
+                self.logger.trace(
+                    (f"MessageCallbackProvider _calc_increment wrap around detected for {observation} with current: "
+                    f"{current_total:f} and previous {previous_total:f} values."))
 
                 return current_total
 
-            self.logger.trace("MessageCallbackProvider _calc_increment skipping calculating increment " \
-                             "for %s with current: %f and previous %f values."
-                              % (observation, current_total, previous_total))
+            self.logger.trace(
+                (f"MessageCallbackProvider _calc_increment skipping calculating increment for {observation} with current: "
+                f"{current_total:f} and previous {previous_total:f} values."))
 
         return None
 
@@ -1318,8 +1316,8 @@ class AbstractMessageCallbackProvider(): # pylint: disable=too-few-public-method
             conversion_error_to_none = fields.get(field, {}).get('conversion_error_to_none', False)
             if conversion_error_to_none:
                 return None
-            raise ConversionError("Failed converting field %s with value %s using '%s' with reason %s." \
-                % (field, value, conversion_func['source'], exception))
+            raise ConversionError(
+                f"Failed converting field {field} with value {value} using '{conversion_func['source']}' with reason {exception}.")
 
 class MessageCallbackProvider(AbstractMessageCallbackProvider):
     # pylint: disable=too-many-instance-attributes, too-few-public-methods, too-many-locals
@@ -1387,11 +1385,9 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
         # pylint: disable=too-many-arguments
         if new_key in fields and 'subfields' in fields[new_key]: # pylint: disable=too-many-nested-blocks
             if len(value) > len(fields[new_key]['subfields']):
-                self.logger.error("Skipping %s because array data too big. Array=%s subfields=%s" %
-                                    (new_key, value, fields[new_key]['subfields']))
+                self.logger.error(f"Skipping {new_key} because array data too big. Array={value} subfields={fields[new_key]['subfields']}")
             elif len(value) < len(fields[new_key]['subfields']):
-                self.logger.error("Skipping %s because array data too small. Array=%s subfields=%s" %
-                                    (new_key, value, fields[new_key]['subfields']))
+                self.logger.error(f"Skipping {new_key} because array data too small. Array={value} subfields={fields[new_key]['subfields']}")
             else:
                 i = 0
                 for subvalue in value:
@@ -1416,8 +1412,8 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
             self.logger.error(f"Skipping {new_key} because data is an array and has no configured subfields. Array={value}")
 
     def _log_message(self, msg):
-        self.logger.debug("MessageCallbackProvider data-> incoming topic: %s, QOS: %i, retain: %s, payload: %s"
-                          %(msg.topic, msg.qos, msg.retain, msg.payload))
+        self.logger.debug(
+            f"MessageCallbackProvider data-> incoming topic: {msg.topic}, QOS: {int(msg.qos)}, retain: {msg.retain}, payload: {msg.payload}")
 
     def _log_exception(self, method, exception, msg):
         self.logger.error(f"MessageCallbackProvider {method} failed with {type(exception)} and reason {exception}.")
@@ -1445,8 +1441,8 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
                 eq_index = field.find(message_dict['keyword_separator'])
                 # Ignore all fields that do not have the separator
                 if eq_index == -1:
-                    self.logger.error("MessageCallbackProvider on_message_keyword failed to find separator: %s"
-                                      % message_dict['keyword_separator'])
+                    self.logger.error(
+                        f"MessageCallbackProvider on_message_keyword failed to find separator: {message_dict['keyword_separator']}")
                     self.logger.error(f"**** MessageCallbackProvider Skipping field={field} ")
                     continue
 
@@ -1460,8 +1456,8 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
             if data:
                 self.topic_manager.append_data(msg.topic, data)
             else:
-                self.logger.error("MessageCallbackProvider on_message_keyword failed to find data in: topic=%s and payload=%s"
-                                  % (msg.topic, msg.payload))
+                self.logger.error(
+                    f"MessageCallbackProvider on_message_keyword failed to find data in: topic={msg.topic} and payload={msg.payload}")
 
         except Exception as exception: # (want to catch all) pylint: disable=broad-except
             self._log_exception('on_message_keyword', exception, msg)
@@ -1498,8 +1494,9 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
                 else:
                     lookup_key = key
                 if lookup_key in filters and value in filters[lookup_key]:
-                    self.logger.info("MessageCallbackProvider on_message_json filtered out %s : %s with %s=%s"
-                                     % (msg.topic, msg.payload, lookup_key, filters[lookup_key]))
+                    self.logger.info(
+                        (f"MessageCallbackProvider on_message_json filtered out {msg.topic} : "
+                        f"{msg.payload} with {lookup_key}={filters[lookup_key]}"))
                     return
                 if not fields.get(lookup_key, {}).get('ignore', fields_ignore_default):
                     (fieldname, value) = self._update_data(fields, fields_conversion_func, lookup_key, value, unit_system)
@@ -1814,10 +1811,9 @@ class MQTTSubscriber():
             time.sleep(1)
 
         if self.userdata['connect_rc'] > 0:
-            raise weewx.WeeWxIOError("Unable to connect. Return code is %i, '%s', flags are %s."
-                                     % (self.userdata['connect_rc'],
-                                        connack_string(self.userdata['connect_rc']),
-                                        self.userdata['connect_flags']))
+            raise weewx.WeeWxIOError(
+                (f"Unable to connect. Return code is {int(self.userdata['connect_rc'])}, '{connack_string(self.userdata['connect_rc'])}', "
+                f"flags are {self.userdata['connect_flags']}."))
 
         self.logger.info("MQTT initialization complete.")
 
@@ -1853,8 +1849,7 @@ class MQTTSubscriber():
         self.logger.info(f"Disconnected with result code {int(rc)}")
 
     def _on_subscribe(self, client, userdata, mid, granted_qos): # (match callback signature) pylint: disable=unused-argument
-        self.logger.info("Subscribed to mid: %i is size %i has a QOS of %i"
-                         %(mid, len(granted_qos), granted_qos[0]))
+        self.logger.info(f"Subscribed to mid: {int(mid)} is size {len(granted_qos)} has a QOS of {int(granted_qos[0])}")
 
     def _on_log(self, client, userdata, level, msg): # (match callback signature) pylint: disable=unused-argument
         self.mqtt_logger[level](f"MQTTSubscribe MQTT: {msg}")
@@ -1917,58 +1912,54 @@ class MQTTSubscribeService(StdService):
         """ Handle the new loop packet event. """
         # packet has traveled back in time
         if self.end_ts > event.packet['dateTime']:
-            self.logger.error("Ignoring packet has dateTime of %f which is prior to previous packet %f"
-                              %(event.packet['dateTime'], self.end_ts))
+            self.logger.error(f"Ignoring packet has dateTime of {event.packet['dateTime']:f} which is prior to previous packet {self.end_ts:f}")
         else:
             start_ts = self.end_ts
             self.end_ts = event.packet['dateTime']
 
             for queue in self.subscriber.queues: # topics might not be cached.. therefore use subscribed?
-                self.logger.trace("Packet prior to update is: %s %s"
-                                  % (weeutil.weeutil.timestamp_to_string(event.packet['dateTime']),
-                                     to_sorted_string(event.packet)))
+                self.logger.trace(
+                    (f"Packet prior to update is: "
+                    f"{weeutil.weeutil.timestamp_to_string(event.packet['dateTime'])} {to_sorted_string(event.packet)}"))
                 target_data = self.subscriber.get_accumulated_data(queue,
                                                                    start_ts, self.end_ts, event.packet['usUnits'])
                 self.logger.trace(f"Queue {queue['name']} has data: {target_data}")
                 event.packet.update(target_data)
-                self.logger.trace("Packet after update is: %s %s"
-                                  % (weeutil.weeutil.timestamp_to_string(event.packet['dateTime']),
-                                     to_sorted_string(event.packet)))
+                self.logger.trace(
+                    f"Packet after update is: {weeutil.weeutil.timestamp_to_string(event.packet['dateTime'])} {to_sorted_string(event.packet)}")
 
-            self.logger.debug("data-> final packet is %s: %s"
-                              % (weeutil.weeutil.timestamp_to_string(event.packet['dateTime']),
-                                 to_sorted_string(event.packet)))
+            self.logger.debug(
+                f"data-> final packet is {weeutil.weeutil.timestamp_to_string(event.packet['dateTime'])}: {to_sorted_string(event.packet)}")
 
     # this works for hardware generation, but software generation does not 'quality control'
     # the archive record, so this data is not 'QC' in this case.
     # If this is important, bind to the loop packet.
     def new_archive_record(self, event):
         """ Handle the new archive record event. """
-        self.logger.debug("data-> incoming record is %s: %s"
-                          % (weeutil.weeutil.timestamp_to_string(event.record['dateTime']),
-                             to_sorted_string(event.record)))
+        self.logger.debug(
+            f"data-> incoming record is {weeutil.weeutil.timestamp_to_string(event.record['dateTime'])}: {to_sorted_string(event.record)}")
         if self.binding == 'archive':
             end_ts = event.record['dateTime']
             start_ts = end_ts - event.record['interval'] * 60
 
             for queue in self.subscriber.queues:
-                self.logger.trace("Record prior to update is: %s %s"
-                                  % (weeutil.weeutil.timestamp_to_string(event.record['dateTime']),
-                                     to_sorted_string(event.record)))
+                self.logger.trace(
+                    (f"Record prior to update is: "
+                    f"{weeutil.weeutil.timestamp_to_string(event.record['dateTime'])} {to_sorted_string(event.record)}"))
                 target_data = self.subscriber.get_accumulated_data(queue, start_ts, end_ts, event.record['usUnits'])
                 self.logger.trace(f"Queue {queue['name']} has data: {target_data}")
                 event.record.update(target_data)
-                self.logger.trace("Record after update is: %s %s"
-                                  % (weeutil.weeutil.timestamp_to_string(event.record['dateTime']),
-                                     to_sorted_string(event.record)))
+                self.logger.trace(
+                    f"Record after update is: {weeutil.weeutil.timestamp_to_string(event.record['dateTime'])} {to_sorted_string(event.record)}")
 
         if self.subscriber.cached_fields:
             target_data = {}
             for field in self.subscriber.cached_fields:
                 if field in event.record:
                     timestamp = time.time()
-                    self.logger.trace("Update cache %s to %s with units of %i and timestamp of %i"
-                                    % (event.record[field], field, event.record['usUnits'], timestamp))
+                    self.logger.trace(
+                        (f"Update cache {event.record[field]} "
+                        f"to {field} with units of {int(event.record['usUnits'])} and timestamp of {int(timestamp)}"))
                     self.cache.update_value(field,
                                             event.record[field],
                                             event.record['usUnits'],
@@ -1977,14 +1968,12 @@ class MQTTSubscribeService(StdService):
                     target_data[field] = self.cache.get_value(field,
                                                             time.time(),
                                                             self.subscriber.cached_fields[field]['expires_after'])
-                    self.logger.trace("target_data after cache lookup is: %s"
-                                    % to_sorted_string(target_data))
+                    self.logger.trace(f"target_data after cache lookup is: {to_sorted_string(target_data)}")
 
             event.record.update(target_data)
 
-        self.logger.debug("data-> final record is %s: %s"
-                          % (weeutil.weeutil.timestamp_to_string(event.record['dateTime']),
-                             to_sorted_string(event.record)))
+        self.logger.debug(
+            f"data-> final record is {weeutil.weeutil.timestamp_to_string(event.record['dateTime'])}: {to_sorted_string(event.record)}")
 
 def loader(config_dict, engine): # (Need to match function signature) pylint: disable=unused-argument
     """ Load and return the driver. """
@@ -2044,9 +2033,8 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice): # (methods not used) py
 
     def new_archive_record(self, event):
         """ Handle the new archive record event. """
-        self.logger.debug("data-> final record is %s: %s"
-                          % (weeutil.weeutil.timestamp_to_string(event.record['dateTime']),
-                             to_sorted_string(event.record)))
+        self.logger.debug(
+            f"data-> final record is {weeutil.weeutil.timestamp_to_string(event.record['dateTime'])}: {to_sorted_string(event.record)}")
 
     def genLoopPackets(self): # need to override parent - pylint: disable=invalid-name
         """ Called to generate loop packets. """
@@ -2060,14 +2048,17 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice): # (methods not used) py
                     if data:
                         archive_start = weeutil.weeutil.startOfInterval(data['dateTime'], self._archive_interval)
                         if archive_start < self.prev_archive_start:
-                            self.logger.error("Ignoring record because %s archival start is before previous archive start %s: %s"
-                                              % (archive_start, self.prev_archive_start, to_sorted_string(data)))
+                            self.logger.error(
+                                (f"Ignoring record because {archive_start} archival start "
+                                f"is before previous archive start {self.prev_archive_start}: "
+                                f"{to_sorted_string(data)}"))
                         else:
                             packet_count += 1
                             self.last_loop_packet_ts = data['dateTime']
                             self.prev_archive_start = archive_start
-                            self.logger.debug("data-> final loop packet is %s %s: %s"
-                                              % (queue['name'], weeutil.weeutil.timestamp_to_string(data['dateTime']), to_sorted_string(data)))
+                            self.logger.debug(
+                                (f"data-> final loop packet is {queue['name']} {weeutil.weeutil.timestamp_to_string(data['dateTime'])}: "
+                                f"{to_sorted_string(data)}"))
                             yield data
 
             if packet_count == 0:
@@ -2082,8 +2073,8 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice): # (methods not used) py
                             data['MQTTSubscribe'] = None # WeeWX accumulator requires at least one observation
                             data['usUnits'] = 1
                             self.last_loop_packet_ts = data['dateTime']
-                            self.logger.trace("Creating empty loop packet %s: %s"
-                                              % (weeutil.weeutil.timestamp_to_string(data['dateTime']), to_sorted_string(data)))
+                            self.logger.trace(
+                                f"Creating empty loop packet {weeutil.weeutil.timestamp_to_string(data['dateTime'])}: {to_sorted_string(data)}")
                             yield data
 
                         self.start_loop_period_ts = start_loop_period_ts
@@ -2098,8 +2089,9 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice): # (methods not used) py
 
         for data in self.subscriber.get_data(self.queue):
             if data:
-                self.logger.debug("data-> final archive record is %s %s: %s"
-                                  % (self.archive_topic, weeutil.weeutil.timestamp_to_string(data['dateTime']), to_sorted_string(data)))
+                self.logger.debug(
+                    (f"data-> final archive record is {self.archive_topic} {weeutil.weeutil.timestamp_to_string(data['dateTime'])}: "
+                    f"{to_sorted_string(data)}"))
                 if lastgood_ts is None  or data['dateTime'] > lastgood_ts:
                     yield data
             else:
@@ -2324,8 +2316,7 @@ class Simulator():
             time.sleep(sleep_amount)
 
             for record in driver.genArchiveRecords(end_period_ts):
-                print("Record is: %s %s"
-                      % (weeutil.weeutil.timestamp_to_string(record['dateTime']), to_sorted_string(record)))
+                print(f"Record is: {weeutil.weeutil.timestamp_to_string(record['dateTime'])} {to_sorted_string(record)}")
 
                 i += 1
                 if i >= self.record_count:
@@ -2335,9 +2326,7 @@ class Simulator():
         """ Simulate running MQTTSubscribe as a driver that generates loop packets. """
         i = 0
         for packet in driver.genLoopPackets():
-            print("Packet is: %s %s"
-                  % (weeutil.weeutil.timestamp_to_string(packet['dateTime']),
-                     to_sorted_string(packet)))
+            print(f"Packet is: {weeutil.weeutil.timestamp_to_string(packet['dateTime'])} {to_sorted_string(packet)}")
             i += 1
             if i >= self.record_count:
                 break
@@ -2366,16 +2355,18 @@ class Simulator():
                                                        record=data,
                                                        origin='hardware')
                 self.engine.dispatchEvent(new_archive_record_event)
-                print("Archive Record is: %s %s"
-                      % (weeutil.weeutil.timestamp_to_string(new_archive_record_event.record['dateTime']),
-                         to_sorted_string(new_archive_record_event.record)))
+                print(
+                    (f"Archive Record is: "
+                    f"{weeutil.weeutil.timestamp_to_string(new_archive_record_event.record['dateTime'])} "
+                    f"{to_sorted_string(new_archive_record_event.record)}"))
             elif self.binding == 'loop':
                 new_loop_packet_event = weewx.Event(weewx.NEW_LOOP_PACKET,
                                                     packet=data)
                 self.engine.dispatchEvent(new_loop_packet_event)
-                print("Loop packet is: %s %s"
-                      % (weeutil.weeutil.timestamp_to_string(new_loop_packet_event.packet['dateTime']),
-                         to_sorted_string(new_loop_packet_event.packet)))
+                print(
+                    (f"Loop packet is: "
+                    f"{weeutil.weeutil.timestamp_to_string(new_loop_packet_event.packet['dateTime'])} "
+                    f"{to_sorted_string(new_loop_packet_event.packet)}"))
 
             i += 1
 
