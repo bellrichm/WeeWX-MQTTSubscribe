@@ -27,7 +27,7 @@ export APPVEYOR_REPO_BRANCH="local"
 # $env:APPVEYOR_REPO_COMMIT_AUTHOREMAIL =
 # $env:APPVEYOR_PULL_REQUEST_NUMBER =
 
-export APPVEYOR_BUILD_WORKER_IMAGE="Ubuntu"
+export APPVEYOR_BUILD_WORKER_IMAGE="Ubuntu2204"
 
 # could not fake out codecov
 #export CODECOVIO_UPLOAD="true"
@@ -37,7 +37,7 @@ export APPVEYOR_BUILD_WORKER_IMAGE="Ubuntu"
 #export COVERALLS_UPLOAD="true"
 
 # version of sonar runner installed locally
-export SONAR_SCANNER_VERSION="4.2.0.1873"
+export SONAR_SCANNER_VERSION="5.0.1.3006"
 # Run sonar locally
 # this is the most important to run locally, because it does additional analysis
 export SONAR_UPLOAD="true"
