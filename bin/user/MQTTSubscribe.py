@@ -448,22 +448,22 @@ class AbstractLogger():
     def log_environment(self, config_dict):
         """ Log the environment we are running in. """
         # Since WeeWX logs this, only log it when debugging
-        self.debug("Using weewx version %s" % weewx.__version__)
-        self.debug("Using Python %s" % sys.version)
-        self.debug("Platform %s" % platform.platform())
-        self.debug("Locale is '%s'" % locale.setlocale(locale.LC_ALL))
+        self.debug(f"Using weewx version {weewx.__version__}")
+        self.debug(f"Using Python {sys.version}")
+        self.debug(f"Platform {platform.platform()}")
+        self.debug(f"Locale is '{locale.setlocale(locale.LC_ALL)}'")
 
         self.debug(config_dict)
         archive_dict = config_dict.get('StdArchive', {})
         record_augmentation = archive_dict.get('record_augmentation', None)
         record_generation = archive_dict.get('record_generation', None)
-        self.debug("Record Augmentation is: %s" % record_augmentation)
-        self.debug("Record Generation is: %s" % record_generation)
-        self.info("Version is %s" % VERSION)
-        self.info("Log level: %i" % self.level)
-        self.info("Log debug setting: %i" % self.weewx_debug)
-        self.info("Log console: %s" % self.console)
-        self.info("Log file: %s" % self.filename)
+        self.debug(f"Record Augmentation is: {record_augmentation}")
+        self.debug(f"Record Generation is: {record_generation}")
+        self.info(f"Version is {VERSION}")
+        self.info(f"Log level: {int(self.level)}")
+        self.info(f"Log debug setting: {int(self.weewx_debug)}")
+        self.info(f"Log console: {self.console}")
+        self.info(f"Log file: {self.filename}")
 
     def trace(self, msg):
         """ Log trace messages. """
@@ -597,11 +597,11 @@ except ImportError:
                 self._logmsg(syslog.LOG_ERR, msg)
 
         def _logmsg(self, dst, msg):
-            syslog.syslog(dst, '(%s) %s: %s' % (self.mode, __name__, msg))
+            syslog.syslog(dst, f'({self.mode}) {__name__}: {msg}')
             if self.console:
-                print('%s: %s' % (__name__, msg))
+                print(f'{__name__}: {msg}')
             if self.file:
-                self.file.write('%s: %s\n' % (__name__, msg))
+                self.file.write(f'{__name__}: {msg}\n')
 
 # pylint: disable=fixme
 
@@ -711,7 +711,7 @@ class TopicManager():
         if not config.sections:
             raise ValueError("At least one topic must be configured.")
 
-        self.message_config_name = "message-%f" % time.time()
+        self.message_config_name = f"message-{time.time():f}"
 
         topic_defaults = self._configure_topic_options(config)
 
@@ -735,10 +735,10 @@ class TopicManager():
         self.queues = []
 
         single_queue = to_bool(config.get('single_queue', False))
-        self.logger.debug("TopicManager single_queue is %s" % single_queue)
+        self.logger.debug(f"TopicManager single_queue is {single_queue}")
         if single_queue:
             single_queue_obj = dict(
-                {'name': "%f-single-queue" % time.time(),
+                {'name': f"{time.time():f}-single-queue",
                  'type': 'normal',
                  'ignore_start_time': topic_defaults['ignore_start_time'],
                  'ignore_end_time': topic_defaults['ignore_end_time'],
@@ -762,7 +762,7 @@ class TopicManager():
 
             unit_system_name = topic_dict.get('unit_system', topic_defaults['unit_system_name']).strip().upper()
             if unit_system_name not in weewx.units.unit_constants:
-                raise ValueError("MQTTSubscribe: Unknown unit system: %s" % unit_system_name)
+                raise ValueError(f"MQTTSubscribe: Unknown unit system: {unit_system_name}")
             unit_system = weewx.units.unit_constants[unit_system_name]
 
             self.subscribed_topics[topic] = {}
@@ -876,7 +876,7 @@ class TopicManager():
         self.collected_units = weewx.units.unit_constants[topic_defaults['unit_system_name']]
         self.collected_fields = ['windGust', 'windGustDir', 'windDir', 'windSpeed']
         self.collected_queue = deque()
-        self.collected_topic = "%f-%s" % (time.time(), '-'.join(self.collected_fields))
+        self.collected_topic = f"{time.time():f}-{'-'.join(self.collected_fields)}"
         topic = self.collected_topic
         self.subscribed_topics[topic] = {}
         self.subscribed_topics[topic]['subscribe'] = False
@@ -904,8 +904,8 @@ class TopicManager():
         if self.collect_wind_across_loops:
             self.collector = CollectData(self.collected_fields, self.collected_units)
 
-        self.logger.debug("TopicManager self.subscribed_topics is %s" % json.dumps(self.subscribed_topics, default=str))
-        self.logger.debug("TopicManager self.cached_fields is %s" % self.cached_fields)
+        self.logger.debug(f"TopicManager self.subscribed_topics is {json.dumps(self.subscribed_topics, default=str)}")
+        self.logger.debug(f"TopicManager self.cached_fields is {self.cached_fields}")
 
     def _configure_topic_options(self, config):
         self.topic_options = ['collect_wind_across_loops', 'collect_observations', 'single_queue', 'unit_system',
@@ -916,17 +916,17 @@ class TopicManager():
         default = {}
 
         self.collect_wind_across_loops = to_bool(config.get('collect_wind_across_loops', True))
-        self.logger.debug("TopicManager self.collect_wind_across_loops is %s" % self.collect_wind_across_loops)
+        self.logger.debug(f"TopicManager self.collect_wind_across_loops is {self.collect_wind_across_loops}")
 
         self.collect_observations = to_bool(config.get('collect_observations', False))
-        self.logger.debug("TopicManager self.collect_observations is %s" % self.collect_observations)
+        self.logger.debug(f"TopicManager self.collect_observations is {self.collect_observations}")
 
         single_queue = to_bool(config.get('single_queue', False))
-        self.logger.debug("TopicManager single_queue is %s" % single_queue)
+        self.logger.debug(f"TopicManager single_queue is {single_queue}")
 
         default['unit_system_name'] = config.get('unit_system', 'US').strip().upper()
         if default['unit_system_name'] not in weewx.units.unit_constants:
-            raise ValueError("MQTTSubscribe: Unknown unit system: %s" % default['unit_system_name'])
+            raise ValueError(f"MQTTSubscribe: Unknown unit system: {default['unit_system_name']}")
 
         default['msg_id_field'] = config.get('msg_id_field', None)
         default['qos'] = to_int(config.get('qos', 0))
@@ -981,7 +981,7 @@ class TopicManager():
             if field_dict['units'] in weewx.units.conversionDict and field['name'] in weewx.units.obs_group_dict:
                 field['units'] = field_dict['units']
             else:
-                raise ValueError("For %s invalid units, %s." % (field['name'], field_dict['units']))
+                raise ValueError(f"For {field['name']} invalid units, {field_dict['units']}.")
 
         if (field_dict).get('subfields', None):
             field['subfields'] = (field_dict)['subfields'].sections
@@ -1042,7 +1042,7 @@ class TopicManager():
 
     def peek_datetime(self, queue):
         """ Return the date/time of the first element in the queue. """
-        self.logger.trace("TopicManager queue size is: %i" % len(queue))
+        self.logger.trace(f"TopicManager queue size is: {len(queue)}")
         datetime_value = None
         if queue:
             datetime_value = queue[0]['data']['dateTime']
@@ -1051,7 +1051,7 @@ class TopicManager():
 
     def peek_last_datetime(self, queue):
         """ Return the date/time of the last element in the queue. """
-        self.logger.trace("TopicManager queue size is: %i" % len(queue))
+        self.logger.trace(f"TopicManager queue size is: {len(queue)}")
         datetime_value = 0
         if queue:
             datetime_value = queue[-1]['data']['dateTime']
@@ -1068,7 +1068,7 @@ class TopicManager():
         queue_name = queue['name']
         data_queue = queue['data']
         queue_type = queue['type']
-        self.logger.trace("TopicManager starting queue %s size is: %i" %(queue_name, len(data_queue)))
+        self.logger.trace(f"TopicManager starting queue {queue_name} size is: {len(data_queue)}")
         if self.collect_wind_across_loops:
             collector = self.collector
         else:
@@ -1079,7 +1079,7 @@ class TopicManager():
 
         while data_queue:
             if data_queue[0]['data']['dateTime'] > end_ts:
-                self.logger.trace("TopicManager leaving queue: %s size: %i content: %s" %(queue_name, len(data_queue), data_queue[0]))
+                self.logger.trace(f"TopicManager leaving queue: {queue_name} size: {len(data_queue)} content: {data_queue[0]}")
                 break
             payload = data_queue.popleft()
             if queue_type == 'collector':
@@ -1136,7 +1136,7 @@ class TopicManager():
         else:
             end_ts = end_time + adjust_end_time
 
-        self.logger.trace("TopicManager processing interval: %f %f" %(start_ts, end_ts))
+        self.logger.trace(f"TopicManager processing interval: {start_ts:f} {end_ts:f}")
         accumulator = weewx.accum.Accum(weeutil.weeutil.TimeSpan(start_ts, end_ts))
 
         for data in self.get_data(queue, end_ts):
@@ -1170,7 +1170,7 @@ class TopicManager():
     def _queue_size_check(self, queue, max_queue):
         while len(queue) >= max_queue:
             element = queue.popleft()
-            self.logger.error("TopicManager queue limit %i reached. Removing: %s" %(max_queue, element))
+            self.logger.error(f"TopicManager queue limit {int(max_queue)} reached. Removing: {element}")
 
     def get_fields(self, topic):
         """ Get the fields. """
@@ -1233,7 +1233,7 @@ class TopicManager():
                 self.topics[topic] = subscribed_topic
                 return subscribed_topic
 
-        raise ValueError("Did not find topic, %s." % topic)
+        raise ValueError(f"Did not find topic, {topic}.")
 
     def _to_epoch(self, datetime_input, datetime_format, offset_format=None):
         self.logger.trace("TopicManager datetime conversion datetime_input:%s datetime_format:%s offset_format:%s"
@@ -1248,14 +1248,14 @@ class TopicManager():
 
             datetime_string = datetime_input[:offset_start-1].strip()
 
-            self.logger.trace("TopicManager datetime conversion offset:%s sign:%s" %(offset, sign))
+            self.logger.trace(f"TopicManager datetime conversion offset:{offset} sign:{sign}")
 
         else:
             datetime_string = datetime_input
             offset_delta = datetime.timedelta(hours=0, minutes=0)
 
         epoch = time.mktime((datetime.datetime.strptime(datetime_string, datetime_format) + offset_delta).timetuple())
-        self.logger.trace("TopicManager datetime conversion datetime_string:%s epoch:%s" %(datetime_string, epoch))
+        self.logger.trace(f"TopicManager datetime conversion datetime_string:{datetime_string} epoch:{epoch}")
 
         return epoch
 
@@ -1339,12 +1339,12 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
                     self.logger.info("Message configuration found under [[MessageCallback]] and [[Topic]]. Ignoring [[MessageCallback]].")
 
             if not topic_manager.subscribed_topics[topic][topic_manager.message_config_name]:
-                raise ValueError("%s topic is missing '[[[[message]]]]' section" % topic)
+                raise ValueError(f"{topic} topic is missing '[[[[message]]]]' section")
             message_type = topic_manager.subscribed_topics[topic][topic_manager.message_config_name].get('type', None)
             if message_type is None:
-                raise ValueError("%s topic is missing '[[[[message]]]] type=' section" % topic)
+                raise ValueError(f"{topic} topic is missing '[[[[message]]]] type=' section")
             if message_type not in ['json', 'keyword', 'individual']:
-                raise ValueError("Invalid type configured: %s" % message_type)
+                raise ValueError(f"Invalid type configured: {message_type}")
 
             # ToDo Investigate this and copying, maybe a merge?
             if 'flatten_delimiter' not in topic_manager.subscribed_topics[topic][topic_manager.message_config_name]:
@@ -1413,16 +1413,16 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
                     i += 1
         else:
             #if not fields.get(lookup_key, {}).get('ignore', fields_ignore_default):
-            self.logger.error("Skipping %s because data is an array and has no configured subfields. Array=%s" % (new_key, value))
+            self.logger.error(f"Skipping {new_key} because data is an array and has no configured subfields. Array={value}")
 
     def _log_message(self, msg):
         self.logger.debug("MessageCallbackProvider data-> incoming topic: %s, QOS: %i, retain: %s, payload: %s"
                           %(msg.topic, msg.qos, msg.retain, msg.payload))
 
     def _log_exception(self, method, exception, msg):
-        self.logger.error("MessageCallbackProvider %s failed with %s and reason %s." % (method, type(exception), exception))
-        self.logger.error("**** MessageCallbackProvider Ignoring topic=%s and payload=%s" % (msg.topic, msg.payload))
-        self.logger.error("**** MessageCallbackProvider %s" % traceback.format_exc())
+        self.logger.error(f"MessageCallbackProvider {method} failed with {type(exception)} and reason {exception}.")
+        self.logger.error(f"**** MessageCallbackProvider Ignoring topic={msg.topic} and payload={msg.payload}")
+        self.logger.error(f"**** MessageCallbackProvider {traceback.format_exc()}")
 
     def _on_message_keyword(self, client, userdata, msg): # (match callback signature) pylint: disable=unused-argument
         # Wrap all the processing in a try, so it doesn't crash and burn on any error
@@ -1447,7 +1447,7 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
                 if eq_index == -1:
                     self.logger.error("MessageCallbackProvider on_message_keyword failed to find separator: %s"
                                       % message_dict['keyword_separator'])
-                    self.logger.error("**** MessageCallbackProvider Skipping field=%s " % field)
+                    self.logger.error(f"**** MessageCallbackProvider Skipping field={field} ")
                     continue
 
                 key = field[:eq_index].strip()
@@ -1455,7 +1455,7 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
                     (fieldname, value) = self._update_data(fields, fields_conversion_func, key, field[eq_index + 1:].strip(), unit_system)
                     data[fieldname] = value
                 else:
-                    self.logger.trace("MessageCallbackProvider on_message_keyword ignoring field: %s" % key)
+                    self.logger.trace(f"MessageCallbackProvider on_message_keyword ignoring field: {key}")
 
             if data:
                 self.topic_manager.append_data(msg.topic, data)
@@ -1505,7 +1505,7 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
                     (fieldname, value) = self._update_data(fields, fields_conversion_func, lookup_key, value, unit_system)
                     data_final[fieldname] = value
                 else:
-                    self.logger.trace("MessageCallbackProvider on_message_json ignoring field: %s" % lookup_key)
+                    self.logger.trace(f"MessageCallbackProvider on_message_json ignoring field: {lookup_key}")
 
             if data_final:
                 self.topic_manager.append_data(msg.topic, data_final)
@@ -1542,7 +1542,7 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
                 data[fieldname] = value
                 self.topic_manager.append_data(msg.topic, data, fieldname)
             else:
-                self.logger.trace("MessageCallbackProvider on_message_individual ignoring field: %s" % key)
+                self.logger.trace(f"MessageCallbackProvider on_message_individual ignoring field: {key}")
 
         except Exception as exception: # (want to catch all) pylint: disable=broad-except
             self._log_exception('on_message_individual', exception, msg)
@@ -1560,7 +1560,7 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
             elif message_type == 'keyword':
                 self._on_message_keyword(client, userdata, msg)
             else:
-                self.logger.error("Unknown message_type=%s. Skipping topic=%s and payload=%s" % (message_type, msg.topic, msg.payload))
+                self.logger.error(f"Unknown message_type={message_type}. Skipping topic={msg.topic} and payload={msg.payload}")
         except Exception as exception: # (want to catch all) pylint: disable=broad-except
             self._log_exception('on_message_individual', exception, msg)
 
@@ -1572,8 +1572,8 @@ class MQTTSubscriber():
 
         exclude_keys = ['password']
         sanitized_service_dict = {k: service_dict[k] for k in set(list(service_dict.keys())) - set(exclude_keys)}
-        self.logger.debug("sanitized configuration removed %s" % exclude_keys)
-        self.logger.debug("MQTTSUBscriber sanitized_service_dict is %s" % sanitized_service_dict)
+        self.logger.debug(f"sanitized configuration removed {exclude_keys}")
+        self.logger.debug(f"MQTTSUBscriber sanitized_service_dict is {sanitized_service_dict}")
 
         message_callback_config = service_dict.get('message_callback', None)
 
@@ -1583,7 +1583,7 @@ class MQTTSubscriber():
 
         self.archive_topic = service_dict.get('archive_topic', None)
         if self.archive_topic and self.archive_topic not in service_dict['topics']:
-            raise ValueError("Archive topic %s must be in [[topics]]" % self.archive_topic)
+            raise ValueError(f"Archive topic {self.archive_topic} must be in [[topics]]")
 
         self._check_deprecated_options(service_dict)
 
@@ -1607,20 +1607,20 @@ class MQTTSubscriber():
         max_delay = to_int(service_dict.get('max_delay', 120))
         log_mqtt = to_bool(service_dict.get('log', False))
 
-        self.logger.info("message_callback_provider_name is %s" % message_callback_provider_name)
-        self.logger.info("clientid is %s" % clientid)
-        self.logger.info("client_session is %s" % clean_session)
-        self.logger.info("host is %s" % host)
-        self.logger.info("port is %s" % port)
-        self.logger.info("keepalive is %s" % keepalive)
-        self.logger.info("username is %s" % username)
-        self.logger.info("min_delay is %s" % min_delay)
-        self.logger.info("max_delay is %s" % max_delay)
+        self.logger.info(f"message_callback_provider_name is {message_callback_provider_name}")
+        self.logger.info(f"clientid is {clientid}")
+        self.logger.info(f"client_session is {clean_session}")
+        self.logger.info(f"host is {host}")
+        self.logger.info(f"port is {port}")
+        self.logger.info(f"keepalive is {keepalive}")
+        self.logger.info(f"username is {username}")
+        self.logger.info(f"min_delay is {min_delay}")
+        self.logger.info(f"max_delay is {max_delay}")
         if password is not None:
             self.logger.info("password is set")
         else:
             self.logger.info("password is not set")
-        self.logger.info("Archive topic is %s" % self.archive_topic)
+        self.logger.info(f"Archive topic is {self.archive_topic}")
 
         self.mqtt_logger = {
             mqtt.MQTT_LOG_INFO: self.logger.info,
@@ -1667,7 +1667,7 @@ class MQTTSubscriber():
         try:
             self.client.connect(host, port, keepalive)
         except Exception as exception: # (want to catch all) pylint: disable=broad-except
-            self.logger.error("Failed to connect to %s at %i. '%s'" %(host, port, exception))
+            self.logger.error(f"Failed to connect to {host} at {int(port)}. '{exception}'")
             raise weewx.WeeWxIOError(exception)
 
     def _check_deprecated_options(self, service_dict):
@@ -1704,11 +1704,11 @@ class MQTTSubscriber():
 
                 group = unit_config.get('group')
                 if not group:
-                    raise ValueError("%s is missing a group." % unit)
+                    raise ValueError(f"{unit} is missing a group.")
 
                 unit_systems = weeutil.weeutil.option_as_list(unit_config.get('unit_system'))
                 if not unit_systems:
-                    raise ValueError("%s is missing an unit_system." % unit)
+                    raise ValueError(f"{unit} is missing an unit_system.")
 
                 for unit_system in unit_systems:
                     if unit_system == 'us':
@@ -1718,7 +1718,7 @@ class MQTTSubscriber():
                     elif unit_system == 'metricwx':
                         weewx.units.MetricWXUnits.extend({group: unit})
                     else:
-                        raise ValueError("Invalid unit_system %s for %s." % (unit_system, unit))
+                        raise ValueError(f"Invalid unit_system {unit_system} for {unit}.")
 
                 format_config = unit_config.get('format')
                 if format_config:
@@ -1783,11 +1783,11 @@ class MQTTSubscriber():
 
         valid_cert_reqs = valid_cert_reqs.get(tls_dict.get('certs_required', 'required'))
         if valid_cert_reqs is None:
-            raise ValueError("Invalid 'certs_required'., %s" % tls_dict['certs_required'])
+            raise ValueError(f"Invalid 'certs_required'., {tls_dict['certs_required']}")
 
         tls_version = valid_tls_versions.get(tls_dict.get('tls_version', 'tlsv12'))
         if tls_version is None:
-            raise ValueError("Invalid 'tls_version'., %s" % tls_dict['tls_version'])
+            raise ValueError(f"Invalid 'tls_version'., {tls_dict['tls_version']}")
 
         self.client.tls_set(ca_certs=ca_certs,
                             certfile=tls_dict.get('certfile'),
@@ -1835,8 +1835,8 @@ class MQTTSubscriber():
         # 4: Connection refused - bad username or password
         # 5: Connection refused - not authorised
         # 6-255: Currently unused.
-        self.logger.info("Connected with result code %i" % rc)
-        self.logger.info("Connected flags %s" % str(flags))
+        self.logger.info(f"Connected with result code {int(rc)}")
+        self.logger.info(f"Connected flags {str(flags)}")
 
         userdata['connect'] = True
         userdata['connect_rc'] = rc
@@ -1847,17 +1847,17 @@ class MQTTSubscriber():
                 continue
 
             (result, mid) = client.subscribe(topic, self.manager.get_qos(topic))
-            self.logger.info("Subscribing to %s has a mid %i and rc %i" %(topic, mid, result))
+            self.logger.info(f"Subscribing to {topic} has a mid {int(mid)} and rc {int(result)}")
 
     def _on_disconnect(self, client, userdata, rc): # (match callback signature) pylint: disable=unused-argument
-        self.logger.info("Disconnected with result code %i" %rc)
+        self.logger.info(f"Disconnected with result code {int(rc)}")
 
     def _on_subscribe(self, client, userdata, mid, granted_qos): # (match callback signature) pylint: disable=unused-argument
         self.logger.info("Subscribed to mid: %i is size %i has a QOS of %i"
                          %(mid, len(granted_qos), granted_qos[0]))
 
     def _on_log(self, client, userdata, level, msg): # (match callback signature) pylint: disable=unused-argument
-        self.mqtt_logger[level]("MQTTSubscribe MQTT: %s" %msg)
+        self.mqtt_logger[level](f"MQTTSubscribe MQTT: {msg}")
 
 class MQTTSubscribeService(StdService):
     """ The MQTT subscribe service. """
@@ -1883,13 +1883,13 @@ class MQTTSubscribeService(StdService):
         self.binding = service_dict.get('binding', 'loop')
 
         if 'archive_topic' in service_dict:
-            raise ValueError("archive_topic, %s, is invalid when running as a service" % service_dict['archive_topic'])
+            raise ValueError(f"archive_topic, {service_dict['archive_topic']}, is invalid when running as a service")
 
         self.end_ts = 0 # prime for processing loop packet
 
         self.subscriber = MQTTSubscriber(service_dict, self.logger)
 
-        self.logger.info("binding is %s" % self.binding)
+        self.logger.info(f"binding is {self.binding}")
 
         self.subscriber.start()
 
@@ -1898,7 +1898,7 @@ class MQTTSubscribeService(StdService):
         record_generation = archive_dict.get('record_generation', "none").lower()
 
         if self.binding not in ('loop', 'archive'):
-            raise ValueError("MQTTSubscribeService: Unknown binding: %s" % self.binding)
+            raise ValueError(f"MQTTSubscribeService: Unknown binding: {self.binding}")
 
         self.bind(weewx.NEW_ARCHIVE_RECORD, self.new_archive_record)
 
@@ -1906,7 +1906,7 @@ class MQTTSubscribeService(StdService):
             self.bind(weewx.NEW_LOOP_PACKET, self.new_loop_packet)
 
         if self.subscriber.cached_fields and record_generation != 'software' and self.binding == 'loop':
-            raise ValueError("caching is not available with record generation of type '%s' and and binding of type 'loop'" % record_generation)
+            raise ValueError(f"caching is not available with record generation of type '{record_generation}' and and binding of type 'loop'")
 
     def shutDown(self): # need to override parent - pylint: disable=invalid-name
         """Run when an engine shutdown is requested."""
@@ -1929,7 +1929,7 @@ class MQTTSubscribeService(StdService):
                                      to_sorted_string(event.packet)))
                 target_data = self.subscriber.get_accumulated_data(queue,
                                                                    start_ts, self.end_ts, event.packet['usUnits'])
-                self.logger.trace("Queue %s has data: %s" % (queue['name'], target_data))
+                self.logger.trace(f"Queue {queue['name']} has data: {target_data}")
                 event.packet.update(target_data)
                 self.logger.trace("Packet after update is: %s %s"
                                   % (weeutil.weeutil.timestamp_to_string(event.packet['dateTime']),
@@ -1956,7 +1956,7 @@ class MQTTSubscribeService(StdService):
                                   % (weeutil.weeutil.timestamp_to_string(event.record['dateTime']),
                                      to_sorted_string(event.record)))
                 target_data = self.subscriber.get_accumulated_data(queue, start_ts, end_ts, event.record['usUnits'])
-                self.logger.trace("Queue %s has data: %s" % (queue['name'], target_data))
+                self.logger.trace(f"Queue {queue['name']} has data: {target_data}")
                 event.record.update(target_data)
                 self.logger.trace("Record after update is: %s %s"
                                   % (weeutil.weeutil.timestamp_to_string(event.record['dateTime']),
@@ -2006,7 +2006,7 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice): # (methods not used) py
         self.logger.log_environment(config_dict)
 
         self.max_loop_interval = to_int(stn_dict.get('max_loop_interval', 0))
-        self.logger.info("Max loop interval is: %i" % self.max_loop_interval)
+        self.logger.info(f"Max loop interval is: {int(self.max_loop_interval)}")
         self.last_loop_packet_ts = 0
         self.start_loop_period_ts = 0
 
@@ -2021,7 +2021,7 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice): # (methods not used) py
 
         self.queue = next((q for q in self.subscriber.queues if q['name'] == self.archive_topic), None)
 
-        self.logger.info("Wait before retry is %i" % self.wait_before_retry)
+        self.logger.info(f"Wait before retry is {int(self.wait_before_retry)}")
         self.subscriber.start()
 
     @property
@@ -2205,7 +2205,7 @@ class Simulator():
         """
 
         parser = argparse.ArgumentParser(usage=usage)
-        parser.add_argument('--version', action='version', version="MQTTSubscribe version is %s" % VERSION)
+        parser.add_argument('--version', action='version', version=f"MQTTSubscribe version is {VERSION}")
         parser.add_argument('--records', dest='record_count', type=int,
                             help='The number of archive records to create.',
                             default=2)
@@ -2254,10 +2254,10 @@ class Simulator():
         self.engine = None
         self.config_dict = None
 
-        print("Simulation is %s" % self.simulation_type)
-        print("Creating %i %s records" % (self.record_count, self.binding))
-        print("Interval is %i seconds" % self.interval)
-        print("Delay is %i seconds" % self.delay)
+        print(f"Simulation is {self.simulation_type}")
+        print(f"Creating {int(self.record_count)} {self.binding} records")
+        print(f"Interval is {int(self.interval)} seconds")
+        print(f"Delay is {int(self.delay)} seconds")
 
     def init_configuration(self):
         """ Initialuze the configuration object. """
@@ -2320,7 +2320,7 @@ class Simulator():
             end_period_ts = (int(current_time / self.interval) + 1) * self.interval
             end_delay_ts = end_period_ts + self.delay
             sleep_amount = end_delay_ts - current_time
-            print("Sleeping %i seconds" % sleep_amount)
+            print(f"Sleeping {int(sleep_amount)} seconds")
             time.sleep(sleep_amount)
 
             for record in driver.genArchiveRecords(end_period_ts):
@@ -2353,7 +2353,7 @@ class Simulator():
             end_delay_ts = end_period_ts + self.delay
             sleep_amount = end_delay_ts - current_time
 
-            print("Sleeping %i seconds" % sleep_amount)
+            print(f"Sleeping {int(sleep_amount)} seconds")
             time.sleep(sleep_amount)
 
             data = {}
