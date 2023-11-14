@@ -191,7 +191,7 @@ init:
         exit 0
       fi;
 
-    - sh: ls /usr/lib/jvm
+  - sh: ls /usr/lib/jvm
 
 install:
   - sh: echo "install"
