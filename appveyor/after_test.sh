@@ -38,9 +38,6 @@ fi
 #sed -i 's/classname="/classname="bin\/user\/tests\/unit./g' nosetests.xml
 #sed -i 's/classname="/classname="bin\/user\/tests\/integ./g' nosetests2.xml
 
-echo $PATH
-echo $JAVA_HOME
-
 # only upload once
 if [ "$SONAR_UPLOAD" = "true" ]; then
   sonar-scanner \
@@ -58,5 +55,5 @@ if [ "$SONAR_UPLOAD" = "true" ]; then
     -Dsonar.python.pylint.reportPath=pylint.txt \
     -Dsonar.host.url=https://sonarcloud.io \
     -Dsonar.login=$SKEY \
-    -X
+    # -X
 fi
