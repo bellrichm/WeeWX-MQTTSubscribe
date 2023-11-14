@@ -429,7 +429,7 @@ def gettid():
 class ConversionError(ValueError):
     """ Error converting data types. """
 
-class AbstractLogger(object):
+class AbstractLogger():
     """ The abstract logging class. """
     def __init__(self, mode, level='NOTSET', filename=None, console=None):
         self.console = console
@@ -605,7 +605,7 @@ except ImportError:
 
 # pylint: disable=fixme
 
-class RecordCache(object):
+class RecordCache():
     """ Manage the cache. """
     def __init__(self):
         self.unit_system = None
@@ -644,7 +644,7 @@ class RecordCache(object):
         """ Clear the cache """
         self.cached_values = {}
 
-class CollectData(object):
+class CollectData():
     """ Manage fields that are 'grouped together', like wind data. """
     def __init__(self, fields, unit_system):
         self.fields = fields
@@ -701,7 +701,7 @@ class CollectData(object):
             self.data['dateTime'] = self.date_time
         return self.data
 
-class TopicManager(object):
+class TopicManager():
     # pylint: disable=too-many-instance-attributes
     """ Manage the MQTT topic subscriptions. """
     def __init__(self, archive_topic, config, logger):
@@ -1259,7 +1259,7 @@ class TopicManager(object):
 
         return epoch
 
-class AbstractMessageCallbackProvider(object): # pylint: disable=too-few-public-methods
+class AbstractMessageCallbackProvider(): # pylint: disable=too-few-public-methods
     """ The abstract MessageCallbackProvider. """
     def __init__(self, logger, topic_manager):
         self.logger = logger
@@ -1562,7 +1562,7 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
         except Exception as exception: # (want to catch all) pylint: disable=broad-except
             self._log_exception('on_message_individual', exception, msg)
 
-class MQTTSubscriber(object):
+class MQTTSubscriber():
     """ Manage MQTT sunscriptions. """
     def __init__(self, service_dict, logger):
         # pylint: disable=too-many-locals, too-many-statements, too-many-branches
@@ -2183,7 +2183,7 @@ class MQTTSubscribeDriverConfEditor(weewx.drivers.AbstractConfEditor): # pragma:
 
         return settings
 
-class Simulator(object):
+class Simulator():
     """ Run the service or driver. """
     # pylint: disable=too-many-instance-attributes
     def __init__(self):
