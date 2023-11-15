@@ -44,7 +44,8 @@ export SONAR_UPLOAD="true"
 
 export ENABLED="true"
 
-export RUN_ITESTS="true"
+export RUN_FTESTS="false"
+export RUN_ITESTS="false"
 
 # set api keys
 # this is separate to help ensure it is not accidentally checked in

@@ -43,6 +43,7 @@ environment:
   WEEWX_OLDEST: 4.6.1
   WEEWX_LATEST: 4.10.2
   ENABLED: true
+  RUN_FTESTS: true
   RUN_ITESTS: true
   
   WEEWX_URL: http://www.weewx.com/downloads/released_versions/
