@@ -9,15 +9,23 @@ source ./devtools/python_versions.sh
 if [ -z "$1" ]; then
     WEEWX_VERSION=$weewx_default_version
     PY_VERSION=$weewx_default_python_version
+    CODE="bin/user/MQTTSubscribe.py"
 elif [ -z "$2" ]; then
     WEEWX_VERSION=$weewx_default_version
+    PY_VERSION=$weewx_default_python_version
+    CODE=$1
+elif [ -z "$3" ]; then
+    WEEWX_VERSION=$weewx_default_version
     PY_VERSION=$1
+    CODE=$2
 else
     WEEWX_VERSION=$1
     PY_VERSION=$2
+    CODE=$3
 fi
 
-while inotifywait -e modify devtools/watchlint.sh devtools/lint.sh .pylintrc ./*.py ./bin/user ./bin/user/tests/unit/*.py ./bin/user/tests/func/*.py ./bin/user/tests/integ/*.py
+while inotifywait -e modify devtools/watchlint.sh devtools/lint.sh $CODE
+
 do
-    ./devtools/lint.sh $WEEWX_VERSION $PY_VERSION
+    ./devtools/lint.sh $WEEWX_VERSION $PY_VERSION $CODE
 done
