@@ -719,6 +719,7 @@ class TopicManager():
 
         single_queue = to_bool(config.get('single_queue', False))
         self.logger.debug(f"TopicManager single_queue is {single_queue}")
+        single_queue_obj = None
         if single_queue:
             single_queue_obj = dict(
                 {'name': f"{time.time():f}-single-queue",
@@ -733,6 +734,15 @@ class TopicManager():
             )
             self.queues.append(single_queue_obj)
 
+        self._configure_topics(config, archive_topic, single_queue, single_queue_obj, default_message_dict, topic_defaults, field_defaults)
+
+        self._add_collector_queue(topic_defaults)
+
+        self.logger.debug(f"TopicManager self.subscribed_topics is {json.dumps(self.subscribed_topics, default=str)}")
+        self.logger.debug(f"TopicManager self.cached_fields is {self.cached_fields}")
+
+    def _configure_topics(self, config, archive_topic, single_queue, single_queue_obj, default_message_dict, topic_defaults, field_defaults): # pylint: disable=too-many-arguments
+        # pylint: disable=too-many-locals, too-many-statements, too-many-branches
         for topic in config.sections: # pylint: disable=too-many-nested-blocks
             topic_dict = config.get(topic, {})
             callback_config_name = topic_dict.get('callback_config_name', topic_defaults['callback_config_name'])
@@ -753,19 +763,9 @@ class TopicManager():
             # This allows it to be set to false at the topic level, changing MQTTSubscribe from an 'opt out' to 'opt in' strategy
             self.subscribed_topics[topic]['ignore'] = to_bool(topic_dict.get('ignore', field_defaults['ignore']))
             self.subscribed_topics[topic]['subscribe'] = to_bool(topic_dict.get('subscribe', True))
-            conversion_type = topic_dict.get('conversion_type', 'float')
-            self.subscribed_topics[topic]['conversion_func'] = {}
-            if conversion_type == 'bool':
-                self.subscribed_topics[topic]['conversion_func']['source'] = 'lambda x: to_bool(x)'
-            elif conversion_type == 'float':
-                self.subscribed_topics[topic]['conversion_func']['source'] = 'lambda x: to_float(x)'
-            elif conversion_type == 'int':
-                self.subscribed_topics[topic]['conversion_func']['source'] = 'lambda x: to_int(x)'
-            else:
-                self.subscribed_topics[topic]['conversion_func']['source'] = 'lambda x: x'
-            # pylint: disable=eval-used
-            self.subscribed_topics[topic]['conversion_func']['compiled'] = eval(self.subscribed_topics[topic]['conversion_func']['source'])
-            # pylint: enable=eval-used
+
+            self._set_conversion_func(topic, topic_dict)
+
             self.subscribed_topics[topic]['unit_system'] = unit_system
             self.subscribed_topics[topic]['msg_id_field'] = topic_dict.get('msg_id_field', topic_defaults['msg_id_field'])
             self.subscribed_topics[topic]['qos'] = to_int(topic_dict.get('qos', topic_defaults['qos']))
@@ -778,22 +778,8 @@ class TopicManager():
             self.subscribed_topics[topic]['ignore_msg_id_field'] = callback_config_name # ToDo - investigate
             self.subscribed_topics[topic]['ignore_msg_id_field'] = []
             self.subscribed_topics[topic]['fields'] = {}
-            if not single_queue or topic == archive_topic:
-                queue = dict(
-                    {'name': topic,
-                     'type': 'normal',
-                     'ignore_start_time': to_bool(topic_dict.get('ignore_start_time', topic_defaults['ignore_start_time'])),
-                     'ignore_end_time': to_bool(topic_dict.get('ignore_end_time', topic_defaults['ignore_end_time'])),
-                     'adjust_start_time': to_float(topic_dict.get('adjust_start_time', topic_defaults['adjust_start_time'])),
-                     'adjust_end_time': to_float(topic_dict.get('adjust_end_time', topic_defaults['adjust_end_time'])),
-                     'max_size': topic_dict.get('max_queue', topic_defaults['max_queue']),
-                     'data': deque()
-                    }
-                )
-                self.queues.append(queue)
-                self.subscribed_topics[topic]['queue'] = queue
-            else:
-                self.subscribed_topics[topic]['queue'] = single_queue_obj
+            self._setup_queue(archive_topic, single_queue, single_queue_obj, topic_defaults, topic, topic_dict)
+
             self.subscribed_topics[topic]['filters'] = {}
 
             temp_message_dict = topic_dict.get(callback_config_name, {})
@@ -810,49 +796,93 @@ class TopicManager():
             self.subscribed_topics[topic][self.message_config_name] = message_dict
 
             if len(topic_dict.sections) > 1 or (len(topic_dict.sections) == 1  and message_type is None):
-                for field in topic_dict.sections:
-                    if field == callback_config_name and topic_dict[field].get('type', None) is not None:
-                        continue
-
-                    self.subscribed_topics[topic]['fields'][field] = self._configure_field(topic_dict, topic_dict[field], field, field_defaults)
-
-                    if self.subscribed_topics[topic]['fields'][field].get('subfields'):
-                        self.subscribed_topics[topic]['fields'][field]['ignore_msg_id_field'] = field_defaults['ignore_msg_id_field']
-
-                        for subfield in self.subscribed_topics[topic]['fields'][field].get('subfields', []):
-                            self.subscribed_topics[topic]['fields'][subfield] = \
-                                self._configure_field(self.subscribed_topics[topic]['fields'][field],
-                                                      topic_dict[field]['subfields'][subfield],
-                                                      subfield,
-                                                      self.subscribed_topics[topic]['fields'][field])
-                            if 'units' in self.subscribed_topics[topic]['fields'][field]:
-                                self.subscribed_topics[topic]['fields'][subfield]['units'] = \
-                                    self.subscribed_topics[topic]['fields'][field]['units']
-                            self._configure_ignore_fields(topic_dict,
-                                                          topic_dict[field],
-                                                          topic, subfield,
-                                                          self.subscribed_topics[topic]['fields'][field])
-                    else:
-                        self._configure_ignore_fields(topic_dict, topic_dict[field], topic, field, field_defaults)
-                    filter_values = weeutil.weeutil.option_as_list(topic_dict[field].get('filter_out_message_when', None))
-                    if filter_values:
-                        conversion_func = self.subscribed_topics[topic]['fields'][field]['conversion_func']['compiled']
-                        self._configure_filter_out_message(topic, field, filter_values, conversion_func)
-                    self._configure_cached_fields(topic_dict[field])
+                self. _configure_topic_fields(field_defaults, callback_config_name, topic, topic_dict)
             else:
-                # See if any field options are directly under the topic.
-                # And if so, use the topic as the field name.
-                for (key, value) in topic_dict.items(): # match signature pylint: disable=unused-variable
-                    if key not in self.topic_options:
-                        self.subscribed_topics[topic]['fields'][topic] = self._configure_field(topic_dict, topic_dict, topic, field_defaults)
-                        self._configure_ignore_fields(topic_dict, topic_dict, topic, topic, field_defaults)
-                        filter_values = weeutil.weeutil.option_as_list(topic_dict.get('filter_out_message_when', None))
-                        if filter_values:
-                            conversion_func = self.subscribed_topics[topic]['fields'][topic]['conversion_func']['compiled']
-                            self._configure_filter_out_message(topic, topic, filter_values, conversion_func)
-                        self._configure_cached_fields(topic_dict)
-                        break
+                self._configure_topic_as_field(field_defaults, topic, topic_dict)
 
+    def _setup_queue(self, archive_topic, single_queue, single_queue_obj, topic_defaults, topic, topic_dict): # pylint: disable=too-many-arguments
+        if not single_queue or topic == archive_topic:
+            queue = dict(
+                {'name': topic,
+                    'type': 'normal',
+                    'ignore_start_time': to_bool(topic_dict.get('ignore_start_time', topic_defaults['ignore_start_time'])),
+                    'ignore_end_time': to_bool(topic_dict.get('ignore_end_time', topic_defaults['ignore_end_time'])),
+                    'adjust_start_time': to_float(topic_dict.get('adjust_start_time', topic_defaults['adjust_start_time'])),
+                    'adjust_end_time': to_float(topic_dict.get('adjust_end_time', topic_defaults['adjust_end_time'])),
+                    'max_size': topic_dict.get('max_queue', topic_defaults['max_queue']),
+                    'data': deque()
+                }
+            )
+            self.queues.append(queue)
+            self.subscribed_topics[topic]['queue'] = queue
+        else:
+            self.subscribed_topics[topic]['queue'] = single_queue_obj
+
+    def _set_conversion_func(self, topic, topic_dict):
+        conversion_type = topic_dict.get('conversion_type', 'float')
+        self.subscribed_topics[topic]['conversion_func'] = {}
+        if conversion_type == 'bool':
+            self.subscribed_topics[topic]['conversion_func']['source'] = 'lambda x: to_bool(x)'
+        elif conversion_type == 'float':
+            self.subscribed_topics[topic]['conversion_func']['source'] = 'lambda x: to_float(x)'
+        elif conversion_type == 'int':
+            self.subscribed_topics[topic]['conversion_func']['source'] = 'lambda x: to_int(x)'
+        else:
+            self.subscribed_topics[topic]['conversion_func']['source'] = 'lambda x: x'
+        # pylint: disable=eval-used
+        self.subscribed_topics[topic]['conversion_func']['compiled'] = eval(self.subscribed_topics[topic]['conversion_func']['source'])
+        # pylint: enable=eval-used
+
+    def _configure_topic_fields(self, field_defaults, callback_config_name, topic, topic_dict):
+        for field in topic_dict.sections:
+            if field == callback_config_name and topic_dict[field].get('type', None) is not None:
+                continue
+
+            self.subscribed_topics[topic]['fields'][field] = self._configure_field(topic_dict, topic_dict[field], field, field_defaults)
+
+            if self.subscribed_topics[topic]['fields'][field].get('subfields'):
+                self.subscribed_topics[topic]['fields'][field]['ignore_msg_id_field'] = field_defaults['ignore_msg_id_field']
+
+                self._configure_subfields(topic, field, topic_dict)
+
+            else:
+                self._configure_ignore_fields(topic_dict, topic_dict[field], topic, field, field_defaults)
+            filter_values = weeutil.weeutil.option_as_list(topic_dict[field].get('filter_out_message_when', None))
+            if filter_values:
+                conversion_func = self.subscribed_topics[topic]['fields'][field]['conversion_func']['compiled']
+                self._configure_filter_out_message(topic, field, filter_values, conversion_func)
+            self._configure_cached_fields(topic_dict[field])
+
+    def _configure_subfields(self, topic, field, topic_dict):
+        for subfield in self.subscribed_topics[topic]['fields'][field].get('subfields', []):
+            self.subscribed_topics[topic]['fields'][subfield] = \
+                self._configure_field(self.subscribed_topics[topic]['fields'][field],
+                                        topic_dict[field]['subfields'][subfield],
+                                        subfield,
+                                        self.subscribed_topics[topic]['fields'][field])
+            if 'units' in self.subscribed_topics[topic]['fields'][field]:
+                self.subscribed_topics[topic]['fields'][subfield]['units'] = \
+                    self.subscribed_topics[topic]['fields'][field]['units']
+            self._configure_ignore_fields(topic_dict,
+                                            topic_dict[field],
+                                            topic, subfield,
+                                            self.subscribed_topics[topic]['fields'][field])
+
+    def _configure_topic_as_field(self, field_defaults, topic, topic_dict):
+        # See if any field options are directly under the topic.
+        # And if so, use the topic as the field name.
+        for (key, _) in topic_dict.items():
+            if key not in self.topic_options:
+                self.subscribed_topics[topic]['fields'][topic] = self._configure_field(topic_dict, topic_dict, topic, field_defaults)
+                self._configure_ignore_fields(topic_dict, topic_dict, topic, topic, field_defaults)
+                filter_values = weeutil.weeutil.option_as_list(topic_dict.get('filter_out_message_when', None))
+                if filter_values:
+                    conversion_func = self.subscribed_topics[topic]['fields'][topic]['conversion_func']['compiled']
+                    self._configure_filter_out_message(topic, topic, filter_values, conversion_func)
+                self._configure_cached_fields(topic_dict)
+                break
+
+    def _add_collector_queue(self, topic_defaults):
         # Add the collector queue as a subscribed topic so that data can retrieved from it
         # Yes, this is a bit of a hack.
         # Note, it would not be too hard to allow additional fields via the [fields] configuration option
@@ -886,9 +916,6 @@ class TopicManager():
 
         if self.collect_wind_across_loops:
             self.collector = CollectData(self.collected_fields, self.collected_units)
-
-        self.logger.debug(f"TopicManager self.subscribed_topics is {json.dumps(self.subscribed_topics, default=str)}")
-        self.logger.debug(f"TopicManager self.cached_fields is {self.cached_fields}")
 
     def _configure_topic_options(self, config):
         self.topic_options = ['collect_wind_across_loops', 'collect_observations', 'single_queue', 'unit_system',
