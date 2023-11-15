@@ -1994,46 +1994,56 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice): # (methods not used) py
         """ Called to generate loop packets. """
         while True:
             packet_count = 0
-            for queue in self.subscriber.queues:
-                if queue['name'] == self.archive_topic:
-                    continue
-
-                for data in self.subscriber.get_data(queue):
-                    if data:
-                        archive_start = weeutil.weeutil.startOfInterval(data['dateTime'], self._archive_interval)
-                        if archive_start < self.prev_archive_start:
-                            self.logger.error(
-                                (f"Ignoring record because {archive_start} archival start "
-                                f"is before previous archive start {self.prev_archive_start}: "
-                                f"{to_sorted_string(data)}"))
-                        else:
-                            packet_count += 1
-                            self.last_loop_packet_ts = data['dateTime']
-                            self.prev_archive_start = archive_start
-                            self.logger.debug(
-                                (f"data-> final loop packet is {queue['name']} {weeutil.weeutil.timestamp_to_string(data['dateTime'])}: "
-                                f"{to_sorted_string(data)}"))
-                            yield data
+            for data in self._process_queues():
+                packet_count += 1
+                yield data
 
             if packet_count == 0:
-                self.logger.trace("Queues are empty.")
-                if self.max_loop_interval:
-                    now = int(time.time() + 0.5)
-                    start_loop_period_ts = weeutil.weeutil.startOfInterval(now, self.max_loop_interval)
-                    if start_loop_period_ts != self.start_loop_period_ts:
-                        if self.last_loop_packet_ts < self.start_loop_period_ts:
-                            data = {}
-                            data['dateTime'] = self.start_loop_period_ts
-                            data['MQTTSubscribe'] = None # WeeWX accumulator requires at least one observation
-                            data['usUnits'] = 1
-                            self.last_loop_packet_ts = data['dateTime']
-                            self.logger.trace(
-                                f"Creating empty loop packet {weeutil.weeutil.timestamp_to_string(data['dateTime'])}: {to_sorted_string(data)}")
-                            yield data
+                data = self._handle_empty_queue()
+                if data:
+                    yield data
 
-                        self.start_loop_period_ts = start_loop_period_ts
+    def _process_queues(self):
+        for queue in self.subscriber.queues:
+            if queue['name'] == self.archive_topic:
+                continue
 
-                time.sleep(self.wait_before_retry)
+            for data in self.subscriber.get_data(queue):
+                if data:
+                    archive_start = weeutil.weeutil.startOfInterval(data['dateTime'], self._archive_interval)
+                    if archive_start < self.prev_archive_start:
+                        self.logger.error(
+                            (f"Ignoring record because {archive_start} archival start "
+                            f"is before previous archive start {self.prev_archive_start}: "
+                            f"{to_sorted_string(data)}"))
+                    else:
+                        self.last_loop_packet_ts = data['dateTime']
+                        self.prev_archive_start = archive_start
+                        self.logger.debug(
+                            (f"data-> final loop packet is {queue['name']} {weeutil.weeutil.timestamp_to_string(data['dateTime'])}: "
+                            f"{to_sorted_string(data)}"))
+                        yield data
+
+    def _handle_empty_queue(self):
+        self.logger.trace("Queues are empty.")
+        if self.max_loop_interval:
+            now = int(time.time() + 0.5)
+            start_loop_period_ts = weeutil.weeutil.startOfInterval(now, self.max_loop_interval)
+            if start_loop_period_ts != self.start_loop_period_ts:
+                if self.last_loop_packet_ts < self.start_loop_period_ts:
+                    data = {}
+                    data['dateTime'] = self.start_loop_period_ts
+                    data['MQTTSubscribe'] = None # WeeWX accumulator requires at least one observation
+                    data['usUnits'] = 1
+                    self.last_loop_packet_ts = data['dateTime']
+                    self.logger.trace(
+                        f"Creating empty loop packet {weeutil.weeutil.timestamp_to_string(data['dateTime'])}: {to_sorted_string(data)}")
+                    return data
+
+                self.start_loop_period_ts = start_loop_period_ts
+
+        time.sleep(self.wait_before_retry)
+        return None
 
     def genArchiveRecords(self, lastgood_ts): # need to override parent - pylint: disable=invalid-name
         """ Called to generate the archive records. """
