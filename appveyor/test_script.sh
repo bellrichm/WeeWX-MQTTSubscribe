@@ -53,18 +53,20 @@ if [ $rc -ne 0 ]; then
   exit $rc
 fi
 
-if [ "$BUILDTYPE" = "LOCAL" ]; then
-  HTML_OPTIONS=" --cov-report html:cover2 "
+if [ "$RUN_ITESTS" != "true" ]; then
+  if [ "$BUILDTYPE" = "LOCAL" ]; then
+    HTML_OPTIONS=" --cov-report html:cover2 "
+  fi
+
+  PYTHONPATH=bin:$PPATH pytest ./bin/user/tests/integ --junitxml=results2.xml --cov-report xml:coverage2.xml --verbosity=1 --log-level=ERROR --cov=user.MQTTSubscribe --cov-branch $HTML_OPTIONS
+  rc=$?
+
+  if [ "$BUILDTYPE" != "LOCAL" ]; then
+    find "$APPVEYOR_BUILD_FOLDER" -type f -name 'results2.xml' -print0 | xargs -0 -I '{}' curl -F 'file=@{}' "https://ci.appveyor.com/api/testresults/junit/$APPVEYOR_JOB_ID"
+  fi
+
+  # coveralls uses this file, so stash a copy
+  cp .coverage .coverage2
 fi
-
- PYTHONPATH=bin:$PPATH pytest ./bin/user/tests/integ --junitxml=results2.xml --cov-report xml:coverage2.xml --verbosity=1 --log-level=ERROR --cov=user.MQTTSubscribe --cov-branch $HTML_OPTIONS
- rc=$?
-
-if [ "$BUILDTYPE" != "LOCAL" ]; then
-  find "$APPVEYOR_BUILD_FOLDER" -type f -name 'results2.xml' -print0 | xargs -0 -I '{}' curl -F 'file=@{}' "https://ci.appveyor.com/api/testresults/junit/$APPVEYOR_JOB_ID"
-fi
-
- # coveralls uses this file, so stash a copy
-cp .coverage .coverage2
 
 exit $rc

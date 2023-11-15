@@ -44,6 +44,8 @@ export SONAR_UPLOAD="true"
 
 export ENABLED="true"
 
+export RUN_ITESTS="true"
+
 # set api keys
 # this is separate to help ensure it is not accidentally checked in
 source ./localtools/init.sh

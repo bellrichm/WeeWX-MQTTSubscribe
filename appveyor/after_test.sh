@@ -30,8 +30,10 @@ if [ "$COVERALLS_UPLOAD" = "true" ]; then
   #COVERALLS_PARALLEL=true coveralls
   # coveralls uses the .coverage file
   # get the one from the unit tests
-  cp .coverage1 .coverage
-  coveralls
+  if [ "$RUN_ITESTS" != "true" ]; then
+    cp .coverage1 .coverage
+    coveralls
+  fi
 fi
 
 # patch up dirs for sonar
