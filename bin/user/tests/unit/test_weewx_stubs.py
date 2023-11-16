@@ -54,7 +54,7 @@ class weeutil:
                 return "******* N/A *******     (    N/A   )"
 
         @staticmethod
-        def _get_object(module_class):
+        def get_object(module_class):
             """Given a string with a module class name, it imports and returns the class."""
             # Split the path into its parts
             parts = module_class.split('.')

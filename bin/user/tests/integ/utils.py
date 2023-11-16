@@ -101,7 +101,7 @@ def get_callback(payload_type, config_dict, manager, logger):
     message_callback_provider_name = config_dict.get('message_callback_provider',
                                                      'user.MQTTSubscribe.MessageCallbackProvider')
 
-    message_callback_provider_class = weeutil.weeutil._get_object(message_callback_provider_name) # pylint: disable=protected-access
+    message_callback_provider_class = weeutil.weeutil.get_object(message_callback_provider_name)
     message_callback_provider = message_callback_provider_class(message_callback_config,
                                                                 logger,
                                                                 manager)

@@ -577,8 +577,6 @@ class Logger(AbstractLogger):
             if self.file:
                 self.file.write(f'{__name__}: {msg}\n')
 
-# pylint: disable=fixme
-
 class RecordCache():
     """ Manage the cache. """
     def __init__(self):
@@ -678,7 +676,6 @@ class TopicManager():
     # pylint: disable=too-many-instance-attributes
     """ Manage the MQTT topic subscriptions. """
     def __init__(self, archive_topic, config, logger):
-        # pylint: disable=too-many-locals, too-many-statements, too-many-branches
         self.logger = logger
 
         if not config.sections:
@@ -732,8 +729,7 @@ class TopicManager():
         self.logger.debug(f"TopicManager self.cached_fields is {self.cached_fields}")
 
     def _configure_topics(self, config, archive_topic, single_queue, single_queue_obj, default_message_dict, topic_defaults, field_defaults): # pylint: disable=too-many-arguments
-        # pylint: disable=too-many-locals, too-many-statements, too-many-branches
-        for topic in config.sections: # pylint: disable=too-many-nested-blocks
+        for topic in config.sections:
             topic_dict = config.get(topic, {})
             callback_config_name = topic_dict.get('callback_config_name', topic_defaults['callback_config_name'])
 
@@ -994,8 +990,7 @@ class TopicManager():
             values.append(new_value)
         self.subscribed_topics[topic]['filters'].update({fieldname: values})
 
-    def _configure_ignore_fields(self, topic_dict, field_dict, topic, fieldname, defaults):
-        # pylint: disable=too-many-arguments
+    def _configure_ignore_fields(self, topic_dict, field_dict, topic, fieldname, defaults): # pylint: disable=too-many-arguments
         ignore_msg_id_field = topic_dict.get('ignore_msg_id_field', defaults['ignore_msg_id_field'])
         if to_bool((field_dict).get('ignore_msg_id_field', ignore_msg_id_field)):
             self.subscribed_topics[topic]['ignore_msg_id_field'].append(fieldname)
@@ -1277,14 +1272,13 @@ class AbstractMessageCallbackProvider(): # pylint: disable=too-few-public-method
         """ Get the MQTT callback. """
         raise NotImplementedError("Method 'get_callback' not implemented")
 
-    def _update_data(self, fields, default_field_conversion_func, orig_name, orig_value, unit_system):
-        # pylint: disable = too-many-arguments
+    def _update_data(self, fields, default_field_conversion_func, orig_name, orig_value, unit_system): # pylint: disable = too-many-arguments
         value = self._convert_value(fields, default_field_conversion_func, orig_name, orig_value)
         fieldname = fields.get(orig_name, {}).get('name', orig_name)
 
         if orig_name in fields and 'units' in fields[orig_name]: # TODO - simplify, if possible
-            (to_units, to_group) = weewx.units.getStandardUnitType(unit_system, fieldname) # match signature pylint: disable=unused-variable
-            (value, new_units, new_group) = weewx.units.convert((value, fields[orig_name]['units'], None), to_units) # match signature pylint: disable=unused-variable
+            (to_units, _) = weewx.units.getStandardUnitType(unit_system, fieldname)
+            (value, _, _) = weewx.units.convert((value, fields[orig_name]['units'], None), to_units)
 
         if fields.get(orig_name, {}).get('contains_total', False):
             current_value = value
@@ -1369,8 +1363,7 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
         """ Get the MQTT callback. """
         return self._on_message_multi
 
-    def _flatten(self, fields, fields_ignore_default, delim, prefix, new_dict, old_dict):
-        # pylint: disable=too-many-arguments
+    def _flatten(self, fields, fields_ignore_default, delim, prefix, new_dict, old_dict): # pylint: disable=too-many-arguments
         if isinstance(old_dict, dict):
             for key, value in old_dict.items():
                 new_key = prefix + key
@@ -1383,9 +1376,8 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
         else:
             self._flatten_list(fields, fields_ignore_default, delim, prefix, prefix[:-1], old_dict, new_dict)
 
-    def _flatten_list(self, fields, fields_ignore_default, delim, prefix, new_key, value, new_dict):
-        # pylint: disable=too-many-arguments
-        if new_key in fields and 'subfields' in fields[new_key]: # pylint: disable=too-many-nested-blocks
+    def _flatten_list(self, fields, fields_ignore_default, delim, prefix, new_key, value, new_dict): # pylint: disable=too-many-arguments
+        if new_key in fields and 'subfields' in fields[new_key]:
             if len(value) > len(fields[new_key]['subfields']):
                 self.logger.error(f"Skipping {new_key} because array data too big. Array={value} subfields={fields[new_key]['subfields']}")
             elif len(value) < len(fields[new_key]['subfields']):
@@ -1411,7 +1403,7 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
         self.logger.error(f"**** MessageCallbackProvider Ignoring topic={msg.topic} and payload={msg.payload}")
         self.logger.error(f"**** MessageCallbackProvider {traceback.format_exc()}")
 
-    def _on_message_keyword(self, client, userdata, msg): # (match callback signature) pylint: disable=unused-argument
+    def _on_message_keyword(self, _client, _userdata, msg):
         # Wrap all the processing in a try, so it doesn't crash and burn on any error
         try:
             self._log_message(msg)
@@ -1450,7 +1442,7 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
         except Exception as exception: # (want to catch all) pylint: disable=broad-except
             self._log_exception('on_message_keyword', exception, msg)
 
-    def _on_message_json(self, client, userdata, msg): # (match callback signature) pylint: disable=unused-argument
+    def _on_message_json(self, _client, _userdata, msg):
         # pylint: disable=too-many-locals, too-many-branches
         # Wrap all the processing in a try, so it doesn't crash and burn on any error
         try:
@@ -1495,7 +1487,7 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
         except Exception as exception: # (want to catch all) pylint: disable=broad-except
             self._log_exception('on_message_json', exception, msg)
 
-    def _on_message_individual(self, client, userdata, msg): # (match callback signature) pylint: disable=unused-argument
+    def _on_message_individual(self, _client, _userdata, msg):
 
         # Wrap all the processing in a try, so it doesn't crash and burn on any error
         try:
@@ -1677,7 +1669,7 @@ class MQTTSubscriber():
         if log_mqtt:
             self.client.on_log = self._on_log
 
-        message_callback_provider_class = weeutil.weeutil._get_object(message_callback_provider_name) # pylint: disable=protected-access
+        message_callback_provider_class = weeutil.weeutil.get_object(message_callback_provider_name)
         message_callback_provider = message_callback_provider_class(message_callback_config,
                                                                     self.logger,
                                                                     self.manager)
@@ -1818,7 +1810,7 @@ class MQTTSubscriber():
         """ shut it down """
         self.client.disconnect()
 
-    def _on_connect(self, client, userdata, flags, rc): # (match callback signature) pylint: disable=unused-argument
+    def _on_connect(self, client, userdata, flags, rc):
         # https://pypi.org/project/paho-mqtt/#on-connect
         # rc:
         # 0: Connection successful
@@ -1842,13 +1834,13 @@ class MQTTSubscriber():
             (result, mid) = client.subscribe(topic, self.manager.get_qos(topic))
             self.logger.info(f"Subscribing to {topic} has a mid {int(mid)} and rc {int(result)}")
 
-    def _on_disconnect(self, client, userdata, rc): # (match callback signature) pylint: disable=unused-argument
+    def _on_disconnect(self, _client, _userdata, rc):
         self.logger.info(f"Disconnected with result code {int(rc)}")
 
-    def _on_subscribe(self, client, userdata, mid, granted_qos): # (match callback signature) pylint: disable=unused-argument
+    def _on_subscribe(self, _client, _userdata, mid, granted_qos):
         self.logger.info(f"Subscribed to mid: {int(mid)} is size {len(granted_qos)} has a QOS of {int(granted_qos[0])}")
 
-    def _on_log(self, client, userdata, level, msg): # (match callback signature) pylint: disable=unused-argument
+    def _on_log(self, _client, _userdata, level, msg):
         self.mqtt_logger[level](f"MQTTSubscribe MQTT: {msg}")
 
 class MQTTSubscribeService(StdService):
@@ -1972,7 +1964,7 @@ class MQTTSubscribeService(StdService):
         self.logger.debug(
             f"data-> final record is {weeutil.weeutil.timestamp_to_string(event.record['dateTime'])}: {to_sorted_string(event.record)}")
 
-def loader(config_dict, engine): # (Need to match function signature) pylint: disable=unused-argument
+def loader(config_dict, engine):
     """ Load and return the driver. """
     return MQTTSubscribeDriver(config_dict, engine) # pragma: no cover
 
