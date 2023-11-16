@@ -1,5 +1,5 @@
 #
-#    Copyright (c) 2020-2022 Rich Bell <bellrichm@gmail.com>
+#    Copyright (c) 2020-2023 Rich Bell <bellrichm@gmail.com>
 #
 #    See the file LICENSE.txt for your full rights.
 #
@@ -384,6 +384,7 @@ import paho.mqtt.client as mqtt
 from paho.mqtt.client import connack_string
 
 import weeutil
+import weeutil.logger
 from weeutil.weeutil import to_bool, to_float, to_int, to_sorted_string
 
 from weeutil.config import merge_config
@@ -401,7 +402,6 @@ def gettid():
        This is architecture dependent."""
     import ctypes # pylint: disable=import-outside-toplevel
     from ctypes.util import find_library # pylint: disable=import-outside-toplevel
-    # pylint: enable=bad-option-value
     libc = ctypes.CDLL(find_library('c'))
     for cmd in (186, 224, 178):
         tid = ctypes.CDLL(libc).syscall(cmd)
@@ -427,7 +427,7 @@ class AbstractLogger():
             logging.addLevelName(self.trace_level, "TRACE")
 
         # check that the level configured is valid
-        self.level = logging._checkLevel(level) # not sure there is a better way pylint: disable=protected-access
+        self.level = logging._checkLevel(level)
 
     def log_environment(self, config_dict):
         """ Log the environment we are running in. """
@@ -465,84 +465,73 @@ class AbstractLogger():
         """ Log error messages. """
         raise NotImplementedError("Method 'error' not implemented")
 
-try:
-    import weeutil.logger # pylint: disable=ungrouped-imports
     def setup_logging(logging_level, config_dict):
         """ Setup logging for running in standalone mode."""
         if logging_level:
             weewx.debug = logging_level
 
-        weeutil.logger.setup('wee_MQTTSS', config_dict) # weewx3 false positive, code never reached pylint: disable=no-member
+        weeutil.logger.setup('wee_MQTTSS', config_dict)
 
-    class Logger(AbstractLogger):
-        """ The logging class. """
-        MSG_FORMAT = "(%s) %s"
+class Logger(AbstractLogger):
+    """ The logging class. """
+    MSG_FORMAT = "(%s) %s"
 
-        def __init__(self, mode, level='NOTSET', filename=None, console=None):
-            super().__init__(mode, level, filename=filename, console=console)
-            self._logmsg = logging.getLogger(__name__)
-            if self.console:
-                self._logmsg.addHandler(logging.StreamHandler(sys.stdout))
+    def __init__(self, mode, level='NOTSET', filename=None, console=None):
+        super().__init__(mode, level, filename=filename, console=console)
+        self._logmsg = logging.getLogger(__name__)
+        if self.console:
+            self._logmsg.addHandler(logging.StreamHandler(sys.stdout))
 
-            if self.level > 0:
-                self.weewx_debug = 0
-                self._logmsg.propagate = 0
-                self._logmsg.setLevel(self.level)
-                # Get a copy of all the handlers
-                handlers = self.get_handlers(self._logmsg.parent)
-                for handler in handlers:
-                    handler.setLevel(self.level)
-                    self._logmsg.addHandler(handler)
-            else:
-                self.weewx_debug = weewx.debug
-
-            if self.filename is not None:
-                formatter = logging.Formatter("%(asctime)s %(levelname)s %(message)s", "%Y-%m-%d %H:%M:%S")
-                file_handler = logging.FileHandler(self.filename, mode='w')
-                file_handler.setLevel(self.level)
-                file_handler.setFormatter(formatter)
-                self._logmsg.addHandler(file_handler)
-
-        def get_handlers(self, logger):
-            """ recursively get parent handlers """
-            handlers = []
-            for handler in logger.handlers:
-                # Unfortunately cannot make a deep copy, but this seems safe
-                # we only change the logging level...
-                handlers.append(copy.copy(handler))
-
-            if logger.propagate and logger.parent is not None:
-                handlers.extend(self.get_handlers(logger.parent))
-
-            return handlers
-
-        def trace(self, msg):
-            """ Log trace messages. """
-            if self.weewx_debug > 1:
-                self._logmsg.debug(self.MSG_FORMAT, self.mode, msg)
-            else:
-                self._logmsg.log(self.trace_level, self.MSG_FORMAT, self.mode, msg)
-
-        def debug(self, msg):
-            """ Log debug messages. """
-            self._logmsg.debug(self.MSG_FORMAT, self.mode, msg)
-
-        def info(self, msg):
-            """ Log informational messages. """
-            self._logmsg.info(self.MSG_FORMAT, self.mode, msg)
-
-        def error(self, msg):
-            """ Log error messages. """
-            self._logmsg.error(self.MSG_FORMAT, self.mode, msg)
-except ImportError:
-    import syslog
-    def setup_logging(logging_level, config_dict): # Need to match signature pylint: disable=unused-argument
-        """ Setup logging for running in standalone mode."""
-        syslog.openlog('wee_MQTTSS', syslog.LOG_PID | syslog.LOG_CONS)
-        if logging_level:
-            syslog.setlogmask(syslog.LOG_UPTO(syslog.LOG_DEBUG))
+        if self.level > 0:
+            self.weewx_debug = 0
+            self._logmsg.propagate = 0
+            self._logmsg.setLevel(self.level)
+            # Get a copy of all the handlers
+            handlers = self.get_handlers(self._logmsg.parent)
+            for handler in handlers:
+                handler.setLevel(self.level)
+                self._logmsg.addHandler(handler)
         else:
-            syslog.setlogmask(syslog.LOG_UPTO(syslog.LOG_INFO))
+            self.weewx_debug = weewx.debug
+
+        if self.filename is not None:
+            formatter = logging.Formatter("%(asctime)s %(levelname)s %(message)s", "%Y-%m-%d %H:%M:%S")
+            file_handler = logging.FileHandler(self.filename, mode='w')
+            file_handler.setLevel(self.level)
+            file_handler.setFormatter(formatter)
+            self._logmsg.addHandler(file_handler)
+
+    def get_handlers(self, logger):
+        """ recursively get parent handlers """
+        handlers = []
+        for handler in logger.handlers:
+            # Unfortunately cannot make a deep copy, but this seems safe
+            # we only change the logging level...
+            handlers.append(copy.copy(handler))
+
+        if logger.propagate and logger.parent is not None:
+            handlers.extend(self.get_handlers(logger.parent))
+
+        return handlers
+
+    def trace(self, msg):
+        """ Log trace messages. """
+        if self.weewx_debug > 1:
+            self._logmsg.debug(self.MSG_FORMAT, self.mode, msg)
+        else:
+            self._logmsg.log(self.trace_level, self.MSG_FORMAT, self.mode, msg)
+
+    def debug(self, msg):
+        """ Log debug messages. """
+        self._logmsg.debug(self.MSG_FORMAT, self.mode, msg)
+
+    def info(self, msg):
+        """ Log informational messages. """
+        self._logmsg.info(self.MSG_FORMAT, self.mode, msg)
+
+    def error(self, msg):
+        """ Log error messages. """
+        self._logmsg.error(self.MSG_FORMAT, self.mode, msg)
 
     class Logger(AbstractLogger):
         """ The logging class. """
