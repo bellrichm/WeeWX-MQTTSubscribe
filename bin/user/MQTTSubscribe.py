@@ -1447,43 +1447,49 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
             self._log_message(msg)
             message_dict = self.topic_manager.get_message_dict(msg.topic)
             fields = self.topic_manager.get_fields(msg.topic)
-            filters = self.topic_manager.get_filters(msg.topic)
             fields_ignore_default = self.topic_manager.get_ignore_value(msg.topic)
-            fields_conversion_func = self.topic_manager.get_conversion_func(msg.topic)
-            msg_id_field = self.topic_manager.get_msg_id_field(msg.topic)
-            ignore_msg_id_field = self.topic_manager.get_ignore_msg_id_field(msg.topic)
 
             payload_str = msg.payload.decode('utf-8')
 
             data_flattened = {}
             self._flatten(fields, fields_ignore_default, message_dict['flatten_delimiter'], '', data_flattened, json.loads(payload_str))
 
-            unit_system = self.topic_manager.get_unit_system(msg.topic)
-            data_final = {}
-            if msg_id_field:
-                msg_id = data_flattened[msg_id_field]
-
-            for key, value in data_flattened.items():
-                if msg_id_field and key not in ignore_msg_id_field:
-                    lookup_key = key + "_" + str(msg_id) # todo - cleanup
-                else:
-                    lookup_key = key
-                if lookup_key in filters and value in filters[lookup_key]:
-                    self.logger.info(
-                        (f"MessageCallbackProvider on_message_json filtered out {msg.topic} : "
-                        f"{msg.payload} with {lookup_key}={filters[lookup_key]}"))
-                    return
-                if not fields.get(lookup_key, {}).get('ignore', fields_ignore_default):
-                    (fieldname, value) = self._update_data(fields, fields_conversion_func, lookup_key, value, unit_system)
-                    data_final[fieldname] = value
-                else:
-                    self.logger.trace(f"MessageCallbackProvider on_message_json ignoring field: {lookup_key}")
+            data_final = self._process_json_dict(msg, fields, fields_ignore_default, data_flattened)
 
             if data_final:
                 self.topic_manager.append_data(msg.topic, data_final)
 
         except Exception as exception: # (want to catch all) pylint: disable=broad-except
             self._log_exception('on_message_json', exception, msg)
+
+    def _process_json_dict(self, msg, fields, fields_ignore_default, data_flattened):
+        msg_id_field = self.topic_manager.get_msg_id_field(msg.topic)
+        ignore_msg_id_field = self.topic_manager.get_ignore_msg_id_field(msg.topic)
+        unit_system = self.topic_manager.get_unit_system(msg.topic)
+        filters = self.topic_manager.get_filters(msg.topic)
+        fields_conversion_func = self.topic_manager.get_conversion_func(msg.topic)
+
+        data_final = {}
+        if msg_id_field:
+            msg_id = data_flattened[msg_id_field]
+
+        for key, value in data_flattened.items():
+            if msg_id_field and key not in ignore_msg_id_field:
+                lookup_key = key + "_" + str(msg_id) # todo - cleanup
+            else:
+                lookup_key = key
+            if lookup_key in filters and value in filters[lookup_key]:
+                self.logger.info(
+                    (f"MessageCallbackProvider on_message_json filtered out {msg.topic} : "
+                    f"{msg.payload} with {lookup_key}={filters[lookup_key]}"))
+                return None
+            if not fields.get(lookup_key, {}).get('ignore', fields_ignore_default):
+                (fieldname, value) = self._update_data(fields, fields_conversion_func, lookup_key, value, unit_system)
+                data_final[fieldname] = value
+            else:
+                self.logger.trace(f"MessageCallbackProvider on_message_json ignoring field: {lookup_key}")
+
+        return data_final
 
     def _on_message_individual(self, _client, _userdata, msg):
 
