@@ -1113,7 +1113,6 @@ class TopicManager():
 
     def get_accumulated_data(self, queue, start_time, end_time, units):
         """ Get the MQTT data after being accumulated. """
-        # pylint: disable=too-many-locals
         queue_name = queue['name']
         data_queue = queue['data']
         if not bool(data_queue):
@@ -1324,7 +1323,6 @@ class AbstractMessageCallbackProvider(): # pylint: disable=too-few-public-method
                     from exception
 
 class MessageCallbackProvider(AbstractMessageCallbackProvider):
-    # pylint: disable=too-many-instance-attributes, too-few-public-methods, too-many-locals
     """ Provide the MQTT callback. """
     def __init__(self, config, logger, topic_manager):
         super().__init__(logger, topic_manager)
@@ -1361,7 +1359,7 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
 
     def get_callback(self):
         """ Get the MQTT callback. """
-        return self._on_message_multi
+        return self.on_message_multi
 
     def _flatten(self, fields, fields_ignore_default, delim, prefix, new_dict, old_dict): # pylint: disable=too-many-arguments
         if isinstance(old_dict, dict):
@@ -1443,7 +1441,7 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
             self._log_exception('on_message_keyword', exception, msg)
 
     def _on_message_json(self, _client, _userdata, msg):
-        # pylint: disable=too-many-locals, too-many-branches
+        # pylint: disable=too-many-branches
         # Wrap all the processing in a try, so it doesn't crash and burn on any error
         try:
             self._log_message(msg)
@@ -1518,7 +1516,8 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
         except Exception as exception: # (want to catch all) pylint: disable=broad-except
             self._log_exception('on_message_individual', exception, msg)
 
-    def _on_message_multi(self, client, userdata, msg):
+    def on_message_multi(self, client, userdata, msg):
+        ''' The on message call back.'''
         # Wrap all the processing in a try, so it doesn't crash and burn on any error
         try:
             message_dict = self.topic_manager.get_message_dict(msg.topic)
@@ -1533,7 +1532,7 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
             else:
                 self.logger.error(f"Unknown message_type={message_type}. Skipping topic={msg.topic} and payload={msg.payload}")
         except Exception as exception: # (want to catch all) pylint: disable=broad-except
-            self._log_exception('on_message_individual', exception, msg)
+            self._log_exception('on_message_multi', exception, msg)
 
 class ManageWeewxConfig():
     ''' Manage the WeeWX configuration. '''
@@ -1597,7 +1596,6 @@ class ManageWeewxConfig():
 class MQTTSubscriber():
     """ Manage MQTT sunscriptions. """
     def __init__(self, service_dict, logger):
-        # pylint: disable=too-many-locals, too-many-statements, too-many-branches
         self.logger = logger
 
         exclude_keys = ['password']
@@ -1624,34 +1622,44 @@ class MQTTSubscriber():
         self.cached_fields = None
         self.cached_fields = self.manager.cached_fields
 
-        clientid = service_dict.get('clientid',
-                                    'MQTTSubscribe-' + str(random.randint(1000, 9999)))
-        clean_session = to_bool(service_dict.get('clean_session', True))
+        weewx_config = service_dict.get('weewx')
+        if weewx_config:
+            manage_weewx_config = ManageWeewxConfig()
+            manage_weewx_config.update_unit_config(weewx_config)
+            manage_weewx_config.add_observation_to_unit_dict(weewx_config)
 
-        host = service_dict.get('host', 'localhost')
-        keepalive = to_int(service_dict.get('keepalive', 60))
-        port = to_int(service_dict.get('port', 1883))
-        username = service_dict.get('username', None)
-        password = service_dict.get('password', None)
-        min_delay = to_int(service_dict.get('min_delay', 1))
-        max_delay = to_int(service_dict.get('max_delay', 120))
-        log_mqtt = to_bool(service_dict.get('log', False))
+        mqtt_options = {
+            'clientid': service_dict.get('clientid', 'MQTTSubscribe-' + str(random.randint(1000, 9999))),
+            'clean_session': to_bool(service_dict.get('clean_session', True)),
+            'host': service_dict.get('host', 'localhost'),
+            'keepalive': to_int(service_dict.get('keepalive', 60)),
+            'port': to_int(service_dict.get('port', 1883)),
+            'username': service_dict.get('username', None),
+            'password': service_dict.get('password', None),
+            'min_delay': to_int(service_dict.get('min_delay', 1)),
+            'max_delay': to_int(service_dict.get('max_delay', 120)),
+            'log_mqtt': to_bool(service_dict.get('log', False)),
+            'tls_dict': service_dict.get('tls'),
+        }
 
         self.logger.info(f"message_callback_provider_name is {message_callback_provider_name}")
-        self.logger.info(f"clientid is {clientid}")
-        self.logger.info(f"client_session is {clean_session}")
-        self.logger.info(f"host is {host}")
-        self.logger.info(f"port is {port}")
-        self.logger.info(f"keepalive is {keepalive}")
-        self.logger.info(f"username is {username}")
-        self.logger.info(f"min_delay is {min_delay}")
-        self.logger.info(f"max_delay is {max_delay}")
-        if password is not None:
+        self.logger.info(f"clientid is {mqtt_options['clientid']}")
+        self.logger.info(f"client_session is {mqtt_options['clean_session']}")
+        self.logger.info(f"host is {mqtt_options['host']}")
+        self.logger.info(f"port is {mqtt_options['port']}")
+        self.logger.info(f"keepalive is {mqtt_options['keepalive']}")
+        self.logger.info(f"username is {mqtt_options['username']}")
+        self.logger.info(f"min_delay is {mqtt_options['min_delay']}")
+        self.logger.info(f"max_delay is {mqtt_options['max_delay']}")
+        if mqtt_options['password'] is not None:
             self.logger.info("password is set")
         else:
             self.logger.info("password is not set")
         self.logger.info(f"Archive topic is {self.archive_topic}")
 
+        self._setup_mqtt(mqtt_options, message_callback_provider_name, message_callback_config)
+
+    def _setup_mqtt(self, mqtt_options, message_callback_provider_name, message_callback_config):
         self.mqtt_logger = {
             mqtt.MQTT_LOG_INFO: self.logger.info,
             mqtt.MQTT_LOG_NOTICE: self.logger.info,
@@ -1664,9 +1672,12 @@ class MQTTSubscriber():
         self.userdata['connect'] = False
         self.userdata['connect_rc'] = None
         self.userdata['connect_flags'] = 0
-        self.client = mqtt.Client(client_id=clientid, userdata=self.userdata, clean_session=clean_session)
+        self.client = mqtt.Client(client_id=mqtt_options['clientid'], userdata=self.userdata, clean_session=mqtt_options['clean_session'])
 
-        if log_mqtt:
+        if mqtt_options['tls_dict']:
+            self.config_tls(mqtt_options['tls_dict'])
+
+        if mqtt_options['log_mqtt']:
             self.client.on_log = self._on_log
 
         message_callback_provider_class = weeutil.weeutil.get_object(message_callback_provider_name)
@@ -1681,25 +1692,15 @@ class MQTTSubscriber():
         self.client.on_connect = self._on_connect
         self.client.on_disconnect = self._on_disconnect
 
-        if username is not None and password is not None:
-            self.client.username_pw_set(username, password)
+        if mqtt_options['username'] is not None and mqtt_options['password'] is not None:
+            self.client.username_pw_set(mqtt_options['username'], mqtt_options['password'])
 
-        self.client.reconnect_delay_set(min_delay=min_delay, max_delay=max_delay)
-
-        tls_dict = service_dict.get('tls')
-        if tls_dict:
-            self.config_tls(tls_dict)
-
-        weewx_config = service_dict.get('weewx')
-        if weewx_config:
-            manage_weewx_config = ManageWeewxConfig()
-            manage_weewx_config.update_unit_config(weewx_config)
-            manage_weewx_config.add_observation_to_unit_dict(weewx_config)
+        self.client.reconnect_delay_set(min_delay=mqtt_options['min_delay'], max_delay=mqtt_options['max_delay'])
 
         try:
-            self.client.connect(host, port, keepalive)
+            self.client.connect(mqtt_options['host'], mqtt_options['port'], mqtt_options['keepalive'])
         except Exception as exception: # (want to catch all) pylint: disable=broad-except
-            self.logger.error(f"Failed to connect to {host} at {int(port)}. '{exception}'")
+            self.logger.error(f"Failed to connect to {mqtt_options['host']} at {int(mqtt_options['port'])}. '{exception}'")
             raise weewx.WeeWxIOError(exception)
 
     def _check_deprecated_options(self, service_dict):
