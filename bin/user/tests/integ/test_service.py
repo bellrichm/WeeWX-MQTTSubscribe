@@ -20,7 +20,6 @@ import utils
 
 import weewx
 from weewx.engine import StdEngine
-from user.MQTTSubscribe import setup_logging
 from user.MQTTSubscribe import MQTTSubscribeService
 
 class TestService(unittest.TestCase):
@@ -210,5 +209,4 @@ class TestWind(TestService):
             self.runit('keyword', file_pointer)
 
 if __name__ == '__main__':
-    setup_logging(1, {})
     unittest.main(exit=False, failfast=True)

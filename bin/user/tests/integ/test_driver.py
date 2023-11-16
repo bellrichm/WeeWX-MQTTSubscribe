@@ -22,7 +22,6 @@ import utils
 import weewx
 
 from user.MQTTSubscribe import MQTTSubscribeDriver
-from user.MQTTSubscribe import setup_logging
 
 class TestDriver(unittest.TestCase):
     def runit(self, payload, file_pointer, check_results=True):
@@ -221,5 +220,4 @@ class TestWindIndividualWind(TestDriver):
             self.runit('keyword', file_pointer)
 
 if __name__ == '__main__':
-    setup_logging(1, {})
     unittest.main(exit=False, failfast=True)
