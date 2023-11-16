@@ -1271,7 +1271,7 @@ class AbstractMessageCallbackProvider(): # pylint: disable=too-few-public-method
         """ Get the MQTT callback. """
         raise NotImplementedError("Method 'get_callback' not implemented")
 
-    def _update_data(self, fields, default_field_conversion_func, orig_name, orig_value, unit_system): # pylint: disable = too-many-arguments
+    def _update_data(self, orig_name, orig_value, fields, default_field_conversion_func, unit_system): # pylint: disable = too-many-arguments
         value = self._convert_value(fields, default_field_conversion_func, orig_name, orig_value)
         fieldname = fields.get(orig_name, {}).get('name', orig_name)
 
@@ -1426,7 +1426,7 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
 
                 key = field[:eq_index].strip()
                 if not fields.get(key, {}).get('ignore', fields_ignore_default):
-                    (fieldname, value) = self._update_data(fields, fields_conversion_func, key, field[eq_index + 1:].strip(), unit_system)
+                    (fieldname, value) = self._update_data(key, field[eq_index + 1:].strip(), fields, fields_conversion_func, unit_system)
                     data[fieldname] = value
                 else:
                     self.logger.trace(f"MessageCallbackProvider on_message_keyword ignoring field: {key}")
@@ -1484,7 +1484,7 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
                     f"{msg.payload} with {lookup_key}={filters[lookup_key]}"))
                 return None
             if not fields.get(lookup_key, {}).get('ignore', fields_ignore_default):
-                (fieldname, value) = self._update_data(fields, fields_conversion_func, lookup_key, value, unit_system)
+                (fieldname, value) = self._update_data(lookup_key, value, fields, fields_conversion_func, unit_system)
                 data_final[fieldname] = value
             else:
                 self.logger.trace(f"MessageCallbackProvider on_message_json ignoring field: {lookup_key}")
@@ -1512,7 +1512,7 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
 
             unit_system = self.topic_manager.get_unit_system(msg.topic)
             if not fields.get(key, {}).get('ignore', fields_ignore_default):
-                (fieldname, value) = self._update_data(fields, fields_conversion_func, key, payload_str, unit_system)
+                (fieldname, value) = self._update_data(key, payload_str, fields, fields_conversion_func, unit_system)
                 data = {}
                 data[fieldname] = value
                 self.topic_manager.append_data(msg.topic, data, fieldname)
