@@ -1076,15 +1076,35 @@ class TopicManager():
         """ Get data off the queue of MQTT data. """
         queue_name = queue['name']
         data_queue = queue['data']
-        queue_type = queue['type']
         self.logger.trace(f"TopicManager starting queue {queue_name} size is: {len(data_queue)}")
         if self.collect_wind_across_loops:
             collector = self.collector
         else:
             collector = CollectData(self.collected_fields, self.collected_units)
 
+        observation_collector = None
         if self.collect_observations:
             observation_collector = CollectData(None, self.collected_units)
+
+        for data in self._process_queue(end_ts, collector, observation_collector, queue):
+            yield data
+
+        if not self.collect_wind_across_loops:
+            data = collector.get_data()
+            if data:
+                self.logger.debug(f"TopicManager data-> outgoing wind {queue_name}: {to_sorted_string(data)}")
+                yield data
+
+        if self.collect_observations:
+            data = observation_collector.get_data()
+            if data:
+                self.logger.debug(f"TopicManager data-> outgoing collected {queue_name}: {to_sorted_string(data)}")
+                yield data
+
+    def _process_queue(self,end_ts, collector, observation_collector, queue):
+        queue_name = queue['name']
+        data_queue = queue['data']
+        queue_type = queue['type']
 
         while data_queue:
             if data_queue[0]['data']['dateTime'] > end_ts:
@@ -1104,18 +1124,6 @@ class TopicManager():
 
             if data:
                 self.logger.debug(f"TopicManager data-> outgoing {queue_name}: {to_sorted_string(data)}")
-                yield data
-
-        if not self.collect_wind_across_loops:
-            data = collector.get_data()
-            if data:
-                self.logger.debug(f"TopicManager data-> outgoing wind {queue_name}: {to_sorted_string(data)}")
-                yield data
-
-        if self.collect_observations:
-            data = observation_collector.get_data()
-            if data:
-                self.logger.debug(f"TopicManager data-> outgoing collected {queue_name}: {to_sorted_string(data)}")
                 yield data
 
     def get_accumulated_data(self, queue, start_time, end_time, units):
