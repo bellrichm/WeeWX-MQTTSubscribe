@@ -1356,13 +1356,16 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
             if message_type not in ['json', 'keyword', 'individual']:
                 raise ValueError(f"Invalid type configured: {message_type}")
 
-            # ToDo Investigate this and copying, maybe a merge?
-            if 'flatten_delimiter' not in topic_manager.subscribed_topics[topic][topic_manager.message_config_name]:
-                topic_manager.subscribed_topics[topic][topic_manager.message_config_name]['flatten_delimiter'] = '_'
-            if 'keyword_delimiter' not in topic_manager.subscribed_topics[topic][topic_manager.message_config_name]:
-                topic_manager.subscribed_topics[topic][topic_manager.message_config_name]['keyword_delimiter'] = ','
-            if 'keyword_separator' not in topic_manager.subscribed_topics[topic][topic_manager.message_config_name]:
-                topic_manager.subscribed_topics[topic][topic_manager.message_config_name]['keyword_separator'] = '='
+            self._set_flatten_delimiter(topic, topic_manager)
+
+    def _set_flatten_delimiter(self, topic, topic_manager):
+        # ToDo Investigate this and copying, maybe a merge?
+        if 'flatten_delimiter' not in topic_manager.subscribed_topics[topic][topic_manager.message_config_name]:
+            topic_manager.subscribed_topics[topic][topic_manager.message_config_name]['flatten_delimiter'] = '_'
+        if 'keyword_delimiter' not in topic_manager.subscribed_topics[topic][topic_manager.message_config_name]:
+            topic_manager.subscribed_topics[topic][topic_manager.message_config_name]['keyword_delimiter'] = ','
+        if 'keyword_separator' not in topic_manager.subscribed_topics[topic][topic_manager.message_config_name]:
+            topic_manager.subscribed_topics[topic][topic_manager.message_config_name]['keyword_separator'] = '='
 
     def get_callback(self):
         """ Get the MQTT callback. """
