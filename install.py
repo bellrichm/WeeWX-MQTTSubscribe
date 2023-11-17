@@ -1,3 +1,8 @@
+#
+#    Copyright (c) 2020-2023 Rich Bell <bellrichm@gmail.com>
+#
+#    See the file LICENSE.txt for your full rights.
+#
 """ Installer for MTTQSubscribe driver and service.
 By default, this will install and configure the service, but not enable it.
 
@@ -16,20 +21,12 @@ wee_extension --uninstall=MQTTSubscribe
 """
 
 import os
-import sys
+
+from io import StringIO
+
 import configobj
 
 from weecfg.extension import ExtensionInstaller
-
-# need to be python 2 compatible pylint: disable=bad-option-value, super-with-arguments
-# pylint: enable=bad-option-value
-
-# Stole from six module. Added to eliminate dependency on six when running under WeeWX 3.x
-PY2 = sys.version_info[0] == 2
-if PY2:
-    from StringIO import StringIO # (only a python 3 error) pylint: disable=import-error
-else:
-    from io import StringIO
 
 VERSION = '3.0.0-rc01'
 
@@ -121,4 +118,4 @@ class MQTTSubscribeServiceInstaller(ExtensionInstaller):
             install_dict['config'] = MQTTSubscribeService_dict
             install_dict['data_services'] = 'user.MQTTSubscribe.MQTTSubscribeService'
 
-        super(MQTTSubscribeServiceInstaller, self).__init__(install_dict)
+        super().__init__(install_dict)
