@@ -673,8 +673,8 @@ class CollectData():
         return self.data
 
 class TopicManager():
-    # pylint: disable=too-many-instance-attributes
     """ Manage the MQTT topic subscriptions. """
+    # pylint: disable=too-many-instance-attributes
     def __init__(self, archive_topic, config, logger):
         self.logger = logger
 
@@ -728,7 +728,8 @@ class TopicManager():
         self.logger.debug(f"TopicManager self.subscribed_topics is {json.dumps(self.subscribed_topics, default=str)}")
         self.logger.debug(f"TopicManager self.cached_fields is {self.cached_fields}")
 
-    def _configure_topics(self, config, archive_topic, single_queue, single_queue_obj, default_message_dict, topic_defaults, field_defaults): # pylint: disable=too-many-arguments
+    def _configure_topics(self, config, archive_topic, single_queue, single_queue_obj, default_message_dict, topic_defaults, field_defaults):
+        # pylint: disable=too-many-arguments, too-many-locals
         for topic in config.sections:
             topic_dict = config.get(topic, {})
             callback_config_name = topic_dict.get('callback_config_name', topic_defaults['callback_config_name'])
@@ -786,7 +787,8 @@ class TopicManager():
             else:
                 self._configure_topic_as_field(field_defaults, topic, topic_dict)
 
-    def _setup_queue(self, archive_topic, single_queue, single_queue_obj, topic_defaults, topic, topic_dict): # pylint: disable=too-many-arguments
+    def _setup_queue(self, archive_topic, single_queue, single_queue_obj, topic_defaults, topic, topic_dict):
+        # pylint: disable=too-many-arguments
         if not single_queue or topic == archive_topic:
             queue = dict(
                 {'name': topic,
@@ -990,7 +992,8 @@ class TopicManager():
             values.append(new_value)
         self.subscribed_topics[topic]['filters'].update({fieldname: values})
 
-    def _configure_ignore_fields(self, topic_dict, field_dict, topic, fieldname, defaults): # pylint: disable=too-many-arguments
+    def _configure_ignore_fields(self, topic_dict, field_dict, topic, fieldname, defaults):
+        # pylint: disable=too-many-arguments, too-many-locals
         ignore_msg_id_field = topic_dict.get('ignore_msg_id_field', defaults['ignore_msg_id_field'])
         if to_bool((field_dict).get('ignore_msg_id_field', ignore_msg_id_field)):
             self.subscribed_topics[topic]['ignore_msg_id_field'].append(fieldname)
@@ -1057,7 +1060,6 @@ class TopicManager():
         return bool(self._get_queue(topic)['data'])
 
     def get_data(self, queue, end_ts=sys.maxsize):
-        # pylint: disable=too-many-branches
         """ Get data off the queue of MQTT data. """
         queue_name = queue['name']
         data_queue = queue['data']
@@ -1112,6 +1114,7 @@ class TopicManager():
                 yield data
 
     def get_accumulated_data(self, queue, start_time, end_time, units):
+        # pylint: disable=too-many-locals
         """ Get the MQTT data after being accumulated. """
         queue_name = queue['name']
         data_queue = queue['data']
@@ -1271,7 +1274,8 @@ class AbstractMessageCallbackProvider(): # pylint: disable=too-few-public-method
         """ Get the MQTT callback. """
         raise NotImplementedError("Method 'get_callback' not implemented")
 
-    def _update_data(self, orig_name, orig_value, fields, default_field_conversion_func, unit_system): # pylint: disable = too-many-arguments
+    def _update_data(self, orig_name, orig_value, fields, default_field_conversion_func, unit_system):
+        # pylint: disable=too-many-arguments
         value = self._convert_value(fields, default_field_conversion_func, orig_name, orig_value)
         fieldname = fields.get(orig_name, {}).get('name', orig_name)
 
@@ -1361,7 +1365,8 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
         """ Get the MQTT callback. """
         return self.on_message_multi
 
-    def _flatten(self, fields, fields_ignore_default, delim, prefix, new_dict, old_dict): # pylint: disable=too-many-arguments
+    def _flatten(self, fields, fields_ignore_default, delim, prefix, new_dict, old_dict):
+        # pylint: disable=too-many-arguments
         if isinstance(old_dict, dict):
             for key, value in old_dict.items():
                 new_key = prefix + key
@@ -1374,7 +1379,8 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
         else:
             self._flatten_list(fields, fields_ignore_default, delim, prefix, prefix[:-1], old_dict, new_dict)
 
-    def _flatten_list(self, fields, fields_ignore_default, delim, prefix, new_key, value, new_dict): # pylint: disable=too-many-arguments
+    def _flatten_list(self, fields, fields_ignore_default, delim, prefix, new_key, value, new_dict):
+        # pylint: disable=too-many-arguments
         if new_key in fields and 'subfields' in fields[new_key]:
             if len(value) > len(fields[new_key]['subfields']):
                 self.logger.error(f"Skipping {new_key} because array data too big. Array={value} subfields={fields[new_key]['subfields']}")
@@ -1402,6 +1408,7 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
         self.logger.error(f"**** MessageCallbackProvider {traceback.format_exc()}")
 
     def _on_message_keyword(self, _client, _userdata, msg):
+        # pylint: disable= too-many-locals
         # Wrap all the processing in a try, so it doesn't crash and burn on any error
         try:
             self._log_message(msg)
@@ -1463,6 +1470,7 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
             self._log_exception('on_message_json', exception, msg)
 
     def _process_json_dict(self, msg, fields, fields_ignore_default, data_flattened):
+        # pylint: disable= too-many-locals
         msg_id_field = self.topic_manager.get_msg_id_field(msg.topic)
         ignore_msg_id_field = self.topic_manager.get_ignore_msg_id_field(msg.topic)
         unit_system = self.topic_manager.get_unit_system(msg.topic)
@@ -1979,9 +1987,10 @@ def confeditor_loader():
     """ Load and return the configuration editor. """
     return MQTTSubscribeDriverConfEditor() # pragma: no cover
 
-class MQTTSubscribeDriver(weewx.drivers.AbstractDevice): # (methods not used) pylint: disable=abstract-method
-    """weewx driver that reads data from MQTT"""
+class MQTTSubscribeDriver(weewx.drivers.AbstractDevice):
+    # (methods not used) pylint: disable=abstract-method
     # pylint: disable=too-many-instance-attributes
+    """weewx driver that reads data from MQTT"""
     def __init__(self, config_dict, engine):
         stn_dict = config_dict[DRIVER_NAME]
         console = to_bool(stn_dict.get('console', False))
