@@ -1,5 +1,5 @@
 #
-#    Copyright (c) 2020-2021 Rich Bell <bellrichm@gmail.com>
+#    Copyright (c) 2020-2023 Rich Bell <bellrichm@gmail.com>
 #
 #    See the file LICENSE.txt for your full rights.
 #
@@ -21,7 +21,7 @@ from weeutil.weeutil import to_float # used in eval statement pylint: disable=un
 class MessageCallbackProvider(user.MQTTSubscribe.AbstractMessageCallbackProvider):
     # pylint: disable=too-few-public-methods
     """ Provide the MQTT callback. """
-    def __init__(self, config, logger, topic_manager): # need to match signature pylint: disable=unused-argument
+    def __init__(self, _config, logger, topic_manager):
         super().__init__(logger, topic_manager)
 
     def get_callback(self):
@@ -43,7 +43,7 @@ class MessageCallbackProvider(user.MQTTSubscribe.AbstractMessageCallbackProvider
             fullname = saved_fullname
 
         if parent.text is None:
-            for (name, tvalue) in parent.items(): # need to match signature pylint: disable=unused-variable
+            for (_, tvalue) in parent.items():
                 (fieldname, value) = self._update_data(fullname[1:], tvalue, fields, conversion_func,  unit_system) # pylint: disable=eval-used
                 observations[fieldname] = value
         elif not parent:
@@ -52,7 +52,7 @@ class MessageCallbackProvider(user.MQTTSubscribe.AbstractMessageCallbackProvider
 
         return observations
 
-    def _on_message(self, client, userdata, msg):  # (match callback signature) pylint: disable=unused-argument
+    def _on_message(self, _client, _userdata, msg):
         # Wrap all the processing in a try, so it doesn't crash and burn on any error
         try:
             self.logger.debug(f"MessageCallbackProvider For {msg.topic} received: {msg.payload}")
