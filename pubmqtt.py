@@ -1,19 +1,14 @@
 #!/usr/bin/python
 #
-#    Copyright (c) 2020-2021 Rich Bell <bellrichm@gmail.com>
+#    Copyright (c) 2020-2023 Rich Bell <bellrichm@gmail.com>
 #
 #    See the file LICENSE.txt for your full rights.
 #
 """ A simple utility that reads messages from a file and publishes each line to MQTT. """
-from __future__ import print_function
 import argparse
 import random
-import sys
 import time
 import paho.mqtt.client as mqtt
-
-# Stole from six module. Added to eliminate dependency on six when running under WeeWX 3.x
-PY2 = sys.version_info[0] == 2
 
 USAGE = """pubmqtt --help
         mqtt_test
@@ -60,7 +55,7 @@ def init_parser():
     return parser
 
 
-def on_connect(client, userdata, flags, rc):  # (match callback signature) pylint: disable=unused-argument
+def on_connect(_client, _userdata, flags, rc):
     """ The on_connect callback. """
     # https://pypi.org/project/paho-mqtt/#on-connect
     # rc:
@@ -75,7 +70,7 @@ def on_connect(client, userdata, flags, rc):  # (match callback signature) pylin
     print(f"Connected flags {str(flags)}")
 
 
-def on_disconnect(client, userdata, rc):  # (match callback signature) pylint: disable=unused-argument
+def on_disconnect(_client, _userdata, rc):
     """ The on_connect callback. """
     # https://pypi.org/project/paho-mqtt/#on-discconnect
     # The rc parameter indicates the disconnection state.
@@ -83,11 +78,11 @@ def on_disconnect(client, userdata, rc):  # (match callback signature) pylint: d
     # such as might be caused by a network error.
     print(f"Disconnected with result code {int(rc)}")
 
-def on_publish(client, userdata, mid):  # (match callback signature) pylint: disable=unused-argument
+def on_publish(_client, _userdata, mid):
     """ The on_publish callback. """
     print(f"Published: {mid}")
 
-def on_log(client, userdata, level, msg): # (match callback signature) pylint: disable=unused-argument
+def on_log(_client, _userdata, _level, msg):
     """ The on_log callback. """
     print(f"MQTT log {msg}")
 

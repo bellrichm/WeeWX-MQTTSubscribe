@@ -1,6 +1,6 @@
 #!/usr/bin/python
 #
-#    Copyright (c) 2020-2021 Rich Bell <bellrichm@gmail.com>
+#    Copyright (c) 2020-2023 Rich Bell <bellrichm@gmail.com>
 #
 #    See the file LICENSE.txt for your full rights.
 #
@@ -34,7 +34,7 @@ Command line options override any options in the file.
 """
 
 
-def on_log(client, userdata, level, msg):  # (match callback signature) pylint: disable=unused-argument
+def on_log(_client, _userdata, level, msg):
     """ MQTT logging callback. """
     log_level = {
         mqtt.MQTT_LOG_INFO: 'MQTT_LOG_INFO',
@@ -47,22 +47,22 @@ def on_log(client, userdata, level, msg):  # (match callback signature) pylint: 
     print(f"{log_level[level]}: {msg}")
 
 
-def on_connect(client, userdata, flags, rc): # (match callback signature) pylint: disable=unused-argument
+def on_connect(client, userdata, _flags, rc):
     """ MQTT on connect callback. """
     print(f"Connected with result code {int(rc)}")
     for topic in userdata['topics']:
         client.subscribe(topic, qos=userdata['qos'])
 
 
-def on_disconnect(client, userdata, rc):  # (match callback signature) pylint: disable=unused-argument
+def on_disconnect(_client, _userdata, rc):
     """ MQTT on disconnect callback. """
     print(f"Disconnected with result code {int(rc)}")
 
-def on_subscribe(client, userdata, mid, granted_qos): # (match callback signature) pylint: disable=unused-argument
+def on_subscribe(_client, _userdata, mid, granted_qos):
     """ MQTT on subscribe callback. """
     print(f"Subscribed to mid: {int(mid)} is size {len(granted_qos)} has a QOS of {int(granted_qos[0])}")
 
-def on_message(client, userdata, msg):  # (match callback signature) pylint: disable=unused-argument
+def on_message(client, userdata, msg):
     """ MQTT on message callback. """
     print(f'({int(time.time())}) mid:{msg.mid}, qos:{msg.qos}, {msg.topic}: {msg.payload}')
     if userdata.get('max_records'):
