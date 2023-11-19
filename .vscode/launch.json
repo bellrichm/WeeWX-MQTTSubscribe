@@ -109,6 +109,21 @@
             "console": "integratedTerminal"
         },
         {
+            "name": "Config",
+            "type": "python",
+            "request": "launch",
+
+            "program": "${workspaceFolder}/../weewx/bin/wee_config",
+            "args": [
+                "--verbosity", "3",
+                //"--install", ".",
+                "--reconfigure", "${workspaceFolder}/devtools/debug.loop.conf",
+                "--output", "tmp/temp.conf",
+                //"--no-prompt",
+            ],            
+            "console": "integratedTerminal"
+        },        
+        {
             "name": "Install",
             "type": "python",
             "request": "launch",
