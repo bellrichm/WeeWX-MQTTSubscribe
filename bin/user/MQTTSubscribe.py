@@ -2196,14 +2196,13 @@ class Simulator():
     """ Run the service or driver. """
     # pylint: disable=too-many-instance-attributes
 
-    usage = """MQTTSubscribeService --help
+    usage = """
             CONFIG_FILE
             [--records=RECORD_COUNT]
             [--interval=INTERVAL]
             [--delay=DELAY]
             [--units=US|METRIC|METRICWX]
             [--binding=archive|loop]
-            [--type=driver|service]
             [--verbose]
             [--console]
 
@@ -2213,11 +2212,10 @@ class Simulator():
     @classmethod
     def add_parsers(cls, parser):
         ''' Add the parsers. '''
-        simulator_parser = parser.add_parser('simulate', usage=cls.usage)
-        simulator_subparsers = simulator_parser.add_subparsers(dest='type')
+        cls.simulator_parser = parser.add_parser('simulate')
+        simulator_subparsers = cls.simulator_parser.add_subparsers(dest='type')
 
-        simulate_service_parser = simulator_subparsers.add_parser('service')
-        simulate_service_parser.add_argument('--version', action='version', version=f"MQTTSubscribe version is {VERSION}")
+        simulate_service_parser = simulator_subparsers.add_parser('service', usage=f"MQTTSubscribe.py simulate service {cls.usage}")
         simulate_service_parser.add_argument('--records', dest='record_count', type=int,
                             help='The number of archive records to create.',
                             default=2)
@@ -2247,8 +2245,7 @@ class Simulator():
                             help="Configure MQTTSubscribe..")
         simulate_service_parser.add_argument("config_file")
 
-        simulate_driver_parser = simulator_subparsers.add_parser('driver')
-        simulate_driver_parser.add_argument('--version', action='version', version=f"MQTTSubscribe version is {VERSION}")
+        simulate_driver_parser = simulator_subparsers.add_parser('driver', usage=f"MQTTSubscribe.py simulate driver {cls.usage}")
         simulate_driver_parser.add_argument('--records', dest='record_count', type=int,
                             help='The number of archive records to create.',
                             default=2)
@@ -2280,6 +2277,9 @@ class Simulator():
 
     def __init__(self, options):
         """ Initialize the new instance. """
+        if not options.type:
+            self.simulator_parser.print_help()
+            sys.exit(2)
         self.simulation_type = options.type
         self.binding = options.binding
         self.record_count = options.record_count
@@ -2475,17 +2475,22 @@ class Configurator():
 if __name__ == '__main__': # pragma: no cover
     def main():
         """ Run it."""
+        usage = """%(prog)s -v|--version
+            %(prog)s -h|--help
+            %(prog)s simulate --help
+            %(prog)s configure --help
+        """
+
         print("start")
-        parser = argparse.ArgumentParser()
+        parser = argparse.ArgumentParser(usage=usage)
+        parser.add_argument('--version', action='version', version=f"MQTTSubscribe version is {VERSION}")
+
         subparsers = parser.add_subparsers(dest='command')
 
         Simulator.add_parsers(subparsers)
         Configurator.add_parsers(subparsers)
 
         options = parser.parse_args()
-
-        print(options)
-        print(options.command)
 
         if options.command == 'simulate':
             simulator = Simulator(options)
@@ -2494,6 +2499,8 @@ if __name__ == '__main__': # pragma: no cover
             simulator.run()
         elif options.command == 'configure':
             configurator = Configurator(options)
+        else:
+            parser.print_help()
 
         print("done")
 
