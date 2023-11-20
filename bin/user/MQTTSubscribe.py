@@ -2233,9 +2233,6 @@ class Simulator():
         simulate_service_parser.add_argument("--binding", choices=["archive", "loop"],
                             help="The type of binding.",
                             default="archive")
-        simulate_service_parser.add_argument("--type", choices=["driver", "service"],
-                            help="The simulation type.",
-                            default="driver")
         simulate_service_parser.add_argument("--verbose", action="store_true", dest="verbose",
                             help="Log extra output (debug=1).")
         simulate_service_parser.add_argument("--console", action="store_true", dest="console",
@@ -2267,9 +2264,6 @@ class Simulator():
         simulate_driver_parser.add_argument("--binding", choices=["archive", "loop"],
                             help="The type of binding.",
                             default="archive")
-        simulate_driver_parser.add_argument("--type", choices=["driver", "service"],
-                            help="The simulation type.",
-                            default="driver")
         simulate_driver_parser.add_argument("--verbose", action="store_true", dest="verbose",
                             help="Log extra output (debug=1).")
         simulate_driver_parser.add_argument("--console", action="store_true", dest="console",
