@@ -17,6 +17,8 @@ else
     PY_VERSION=$2
 fi
 
+./devtools/runlints.sh $WEEWX_VERSION $PY_VERSION
+
 while inotifywait -e modify devtools/watchlints.sh devtools/runlints.sh .pylintrc ./*.py ./bin/user ./bin/user/tests/unit/*.py ./bin/user/tests/func/*.py ./bin/user/tests/integ/*.py
 do
     ./devtools/runlints.sh $WEEWX_VERSION $PY_VERSION

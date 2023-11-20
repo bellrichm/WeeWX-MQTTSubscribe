@@ -18,6 +18,8 @@ else
     PY_VERSION=$2
 fi
 
+./devtools/runitests.sh $WEEWX $PY_VERSION
+
 while inotifywait -e modify devtools/watchitests.sh devtools/runitests.sh bin/user/MQTTSubscribe.py bin/user/tests/integ
 do
     ./devtools/runitests.sh $WEEWX $PY_VERSION

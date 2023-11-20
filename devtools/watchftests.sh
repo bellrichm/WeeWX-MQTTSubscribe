@@ -19,6 +19,8 @@ else
     PY_VERSION=$2
 fi
 
+./devtools/runftests.sh $WEEWX $PY_VERSION
+
 while inotifywait -e modify devtools/watchftests.sh devtools/runftests.sh bin/user/MQTTSubscribe.py bin/user/tests/func
 do
     ./devtools/runftests.sh $WEEWX $PY_VERSION
