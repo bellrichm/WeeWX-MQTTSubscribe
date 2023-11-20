@@ -2195,56 +2195,97 @@ class MQTTSubscribeDriverConfEditor(weewx.drivers.AbstractConfEditor): # pragma:
 class Simulator():
     """ Run the service or driver. """
     # pylint: disable=too-many-instance-attributes
-    def __init__(self):
-        """ Initialize the new instance. """
-        usage = """MQTTSubscribeService --help
-                CONFIG_FILE
-                [--records=RECORD_COUNT]
-                [--interval=INTERVAL]
-                [--delay=DELAY]
-                [--units=US|METRIC|METRICWX]
-                [--binding=archive|loop]
-                [--type=driver|service]
-                [--verbose]
-                [--console]
 
-        CONFIG_FILE = The WeeWX configuration file, typically weewx.conf.
-        """
+    usage = """MQTTSubscribeService --help
+            CONFIG_FILE
+            [--records=RECORD_COUNT]
+            [--interval=INTERVAL]
+            [--delay=DELAY]
+            [--units=US|METRIC|METRICWX]
+            [--binding=archive|loop]
+            [--type=driver|service]
+            [--verbose]
+            [--console]
 
-        parser = argparse.ArgumentParser(usage=usage)
-        parser.add_argument('--version', action='version', version=f"MQTTSubscribe version is {VERSION}")
-        parser.add_argument('--records', dest='record_count', type=int,
+    CONFIG_FILE = The WeeWX configuration file, typically weewx.conf.
+    """
+
+    @classmethod
+    def add_parsers(cls, parser):
+        ''' Add the parsers. '''
+        simulator_parser = parser.add_parser('simulate', usage=cls.usage)
+        simulator_subparsers = simulator_parser.add_subparsers(dest='type')
+
+        simulate_service_parser = simulator_subparsers.add_parser('service')
+        simulate_service_parser.add_argument('--version', action='version', version=f"MQTTSubscribe version is {VERSION}")
+        simulate_service_parser.add_argument('--records', dest='record_count', type=int,
                             help='The number of archive records to create.',
                             default=2)
-        parser.add_argument('--interval', dest='interval', type=int,
+        simulate_service_parser.add_argument('--interval', dest='interval', type=int,
                             help='The archive interval in seconds.',
                             default=300)
-        parser.add_argument('--delay', dest='delay', type=int,
+        simulate_service_parser.add_argument('--delay', dest='delay', type=int,
                             help='The archive delay in seconds.',
                             default=15)
-        parser.add_argument("--units", choices=["US", "METRIC", "METRICWX"],
+        simulate_service_parser.add_argument("--units", choices=["US", "METRIC", "METRICWX"],
                             help="The default units if not in MQTT payload.",
                             default="US")
-        parser.add_argument("--binding", choices=["archive", "loop"],
+        simulate_service_parser.add_argument("--binding", choices=["archive", "loop"],
                             help="The type of binding.",
                             default="archive")
-        parser.add_argument("--type", choices=["driver", "service"],
+        simulate_service_parser.add_argument("--type", choices=["driver", "service"],
                             help="The simulation type.",
                             default="driver")
-        parser.add_argument("--verbose", action="store_true", dest="verbose",
+        simulate_service_parser.add_argument("--verbose", action="store_true", dest="verbose",
                             help="Log extra output (debug=1).")
-        parser.add_argument("--console", action="store_true", dest="console",
+        simulate_service_parser.add_argument("--console", action="store_true", dest="console",
                             help="Log to console in addition to syslog.")
-        parser.add_argument("--host",
+        simulate_service_parser.add_argument("--host",
                             help="The MQTT server.")
-        parser.add_argument("--topics",
+        simulate_service_parser.add_argument("--topics",
                             help="Comma separated list of topics to subscribe to.")
-        parser.add_argument("--callback",
+        simulate_service_parser.add_argument("--callback",
                             help="The callback type.")
-        parser.add_argument("config_file")
+        simulate_service_parser.add_argument("--config", action="store_true", dest="configure",
+                            help="Configure MQTTSubscribe..")
+        simulate_service_parser.add_argument("config_file")
 
-        options = parser.parse_args()
+        simulate_driver_parser = simulator_subparsers.add_parser('driver')
+        simulate_driver_parser.add_argument('--version', action='version', version=f"MQTTSubscribe version is {VERSION}")
+        simulate_driver_parser.add_argument('--records', dest='record_count', type=int,
+                            help='The number of archive records to create.',
+                            default=2)
+        simulate_driver_parser.add_argument('--interval', dest='interval', type=int,
+                            help='The archive interval in seconds.',
+                            default=300)
+        simulate_driver_parser.add_argument('--delay', dest='delay', type=int,
+                            help='The archive delay in seconds.',
+                            default=15)
+        simulate_driver_parser.add_argument("--units", choices=["US", "METRIC", "METRICWX"],
+                            help="The default units if not in MQTT payload.",
+                            default="US")
+        simulate_driver_parser.add_argument("--binding", choices=["archive", "loop"],
+                            help="The type of binding.",
+                            default="archive")
+        simulate_driver_parser.add_argument("--type", choices=["driver", "service"],
+                            help="The simulation type.",
+                            default="driver")
+        simulate_driver_parser.add_argument("--verbose", action="store_true", dest="verbose",
+                            help="Log extra output (debug=1).")
+        simulate_driver_parser.add_argument("--console", action="store_true", dest="console",
+                            help="Log to console in addition to syslog.")
+        simulate_driver_parser.add_argument("--host",
+                            help="The MQTT server.")
+        simulate_driver_parser.add_argument("--topics",
+                            help="Comma separated list of topics to subscribe to.")
+        simulate_driver_parser.add_argument("--callback",
+                            help="The callback type.")
+        simulate_driver_parser.add_argument("--config", action="store_true", dest="configure",
+                            help="Configure MQTTSubscribe..")
+        simulate_driver_parser.add_argument("config_file")
 
+    def __init__(self, options):
+        """ Initialize the new instance. """
         self.simulation_type = options.type
         self.binding = options.binding
         self.record_count = options.record_count
@@ -2405,6 +2446,32 @@ class Simulator():
             elif self.binding == "loop":
                 self.simulate_driver_packet(driver)
 
+class Configurator():
+    ''' Configure the service or driver.'''
+
+    usage = ''
+
+    @classmethod
+    def add_parsers(cls, parser):
+        ''' Add the parsers.'''
+        subparser = parser.add_parser('configure', usage=cls.usage)
+        configurator_subparsers = subparser.add_subparsers(dest='type')
+
+        configurator_service_parser = configurator_subparsers.add_parser('service')
+
+        configurator_driver_parser = configurator_subparsers.add_parser('driver')
+
+    def __init__(self, options):
+        print("start")
+        print(options)
+
+        conf_editor = MQTTSubscribeDriverConfEditor()
+        conf_editor.existing_options = {}
+        settings = conf_editor.prompt_for_settings()
+        print(settings)
+
+        print("end")
+
 # To Run
 # setup.py install:
 # PYTHONPATH=/home/weewx/bin python /home/weewx/bin/user/MQTTSubscribe.py
@@ -2415,10 +2482,25 @@ if __name__ == '__main__': # pragma: no cover
     def main():
         """ Run it."""
         print("start")
-        simulator = Simulator()
-        simulator.init_configuration()
-        simulator.init_weewx()
-        simulator.run()
+        parser = argparse.ArgumentParser()
+        subparsers = parser.add_subparsers(dest='command')
+
+        Simulator.add_parsers(subparsers)
+        Configurator.add_parsers(subparsers)
+
+        options = parser.parse_args()
+
+        print(options)
+        print(options.command)
+
+        if options.command == 'simulate':
+            simulator = Simulator(options)
+            simulator.init_configuration()
+            simulator.init_weewx()
+            simulator.run()
+        elif options.command == 'configure':
+            configurator = Configurator(options)
+
         print("done")
 
     main()
