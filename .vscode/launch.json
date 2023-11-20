@@ -13,6 +13,18 @@
     },
     {
         "justMyCode": true,
+        "name": "dev",
+        "type": "python",
+        "request": "launch",
+        "program": "${workspaceFolder}/bin/user/MQTTSubscribe.py",
+        "args": [
+            "simulate",
+            "driver"
+        ],            
+        "console": "integratedTerminal"
+    },    
+    {
+        "justMyCode": true,
         "name": "Debug",
         "type": "python",
         "request": "launch",
