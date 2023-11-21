@@ -250,7 +250,7 @@ class test_init_config(unittest.TestCase):
         options.host = None
         options.console = None
 
-        options.type = None
+        options.type = random_string()
         options.record_count = random.randint(1, 99)
         options.interval = random.randint(1, 99)
         options.delay = random.randint(1, 99)
@@ -331,7 +331,7 @@ class test_init_config(unittest.TestCase):
         options.host = host
         options.console = None
 
-        options.type = None
+        options.type = random_string()
         options.record_count = random.randint(1, 99)
         options.interval = random.randint(1, 99)
         options.delay = random.randint(1, 99)
@@ -395,7 +395,7 @@ class test_init_config(unittest.TestCase):
         options.host = None
         options.console = None
 
-        options.type = None
+        options.type = random_string()
         options.record_count = random.randint(1, 99)
         options.interval = random.randint(1, 99)
         options.delay = random.randint(1, 99)
@@ -454,7 +454,7 @@ class test_init_config(unittest.TestCase):
         options.host = None
         options.console = random_string()
 
-        options.type = None
+        options.type = random_string()
         options.record_count = random.randint(1, 99)
         options.interval = random.randint(1, 99)
         options.delay = random.randint(1, 99)
