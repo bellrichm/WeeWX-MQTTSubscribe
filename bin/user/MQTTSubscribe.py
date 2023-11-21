@@ -2452,19 +2452,45 @@ class Configurator():
         configurator_subparsers = subparser.add_subparsers(dest='type')
 
         configurator_service_parser = configurator_subparsers.add_parser('service')
+        configurator_service_parser.add_argument("--replace-with",
+                            help="The configuration that will replace the existing configuration.")
+        configurator_service_parser.add_argument("config_file")
 
         configurator_driver_parser = configurator_subparsers.add_parser('driver')
+        configurator_driver_parser.add_argument("--replace-with",
+                            help="The configuration that will replace the existing configuration.")
+        configurator_driver_parser.add_argument("config_file")
 
     def __init__(self, options):
-        print("start")
-        print(options)
+        if options.type == 'service':
+            self.section = 'MQTTSubscribeService'
+        else:
+            self.section = 'MQTTSubscribeDriver'
 
-        conf_editor = MQTTSubscribeDriverConfEditor()
-        conf_editor.existing_options = {}
-        settings = conf_editor.prompt_for_settings()
-        print(settings)
+        if options.replace_with:
+            self.action = 'replace-with'
+            config_input = options.replace_with
 
-        print("end")
+        config_input_path = os.path.abspath(config_input)
+        config_input_dict = configobj.ConfigObj(config_input_path, file_error=True)
+        self.config_input_dict = config_input_dict[self.section] #ToDo: - deep copy or weewx config copy
+
+        config_path = os.path.abspath(options.config_file)
+        self.config_dict = configobj.ConfigObj(config_path, file_error=True)
+
+        #conf_editor = MQTTSubscribeDriverConfEditor()
+        #conf_editor.existing_options = {}
+        #settings = conf_editor.prompt_for_settings()
+
+    def run(self):
+        ''' Update the configuration. '''
+        print(self.config_input_dict)
+        print(self.config_dict)
+        if self.action == 'replace-with':
+            del self.config_dict[self.section]
+            print(self.config_dict)
+            self.config_dict[self.section] = self.config_input_dict
+        print((self.config_dict))
 
 # To Run
 # setup.py install:
@@ -2499,6 +2525,7 @@ if __name__ == '__main__': # pragma: no cover
             simulator.run()
         elif options.command == 'configure':
             configurator = Configurator(options)
+            configurator.run()
         else:
             parser.print_help()
 
