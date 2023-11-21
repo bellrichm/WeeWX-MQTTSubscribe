@@ -2241,8 +2241,6 @@ class Simulator():
                             help="Comma separated list of topics to subscribe to.")
         simulate_service_parser.add_argument("--callback",
                             help="The callback type.")
-        simulate_service_parser.add_argument("--config", action="store_true", dest="configure",
-                            help="Configure MQTTSubscribe..")
         simulate_service_parser.add_argument("config_file")
 
         simulate_driver_parser = simulator_subparsers.add_parser('driver', usage=f"MQTTSubscribe.py simulate driver {cls.usage}")
@@ -2271,8 +2269,6 @@ class Simulator():
                             help="Comma separated list of topics to subscribe to.")
         simulate_driver_parser.add_argument("--callback",
                             help="The callback type.")
-        simulate_driver_parser.add_argument("--config", action="store_true", dest="configure",
-                            help="Configure MQTTSubscribe..")
         simulate_driver_parser.add_argument("config_file")
 
     def __init__(self, options):
