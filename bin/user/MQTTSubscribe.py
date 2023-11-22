@@ -23,9 +23,12 @@ Overview:
 
     The driver processes the queue and generates a packet for each element currently in the queue.
     A topic can be desinated as an 'archive topic'. Data in this topic is returned as an archive record.
+"""
 
-Configuration:
-[MQTTSubscribeService] or [MQTTSubscribeDriver]
+CONFIG_SPEC_TEXT = \
+"""
+# [MQTTSubscribeService] or [MQTTSubscribeDriver]
+[MQTTSubscribe]
     # The MQTT server.
     # Default is localhost.
     host = localhost
@@ -144,10 +147,11 @@ Configuration:
         # Default is "=".
         keyword_separator = "="
 
-    [[topics]
+    [[topics]]
         # Controls if this topic is subscribed to.
         # Default is True.
         subscribe = True
+
         # The QOS level to subscribe to.
         # Default is 0
         qos = 0
@@ -157,10 +161,6 @@ Configuration:
         # For more information see, http://weewx.com/docs/customizing.htm#units
         # Default is US.
         unit_system = US
-
-        # Controls if an actual subscription request is made to the broker for this topic.
-        # Default is True.
-        subscribe = True
 
         # By default wind data is collected together across generation of loop packets.
         # Setting to false results in the data only being collected together within a loop packet.
@@ -253,10 +253,10 @@ Configuration:
 
             # The separator between fieldname and value pairs. (field1=value1, field2=value2).
             # Default is "=".
-            keyword_separator = "="
+            keyword_separator = "="            
 
         # The first topic to subscribe to
-        [[[first/topic]]]
+        [[[REPLACE_ME]]]
             # When set to false, the topic is not subscribed to.
             # Valid values: True, False
             # Default is True
@@ -270,10 +270,10 @@ Configuration:
             msg_id_field = None
 
             # The incoming field name from MQTT.
-            [[[[temp1]]]
+            [[[[REPLACE_ME]]]]
                 # The WeeWX name.
                 # Default is the name from MQTT.
-                name = extraTemp1
+                name = REPLACE_ME
 
                 # When True, the value in the field specified in msg_id_field is not appended to the fieldname in the mqtt message.
                 # Valid values: True, False.
@@ -303,7 +303,7 @@ Configuration:
                 # Valid values, a Python expression that when evaluated returns a valid value.
                 Example, conversion_func = lambda x: True if x == 'ON' else False
                 # Default is not set.
-                conversion_func =
+                conversion_func = NOT_SET
 
                 # When True: if there is an exception converting the data type, the value is set to None.
                 # When False: if there is an exception converting the data type, an error is logged and the MQTT msg is skipped.
@@ -322,7 +322,7 @@ Configuration:
                 # Useful if this field's units differ from the topic's unit_system's units.
                 # Valid values: see, http://www.weewx.com/docs/customizing.htm#units
                 # Default is not set.
-                # units = degree_C
+                # units = NOT_SET
 
                 # In seconds how long the cache is valid.
                 # Value of 0 means the cache is always expired.
@@ -330,11 +330,20 @@ Configuration:
                 # Value of None means the cache never expires.
                 # Default is not set.
                 # EXPERIMENTAL - may be removed
-                # expires_after = None
+                # expires_after = NOT_SET
+
+                # This is only valid when the fieldname is an array. Each subsection 'names' the element in the array.
+                [[[[[subfields]]]]]
+                    # Each subfield can be configured like a field in the json.
+					[[[[[REPLACE_ME]]]]]
+                        name = REPLACE_ME
 
         # The second topic to subscribe to
-        [[[second/topic]]]
+            [[[[REPLACE_ME_TOO]]]]
+"""
 
+ADDITIONAL_CONFIG_INFO = \
+"""            
     # Configure additional observations and units for WeeWX to use.
     # See, http://weewx.com/docs/customizing.htm#Creating_a_new_unit_group
     # This assumes a good knowledge of customizing WeeWX.
@@ -363,6 +372,7 @@ Configuration:
                 unit_system = metric, metricwx
 """
 
+# readability, I want the config spec at the top of the file pylint: disable=wrong-import-position
 import argparse
 import copy
 import datetime
@@ -393,6 +403,7 @@ from weeutil.config import merge_config
 import weewx
 import weewx.drivers
 from weewx.engine import StdEngine, StdService
+# pylint: enable=wrong-import-position
 
 VERSION = '3.0.0-rc01'
 DRIVER_NAME = 'MQTTSubscribeDriver'
@@ -2450,6 +2461,8 @@ class Configurator():
         configurator_service_parser = configurator_subparsers.add_parser('service')
         configurator_service_parser.add_argument("--add-from",
                             help="The configuration that will and add to (but not update existing settings) the existing configuration.")
+        configurator_service_parser.add_argument("--create-example", default="mqttsubscribe.example.conf",
+                            help="Export the existing configuration.")
         configurator_service_parser.add_argument("--export",
                             help="Export the existing configuration.")
         configurator_service_parser.add_argument("--output",
@@ -2463,9 +2476,12 @@ class Configurator():
         # The following are only used by the service
         configurator_service_parser.add_argument("--enable", dest="enable",
                             help="Enable/Disable the service.")
+
         configurator_driver_parser = configurator_subparsers.add_parser('driver')
         configurator_driver_parser.add_argument("--add-from",
                             help="The configuration that will and add to (but not update existing settings) the existing configuration.")
+        configurator_driver_parser.add_argument("--create-example", default="mqttsubscribe.example.conf",
+                            help="Export the existing configuration.")
         configurator_driver_parser.add_argument("--export",
                             help="Export the existing configuration.")
         configurator_driver_parser.add_argument("--output",
@@ -2492,6 +2508,9 @@ class Configurator():
         if options.add_from:
             self.action = 'add-from'
             config_input = options.add_from
+        elif options.create_example:
+            self.action = 'create-example'
+            self.config_output_path = os.path.abspath(options.create_example)
         elif options.export:
             self.action = 'export'
             self.config_output_path = os.path.abspath(options.export)
@@ -2506,7 +2525,7 @@ class Configurator():
         if options.enable:
             self.enable = to_bool(options.enable)
 
-        # ToDo: incompatible with --export
+        # ToDo: incompatible with --export and --create-example
         if options.output:
             self.config_output_path = os.path.abspath(options.output)
 
@@ -2522,6 +2541,10 @@ class Configurator():
         if self.action == 'add-from':
             print(self.config_input_dict)
             weeutil.config.conditional_merge(self.config_dict[self.section], self.config_input_dict)
+        elif self.action == 'create-example':
+            config_spec = configobj.ConfigObj(CONFIG_SPEC_TEXT.splitlines())
+            config_spec.filename = self.config_output_path
+            config_spec.write()
         elif self.action == 'export':
             export_dict = {}
             export_dict[self.section] = self.config_dict[self.section]
@@ -2533,7 +2556,7 @@ class Configurator():
             del self.config_dict[self.section]
             print(self.config_dict)
             self.config_dict[self.section] = self.config_input_dict
-        if self.action == 'update-from':
+        elif self.action == 'update-from':
             print(self.config_input_dict)
             self.config_dict[self.section] = self.config_input_dict
         else:
@@ -2548,7 +2571,7 @@ class Configurator():
         print((self.config_dict))
 
         # ToDo: cleanup this hack
-        if self.action != "export":
+        if self.action != "export" and self.action != "create-example":
             self.config_dict.filename = self.config_output_path
             self.config_dict.write()
 
