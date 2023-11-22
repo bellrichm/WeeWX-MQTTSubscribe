@@ -2488,6 +2488,9 @@ class Configurator():
         if options.replace_with:
             self.action = 'replace-with'
             config_input = options.replace_with
+        if options.update_from:
+            self.action = 'update-from'
+            config_input = options.update_from
 
         if config_input:
             config_input_path = os.path.abspath(config_input)
@@ -2513,6 +2516,9 @@ class Configurator():
             print(self.config_input_dict)
             del self.config_dict[self.section]
             print(self.config_dict)
+            self.config_dict[self.section] = self.config_input_dict
+        if self.action == 'update-from':
+            print(self.config_input_dict)
             self.config_dict[self.section] = self.config_input_dict
         else:
             conf_editor = MQTTSubscribeDriverConfEditor()
