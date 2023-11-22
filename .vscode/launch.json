@@ -134,7 +134,9 @@
                 "configure",
                 "service",
                 //"--verbose",
-                "--add-from", "${workspaceFolder}/devtools/smoketest.archive.conf",                
+                "--enable", "false",
+                "--output", "${workspaceFolder}/tmp/temp.conf",
+               // "--add-from", "${workspaceFolder}/devtools/smoketest.archive.conf",                
                 //"--export", "${workspaceFolder}/tmp/temp.conf",
                 "--update-from", "${workspaceFolder}/devtools/smoketest.archive.conf",
                 "${workspaceFolder}/devtools/debug.loop.conf"

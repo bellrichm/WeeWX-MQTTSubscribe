@@ -2452,17 +2452,24 @@ class Configurator():
                             help="The configuration that will and add to (but not update existing settings) the existing configuration.")
         configurator_service_parser.add_argument("--export",
                             help="Export the existing configuration.")
+        configurator_service_parser.add_argument("--output",
+                            help="Instead of updating the WeeWX configuration, write it to a file")
         configurator_service_parser.add_argument("--replace-with",
                             help="The configuration that will replace the existing configuration.")
         configurator_service_parser.add_argument("--update-from",
                             help="The configuration that will update (and add to) the existing configuration.")
         configurator_service_parser.add_argument("config_file")
 
+        # The following are only used by the service
+        configurator_service_parser.add_argument("--enable", dest="enable",
+                            help="Enable/Disable the service.")
         configurator_driver_parser = configurator_subparsers.add_parser('driver')
         configurator_driver_parser.add_argument("--add-from",
                             help="The configuration that will and add to (but not update existing settings) the existing configuration.")
         configurator_driver_parser.add_argument("--export",
                             help="Export the existing configuration.")
+        configurator_driver_parser.add_argument("--output",
+                            help="Instead of updating the WeeWX configuration, write it to a file")
         configurator_driver_parser.add_argument("--replace-with",
                             help="The configuration that will replace the existing configuration.")
         configurator_driver_parser.add_argument("--update-from",
@@ -2475,6 +2482,10 @@ class Configurator():
         else:
             self.section = 'MQTTSubscribeDriver'
 
+        config_path = os.path.abspath(options.config_file)
+        self.config_dict = configobj.ConfigObj(config_path, file_error=True)
+        self.oputput_path = config_path
+
         self.action = None
         config_input = None
         # ToDo: check that only one is specified
@@ -2483,8 +2494,7 @@ class Configurator():
             config_input = options.add_from
         elif options.export:
             self.action = 'export'
-            config_output = options.export
-            self.config_output_path = os.path.abspath(config_output)
+            self.config_output_path = os.path.abspath(options.export)
         if options.replace_with:
             self.action = 'replace-with'
             config_input = options.replace_with
@@ -2492,13 +2502,19 @@ class Configurator():
             self.action = 'update-from'
             config_input = options.update_from
 
+        # ToDo: incompatible with --export
+        if options.enable:
+            self.enable = to_bool(options.enable)
+
+        # ToDo: incompatible with --export
+        if options.output:
+            self.config_output_path = os.path.abspath(options.output)
+
         if config_input:
             config_input_path = os.path.abspath(config_input)
             config_input_dict = configobj.ConfigObj(config_input_path, file_error=True)
             self.config_input_dict = config_input_dict[self.section] #ToDo: - deep copy or weewx config copy
 
-        config_path = os.path.abspath(options.config_file)
-        self.config_dict = configobj.ConfigObj(config_path, file_error=True)
 
     def run(self):
         ''' Update the configuration. '''
@@ -2527,7 +2543,14 @@ class Configurator():
             self.config_dict[self.section] = settings
             print(settings)
 
+        if self.enable is not None:
+            self.config_dict[self.section]['enable'] = self.enable
         print((self.config_dict))
+
+        # ToDo: cleanup this hack
+        if self.action != "export":
+            self.config_dict.filename = self.config_output_path
+            self.config_dict.write()
 
 # To Run
 # setup.py install:
