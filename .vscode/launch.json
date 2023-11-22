@@ -134,7 +134,7 @@
                 "configure",
                 "service",
                 //"--verbose",
-                "--replace-with", "${workspaceFolder}/devtools/smoketest.archive.conf",
+                "--export", "${workspaceFolder}/tmp/temp.conf",
                 "${workspaceFolder}/devtools/debug.loop.conf"
             ],            
             "console": "integratedTerminal"

@@ -2448,13 +2448,25 @@ class Configurator():
         configurator_subparsers = subparser.add_subparsers(dest='type')
 
         configurator_service_parser = configurator_subparsers.add_parser('service')
+        configurator_service_parser.add_argument("--add-from",
+                            help="The configuration that will and add to (but not update existing settings) the existing configuration.")
+        configurator_service_parser.add_argument("--export",
+                            help="Export the existing configuration.")
         configurator_service_parser.add_argument("--replace-with",
                             help="The configuration that will replace the existing configuration.")
+        configurator_service_parser.add_argument("--update-from",
+                            help="The configuration that will update (and add to) the existing configuration.")
         configurator_service_parser.add_argument("config_file")
 
         configurator_driver_parser = configurator_subparsers.add_parser('driver')
+        configurator_driver_parser.add_argument("--add-from",
+                            help="The configuration that will and add to (but not update existing settings) the existing configuration.")
+        configurator_driver_parser.add_argument("--export",
+                            help="Export the existing configuration.")
         configurator_driver_parser.add_argument("--replace-with",
                             help="The configuration that will replace the existing configuration.")
+        configurator_driver_parser.add_argument("--update-from",
+                            help="The configuration that will update (and add to) the existing configuration.")
         configurator_driver_parser.add_argument("config_file")
 
     def __init__(self, options):
@@ -2466,6 +2478,10 @@ class Configurator():
         self.action = None
         config_input = None
         # ToDo: check that only one is specified
+        if options.export:
+            self.action = 'export'
+            config_output = options.export
+            self.config_output_path = os.path.abspath(config_output)
         if options.replace_with:
             self.action = 'replace-with'
             config_input = options.replace_with
@@ -2484,7 +2500,13 @@ class Configurator():
     def run(self):
         ''' Update the configuration. '''
         print(self.config_dict)
-        if self.action == 'replace-with':
+        if self.action == 'export':
+            export_dict = {}
+            export_dict[self.section] = self.config_dict[self.section]
+            export_config = configobj.ConfigObj(export_dict)
+            export_config.filename = self.config_output_path
+            export_config.write()
+        elif self.action == 'replace-with':
             print(self.config_input_dict)
             del self.config_dict[self.section]
             print(self.config_dict)
