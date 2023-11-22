@@ -2463,29 +2463,39 @@ class Configurator():
         else:
             self.section = 'MQTTSubscribeDriver'
 
+        self.action = None
+        config_input = None
+        # ToDo: check that only one is specified
         if options.replace_with:
             self.action = 'replace-with'
             config_input = options.replace_with
+        #elif options.add_from:
+        #    self.action = 'add-from'
+        #    config_input = options.add_from
 
-        config_input_path = os.path.abspath(config_input)
-        config_input_dict = configobj.ConfigObj(config_input_path, file_error=True)
-        self.config_input_dict = config_input_dict[self.section] #ToDo: - deep copy or weewx config copy
+        if config_input:
+            config_input_path = os.path.abspath(config_input)
+            config_input_dict = configobj.ConfigObj(config_input_path, file_error=True)
+            self.config_input_dict = config_input_dict[self.section] #ToDo: - deep copy or weewx config copy
 
         config_path = os.path.abspath(options.config_file)
         self.config_dict = configobj.ConfigObj(config_path, file_error=True)
 
-        #conf_editor = MQTTSubscribeDriverConfEditor()
-        #conf_editor.existing_options = {}
-        #settings = conf_editor.prompt_for_settings()
-
     def run(self):
         ''' Update the configuration. '''
-        print(self.config_input_dict)
         print(self.config_dict)
         if self.action == 'replace-with':
+            print(self.config_input_dict)
             del self.config_dict[self.section]
             print(self.config_dict)
             self.config_dict[self.section] = self.config_input_dict
+        else:
+            conf_editor = MQTTSubscribeDriverConfEditor()
+            conf_editor.existing_options = {}
+            settings = conf_editor.prompt_for_settings()
+            self.config_dict[self.section] = settings
+            print(settings)
+
         print((self.config_dict))
 
 # To Run
