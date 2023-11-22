@@ -2478,16 +2478,16 @@ class Configurator():
         self.action = None
         config_input = None
         # ToDo: check that only one is specified
-        if options.export:
+        if options.add_from:
+            self.action = 'add-from'
+            config_input = options.add_from
+        elif options.export:
             self.action = 'export'
             config_output = options.export
             self.config_output_path = os.path.abspath(config_output)
         if options.replace_with:
             self.action = 'replace-with'
             config_input = options.replace_with
-        #elif options.add_from:
-        #    self.action = 'add-from'
-        #    config_input = options.add_from
 
         if config_input:
             config_input_path = os.path.abspath(config_input)
@@ -2500,7 +2500,10 @@ class Configurator():
     def run(self):
         ''' Update the configuration. '''
         print(self.config_dict)
-        if self.action == 'export':
+        if self.action == 'add-from':
+            print(self.config_input_dict)
+            weeutil.config.conditional_merge(self.config_dict[self.section], self.config_input_dict)
+        elif self.action == 'export':
             export_dict = {}
             export_dict[self.section] = self.config_dict[self.section]
             export_config = configobj.ConfigObj(export_dict)
