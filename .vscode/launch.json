@@ -140,7 +140,8 @@
                // "--add-from", "${workspaceFolder}/devtools/smoketest.archive.conf",                
                 //"--export", "${workspaceFolder}/tmp/temp.conf",
                 //"--update-from", "${workspaceFolder}/devtools/smoketest.archive.conf",
-                "${workspaceFolder}/devtools/debug.loop.conf"
+                //"${workspaceFolder}/devtools/debug.loop.conf",
+                "/home/fork.weewx/weewx.debug.conf"
             ],            
             "console": "integratedTerminal"
         },        

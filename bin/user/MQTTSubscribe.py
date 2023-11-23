@@ -2555,9 +2555,7 @@ class Configurator():
 
     def run(self):
         ''' Update the configuration. '''
-        print(self.config_dict)
         if self.action == 'add-from':
-            print(self.config_input_dict)
             weeutil.config.conditional_merge(self.config_dict[self.section], self.config_input_dict)
         elif self.action == 'create-example':
             self.create_example()
@@ -2571,29 +2569,24 @@ class Configurator():
             self.config_spec.filename = self.config_output_path
             self.config_spec.write()
         elif self.action == 'replace-with':
-            print(self.config_input_dict)
             del self.config_dict[self.section]
-            print(self.config_dict)
             self.config_dict[self.section] = self.config_input_dict
         elif self.action == 'validate':
-            self.validate_configspec()
+            self._validate("", self.config_dict[self.section], self.config_spec['MQTTSubscribe'])
         elif self.action == 'update-from':
-            print(self.config_input_dict)
             self.config_dict[self.section] = self.config_input_dict
         else:
             conf_editor = MQTTSubscribeDriverConfEditor()
             conf_editor.existing_options = {}
             settings = conf_editor.prompt_for_settings()
             self.config_dict[self.section] = settings
-            print(settings)
 
         # ToDo: need to handle when configuring as driver
         #if self.enable is not None:
          #   self.config_dict[self.section]['enable'] = self.enable
-        print((self.config_dict))
 
         # ToDo: cleanup this hack
-        if self.action != "export" and self.action != "create-example":
+        if self.action != "export" and self.action != "create-example" and self.action != 'validate':
             self.config_dict.filename = self.config_output_path
             self.config_dict.write()
 
@@ -2652,12 +2645,7 @@ class Configurator():
         self.config_spec.filename = self.config_output_path
         self.config_spec.write()
 
-    def validate_configspec(self):
-        ''' Validate the configuration file. '''
-        self._validate("", "", self.config_dict[self.section], self.config_spec['MQTTSubscribe'])
-
-    def _validate(self, parent, hierarchy, section, section_configspec):
-        print("foo")
+    def _validate(self, hierarchy, section, section_configspec):
         hierarchy += f"{section.name}/"
         for key, value in section.items():
             if key in section.sections:
@@ -2666,22 +2654,17 @@ class Configurator():
                 print(f"ERROR: Unknown option: {hierarchy}{key}")
             if "REPLACE_ME" in value:
                 print(f"ERROR: Specify a value for: {hierarchy}{key}")
-            #print(f"{section.name} {key}: {value}")
-            #print(f"{section_configspec[key]}")
 
         for subsection in section.sections:
             if "REPLACE_ME" in subsection:
                 print(f"ERROR: Specify a value for: {hierarchy}{subsection}")
-            elif hierarchy == f"{self.section}/topics/":
-                self._validate(subsection, hierarchy, section[subsection], section_configspec["REPLACE_ME"])
-            elif hierarchy == f"{self.section}/topics/{parent}/":
-                self._validate(subsection, hierarchy, section[subsection], section_configspec["REPLACE_ME"])                
             elif subsection not in section_configspec.sections:
-                print(f"ERROR: Unknown option: {hierarchy}{subsection}")
+                if "REPLACE_ME" in section_configspec.sections:
+                    self._validate(hierarchy, section[subsection], section_configspec["REPLACE_ME"])
+                else:
+                    print(f"ERROR: Unknown option: {hierarchy}{subsection}")
             else:
-                self._validate(subsection, hierarchy, section[subsection], section_configspec[subsection])
-
-        print("bar")
+                self._validate(hierarchy, section[subsection], section_configspec[subsection])
 
 # To Run
 # setup.py install:
