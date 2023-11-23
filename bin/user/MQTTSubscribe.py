@@ -301,7 +301,7 @@ CONFIG_SPEC_TEXT = \
                 conversion_type = float
 
                 # Valid values, a Python expression that when evaluated returns a valid value.
-                Example, conversion_func = lambda x: True if x == 'ON' else False
+                # Example, conversion_func = lambda x: True if x == 'ON' else False
                 # Default is not set.
                 conversion_func = NOT_SET
 
@@ -322,7 +322,7 @@ CONFIG_SPEC_TEXT = \
                 # Useful if this field's units differ from the topic's unit_system's units.
                 # Valid values: see, http://www.weewx.com/docs/customizing.htm#units
                 # Default is not set.
-                # units = NOT_SET
+                units = NOT_SET
 
                 # In seconds how long the cache is valid.
                 # Value of 0 means the cache is always expired.
@@ -330,12 +330,13 @@ CONFIG_SPEC_TEXT = \
                 # Value of None means the cache never expires.
                 # Default is not set.
                 # EXPERIMENTAL - may be removed
-                # expires_after = NOT_SET
+                expires_after = NOT_SET
 
                 # This is only valid when the fieldname is an array. Each subsection 'names' the element in the array.
                 [[[[[subfields]]]]]
+                    foo = foo # This is here to make ConfigObj formatting work
                     # Each subfield can be configured like a field in the json.
-					[[[[[REPLACE_ME]]]]]
+					[[[[[[REPLACE_ME]]]]]]
                         name = REPLACE_ME
 
         # The second topic to subscribe to
@@ -2498,6 +2499,8 @@ class Configurator():
         else:
             self.section = 'MQTTSubscribeDriver'
 
+        self.config_spec = configobj.ConfigObj(CONFIG_SPEC_TEXT.splitlines())
+
         config_path = os.path.abspath(options.config_file)
         self.config_dict = configobj.ConfigObj(config_path, file_error=True)
         self.oputput_path = config_path
@@ -2542,9 +2545,8 @@ class Configurator():
             print(self.config_input_dict)
             weeutil.config.conditional_merge(self.config_dict[self.section], self.config_input_dict)
         elif self.action == 'create-example':
-            config_spec = configobj.ConfigObj(CONFIG_SPEC_TEXT.splitlines())
-            config_spec.filename = self.config_output_path
-            config_spec.write()
+            self.config_spec.filename = self.config_output_path
+            self.config_spec.write()
         elif self.action == 'export':
             export_dict = {}
             export_dict[self.section] = self.config_dict[self.section]
