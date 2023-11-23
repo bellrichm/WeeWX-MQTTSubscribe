@@ -2545,8 +2545,7 @@ class Configurator():
             print(self.config_input_dict)
             weeutil.config.conditional_merge(self.config_dict[self.section], self.config_input_dict)
         elif self.action == 'create-example':
-            self.config_spec.filename = self.config_output_path
-            self.config_spec.write()
+            self.create_example()
         elif self.action == 'export':
             export_dict = {}
             export_dict[self.section] = self.config_dict[self.section]
@@ -2576,6 +2575,29 @@ class Configurator():
         if self.action != "export" and self.action != "create-example":
             self.config_dict.filename = self.config_output_path
             self.config_dict.write()
+
+    def create_example(self):
+        ''' Create the example configuration file from the config spec.'''
+        remove_items = {
+            'units': ['MQTTSubscribe', 'topics', 'REPLACE_ME', 'REPLACE_ME']
+        }
+
+        for remove_item, _ in remove_items.items():
+            current_section = self.config_spec
+            for key in remove_items[remove_item]:
+                if key in current_section:
+                    current_section = current_section[key]
+                else:
+                    current_section = {}
+                    break
+
+            if remove_item in current_section:
+                del current_section[remove_item]
+            else:
+                print('error')
+
+        self.config_spec.filename = self.config_output_path
+        self.config_spec.write()
 
 # To Run
 # setup.py install:
