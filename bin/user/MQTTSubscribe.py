@@ -2474,6 +2474,8 @@ class Configurator():
                             help="The configuration that will replace the existing configuration.")
         configurator_service_parser.add_argument("--update-from",
                             help="The configuration that will update (and add to) the existing configuration.")
+        configurator_service_parser.add_argument("--validate",  action="store_true", dest="validate",
+                            help="Validate the configuration file.")
         configurator_service_parser.add_argument("config_file")
 
         # The following are only used by the service
@@ -2495,6 +2497,8 @@ class Configurator():
                             help="The configuration that will replace the existing configuration.")
         configurator_driver_parser.add_argument("--update-from",
                             help="The configuration that will update (and add to) the existing configuration.")
+        configurator_driver_parser.add_argument("--validate",  action="store_true", dest="validate",
+                            help="Validate the configuration file.")
         configurator_driver_parser.add_argument("config_file")
 
     def __init__(self, options):
@@ -2527,6 +2531,8 @@ class Configurator():
         if options.replace_with:
             self.action = 'replace-with'
             config_input = options.replace_with
+        if options.validate:
+            self.action = 'validate'
         if options.update_from:
             self.action = 'update-from'
             config_input = options.update_from
@@ -2567,6 +2573,8 @@ class Configurator():
             del self.config_dict[self.section]
             print(self.config_dict)
             self.config_dict[self.section] = self.config_input_dict
+        elif self.action == 'validate':
+            self.validate()
         elif self.action == 'update-from':
             print(self.config_input_dict)
             self.config_dict[self.section] = self.config_input_dict
@@ -2640,6 +2648,12 @@ class Configurator():
 
         self.config_spec.filename = self.config_output_path
         self.config_spec.write()
+
+    def validate(self):
+        ''' Validate the configuration file. '''
+        print("begin")
+
+        print("end")
 
 # To Run
 # setup.py install:

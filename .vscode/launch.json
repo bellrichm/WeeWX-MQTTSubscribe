@@ -133,9 +133,9 @@
             "args": [
                 "configure",
                 "service",
-                //"--verbose",
                 "--enable", "false",
-                "--create-example", "tmp/temp.conf",
+                "--validate",
+                //"--create-example", "tmp/temp.conf",
                 //"--output", "${workspaceFolder}/tmp/temp.conf",
                // "--add-from", "${workspaceFolder}/devtools/smoketest.archive.conf",                
                 //"--export", "${workspaceFolder}/tmp/temp.conf",
