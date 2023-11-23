@@ -132,8 +132,8 @@
             "program": "${workspaceFolder}/bin/user/MQTTSubscribe.py",
             "args": [
                 "configure",
-                "service",
-                "--enable", "false",
+                "driver",
+                //"--enable", "false",
                 "--validate",
                 //"--create-example", "tmp/temp.conf",
                 //"--output", "${workspaceFolder}/tmp/temp.conf",

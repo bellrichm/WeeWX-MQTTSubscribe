@@ -2450,6 +2450,7 @@ class Simulator():
 
 class Configurator():
     ''' Configure the service or driver.'''
+    # pylint: disable=too-many-instance-attributes
 
     usage = ''
 
@@ -2538,8 +2539,9 @@ class Configurator():
             config_input = options.update_from
 
         # ToDo: incompatible with --export
-        if options.enable:
-            self.enable = to_bool(options.enable)
+        # ToDo: need to handle when configuring as driver
+        #if options.enable:
+        #    self.enable = to_bool(options.enable)
 
         # ToDo: incompatible with --export and --create-example
         if options.output:
@@ -2574,7 +2576,7 @@ class Configurator():
             print(self.config_dict)
             self.config_dict[self.section] = self.config_input_dict
         elif self.action == 'validate':
-            self.validate()
+            self.validate_configspec()
         elif self.action == 'update-from':
             print(self.config_input_dict)
             self.config_dict[self.section] = self.config_input_dict
@@ -2585,8 +2587,9 @@ class Configurator():
             self.config_dict[self.section] = settings
             print(settings)
 
-        if self.enable is not None:
-            self.config_dict[self.section]['enable'] = self.enable
+        # ToDo: need to handle when configuring as driver
+        #if self.enable is not None:
+         #   self.config_dict[self.section]['enable'] = self.enable
         print((self.config_dict))
 
         # ToDo: cleanup this hack
@@ -2649,11 +2652,36 @@ class Configurator():
         self.config_spec.filename = self.config_output_path
         self.config_spec.write()
 
-    def validate(self):
+    def validate_configspec(self):
         ''' Validate the configuration file. '''
-        print("begin")
+        self._validate("", "", self.config_dict[self.section], self.config_spec['MQTTSubscribe'])
 
-        print("end")
+    def _validate(self, parent, hierarchy, section, section_configspec):
+        print("foo")
+        hierarchy += f"{section.name}/"
+        for key, value in section.items():
+            if key in section.sections:
+                continue
+            if key not in section_configspec:
+                print(f"ERROR: Unknown option: {hierarchy}{key}")
+            if "REPLACE_ME" in value:
+                print(f"ERROR: Specify a value for: {hierarchy}{key}")
+            #print(f"{section.name} {key}: {value}")
+            #print(f"{section_configspec[key]}")
+
+        for subsection in section.sections:
+            if "REPLACE_ME" in subsection:
+                print(f"ERROR: Specify a value for: {hierarchy}{subsection}")
+            elif hierarchy == f"{self.section}/topics/":
+                self._validate(subsection, hierarchy, section[subsection], section_configspec["REPLACE_ME"])
+            elif hierarchy == f"{self.section}/topics/{parent}/":
+                self._validate(subsection, hierarchy, section[subsection], section_configspec["REPLACE_ME"])                
+            elif subsection not in section_configspec.sections:
+                print(f"ERROR: Unknown option: {hierarchy}{subsection}")
+            else:
+                self._validate(subsection, hierarchy, section[subsection], section_configspec[subsection])
+
+        print("bar")
 
 # To Run
 # setup.py install:
