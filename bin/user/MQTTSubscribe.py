@@ -2468,6 +2468,8 @@ class Configurator():
                             help="Export the existing configuration.")
         configurator_service_parser.add_argument("--output",
                             help="Instead of updating the WeeWX configuration, write it to a file")
+        configurator_service_parser.add_argument("--print-configspec",
+                            help="Write the configspec to a file.")
         configurator_service_parser.add_argument("--replace-with",
                             help="The configuration that will replace the existing configuration.")
         configurator_service_parser.add_argument("--update-from",
@@ -2485,6 +2487,8 @@ class Configurator():
                             help="Export the existing configuration.")
         configurator_driver_parser.add_argument("--export",
                             help="Export the existing configuration.")
+        configurator_driver_parser.add_argument("--print-configspec",
+                            help="Write the configspec to a file.")
         configurator_driver_parser.add_argument("--output",
                             help="Instead of updating the WeeWX configuration, write it to a file")
         configurator_driver_parser.add_argument("--replace-with",
@@ -2517,6 +2521,9 @@ class Configurator():
         elif options.export:
             self.action = 'export'
             self.config_output_path = os.path.abspath(options.export)
+        elif options.print_configspec:
+            self.action = 'print-configspec'
+            self.config_output_path = os.path.abspath(options.print_configspec)
         if options.replace_with:
             self.action = 'replace-with'
             config_input = options.replace_with
@@ -2552,6 +2559,9 @@ class Configurator():
             export_config = configobj.ConfigObj(export_dict)
             export_config.filename = self.config_output_path
             export_config.write()
+        elif self.action == 'print-configspec':
+            self.config_spec.filename = self.config_output_path
+            self.config_spec.write()
         elif self.action == 'replace-with':
             print(self.config_input_dict)
             del self.config_dict[self.section]
