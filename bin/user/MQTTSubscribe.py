@@ -234,26 +234,7 @@ CONFIG_SPEC_TEXT = \
         # between the driver creating packets is large and the MQTT broker publishes frequently.
         # Or if subscribing to 'individual' payloads with wildcards. This results in many topic
         # in a single queue.
-        max_queue = sys.maxsize
-
-        # Configuration information about the MQTT message format for this topic
-        [[[message]]]
-            # The format of the MQTT payload.
-            # Currently support: individual, json, keyword.
-            # Must be specified.
-            type = REPLACE_ME
-
-            # When the json is nested, the delimiter between the hierarchies.
-            # Default is _.
-            flatten_delimiter = _
-
-            # The delimiter between fieldname and value pairs. (field1=value1, field2=value2).
-            # Default is is ",".
-            keyword_delimiter = ","
-
-            # The separator between fieldname and value pairs. (field1=value1, field2=value2).
-            # Default is "=".
-            keyword_separator = "="            
+        max_queue = sys.maxsize         
 
         # The first topic to subscribe to
         [[[REPLACE_ME]]]
@@ -268,6 +249,25 @@ CONFIG_SPEC_TEXT = \
             # Default is None.
             # Only used with json payloads.
             msg_id_field = None
+
+            # Configuration information about the MQTT message format for this topic
+            [[[[message]]]]
+                # The format of the MQTT payload.
+                # Currently support: individual, json, keyword.
+                # Must be specified.
+                type = REPLACE_ME
+
+                # When the json is nested, the delimiter between the hierarchies.
+                # Default is _.
+                flatten_delimiter = _
+
+                # The delimiter between fieldname and value pairs. (field1=value1, field2=value2).
+                # Default is is ",".
+                keyword_delimiter = ","
+
+                # The separator between fieldname and value pairs. (field1=value1, field2=value2).
+                # Default is "=".
+                keyword_separator = "="               
 
             # The incoming field name from MQTT.
             [[[[REPLACE_ME]]]]
@@ -2579,7 +2579,39 @@ class Configurator():
     def create_example(self):
         ''' Create the example configuration file from the config spec.'''
         remove_items = {
-            'units': ['MQTTSubscribe', 'topics', 'REPLACE_ME', 'REPLACE_ME']
+            'archive_interval': ['MQTTSubscribe'],
+            'archive_topic': ['MQTTSubscribe'],
+            'keepalive': ['MQTTSubscribe'],
+            'max_delay': ['MQTTSubscribe'],
+            'max_loop_interval': ['MQTTSubscribe'],
+            'min_delay': ['MQTTSubscribe'],
+            'wait_before_retry': ['MQTTSubscribe'],
+            'adjust_end_time': ['MQTTSubscribe', 'topics'],
+            'adjust_start_time': ['MQTTSubscribe', 'topics'],
+            'collect_observations': ['MQTTSubscribe', 'topics'],
+            'collect_wind_across_loops': ['MQTTSubscribe', 'topics'],
+            'datetime_format': ['MQTTSubscribe', 'topics'],
+            'ignore_end_time': ['MQTTSubscribe', 'topics'],
+            'ignore_start_time': ['MQTTSubscribe', 'topics'],
+            'max_queue': ['MQTTSubscribe', 'topics'],
+            'offset_format': ['MQTTSubscribe', 'topics'],
+            'qos': ['MQTTSubscribe', 'topics'],
+            'single_queue': ['MQTTSubscribe', 'topics'],
+            'topic_tail_is_fieldname': ['MQTTSubscribe', 'topics'],
+            'use_server_datetime': ['MQTTSubscribe', 'topics'],
+            'use_topic_as_fieldname': ['MQTTSubscribe', 'topics'],
+            'msg_id_field': ['MQTTSubscribe', 'topics', 'REPLACE_ME'],
+            'flatten_delimiter': ['MQTTSubscribe', 'topics', 'REPLACE_ME', 'message'],
+            'keyword_delimiter': ['MQTTSubscribe', 'topics', 'REPLACE_ME', 'message'],
+            'keyword_separator': ['MQTTSubscribe', 'topics', 'REPLACE_ME', 'message'],
+            'conversion_error_to_none': ['MQTTSubscribe', 'topics', 'REPLACE_ME', 'REPLACE_ME'],
+            'conversion_func': ['MQTTSubscribe', 'topics', 'REPLACE_ME', 'REPLACE_ME'],
+            'conversion_type': ['MQTTSubscribe', 'topics', 'REPLACE_ME', 'REPLACE_ME'],
+            'expires_after': ['MQTTSubscribe', 'topics', 'REPLACE_ME', 'REPLACE_ME'],
+            'ignore_msg_id_field': ['MQTTSubscribe', 'topics', 'REPLACE_ME', 'REPLACE_ME'],
+            'subfields': ['MQTTSubscribe', 'topics', 'REPLACE_ME', 'REPLACE_ME'],
+            'total_wrap_around': ['MQTTSubscribe', 'topics', 'REPLACE_ME', 'REPLACE_ME'],
+            'units': ['MQTTSubscribe', 'topics', 'REPLACE_ME', 'REPLACE_ME'],
         }
 
         for remove_item, _ in remove_items.items():
