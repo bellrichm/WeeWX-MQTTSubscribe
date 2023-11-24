@@ -57,6 +57,10 @@ CONFIG_SPEC_TEXT = \
     # Default is None.
     password = None
 
+    # The MQTT clean_session setting.
+    # Default is True
+    clean_session = True
+
     # Controls the MQTT logging.
     # Default is false.
     log = false
@@ -98,6 +102,10 @@ CONFIG_SPEC_TEXT = \
     # The default is 300.
     # Only used when the archive_topic is set and MQTTSubscribe is running in 'hardware generation' mode.
     archive_interval = 300
+
+    # The name of a file to log to.
+    # The default is None.
+    logging_filename = None
 
     # The TLS options that are passed to tls_set method of the MQTT client.
     # For additional information see, https://eclipse.org/paho/clients/python/docs/strptime-format-codes
@@ -152,10 +160,6 @@ CONFIG_SPEC_TEXT = \
         # Default is True.
         subscribe = True
 
-        # The QOS level to subscribe to.
-        # Default is 0
-        qos = 0
-
         # Units for MQTT payloads without unit value.
         # Valid values: US, METRIC, METRICWX.
         # For more information see, http://weewx.com/docs/customizing.htm#units
@@ -191,6 +195,10 @@ CONFIG_SPEC_TEXT = \
         # Default is False.
         # DEPRECATED - no longer needed
         use_topic_as_fieldname = False
+
+        # The name of the MQTT on_message callback.
+        # Default is 'message'.
+        callback_config_name = message
 
         # Formatting string for converting a timestamp to an epoch datetime.
         # For additional information see, https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes
@@ -242,6 +250,10 @@ CONFIG_SPEC_TEXT = \
             # Valid values: True, False
             # Default is True
             subscribe = True
+
+            # The QOS level to subscribe to.
+            # Default is 0
+            qos = 0            
 
             # Specifies a field name in the mqtt message.
             # The value of the field is appended to every field name in the mqtt message.
@@ -2572,7 +2584,7 @@ class Configurator():
             del self.config_dict[self.section]
             self.config_dict[self.section] = self.config_input_dict
         elif self.action == 'validate':
-            self._validate("", self.config_dict[self.section], self.config_spec['MQTTSubscribe'])
+            self._validate("", "", self.config_dict[self.section], self.config_spec['MQTTSubscribe'])
         elif self.action == 'update-from':
             self.config_dict[self.section] = self.config_input_dict
         else:
@@ -2595,13 +2607,16 @@ class Configurator():
         remove_items = {
             'archive_interval': ['MQTTSubscribe'],
             'archive_topic': ['MQTTSubscribe'],
+            'clean_session': ['MQTTSubscribe'],
             'keepalive': ['MQTTSubscribe'],
+            'logging_filename': ['MQTTSubscribe'],
             'max_delay': ['MQTTSubscribe'],
             'max_loop_interval': ['MQTTSubscribe'],
             'min_delay': ['MQTTSubscribe'],
             'wait_before_retry': ['MQTTSubscribe'],
             'adjust_end_time': ['MQTTSubscribe', 'topics'],
             'adjust_start_time': ['MQTTSubscribe', 'topics'],
+            'callback_config_name': ['MQTTSubscribe', 'topics'],
             'collect_observations': ['MQTTSubscribe', 'topics'],
             'collect_wind_across_loops': ['MQTTSubscribe', 'topics'],
             'datetime_format': ['MQTTSubscribe', 'topics'],
@@ -2609,12 +2624,12 @@ class Configurator():
             'ignore_start_time': ['MQTTSubscribe', 'topics'],
             'max_queue': ['MQTTSubscribe', 'topics'],
             'offset_format': ['MQTTSubscribe', 'topics'],
-            'qos': ['MQTTSubscribe', 'topics'],
             'single_queue': ['MQTTSubscribe', 'topics'],
             'topic_tail_is_fieldname': ['MQTTSubscribe', 'topics'],
             'use_server_datetime': ['MQTTSubscribe', 'topics'],
             'use_topic_as_fieldname': ['MQTTSubscribe', 'topics'],
             'msg_id_field': ['MQTTSubscribe', 'topics', 'REPLACE_ME'],
+            'qos': ['MQTTSubscribe', 'topics', 'REPLACE_ME'],
             'flatten_delimiter': ['MQTTSubscribe', 'topics', 'REPLACE_ME', 'message'],
             'keyword_delimiter': ['MQTTSubscribe', 'topics', 'REPLACE_ME', 'message'],
             'keyword_separator': ['MQTTSubscribe', 'topics', 'REPLACE_ME', 'message'],
@@ -2645,8 +2660,8 @@ class Configurator():
         self.config_spec.filename = self.config_output_path
         self.config_spec.write()
 
-    def _validate(self, hierarchy, section, section_configspec):
-        hierarchy += f"{section.name}/"
+    def _validate(self, parent, hierarchy, section, section_configspec):
+        hierarchy += f"{section.name}-"
         for key, value in section.items():
             if key in section.sections:
                 continue
@@ -2658,13 +2673,15 @@ class Configurator():
         for subsection in section.sections:
             if "REPLACE_ME" in subsection:
                 print(f"ERROR: Specify a value for: {hierarchy}{subsection}")
+            elif subsection not in section_configspec.sections and parent == 'subfields':
+                self._validate(subsection, hierarchy, section[subsection], self.config_spec['MQTTSubscribe']['topics']['REPLACE_ME']["REPLACE_ME"])
             elif subsection not in section_configspec.sections:
                 if "REPLACE_ME" in section_configspec.sections:
-                    self._validate(hierarchy, section[subsection], section_configspec["REPLACE_ME"])
+                    self._validate(subsection, hierarchy, section[subsection], section_configspec["REPLACE_ME"])
                 else:
                     print(f"ERROR: Unknown option: {hierarchy}{subsection}")
             else:
-                self._validate(hierarchy, section[subsection], section_configspec[subsection])
+                self._validate(subsection, hierarchy, section[subsection], section_configspec[subsection])
 
 # To Run
 # setup.py install:
