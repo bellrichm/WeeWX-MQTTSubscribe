@@ -29,6 +29,10 @@ CONFIG_SPEC_TEXT = \
 """
 # [MQTTSubscribeService] or [MQTTSubscribeDriver]
 [MQTTSubscribe]
+    # The driver to use.
+    # Only used by the driver.
+    driver = user.MQTTSubscribe
+
     # The MQTT server.
     # Default is localhost.
     host = localhost
@@ -244,12 +248,37 @@ CONFIG_SPEC_TEXT = \
         # in a single queue.
         max_queue = sys.maxsize         
 
+        # Configuration information about the MQTT message format for this topic
+        [[[message]]]
+            # The format of the MQTT payload.
+            # Currently support: individual, json, keyword.
+            # Must be specified.
+            type = REPLACE_ME
+
+            # When the json is nested, the delimiter between the hierarchies.
+            # Default is _.
+            flatten_delimiter = _
+
+            # The delimiter between fieldname and value pairs. (field1=value1, field2=value2).
+            # Default is is ",".
+            keyword_delimiter = ","
+
+            # The separator between fieldname and value pairs. (field1=value1, field2=value2).
+            # Default is "=".
+            keyword_separator = "="               
+        
+
         # The first topic to subscribe to
         [[[REPLACE_ME]]]
             # When set to false, the topic is not subscribed to.
             # Valid values: True, False
             # Default is True
             subscribe = True
+
+            # True if the incoming data should not be processed into WeeWX.
+            # Valid values: True, False.
+            # Default is False.
+            ignore = False            
 
             # The QOS level to subscribe to.
             # Default is 0
@@ -2608,6 +2637,7 @@ class Configurator():
             'archive_interval': ['MQTTSubscribe'],
             'archive_topic': ['MQTTSubscribe'],
             'clean_session': ['MQTTSubscribe'],
+            'driver': ['MQTTSubscribe'],
             'keepalive': ['MQTTSubscribe'],
             'logging_filename': ['MQTTSubscribe'],
             'max_delay': ['MQTTSubscribe'],
@@ -2623,6 +2653,7 @@ class Configurator():
             'ignore_end_time': ['MQTTSubscribe', 'topics'],
             'ignore_start_time': ['MQTTSubscribe', 'topics'],
             'max_queue': ['MQTTSubscribe', 'topics'],
+            'message': ['MQTTSubscribe', 'topics'],
             'offset_format': ['MQTTSubscribe', 'topics'],
             'single_queue': ['MQTTSubscribe', 'topics'],
             'topic_tail_is_fieldname': ['MQTTSubscribe', 'topics'],
