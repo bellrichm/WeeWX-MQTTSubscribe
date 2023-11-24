@@ -216,11 +216,11 @@
             },
             "program": "${workspaceFolder}/../weewx/bin/wee_config",
             "args": [
-                "--output", "/tmp/output.conf,",
+                "--output", "tmp/output.conf,",
                 "--no-backup",
                 "--reconfigure"
             ],            
-            "console": "externalTerminal"
+            "console": "integratedTerminal"
         },
         {
             // Requires MQTTSubscribe.py to be in 'weewx/bin/user' directory
