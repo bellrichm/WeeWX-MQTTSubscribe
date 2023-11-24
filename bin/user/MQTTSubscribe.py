@@ -266,7 +266,6 @@ CONFIG_SPEC_TEXT = \
             # The separator between fieldname and value pairs. (field1=value1, field2=value2).
             # Default is "=".
             keyword_separator = "="               
-        
 
         # The first topic to subscribe to
         [[[REPLACE_ME]]]
@@ -381,7 +380,7 @@ CONFIG_SPEC_TEXT = \
                         name = REPLACE_ME
 
         # The second topic to subscribe to
-            [[[[REPLACE_ME_TOO]]]]
+        [[[REPLACE_ME_TOO]]]
 """
 
 ADDITIONAL_CONFIG_INFO = \
@@ -2170,51 +2169,9 @@ class MQTTSubscribeDriverConfEditor(weewx.drivers.AbstractConfEditor): # pragma:
     @property
     def default_stanza(self):
         """ The default configuration stanza. """
-        return """
-[MQTTSubscribeDriver]
-    # This section is for the MQTTSubscribe driver.
+        mqttsubscribe_configuration = MQTTSubscribeConfiguration('MQTTSubscribeDriver')
+        return mqttsubscribe_configuration.default_stanza
 
-    # The driver to use:
-    driver = user.MQTTSubscribe
-
-    # The MQTT server.
-    # Default is localhost.
-    host = localhost
-
-    # The port to connect to.
-    # Default is 1883.
-    port = 1883
-
-    # Maximum period in seconds allowed between communications with the broker.
-    # Default is 60.
-    keepalive = 60
-    
-    # username for broker authentication.
-    # Default is None.
-    username = None
-
-    # password for broker authentication.
-    # Default is None.
-    password = None
-
-    # Configuration for the message callback.
-    [[message_callback]]
-        # The format of the MQTT payload.
-        # Currently support: individual, json, keyword
-        # Must be specified.
-        type = REPLACE_ME
-
-    # The topics to subscribe to.
-    [[topics]]
-
-        # Units for MQTT payloads without unit value.
-        # Valid values: US, METRIC, METRICWX
-        # Default is: US
-        unit_system = US
-
-        [[[FIRST/REPLACE_ME]]]
-        [[[SECOND/REPLACE_ME]]]
-"""
     def prompt_for_settings(self):
         """ Prompt for settings required for proper operation of this driver. """
         settings = {}
@@ -2244,6 +2201,89 @@ class MQTTSubscribeDriverConfEditor(weewx.drivers.AbstractConfEditor): # pragma:
         settings['message_callback']['type'] = self._prompt('type', 'json', ['individual', 'json', 'keyword'])
 
         return settings
+
+class MQTTSubscribeConfiguration():
+    """ Manage the MQTTSubscribe configuration. """
+    def __init__(self, section=None):
+        self.section = section
+
+    @property
+    def default_config(self):
+        """ The default configuration. """
+        config_spec = configobj.ConfigObj(CONFIG_SPEC_TEXT.splitlines())
+
+        initial_comment = {
+            'MQTTSubscribeDriver': [],
+            'MQTTSubscribeService': [],
+        }
+
+        remove_items = {
+            'archive_interval': ['MQTTSubscribe'],
+            'archive_topic': ['MQTTSubscribe'],
+            'clean_session': ['MQTTSubscribe'],
+            'driver': ['MQTTSubscribe'],
+            'keepalive': ['MQTTSubscribe'],
+            'logging_filename': ['MQTTSubscribe'],
+            'message_callback': ['MQTTSubscribe'],
+            'max_delay': ['MQTTSubscribe'],
+            'max_loop_interval': ['MQTTSubscribe'],
+            'min_delay': ['MQTTSubscribe'],
+            'wait_before_retry': ['MQTTSubscribe'],
+            'adjust_end_time': ['MQTTSubscribe', 'topics'],
+            'adjust_start_time': ['MQTTSubscribe', 'topics'],
+            'callback_config_name': ['MQTTSubscribe', 'topics'],
+            'collect_observations': ['MQTTSubscribe', 'topics'],
+            'collect_wind_across_loops': ['MQTTSubscribe', 'topics'],
+            'datetime_format': ['MQTTSubscribe', 'topics'],
+            'ignore_end_time': ['MQTTSubscribe', 'topics'],
+            'ignore_start_time': ['MQTTSubscribe', 'topics'],
+            'max_queue': ['MQTTSubscribe', 'topics'],
+            'message': ['MQTTSubscribe', 'topics'],
+            'offset_format': ['MQTTSubscribe', 'topics'],
+            'single_queue': ['MQTTSubscribe', 'topics'],
+            'topic_tail_is_fieldname': ['MQTTSubscribe', 'topics'],
+            'use_server_datetime': ['MQTTSubscribe', 'topics'],
+            'use_topic_as_fieldname': ['MQTTSubscribe', 'topics'],
+            'msg_id_field': ['MQTTSubscribe', 'topics', 'REPLACE_ME'],
+            'qos': ['MQTTSubscribe', 'topics', 'REPLACE_ME'],
+            'flatten_delimiter': ['MQTTSubscribe', 'topics', 'REPLACE_ME', 'message'],
+            'keyword_delimiter': ['MQTTSubscribe', 'topics', 'REPLACE_ME', 'message'],
+            'keyword_separator': ['MQTTSubscribe', 'topics', 'REPLACE_ME', 'message'],
+            'conversion_error_to_none': ['MQTTSubscribe', 'topics', 'REPLACE_ME', 'REPLACE_ME'],
+            'conversion_func': ['MQTTSubscribe', 'topics', 'REPLACE_ME', 'REPLACE_ME'],
+            'conversion_type': ['MQTTSubscribe', 'topics', 'REPLACE_ME', 'REPLACE_ME'],
+            'expires_after': ['MQTTSubscribe', 'topics', 'REPLACE_ME', 'REPLACE_ME'],
+            'ignore_msg_id_field': ['MQTTSubscribe', 'topics', 'REPLACE_ME', 'REPLACE_ME'],
+            'subfields': ['MQTTSubscribe', 'topics', 'REPLACE_ME', 'REPLACE_ME'],
+            'total_wrap_around': ['MQTTSubscribe', 'topics', 'REPLACE_ME', 'REPLACE_ME'],
+            'units': ['MQTTSubscribe', 'topics', 'REPLACE_ME', 'REPLACE_ME'],
+        }
+
+        for remove_item, _ in remove_items.items():
+            current_section = config_spec
+            for key in remove_items[remove_item]:
+                if key in current_section:
+                    current_section = current_section[key]
+                else:
+                    current_section = {}
+                    break
+
+            if remove_item in current_section:
+                del current_section[remove_item]
+            else:
+                # ToDo: raise exception?
+                print('error')
+
+        if self.section:
+            config_spec.rename('MQTTSubscribe', self.section)
+            config_spec.initial_comment = initial_comment[self.section]
+
+        return config_spec
+
+    @property
+    def default_stanza(self):
+        """ The default configuration stanza. """
+        return self.default_config.write()
 
 class Simulator():
     """ Run the service or driver. """
@@ -2593,13 +2633,15 @@ class Configurator():
             config_input_dict = configobj.ConfigObj(config_input_path, file_error=True)
             self.config_input_dict = config_input_dict[self.section] #ToDo: - deep copy or weewx config copy
 
-
     def run(self):
         ''' Update the configuration. '''
         if self.action == 'add-from':
             weeutil.config.conditional_merge(self.config_dict[self.section], self.config_input_dict)
         elif self.action == 'create-example':
-            self.create_example()
+            mqttsubscribe_configuration = MQTTSubscribeConfiguration(self.section)
+            default_configuration = mqttsubscribe_configuration.default_config
+            default_configuration.filename = self.config_output_path
+            default_configuration.write()
         elif self.action == 'export':
             export_dict = {}
             export_dict[self.section] = self.config_dict[self.section]
@@ -2631,66 +2673,6 @@ class Configurator():
             self.config_dict.filename = self.config_output_path
             self.config_dict.write()
 
-    def create_example(self):
-        ''' Create the example configuration file from the config spec.'''
-        remove_items = {
-            'archive_interval': ['MQTTSubscribe'],
-            'archive_topic': ['MQTTSubscribe'],
-            'clean_session': ['MQTTSubscribe'],
-            'driver': ['MQTTSubscribe'],
-            'keepalive': ['MQTTSubscribe'],
-            'logging_filename': ['MQTTSubscribe'],
-            'max_delay': ['MQTTSubscribe'],
-            'max_loop_interval': ['MQTTSubscribe'],
-            'min_delay': ['MQTTSubscribe'],
-            'wait_before_retry': ['MQTTSubscribe'],
-            'adjust_end_time': ['MQTTSubscribe', 'topics'],
-            'adjust_start_time': ['MQTTSubscribe', 'topics'],
-            'callback_config_name': ['MQTTSubscribe', 'topics'],
-            'collect_observations': ['MQTTSubscribe', 'topics'],
-            'collect_wind_across_loops': ['MQTTSubscribe', 'topics'],
-            'datetime_format': ['MQTTSubscribe', 'topics'],
-            'ignore_end_time': ['MQTTSubscribe', 'topics'],
-            'ignore_start_time': ['MQTTSubscribe', 'topics'],
-            'max_queue': ['MQTTSubscribe', 'topics'],
-            'message': ['MQTTSubscribe', 'topics'],
-            'offset_format': ['MQTTSubscribe', 'topics'],
-            'single_queue': ['MQTTSubscribe', 'topics'],
-            'topic_tail_is_fieldname': ['MQTTSubscribe', 'topics'],
-            'use_server_datetime': ['MQTTSubscribe', 'topics'],
-            'use_topic_as_fieldname': ['MQTTSubscribe', 'topics'],
-            'msg_id_field': ['MQTTSubscribe', 'topics', 'REPLACE_ME'],
-            'qos': ['MQTTSubscribe', 'topics', 'REPLACE_ME'],
-            'flatten_delimiter': ['MQTTSubscribe', 'topics', 'REPLACE_ME', 'message'],
-            'keyword_delimiter': ['MQTTSubscribe', 'topics', 'REPLACE_ME', 'message'],
-            'keyword_separator': ['MQTTSubscribe', 'topics', 'REPLACE_ME', 'message'],
-            'conversion_error_to_none': ['MQTTSubscribe', 'topics', 'REPLACE_ME', 'REPLACE_ME'],
-            'conversion_func': ['MQTTSubscribe', 'topics', 'REPLACE_ME', 'REPLACE_ME'],
-            'conversion_type': ['MQTTSubscribe', 'topics', 'REPLACE_ME', 'REPLACE_ME'],
-            'expires_after': ['MQTTSubscribe', 'topics', 'REPLACE_ME', 'REPLACE_ME'],
-            'ignore_msg_id_field': ['MQTTSubscribe', 'topics', 'REPLACE_ME', 'REPLACE_ME'],
-            'subfields': ['MQTTSubscribe', 'topics', 'REPLACE_ME', 'REPLACE_ME'],
-            'total_wrap_around': ['MQTTSubscribe', 'topics', 'REPLACE_ME', 'REPLACE_ME'],
-            'units': ['MQTTSubscribe', 'topics', 'REPLACE_ME', 'REPLACE_ME'],
-        }
-
-        for remove_item, _ in remove_items.items():
-            current_section = self.config_spec
-            for key in remove_items[remove_item]:
-                if key in current_section:
-                    current_section = current_section[key]
-                else:
-                    current_section = {}
-                    break
-
-            if remove_item in current_section:
-                del current_section[remove_item]
-            else:
-                print('error')
-
-        self.config_spec.filename = self.config_output_path
-        self.config_spec.write()
-
     def _validate(self, parent, hierarchy, section, section_configspec):
         hierarchy += f"{section.name}-"
         for key, value in section.items():
@@ -2705,7 +2687,10 @@ class Configurator():
             if "REPLACE_ME" in subsection:
                 print(f"ERROR: Specify a value for: {hierarchy}{subsection}")
             elif subsection not in section_configspec.sections and parent == 'subfields':
-                self._validate(subsection, hierarchy, section[subsection], self.config_spec['MQTTSubscribe']['topics']['REPLACE_ME']["REPLACE_ME"])
+                self._validate(subsection,
+                               hierarchy,
+                               section[subsection],
+                               self.config_spec['MQTTSubscribe']['topics']['REPLACE_ME']["REPLACE_ME"])
             elif subsection not in section_configspec.sections:
                 if "REPLACE_ME" in section_configspec.sections:
                     self._validate(subsection, hierarchy, section[subsection], section_configspec["REPLACE_ME"])
