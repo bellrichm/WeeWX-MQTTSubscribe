@@ -216,9 +216,11 @@
             },
             "program": "${workspaceFolder}/../weewx/bin/wee_config",
             "args": [
-                "--output", "tmp/output.conf,",
+                "--output", "tmp/output.conf",
                 "--no-backup",
-                "--reconfigure"
+                "--reconfigure",
+                "${workspaceFolder}/devtools/debug.loop.conf",
+               // "${workspaceFolder}/../weewx/weewx.debug.conf",
             ],            
             "console": "integratedTerminal"
         },
