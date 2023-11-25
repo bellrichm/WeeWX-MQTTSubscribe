@@ -114,6 +114,10 @@ CONFIG_SPEC_TEXT = \
     # The TLS options that are passed to tls_set method of the MQTT client.
     # For additional information see, https://eclipse.org/paho/clients/python/docs/strptime-format-codes
     [[tls]]
+        # Turn tls on and off.
+        # Default is true.
+        enable = false
+
         # Path to the Certificate Authority certificate files that are to be treated as trusted by this client.
         ca_certs =
 
@@ -1740,7 +1744,7 @@ class MQTTSubscriber():
         self.userdata['connect_flags'] = 0
         self.client = mqtt.Client(client_id=mqtt_options['clientid'], userdata=self.userdata, clean_session=mqtt_options['clean_session'])
 
-        if mqtt_options['tls_dict']:
+        if mqtt_options['tls_dict'] and mqtt_options['tls_dict'].get('enable', True):
             self.config_tls(mqtt_options['tls_dict'])
 
         if mqtt_options['log_mqtt']:
