@@ -2276,8 +2276,7 @@ class MQTTSubscribeConfiguration():
             if remove_item in current_section:
                 del current_section[remove_item]
             else:
-                # ToDo: raise exception?
-                print('error')
+                raise ValueError(f"Trying to remove {remove_item} snd it is not in the config spec.")
 
         if self.section:
             config_spec.rename('MQTTSubscribe', self.section)
@@ -2625,9 +2624,8 @@ class Configurator():
             config_input = options.update_from
 
         # ToDo: incompatible with --export
-        # ToDo: need to handle when configuring as driver
-        #if options.enable:
-        #    self.enable = to_bool(options.enable)
+        if options.type == 'MQTTSubscribe' and options.enable:
+            self.enable = to_bool(options.enable)
 
         # ToDo: incompatible with --export and --create-example
         if options.output:
@@ -2669,12 +2667,10 @@ class Configurator():
             settings = conf_editor.prompt_for_settings()
             self.config_dict[self.section] = settings
 
-        # ToDo: need to handle when configuring as driver
-        #if self.enable is not None:
-         #   self.config_dict[self.section]['enable'] = self.enable
+        if self.section == 'MQTTSubscribService' and self.enable is not None:
+            self.config_dict[self.section]['enable'] = self.enable
 
-        # ToDo: cleanup this hack
-        if self.action != "export" and self.action != "create-example" and self.action != 'validate':
+        if self.action not in("export", "create-example", 'validate'):
             self.config_dict.filename = self.config_output_path
             self.config_dict.write()
 
