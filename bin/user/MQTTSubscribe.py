@@ -2221,6 +2221,7 @@ class MQTTSubscribeConfiguration():
             'archive_interval': ['MQTTSubscribe'],
             'archive_topic': ['MQTTSubscribe'],
             'clean_session': ['MQTTSubscribe'],
+            'clientid': ['MQTTSubscribe'],
             'driver': ['MQTTSubscribe'],
             'keepalive': ['MQTTSubscribe'],
             'logging_filename': ['MQTTSubscribe'],
