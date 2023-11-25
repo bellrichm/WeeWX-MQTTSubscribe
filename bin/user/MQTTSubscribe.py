@@ -2181,31 +2181,63 @@ class MQTTSubscribeDriverConfEditor(weewx.drivers.AbstractConfEditor): # pragma:
         default_config = self.mqttsubscribe_configuration.default_config
 
         settings = {}
-        self._configure("", "", "MQTTSubscribeDriver", default_config, settings)
+        self._configure("", "MQTTSubscribeDriver", self.existing_options, settings)
 
         settings['message_callback'] = {}
-        settings['topics'] = {}
-
-        print("Enter a topic to subscribe to. ")
-        topic = self._prompt('topic')
-        while topic:
-            settings['topics'][topic] = {}
-            print("Enter a topic to subscribe to. Leave blank when done.")
-            topic = self._prompt('topic')
 
         print("Enter the MQTT paylod type: individual|json|keyword")
         settings['message_callback']['type'] = self._prompt('type', 'json', ['individual', 'json', 'keyword'])
 
         return settings
 
-    def _configure(self, grandparent, parent, name, section, settings):
-        for key, _ in section[name].items():
-            if key not in section[name].sections:
-                for comment in section[name].comments[key]:
+    def _configure(self, grandparent, parent, section, settings):
+        for key, _ in section.items():
+            if key not in section.sections:
+                for comment in section.comments[key]:
                     line = comment.replace('#', '', 1).lstrip()
                     if line[:len(self.default_line)] != self.default_line:
                         print(line)
-                settings[key] = self._prompt(key, section[name][key])
+                settings[key] = self._prompt(key, section[key])
+
+        for key in section.sections:
+
+            if key == 'topics':
+                # ToDo: - use WeeWX utility to copy?
+                topics = copy.deepcopy(section[key])
+                settings[key] =self._delete_topics(topics)
+                continue
+
+            settings[key] = {}
+            self._configure(parent, section.name, section[key], settings[key])
+
+    def _delete_topics(self, topics):
+        print("Configured topics:")
+        for index, topic in enumerate(topics.sections):
+            print(f" {index:2d}) {topic}")
+
+        msg = "Choose a topic to delete: "
+        idx = 0
+        answer_str = None
+        while answer_str is None:
+            answer_str = input(msg).strip()
+            if answer_str == '':
+                break
+            try:
+                idx = int(answer_str)
+                if not 0 <= idx < len(topics.sections):
+                    answer_str = None
+                else:
+                    topic = topics.sections[idx]
+                    del topics[topic]
+
+                    for index, topic in enumerate(topics.sections):
+                        print(f" {index:2d}) {topic}")
+
+                    answer_str = None
+            except (ValueError, TypeError):
+                answer_str = None
+
+        return topics
 
 class MQTTSubscribeConfiguration():
     """ Manage the MQTTSubscribe configuration. """
