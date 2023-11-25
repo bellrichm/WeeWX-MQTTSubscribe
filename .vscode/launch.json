@@ -218,7 +218,8 @@
             "args": [
                 "--output", "tmp/output.conf,",
                 "--no-backup",
-                "--reconfigure"
+                "--reconfigure",
+                "${workspaceFolder}/../weewx/weewx.debug.conf",
             ],            
             "console": "integratedTerminal"
         },

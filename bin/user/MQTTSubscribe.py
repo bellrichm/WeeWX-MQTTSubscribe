@@ -34,39 +34,39 @@ CONFIG_SPEC_TEXT = \
     driver = user.MQTTSubscribe
 
     # The MQTT server.
-    # Default is localhost.
+    # The default is localhost.
     host = localhost
 
     # The port to connect to.
-    # Default is 1883.
+    # The default is 1883.
     port = 1883
 
     # Maximum period in seconds allowed between communications with the broker.
-    # Default is 60.
+    # The default is 60.
     keepalive = 60
 
     # username for broker authentication.
-    # Default is None.
+    # The default is None.
     username = None
 
     # The minimum time in seconds that the client will wait before trying to reconnect.
-    # Default is 1
+    # The default is 1
     min_delay = 1
 
     # The maximum time in seconds that the client will wait before trying to reconnect.
-    # Default is 120
+    # The default is 120
     max_delay = 120
 
     # password for broker authentication.
-    # Default is None.
+    # The default is None.
     password = None
 
     # The MQTT clean_session setting.
-    # Default is True
+    # The default is True
     clean_session = True
 
     # Controls the MQTT logging.
-    # Default is false.
+    # The default is false.
     log = false
 
     # The clientid to connect with.
@@ -76,29 +76,29 @@ CONFIG_SPEC_TEXT = \
     clientid =
 
     # Turn the service on and off.
-    # Default is true.
+    # The default is true.
     # Only used by the service.
     enable = false
 
     # The binding, loop or archive.
-    # Default is loop.
+    # The default is loop.
     # Only used by the service.
     binding = loop
 
     # When the MQTT queue has no data, the amount of time in seconds to wait
     # before checking again.
-    # Default is 2.
+    # The default is 2.
     # Only used by the driver
     wait_before_retry = 2
 
     # When no loop packet has been generated in max_loop_interval, MQTTSubscribeDriver will generate an 'empty' packet.
     # This can be useful to ensure that archive processing regulary happens when the MQTT payload arrives very irregularly.
-    # Default is 0 (off).
+    # The default is 0 (off).
     # Only used by the driver
     max_loop_interval= 0
 
     # Payload in this topic is processed like an archive record.
-    # Default is None.
+    # The default is None.
     # Only used by the driver.
     archive_topic = None
 
@@ -118,25 +118,25 @@ CONFIG_SPEC_TEXT = \
         ca_certs =
 
         # The PEM encoded client certificate and private keys.
-        # Default is None
+        # The default is None
         certfile = None
 
         # The private keys.
-        # Default is None
+        # The default is None
         keyfile = None
 
         # The certificate requirements that the client imposes on the broker.
         # Valid values: none, optional, required
-        # Default is required,
+        # The default is required,
         certs_required = required
 
         # The version of the SSL/TLS protocol to be used.
         # Valid values: sslv2, sslv23, sslv3, tls, tlsv1, tlsv11, tlsv12.
-        # Default is tlsv12.
+        # The default is tlsv12.
         tls_version = tlsv12
 
         # The encryption ciphers that are allowable for this connection. Specify None to use the defaults
-        # Default is None.
+        # The default is None.
         ciphers = None
 
     # Configuration for the message callback.
@@ -148,95 +148,95 @@ CONFIG_SPEC_TEXT = \
         type = REPLACE_ME
 
         # When the json is nested, the delimiter between the hierarchies.
-        # Default is _.
+        # The default is _.
         flatten_delimiter = _
 
         # The delimiter between fieldname and value pairs. (field1=value1, field2=value2).
-        # Default is is ",".
+        # The default is is ",".
         keyword_delimiter = ","
 
         # The separator between fieldname and value pairs. (field1=value1, field2=value2).
-        # Default is "=".
+        # The default is "=".
         keyword_separator = "="
 
     [[topics]]
         # Controls if this topic is subscribed to.
-        # Default is True.
+        # The default is True.
         subscribe = True
 
         # Units for MQTT payloads without unit value.
         # Valid values: US, METRIC, METRICWX.
         # For more information see, http://weewx.com/docs/customizing.htm#units
-        # Default is US.
+        # The default is US.
         unit_system = US
 
         # By default wind data is collected together across generation of loop packets.
         # Setting to false results in the data only being collected together within a loop packet.
-        # Default is True.
+        # The default is True.
         collect_wind_across_loops = True
 
         # With the exception of wind data, by default a packet is created for every MQTT message received.
         # When this is true, MQTTSubscribe attempts to collect observations across messages into a packet.
-        # Default is False.
+        # The default is False.
         # This is experimental and may be removed.
         collect_observations = False
 
         # With the exception of wind data, by default a queue is created for every MQTT topic.
         # When this is true, MQTTSubsribe uses a single queue for all non wind data.
         # This is useful when 'collect_observations = True'.
-        # Default is False.
+        # The default is False.
         # This is experimental and may be removed.
         single_queue = False
 
         # When true, the last segment of the topic is used as the fieldname.
         # Only used for individual payloads.
-        # Default is False.
+        # The default is False.
         # This is experimental and may be removed.
         topic_tail_is_fieldname = False
 
         # When true, the fieldname is set to the topic and therefore [[[[fieldname]]]] cannot be used.
         # This allows the [[[[fieldname]]]] configuration to be specified directly under the [[[topic]]].
-        # Default is False.
+        # The default is False.
         # DEPRECATED - no longer needed
         use_topic_as_fieldname = False
 
         # The name of the MQTT on_message callback.
-        # Default is 'message'.
+        # The default is 'message'.
         callback_config_name = message
 
         # Formatting string for converting a timestamp to an epoch datetime.
         # For additional information see, https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes
-        # Default is None
+        # The default is None
         datetime_format = None
 
         # Formatting string for converting time offset when converting a timestamp to an epoch datetime.
-        # Default is None.
+        # The default is None.
         # Example values: -hhmm +hhmm hh:mm
         offset_format = None
 
         # Even if the payload has a datetime, ignore it and use the server datetime.
-        # Default is False.
+        # The default is False.
         use_server_datetime = False
 
         # When True, the MQTT datetime will be not be checked that is greater than the last packet processed.
-        # Default is False.
+        # The default is False.
         # Only used by the service.
         ignore_start_time = False
 
         # When the True, the MQTT data will continue to be processed even if its datetime is greater than the packet's datetime.
-        # Default is False.
+        # The default is False.
         # Only used by the service.
         ignore_end_time = False
 
         # Allow MQTT data with a datetime this many seconds prior to the previous packet's datetime.
         # to be added to the current packet.
-        # Default is 0.
+        # The default is 0.
         # Only used by the service.
         adjust_start_time = 0
 
         # Allow MQTT data with a datetime this many seconds after the current packet's datetime.
         # to be added to the current packet.
-        # Default is 0.
+        # The default is 0.
         # Only used by the service.
         adjust_end_time = 0
 
@@ -256,37 +256,37 @@ CONFIG_SPEC_TEXT = \
             type = REPLACE_ME
 
             # When the json is nested, the delimiter between the hierarchies.
-            # Default is _.
+            # The default is _.
             flatten_delimiter = _
 
             # The delimiter between fieldname and value pairs. (field1=value1, field2=value2).
-            # Default is is ",".
+            # The default is is ",".
             keyword_delimiter = ","
 
             # The separator between fieldname and value pairs. (field1=value1, field2=value2).
-            # Default is "=".
+            # The default is "=".
             keyword_separator = "="               
 
         # The first topic to subscribe to
         [[[REPLACE_ME]]]
             # When set to false, the topic is not subscribed to.
             # Valid values: True, False
-            # Default is True
+            # The default is True
             subscribe = True
 
             # True if the incoming data should not be processed into WeeWX.
             # Valid values: True, False.
-            # Default is False.
+            # The default is False.
             ignore = False            
 
             # The QOS level to subscribe to.
-            # Default is 0
+            # The default is 0
             qos = 0            
 
             # Specifies a field name in the mqtt message.
             # The value of the field is appended to every field name in the mqtt message.
             # This enables same formatted messages to map to different WeeWX fields.
-            # Default is None.
+            # The default is None.
             # Only used with json payloads.
             msg_id_field = None
 
@@ -298,62 +298,62 @@ CONFIG_SPEC_TEXT = \
                 type = REPLACE_ME
 
                 # When the json is nested, the delimiter between the hierarchies.
-                # Default is _.
+                # The default is _.
                 flatten_delimiter = _
 
                 # The delimiter between fieldname and value pairs. (field1=value1, field2=value2).
-                # Default is is ",".
+                # The default is is ",".
                 keyword_delimiter = ","
 
                 # The separator between fieldname and value pairs. (field1=value1, field2=value2).
-                # Default is "=".
+                # The default is "=".
                 keyword_separator = "="               
 
             # The incoming field name from MQTT.
             [[[[REPLACE_ME]]]]
                 # The WeeWX name.
-                # Default is the name from MQTT.
+                # The default is the name from MQTT.
                 name = REPLACE_ME
 
                 # When True, the value in the field specified in msg_id_field is not appended to the fieldname in the mqtt message.
                 # Valid values: True, False.
-                # Default is False
+                # The default is False
                 ignore_msg_id_field = False
 
                 # True if the incoming data should not be processed into WeeWX.
                 # Valid values: True, False.
-                # Default is False.
+                # The default is False.
                 ignore = False
 
                 # True if the incoming data is cumulative.
                 # Valid values: True, False.
-                # Default is False.
+                # The default is False.
                 contains_total = False
 
                 # True if the cumulative data can wrap around.
                 # Valid values: True, False.
-                # Default is False.
+                # The default is False.
                 total_wrap_around = False
 
                 # The conversion type necessary for WeeWX compatibility.
                 # Valid values: bool, float, int, none.
-                # Default is float.
+                # The default is float.
                 conversion_type = float
 
                 # Valid values, a Python expression that when evaluated returns a valid value.
                 # Example, conversion_func = lambda x: True if x == 'ON' else False
-                # Default is not set.
+                # The default is not set.
                 conversion_func = NOT_SET
 
                 # When True: if there is an exception converting the data type, the value is set to None.
                 # When False: if there is an exception converting the data type, an error is logged and the MQTT msg is skipped.
                 # Valid values: True, False.
-                # Default is False.
+                # The default is False.
                 conversion_error_to_none = False
 
                 # When the field has any of the listed values, the MQTT message is not processed.
                 # Any set of values separated by a comma is valid. For example: v1, v2, v3.
-                # Default is empty.
+                # The default is empty.
                 # filter_out_message_when = ,
                 # Only used for json payloads.
                 # Note, conversion_type will most likely have to be set.
@@ -361,14 +361,14 @@ CONFIG_SPEC_TEXT = \
                 # The units of the incoming data.
                 # Useful if this field's units differ from the topic's unit_system's units.
                 # Valid values: see, http://www.weewx.com/docs/customizing.htm#units
-                # Default is not set.
+                # The default is not set.
                 units = NOT_SET
 
                 # In seconds how long the cache is valid.
                 # Value of 0 means the cache is always expired.
                 # Useful if missing fields should have a value of None instead of the previous value.
                 # Value of None means the cache never expires.
-                # Default is not set.
+                # The default is not set.
                 # EXPERIMENTAL - may be removed
                 expires_after = NOT_SET
 
@@ -2166,29 +2166,25 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice):
 
 class MQTTSubscribeDriverConfEditor(weewx.drivers.AbstractConfEditor): # pragma: no cover
     """ Methods for producing and updating configuration stanzas for use in configuration file. """
+    def __init__(self):
+        self.default_line = 'The default'
+        self.mqttsubscribe_configuration = MQTTSubscribeConfiguration('MQTTSubscribeDriver')
+        super().__init__()
+
     @property
     def default_stanza(self):
         """ The default configuration stanza. """
-        mqttsubscribe_configuration = MQTTSubscribeConfiguration('MQTTSubscribeDriver')
-        return mqttsubscribe_configuration.default_stanza
+        return self.mqttsubscribe_configuration.default_stanza
 
     def prompt_for_settings(self):
         """ Prompt for settings required for proper operation of this driver. """
+        default_config = self.mqttsubscribe_configuration.default_config
+
         settings = {}
+        self._configure("", "", "MQTTSubscribeDriver", default_config, settings)
+
         settings['message_callback'] = {}
         settings['topics'] = {}
-
-        print("Enter the host.")
-        settings['host'] = self._prompt('host', 'localhost')
-
-        print("Enter the port on the host.")
-        settings['port'] = self._prompt('port', '1883')
-
-        print("Enter the maximum period in seconds allowed between communications with the broker.")
-        settings['keepalive'] = self._prompt('keepalive', '60')
-
-        print("Enter the units for MQTT payloads without unit value: US|METRIC|METRICWX")
-        settings['topics']['unit_system'] = self._prompt('unit_system', 'US', ['US', 'METRIC', 'METRICWX'])
 
         print("Enter a topic to subscribe to. ")
         topic = self._prompt('topic')
@@ -2201,6 +2197,15 @@ class MQTTSubscribeDriverConfEditor(weewx.drivers.AbstractConfEditor): # pragma:
         settings['message_callback']['type'] = self._prompt('type', 'json', ['individual', 'json', 'keyword'])
 
         return settings
+
+    def _configure(self, grandparent, parent, name, section, settings):
+        for key, _ in section[name].items():
+            if key not in section[name].sections:
+                for comment in section[name].comments[key]:
+                    line = comment.replace('#', '', 1).lstrip()
+                    if line[:len(self.default_line)] != self.default_line:
+                        print(line)
+                settings[key] = self._prompt(key, section[name][key])
 
 class MQTTSubscribeConfiguration():
     """ Manage the MQTTSubscribe configuration. """
@@ -2220,6 +2225,7 @@ class MQTTSubscribeConfiguration():
         remove_items = {
             'archive_interval': ['MQTTSubscribe'],
             'archive_topic': ['MQTTSubscribe'],
+            'clientid': ['MQTTSubscribe'],
             'clean_session': ['MQTTSubscribe'],
             'driver': ['MQTTSubscribe'],
             'keepalive': ['MQTTSubscribe'],
