@@ -2548,7 +2548,7 @@ class Configurator():
         configurator_service_parser = configurator_subparsers.add_parser('service')
         configurator_service_parser.add_argument("--add-from",
                             help="The configuration that will and add to (but not update existing settings) the existing configuration.")
-        configurator_service_parser.add_argument("--create-example", default="mqttsubscribe.example.conf",
+        configurator_service_parser.add_argument("--create-example",
                             help="Export the existing configuration.")
         configurator_service_parser.add_argument("--export",
                             help="Export the existing configuration.")
@@ -2571,7 +2571,7 @@ class Configurator():
         configurator_driver_parser = configurator_subparsers.add_parser('driver')
         configurator_driver_parser.add_argument("--add-from",
                             help="The configuration that will and add to (but not update existing settings) the existing configuration.")
-        configurator_driver_parser.add_argument("--create-example", default="mqttsubscribe.example.conf",
+        configurator_driver_parser.add_argument("--create-example",
                             help="Export the existing configuration.")
         configurator_driver_parser.add_argument("--export",
                             help="Export the existing configuration.")
@@ -2634,7 +2634,7 @@ class Configurator():
         if config_input:
             config_input_path = os.path.abspath(config_input)
             config_input_dict = configobj.ConfigObj(config_input_path, file_error=True)
-            self.config_input_dict = config_input_dict[self.section] #ToDo: - deep copy or weewx config copy
+            self.config_input_dict = weeutil.config.deep_copy(config_input_dict[self.section])
 
     def run(self):
         ''' Update the configuration. '''
