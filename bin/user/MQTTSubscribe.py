@@ -439,6 +439,8 @@ import configobj
 import paho.mqtt.client as mqtt
 from paho.mqtt.client import connack_string
 
+import weecfg
+
 import weeutil
 import weeutil.logger
 from weeutil.weeutil import to_bool, to_float, to_int, to_sorted_string
@@ -2575,6 +2577,8 @@ class Configurator():
         # The following is only used by the service
         configurator_service_parser.add_argument("--enable", dest="enable",
                             help="Enable/Disable the service.")
+        configurator_service_parser.configure_driver_group("--no-backup", action="store_true", default=False,
+                            help="When updating the WeeWX configuration (--conf), do not back it up.")
         configurator_service_parser.add_argument("--output",
                             help="Instead of updating the WeeWX configuration (--conf), write it to this file")
 
@@ -2592,14 +2596,17 @@ class Configurator():
                             help="The configuration that will replace the existing configuration.")
         configure_driver_group.add_argument("--update-from",
                             help="The configuration that will update (and add to) the existing configuration.")
-        configure_driver_group.add_argument("--validate",  action="store_true", dest="validate",
+        configure_driver_group.c("--validate",  action="store_true", dest="validate",
                             help="Validate the configuration file.")
+        configure_driver_group.configure_driver_group("--no-backup", action="store_true", default=False,
+                            help="When updating the WeeWX configuration (--conf), do not back it up.")
         configurator_driver_parser.add_argument("--output",
                             help="Instead of updating the WeeWX configuration (--conf), write it to this file")
 
         return subparser
 
     def __init__(self, parser, options):
+        self.no_update_actions = ["--create-example", "--export", "--print-configspec", "--validate"]
         if (options.type and options.create_example) or (not options.type and not options.create_example):
             parser.error("Either 'service|driver' or '--create-example' is required.")
 
@@ -2625,13 +2632,16 @@ class Configurator():
         self.action = None
         self.enable = None
 
-
-
         if options.type:
             self._setup_subcommand(options)
         elif options.create_example:
-            self.action = 'create-example'
+            self.action = '--create-example'
             self.config_output_path = os.path.abspath(options.create_example)
+
+        if options.no_backup and self.action in self.no_update_actions:
+            parser.error(f"'--output' is mutually exclusive with '{self.no_update_actions}'")
+
+        self.no_backup = options.no_backup
 
     def _setup_subcommand(self, options):
         if options.conf:
@@ -2641,21 +2651,21 @@ class Configurator():
 
         config_input = None
         if options.add_from:
-            self.action = 'add-from'
+            self.action = '--add-from'
             config_input = options.add_from
         elif options.export:
-            self.action = 'export'
+            self.action = '--export'
             self.config_output_path = os.path.abspath(options.export)
         elif options.print_configspec:
-            self.action = 'print-configspec'
+            self.action = '--print-configspec'
             self.config_output_path = os.path.abspath(options.print_configspec)
         if options.replace_with:
-            self.action = 'replace-with'
+            self.action = '--replace-with'
             config_input = options.replace_with
         if options.validate:
-            self.action = 'validate'
+            self.action = '--validate'
         if options.update_from:
-            self.action = 'update-from'
+            self.action = '--update-from'
             config_input = options.update_from
 
         if options.type == 'service' and options.enable:
@@ -2671,28 +2681,28 @@ class Configurator():
 
     def run(self):
         ''' Update the configuration. '''
-        if self.action == 'add-from':
+        if self.action == '--add-from':
             weeutil.config.conditional_merge(self.config_dict[self.section], self.config_input_dict)
-        elif self.action == 'create-example':
-            mqttsubscribe_configuration = MQTTSubscribeConfiguration(self.section)
+        elif self.action == '--create-example':
+            mqttsubscribe_configuration = MQTTSubscribeConfiguration(None)
             default_configuration = mqttsubscribe_configuration.default_config
             default_configuration.filename = self.config_output_path
             default_configuration.write()
-        elif self.action == 'export':
+        elif self.action == '--export':
             export_dict = {}
             export_dict[self.section] = self.config_dict[self.section]
             export_config = configobj.ConfigObj(export_dict)
             export_config.filename = self.config_output_path
             export_config.write()
-        elif self.action == 'print-configspec':
+        elif self.action == '--print-configspec':
             self.config_spec.filename = self.config_output_path
             self.config_spec.write()
-        elif self.action == 'replace-with':
+        elif self.action == '--replace-with':
             del self.config_dict[self.section]
             self.config_dict[self.section] = self.config_input_dict
-        elif self.action == 'validate':
+        elif self.action == '--validate':
             self._validate("", "", self.config_dict[self.section], self.config_spec['MQTTSubscribe'])
-        elif self.action == 'update-from':
+        elif self.action == '--update-from':
             self.config_dict[self.section] = self.config_input_dict
         else:
             conf_editor = MQTTSubscribeDriverConfEditor()
@@ -2703,9 +2713,10 @@ class Configurator():
         if self.section == 'MQTTSubscribService' and self.enable is not None:
             self.config_dict[self.section]['enable'] = self.enable
 
-        if self.action not in("export", "create-example", 'validate'):
-            self.config_dict.filename = self.config_output_path
-            self.config_dict.write()
+        if self.action not in self.no_update_actions:
+            weecfg.save(self.config_dict, self.config_output_path, not self.no_backup)
+            #self.config_dict.filename = self.config_output_path
+            #self.config_dict.write()
 
     def _validate(self, parent, hierarchy, section, section_configspec):
         hierarchy += f"{section.name}-"
