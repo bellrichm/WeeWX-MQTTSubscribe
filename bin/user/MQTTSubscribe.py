@@ -2181,7 +2181,6 @@ class MQTTSubscribeDriverConfEditor(weewx.drivers.AbstractConfEditor): # pragma:
     def prompt_for_settings(self):
         """ Prompt for settings required for proper operation of this driver. """
         settings = {}
-        settings['message_callback'] = {}
         settings['topics'] = {}
 
         print("Enter the host.")
@@ -2196,15 +2195,19 @@ class MQTTSubscribeDriverConfEditor(weewx.drivers.AbstractConfEditor): # pragma:
         print("Enter the units for MQTT payloads without unit value: US|METRIC|METRICWX")
         settings['topics']['unit_system'] = self._prompt('unit_system', 'US', ['US', 'METRIC', 'METRICWX'])
 
-        print("Enter a topic to subscribe to. ")
-        topic = self._prompt('topic')
+
+        topic = 'REPLACE_ME'
         while topic:
-            settings['topics'][topic] = {}
             print("Enter a topic to subscribe to. Leave blank when done.")
             topic = self._prompt('topic')
-
-        print("Enter the MQTT paylod type: individual|json|keyword")
-        settings['message_callback']['type'] = self._prompt('type', 'json', ['individual', 'json', 'keyword'])
+            if topic:
+                settings['topics'][topic] = {}
+                settings['topics'][topic]['message'] = {}
+                print("Enter the MQTT paylod type: individual|json|keyword")
+                settings['topics'][topic]['message']['type'] = self._prompt('type', 'json', ['individual', 'json', 'keyword'])
+            else:
+                if len(settings['topics']) == 1:
+                    topic = 'REPLACE_ME'
 
         return settings
 
