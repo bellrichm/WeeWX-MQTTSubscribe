@@ -2613,7 +2613,7 @@ class Configurator():
         if options.type == 'MQTTSubscribe' and options.enable and len(sys.argv) > 2:
             parser.error("'--enable' is mutually exclusive with all other options.")
 
-        if options.output and options.export:
+        if options.type and options.output and options.export:
             parser.error("'--output' is mutually exclusive with '--create-example'")
 
         if options.type == 'service':
@@ -2638,10 +2638,11 @@ class Configurator():
             self.action = '--create-example'
             self.config_output_path = os.path.abspath(options.create_example)
 
-        if options.no_backup and self.action in self.no_update_actions:
+        if options.type and options.no_backup and self.action in self.no_update_actions:
             parser.error(f"'--output' is mutually exclusive with '{self.no_update_actions}'")
 
-        self.no_backup = options.no_backup
+        if options.type:
+            self.no_backup = options.no_backup
 
     def _setup_subcommand(self, options):
         if options.conf:
