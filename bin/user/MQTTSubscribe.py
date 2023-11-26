@@ -2219,7 +2219,7 @@ class MQTTSubscribeConfiguration():
 
         example_intial_comment = f'''#
 # This is an example configuration for MQTTSubscribe
-# It was created on {datetime.date.today()}
+# It was created on {datetime.date.today()} at {datetime.datetime.now().strftime("%H:%M:%S")}
 #
 
 '''
