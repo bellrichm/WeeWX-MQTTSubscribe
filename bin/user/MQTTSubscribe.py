@@ -2214,19 +2214,22 @@ class MQTTSubscribeConfiguration():
     @property
     def default_config(self):
         """ The default configuration. """
+
+        example_intial_comment = f'''#
+# This is an example configuration for MQTTSubscribe
+# It was created on {datetime.date.today()}
+#
+
+'''
+
         config_spec = configobj.ConfigObj(CONFIG_SPEC_TEXT.splitlines())
 
-        initial_comment = {
-            'MQTTSubscribeDriver': [],
-            'MQTTSubscribeService': [],
-        }
 
         remove_items = {
             'archive_interval': ['MQTTSubscribe'],
             'archive_topic': ['MQTTSubscribe'],
             'clean_session': ['MQTTSubscribe'],
             'clientid': ['MQTTSubscribe'],
-            'driver': ['MQTTSubscribe'],
             'keepalive': ['MQTTSubscribe'],
             'logging_filename': ['MQTTSubscribe'],
             'message_callback': ['MQTTSubscribe'],
@@ -2264,6 +2267,9 @@ class MQTTSubscribeConfiguration():
             'units': ['MQTTSubscribe', 'topics', 'REPLACE_ME', 'REPLACE_ME'],
         }
 
+        if self.section != 'MQTTSubscribeDriver':
+            del config_spec['MQTTSubscribe']['driver']
+
         for remove_item, _ in remove_items.items():
             current_section = config_spec
             for key in remove_items[remove_item]:
@@ -2276,11 +2282,14 @@ class MQTTSubscribeConfiguration():
             if remove_item in current_section:
                 del current_section[remove_item]
             else:
-                raise ValueError(f"Trying to remove {remove_item} snd it is not in the config spec.")
+                raise ValueError(f"Trying to remove {remove_item} and it is not in the config spec.")
 
         if self.section:
             config_spec.rename('MQTTSubscribe', self.section)
-            config_spec.initial_comment = initial_comment[self.section]
+
+        config_spec.initial_comment = example_intial_comment.splitlines()
+        if not self.section:
+            config_spec.initial_comment.append("# [MQTTSubscribeService] or [MQTTSubscribeDriver]")
 
         return config_spec
 
@@ -2294,7 +2303,7 @@ class Simulator():
     # pylint: disable=too-many-instance-attributes
 
     usage = """
-            CONFIG_FILE
+            [--conf=CONFIG]
             [--records=RECORD_COUNT]
             [--interval=INTERVAL]
             [--delay=DELAY]
@@ -2303,7 +2312,7 @@ class Simulator():
             [--verbose]
             [--console]
 
-    CONFIG_FILE = The WeeWX configuration file, typically weewx.conf.
+    CONFIG = The WeeWX configuration file, typically weewx.conf.
     """
 
     @classmethod
@@ -2313,6 +2322,8 @@ class Simulator():
         simulator_subparsers = cls.simulator_parser.add_subparsers(dest='type')
 
         simulate_service_parser = simulator_subparsers.add_parser('service', usage=f"MQTTSubscribe.py simulate service {cls.usage}")
+        simulate_service_parser.add_argument("--conf", required=False,
+                            help="The WeeWX configuration file. Typically weewx.conf.")
         simulate_service_parser.add_argument('--records', dest='record_count', type=int,
                             help='The number of archive records to create.',
                             default=2)
@@ -2338,9 +2349,10 @@ class Simulator():
                             help="Comma separated list of topics to subscribe to.")
         simulate_service_parser.add_argument("--callback",
                             help="The callback type.")
-        simulate_service_parser.add_argument("config_file")
 
         simulate_driver_parser = simulator_subparsers.add_parser('driver', usage=f"MQTTSubscribe.py simulate driver {cls.usage}")
+        simulate_driver_parser.add_argument("--conf", required=False,
+                            help="The WeeWX configuration file. Typicall weewx.conf.")
         simulate_driver_parser.add_argument('--records', dest='record_count', type=int,
                             help='The number of archive records to create.',
                             default=2)
@@ -2366,7 +2378,6 @@ class Simulator():
                             help="Comma separated list of topics to subscribe to.")
         simulate_driver_parser.add_argument("--callback",
                             help="The callback type.")
-        simulate_driver_parser.add_argument("config_file")
 
     def __init__(self, options):
         """ Initialize the new instance. """
@@ -2382,7 +2393,7 @@ class Simulator():
         self.topics = options.topics
         self.host = options.host
         self.console = options.console
-        self.config_file = options.config_file
+        self.config_file = options.conf
         self.units = options.units
         self.verbose = options.verbose
 
@@ -2537,77 +2548,101 @@ class Configurator():
     ''' Configure the service or driver.'''
     # pylint: disable=too-many-instance-attributes
 
-    usage = ''
-
     @classmethod
     def add_parsers(cls, parser):
         ''' Add the parsers.'''
-        subparser = parser.add_parser('configure', usage=cls.usage)
+        subparser = parser.add_parser('configure')
+        subparser.add_argument("--create-example",
+                            help="Export the existing configuration.")
+
         configurator_subparsers = subparser.add_subparsers(dest='type')
-
         configurator_service_parser = configurator_subparsers.add_parser('service')
-        configurator_service_parser.add_argument("--add-from",
+        configure_service_group = configurator_service_parser.add_mutually_exclusive_group(required=False)
+        configurator_service_parser.add_argument("--conf",
+                            help="The WeeWX configuration file. Typically weewx.conf.")
+        configure_service_group.add_argument("--add-from",
                             help="The configuration that will and add to (but not update existing settings) the existing configuration.")
-        configurator_service_parser.add_argument("--create-example",
+        configure_service_group.add_argument("--export",
                             help="Export the existing configuration.")
-        configurator_service_parser.add_argument("--export",
-                            help="Export the existing configuration.")
-        configurator_service_parser.add_argument("--output",
-                            help="Instead of updating the WeeWX configuration, write it to a file")
-        configurator_service_parser.add_argument("--print-configspec",
+        configure_service_group.add_argument("--print-configspec",
                             help="Write the configspec to a file.")
-        configurator_service_parser.add_argument("--replace-with",
+        configure_service_group.add_argument("--replace-with",
                             help="The configuration that will replace the existing configuration.")
-        configurator_service_parser.add_argument("--update-from",
+        configure_service_group.add_argument("--update-from",
                             help="The configuration that will update (and add to) the existing configuration.")
-        configurator_service_parser.add_argument("--validate",  action="store_true", dest="validate",
+        configure_service_group.add_argument("--validate",  action="store_true", dest="validate",
                             help="Validate the configuration file.")
-        configurator_service_parser.add_argument("config_file")
-
-        # The following are only used by the service
+        # The following is only used by the service
         configurator_service_parser.add_argument("--enable", dest="enable",
                             help="Enable/Disable the service.")
+        configurator_service_parser.add_argument("--output",
+                            help="Instead of updating the WeeWX configuration (--conf), write it to this file")
 
         configurator_driver_parser = configurator_subparsers.add_parser('driver')
-        configurator_driver_parser.add_argument("--add-from",
+        configure_driver_group = configurator_driver_parser.add_mutually_exclusive_group(required=False)
+        configurator_driver_parser.add_argument("--conf",
+                            help="The WeeWX configuration file. Typicall weewx.conf.")
+        configure_driver_group.add_argument("--add-from",
                             help="The configuration that will and add to (but not update existing settings) the existing configuration.")
-        configurator_driver_parser.add_argument("--create-example",
+        configure_driver_group.add_argument("--export",
                             help="Export the existing configuration.")
-        configurator_driver_parser.add_argument("--export",
-                            help="Export the existing configuration.")
-        configurator_driver_parser.add_argument("--print-configspec",
+        configure_driver_group.add_argument("--print-configspec",
                             help="Write the configspec to a file.")
-        configurator_driver_parser.add_argument("--output",
-                            help="Instead of updating the WeeWX configuration, write it to a file")
-        configurator_driver_parser.add_argument("--replace-with",
+        configure_driver_group.add_argument("--replace-with",
                             help="The configuration that will replace the existing configuration.")
-        configurator_driver_parser.add_argument("--update-from",
+        configure_driver_group.add_argument("--update-from",
                             help="The configuration that will update (and add to) the existing configuration.")
-        configurator_driver_parser.add_argument("--validate",  action="store_true", dest="validate",
+        configure_driver_group.add_argument("--validate",  action="store_true", dest="validate",
                             help="Validate the configuration file.")
-        configurator_driver_parser.add_argument("config_file")
+        configurator_driver_parser.add_argument("--output",
+                            help="Instead of updating the WeeWX configuration (--conf), write it to this file")
 
-    def __init__(self, options):
+        return subparser
+
+    def __init__(self, parser, options):
+        if (options.type and options.create_example) or (not options.type and not options.create_example):
+            parser.error("Either 'service|driver' or '--create-example' is required.")
+
+        if options.enable and len(sys.argv) > 2:
+            parser.error("'--enable' is mutually exclusive with all other options.")
+
+        if options.output and options.export:
+            parser.error("'--output' is mutually exclusive with '--create-example'")
+
         if options.type == 'service':
             self.section = 'MQTTSubscribeService'
-        else:
+        elif options.type == 'driver':
             self.section = 'MQTTSubscribeDriver'
+        else:
+            self.section = None
 
         self.config_spec = configobj.ConfigObj(CONFIG_SPEC_TEXT.splitlines())
 
-        config_path = os.path.abspath(options.config_file)
-        self.config_dict = configobj.ConfigObj(config_path, file_error=True)
-        self.oputput_path = config_path
-
+        self.config_input_dict = None
+        self.config_dict = None
+        self.config_output_path = None
+        self.oputput_path = None
         self.action = None
-        config_input = None
-        # ToDo: check that only one is specified
-        if options.add_from:
-            self.action = 'add-from'
-            config_input = options.add_from
+        self.enable = None
+
+
+
+        if options.type:
+            self._setup_subcommand(options)
         elif options.create_example:
             self.action = 'create-example'
             self.config_output_path = os.path.abspath(options.create_example)
+
+    def _setup_subcommand(self, options):
+        if options.conf:
+            config_path = os.path.abspath(options.conf)
+            self.config_dict = configobj.ConfigObj(config_path, file_error=True)
+            self.oputput_path = config_path
+
+        config_input = None
+        if options.add_from:
+            self.action = 'add-from'
+            config_input = options.add_from
         elif options.export:
             self.action = 'export'
             self.config_output_path = os.path.abspath(options.export)
@@ -2623,11 +2658,9 @@ class Configurator():
             self.action = 'update-from'
             config_input = options.update_from
 
-        # ToDo: incompatible with --export
-        if options.type == 'MQTTSubscribe' and options.enable:
+        if options.type == 'service' and options.enable:
             self.enable = to_bool(options.enable)
 
-        # ToDo: incompatible with --export and --create-example
         if options.output:
             self.config_output_path = os.path.abspath(options.output)
 
@@ -2709,20 +2742,15 @@ class Configurator():
 if __name__ == '__main__': # pragma: no cover
     def main():
         """ Run it."""
-        usage = """%(prog)s -v|--version
-            %(prog)s -h|--help
-            %(prog)s simulate --help
-            %(prog)s configure --help
-        """
 
         print("start")
-        parser = argparse.ArgumentParser(usage=usage)
+        parser = argparse.ArgumentParser()
         parser.add_argument('--version', action='version', version=f"MQTTSubscribe version is {VERSION}")
 
         subparsers = parser.add_subparsers(dest='command')
 
         Simulator.add_parsers(subparsers)
-        Configurator.add_parsers(subparsers)
+        configurator_subparser = Configurator.add_parsers(subparsers)
 
         options = parser.parse_args()
 
@@ -2732,7 +2760,7 @@ if __name__ == '__main__': # pragma: no cover
             simulator.init_weewx()
             simulator.run()
         elif options.command == 'configure':
-            configurator = Configurator(options)
+            configurator = Configurator(configurator_subparser, options)
             configurator.run()
         else:
             parser.print_help()
