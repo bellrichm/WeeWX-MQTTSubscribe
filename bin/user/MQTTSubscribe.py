@@ -2577,7 +2577,7 @@ class Configurator():
         # The following is only used by the service
         configurator_service_parser.add_argument("--enable", dest="enable",
                             help="Enable/Disable the service.")
-        configurator_service_parser.configure_driver_group("--no-backup", action="store_true", default=False,
+        configurator_service_parser.add_argument("--no-backup", action="store_true", default=False,
                             help="When updating the WeeWX configuration (--conf), do not back it up.")
         configurator_service_parser.add_argument("--output",
                             help="Instead of updating the WeeWX configuration (--conf), write it to this file")
@@ -2596,9 +2596,9 @@ class Configurator():
                             help="The configuration that will replace the existing configuration.")
         configure_driver_group.add_argument("--update-from",
                             help="The configuration that will update (and add to) the existing configuration.")
-        configure_driver_group.c("--validate",  action="store_true", dest="validate",
+        configure_driver_group.add_argument("--validate",  action="store_true", dest="validate",
                             help="Validate the configuration file.")
-        configure_driver_group.configure_driver_group("--no-backup", action="store_true", default=False,
+        configure_driver_group.add_argument("--no-backup", action="store_true", default=False,
                             help="When updating the WeeWX configuration (--conf), do not back it up.")
         configurator_driver_parser.add_argument("--output",
                             help="Instead of updating the WeeWX configuration (--conf), write it to this file")
@@ -2610,7 +2610,7 @@ class Configurator():
         if (options.type and options.create_example) or (not options.type and not options.create_example):
             parser.error("Either 'service|driver' or '--create-example' is required.")
 
-        if options.enable and len(sys.argv) > 2:
+        if options.type == 'MQTTSubscribe' and options.enable and len(sys.argv) > 2:
             parser.error("'--enable' is mutually exclusive with all other options.")
 
         if options.output and options.export:
@@ -2646,7 +2646,7 @@ class Configurator():
     def _setup_subcommand(self, options):
         if options.conf:
             config_path = os.path.abspath(options.conf)
-            self.config_dict = configobj.ConfigObj(config_path, file_error=True)
+            self.config_dict = configobj.ConfigObj(config_path, encoding='utf-8', file_error=True)
             self.oputput_path = config_path
 
         config_input = None
@@ -2676,7 +2676,7 @@ class Configurator():
 
         if config_input:
             config_input_path = os.path.abspath(config_input)
-            config_input_dict = configobj.ConfigObj(config_input_path, file_error=True)
+            config_input_dict = configobj.ConfigObj(config_input_path, encoding='utf-8', file_error=True)
             self.config_input_dict = weeutil.config.deep_copy(config_input_dict[self.section])
 
     def run(self):
@@ -2706,7 +2706,7 @@ class Configurator():
             self.config_dict[self.section] = self.config_input_dict
         else:
             conf_editor = MQTTSubscribeDriverConfEditor()
-            conf_editor.existing_options = {}
+            conf_editor.existing_options = self.config_dict.get(self.section, {})
             settings = conf_editor.prompt_for_settings()
             self.config_dict[self.section] = settings
 
