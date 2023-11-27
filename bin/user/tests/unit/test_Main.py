@@ -55,7 +55,7 @@ class test_simulate_driver(unittest.TestCase):
         options.topics = random_string()
         options.host = random_string()
         options.console = random_string()
-        options.config_file = random_string()
+        options.conf = random_string()
         options.verbose = random_string()
 
         mock_driver = mock.Mock()
@@ -97,7 +97,7 @@ class test_simulate_driver(unittest.TestCase):
         options.topics = random_string()
         options.host = random_string()
         options.console = random_string()
-        options.config_file = random_string()
+        options.conf = random_string()
         options.verbose = random_string()
 
         mock_driver = mock.Mock()
@@ -144,7 +144,7 @@ class test_simulate_service(unittest.TestCase):
         options.topics = random_string()
         options.host = random_string()
         options.console = random_string()
-        options.config_file = random_string()
+        options.conf = random_string()
         options.verbose = random_string()
 
         with mock.patch('user.MQTTSubscribe.print'):
@@ -192,7 +192,7 @@ class test_simulate_service(unittest.TestCase):
         options.topics = random_string()
         options.host = random_string()
         options.console = random_string()
-        options.config_file = random_string()
+        options.conf = random_string()
         options.verbose = random_string()
 
         with mock.patch('user.MQTTSubscribe.print'):
@@ -256,7 +256,7 @@ class test_init_config(unittest.TestCase):
         options.delay = random.randint(1, 99)
         options.units = None
 
-        options.config_file = random_string()
+        options.conf = random_string()
         options.verbose = random_string()
 
         with mock.patch('user.MQTTSubscribe.print'):
@@ -337,7 +337,7 @@ class test_init_config(unittest.TestCase):
         options.delay = random.randint(1, 99)
         options.units = None
 
-        options.config_file = random_string()
+        options.conf = random_string()
         options.verbose = random_string()
 
         with mock.patch('user.MQTTSubscribe.print'):
@@ -401,7 +401,7 @@ class test_init_config(unittest.TestCase):
         options.delay = random.randint(1, 99)
         options.units = None
 
-        options.config_file = random_string()
+        options.conf = random_string()
         options.verbose = random_string()
 
         with mock.patch('user.MQTTSubscribe.print'):
@@ -460,7 +460,7 @@ class test_init_config(unittest.TestCase):
         options.delay = random.randint(1, 99)
         options.units = None
 
-        options.config_file = random_string()
+        options.conf = random_string()
         options.verbose = random_string()
 
         with mock.patch('user.MQTTSubscribe.print'):
