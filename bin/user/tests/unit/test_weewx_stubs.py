@@ -36,6 +36,9 @@ class weeutil:
         def prepend(self, m):
             self.maps.insert(0, m)
 
+    class weecfg:
+        pass
+
     class weeutil:
         class TimeSpan(tuple):
             """Represents a time span, exclusive on the left, inclusive on the right."""
