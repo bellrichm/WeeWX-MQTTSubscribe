@@ -132,16 +132,17 @@
             "program": "${workspaceFolder}/bin/user/MQTTSubscribe.py",
             "args": [
                 "configure",
-                "driver",
+                //"driver",
+                "--create-example", "tmp/temp.conf",
                 //"--enable", "false",
                 //"--validate",
-                //"--create-example", "tmp/temp.conf",
-                "--output", "${workspaceFolder}/tmp/temp.conf",
+                
+                //"--output", "${workspaceFolder}/tmp/temp.conf",
                // "--add-from", "${workspaceFolder}/devtools/smoketest.archive.conf",                
                 //"--export", "${workspaceFolder}/tmp/temp.conf",
                 //"--update-from", "${workspaceFolder}/devtools/smoketest.archive.conf",
                 //"${workspaceFolder}/devtools/debug.loop.conf",
-                "/home/fork.weewx/weewx.debug.conf"
+                //"/home/fork.weewx/weewx.debug.conf"
             ],            
             "console": "integratedTerminal"
         },        

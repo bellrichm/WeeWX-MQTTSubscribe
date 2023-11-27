@@ -127,23 +127,23 @@ CONFIG_SPEC_TEXT = \
         # Default is None
         certfile = None
 
-        # The private keys.
-        # Default is None
-        keyfile = None
-
         # The certificate requirements that the client imposes on the broker.
         # Valid values: none, optional, required
         # Default is required,
         certs_required = required
 
+        # The encryption ciphers that are allowable for this connection. Specify None to use the defaults
+        # Default is None.
+        ciphers = None
+
+        # The private keys.
+        # Default is None
+        keyfile = None
+
         # The version of the SSL/TLS protocol to be used.
         # Valid values: sslv2, sslv23, sslv3, tls, tlsv1, tlsv11, tlsv12.
         # Default is tlsv12.
         tls_version = tlsv12
-
-        # The encryption ciphers that are allowable for this connection. Specify None to use the defaults
-        # Default is None.
-        ciphers = None
 
     # Configuration for the message callback.
     # DEPRECATED - use [[[message]]] under [[topics]]
