@@ -275,6 +275,7 @@ except ImportError: # pragma: no cover
 sys.modules['weewx'] = weewx
 sys.modules['weewx.drivers'] = weewx.drivers
 sys.modules['weewx.engine'] = weewx.engine
+sys.modules['weecfg'] = weecfg
 sys.modules['weeutil'] = weeutil
 sys.modules['weeutil.config'] = weeutil.config
 sys.modules['weeutil.weeutil'] = weeutil.weeutil
