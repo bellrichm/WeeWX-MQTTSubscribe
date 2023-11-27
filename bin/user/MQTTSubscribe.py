@@ -167,73 +167,19 @@ CONFIG_SPEC_TEXT = \
 
     # For additional information see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/Configuring#the-topic-name-sections
     [[topics]]
-        # Controls if this topic is subscribed to.
-        # Default is True.
-        subscribe = True
-
         # Units for MQTT payloads without unit value.
         # Valid values: US, METRIC, METRICWX.
         # For more information see, http://weewx.com/docs/customizing.htm#units
         # Default is US.
         unit_system = US
 
-        # By default wind data is collected together across generation of loop packets.
-        # Setting to false results in the data only being collected together within a loop packet.
-        # Default is True.
-        collect_wind_across_loops = True
+        # Less common options follow
 
-        # With the exception of wind data, by default a packet is created for every MQTT message received.
-        # When this is true, MQTTSubscribe attempts to collect observations across messages into a packet.
-        # Default is False.
-        # This is experimental and may be removed.
-        collect_observations = False
-
-        # With the exception of wind data, by default a queue is created for every MQTT topic.
-        # When this is true, MQTTSubsribe uses a single queue for all non wind data.
-        # This is useful when 'collect_observations = True'.
-        # Default is False.
-        # This is experimental and may be removed.
-        single_queue = False
-
-        # When true, the last segment of the topic is used as the fieldname.
-        # Only used for individual payloads.
-        # Default is False.
-        # This is experimental and may be removed.
-        topic_tail_is_fieldname = False
-
-        # When true, the fieldname is set to the topic and therefore [[[[fieldname]]]] cannot be used.
-        # This allows the [[[[fieldname]]]] configuration to be specified directly under the [[[topic]]].
-        # Default is False.
-        # DEPRECATED - no longer needed
-        use_topic_as_fieldname = False
-
-        # The name of the MQTT on_message callback.
-        # Default is 'message'.
-        callback_config_name = message
-
-        # Formatting string for converting a timestamp to an epoch datetime.
-        # For additional information see, https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes
-        # Default is None
-        datetime_format = None
-
-        # Formatting string for converting time offset when converting a timestamp to an epoch datetime.
-        # Default is None.
-        # Example values: -hhmm +hhmm hh:mm
-        offset_format = None
-
-        # Even if the payload has a datetime, ignore it and use the server datetime.
-        # Default is False.
-        use_server_datetime = False
-
-        # When True, the MQTT datetime will be not be checked that is greater than the last packet processed.
-        # Default is False.
+        # Allow MQTT data with a datetime this many seconds after the current packet's datetime.
+        # to be added to the current packet.
+        # Default is 0.
         # Only used by the service.
-        ignore_start_time = False
-
-        # When the True, the MQTT data will continue to be processed even if its datetime is greater than the packet's datetime.
-        # Default is False.
-        # Only used by the service.
-        ignore_end_time = False
+        adjust_end_time = 0
 
         # Allow MQTT data with a datetime this many seconds prior to the previous packet's datetime.
         # to be added to the current packet.
@@ -241,11 +187,35 @@ CONFIG_SPEC_TEXT = \
         # Only used by the service.
         adjust_start_time = 0
 
-        # Allow MQTT data with a datetime this many seconds after the current packet's datetime.
-        # to be added to the current packet.
-        # Default is 0.
+        # The name of the MQTT on_message callback.
+        # Default is 'message'.
+        callback_config_name = message
+
+        # With the exception of wind data, by default a packet is created for every MQTT message received.
+        # When this is true, MQTTSubscribe attempts to collect observations across messages into a packet.
+        # Default is False.
+        # This is experimental and may be removed.
+        collect_observations = False
+
+        # By default wind data is collected together across generation of loop packets.
+        # Setting to false results in the data only being collected together within a loop packet.
+        # Default is True.
+        collect_wind_across_loops = True
+
+        # Formatting string for converting a timestamp to an epoch datetime.
+        # For additional information see, https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes
+        # Default is None
+        datetime_format = None
+
+        # When the True, the MQTT data will continue to be processed even if its datetime is greater than the packet's datetime.
+        # Default is False.
         # Only used by the service.
-        adjust_end_time = 0
+        ignore_end_time = False
+
+        # When True, the MQTT datetime will be not be checked that is greater than the last packet processed.
+        # Default is False.
+        # Only used by the service.
+        ignore_start_time = False
 
         # The maximum queue size.
         # When the queue is larger than this value, the oldest element is removed.
@@ -254,6 +224,38 @@ CONFIG_SPEC_TEXT = \
         # Or if subscribing to 'individual' payloads with wildcards. This results in many topic
         # in a single queue.
         max_queue = sys.maxsize         
+
+        # Formatting string for converting time offset when converting a timestamp to an epoch datetime.
+        # Default is None.
+        # Example values: -hhmm +hhmm hh:mm
+        offset_format = None
+
+        # With the exception of wind data, by default a queue is created for every MQTT topic.
+        # When this is true, MQTTSubsribe uses a single queue for all non wind data.
+        # This is useful when 'collect_observations = True'.
+        # Default is False.
+        # This is experimental and may be removed.
+        single_queue = False
+
+        # Controls if this topic is subscribed to.
+        # Default is True.
+        subscribe = True
+
+        # When true, the last segment of the topic is used as the fieldname.
+        # Only used for individual payloads.
+        # Default is False.
+        # This is experimental and may be removed.
+        topic_tail_is_fieldname = False
+
+        # Even if the payload has a datetime, ignore it and use the server datetime.
+        # Default is False.
+        use_server_datetime = False
+
+        # When true, the fieldname is set to the topic and therefore [[[[fieldname]]]] cannot be used.
+        # This allows the [[[[fieldname]]]] configuration to be specified directly under the [[[topic]]].
+        # Default is False.
+        # DEPRECATED - no longer needed
+        use_topic_as_fieldname = False
 
         # Configuration information about the MQTT message format for this topic
         [[[message]]]
@@ -282,14 +284,13 @@ CONFIG_SPEC_TEXT = \
             # Default is True
             subscribe = True
 
-            # True if the incoming data should not be processed into WeeWX.
+            # Sets the default value for all fields in this topic.
+            # Setting the value to 'true' "opts out" and the desired fields will need to set 'ignore = true'
             # Valid values: True, False.
             # Default is False.
             ignore = False            
 
-            # The QOS level to subscribe to.
-            # Default is 0
-            qos = 0            
+            # Less common options follow
 
             # Specifies a field name in the mqtt message.
             # The value of the field is appended to every field name in the mqtt message.
@@ -298,6 +299,10 @@ CONFIG_SPEC_TEXT = \
             # Only used with json payloads.
             msg_id_field = None
 
+            # The QOS level to subscribe to.
+            # Default is 0
+            qos = 0            
+    
             # Configuration information about the MQTT message format for this topic
             # ToDo: create wiki entry and reference it
             [[[[message]]]]
@@ -321,6 +326,16 @@ CONFIG_SPEC_TEXT = \
             # The incoming field name from MQTT.
             # For additional information see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/Configuring#the-field-name-sections
             [[[[REPLACE_ME]]]]
+                # True if the incoming field should not be processed into WeeWX.
+                # Valid values: True, False.
+                # Default is  derived from the 'ignore' option at the topic level.
+                ignore = False
+
+                # True if the incoming data is cumulative.
+                # Valid values: True, False.
+                # Default is False.
+                contains_total = False      
+      
                 # The WeeWX name.
                 # Default is the name from MQTT.
                 name = REPLACE_ME
@@ -330,49 +345,23 @@ CONFIG_SPEC_TEXT = \
                 # Default is False
                 ignore_msg_id_field = False
 
-                # True if the incoming data should not be processed into WeeWX.
-                # Valid values: True, False.
-                # Default is False.
-                ignore = False
-
-                # True if the incoming data is cumulative.
-                # Valid values: True, False.
-                # Default is False.
-                contains_total = False
-
-                # True if the cumulative data can wrap around.
-                # Valid values: True, False.
-                # Default is False.
-                total_wrap_around = False
-
-                # The conversion type necessary for WeeWX compatibility.
-                # Valid values: bool, float, int, none.
-                # Default is float.
-                conversion_type = float
-
-                # Valid values, a Python expression that when evaluated returns a valid value.
-                # Example, conversion_func = lambda x: True if x == 'ON' else False
-                # Default is not set.
-                conversion_func = NOT_SET
+                # Less common options follow
 
                 # When True: if there is an exception converting the data type, the value is set to None.
                 # When False: if there is an exception converting the data type, an error is logged and the MQTT msg is skipped.
                 # Valid values: True, False.
                 # Default is False.
                 conversion_error_to_none = False
-
-                # When the field has any of the listed values, the MQTT message is not processed.
-                # Any set of values separated by a comma is valid. For example: v1, v2, v3.
-                # Default is empty.
-                # filter_out_message_when = ,
-                # Only used for json payloads.
-                # Note, conversion_type will most likely have to be set.
-
-                # The units of the incoming data.
-                # Useful if this field's units differ from the topic's unit_system's units.
-                # Valid values: see, http://www.weewx.com/docs/customizing.htm#units
+                
+                # Valid values, a Python expression that when evaluated returns a valid value.
+                # Example, conversion_func = lambda x: True if x == 'ON' else False
                 # Default is not set.
-                units = NOT_SET
+                conversion_func = NOT_SET
+
+                # The conversion type necessary for WeeWX compatibility.
+                # Valid values: bool, float, int, none.
+                # Default is float.
+                conversion_type = float
 
                 # In seconds how long the cache is valid.
                 # Value of 0 means the cache is always expired.
@@ -381,6 +370,24 @@ CONFIG_SPEC_TEXT = \
                 # Default is not set.
                 # EXPERIMENTAL - may be removed
                 expires_after = NOT_SET
+
+                # When the field has any of the listed values, the MQTT message is not processed.
+                # Any set of values separated by a comma is valid. For example: v1, v2, v3.
+                # Default is empty.
+                filter_out_message_when = ,
+                # Only used for json payloads.
+                # Note, conversion_type will most likely have to be set.
+
+                # True if the cumulative data can wrap around.
+                # Valid values: True, False.
+                # Default is False.
+                total_wrap_around = False
+                                
+                # The units of the incoming data.
+                # Useful if this field's units differ from the topic's unit_system's units.
+                # Valid values: see, http://www.weewx.com/docs/customizing.htm#units
+                # Default is not set.
+                units = NOT_SET
 
                 # This is only valid when the fieldname is an array. Each subsection 'names' the element in the array.
                 [[[[[subfields]]]]]
@@ -2275,6 +2282,7 @@ class MQTTSubscribeConfiguration():
             'message': ['MQTTSubscribe', 'topics'],
             'offset_format': ['MQTTSubscribe', 'topics'],
             'single_queue': ['MQTTSubscribe', 'topics'],
+            'subscribe': ['MQTTSubscribe', 'topics'],
             'topic_tail_is_fieldname': ['MQTTSubscribe', 'topics'],
             'use_server_datetime': ['MQTTSubscribe', 'topics'],
             'use_topic_as_fieldname': ['MQTTSubscribe', 'topics'],
