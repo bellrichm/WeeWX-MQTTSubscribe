@@ -163,6 +163,7 @@ CONFIG_SPEC_TEXT = \
         # Default is "=".
         keyword_separator = "="
 
+    # For additional information see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/Configuring#the-topic-name-sections
     [[topics]]
         # Controls if this topic is subscribed to.
         # Default is True.
@@ -272,6 +273,7 @@ CONFIG_SPEC_TEXT = \
             keyword_separator = "="               
 
         # The first topic to subscribe to
+        # For additional information see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/Configuring#the-topic-name-sections
         [[[REPLACE_ME]]]
             # When set to false, the topic is not subscribed to.
             # Valid values: True, False
@@ -295,6 +297,7 @@ CONFIG_SPEC_TEXT = \
             msg_id_field = None
 
             # Configuration information about the MQTT message format for this topic
+            # ToDo: create wiki entry and reference it
             [[[[message]]]]
                 # The format of the MQTT payload.
                 # Currently support: individual, json, keyword.
@@ -314,6 +317,7 @@ CONFIG_SPEC_TEXT = \
                 keyword_separator = "="               
 
             # The incoming field name from MQTT.
+            # For additional information see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/Configuring#the-field-name-sections
             [[[[REPLACE_ME]]]]
                 # The WeeWX name.
                 # Default is the name from MQTT.
@@ -2309,7 +2313,8 @@ class MQTTSubscribeConfiguration():
 
         config_spec.initial_comment = example_intial_comment.splitlines()
         if not self.section:
-            config_spec.initial_comment.append("# [MQTTSubscribeService] or [MQTTSubscribeDriver]")
+            config_spec.initial_comment.append("# Replace '[MQTTSubscribe]' with '[MQTTSubscribeService]' or '[MQTTSubscribeDriver]'")
+        config_spec.initial_comment.append("# For additional information see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/Configuring#the-mqttsubscribedrivermqttsubscribesection-section")
 
         return config_spec
 
