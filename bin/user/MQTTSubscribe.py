@@ -2174,6 +2174,7 @@ class MQTTSubscribeDriverConfEditor(weewx.drivers.AbstractConfEditor): # pragma:
     """ Methods for producing and updating configuration stanzas for use in configuration file. """
     def __init__(self):
         self.mqttsubscribe_configuration = MQTTSubscribeConfiguration('MQTTSubscribeDriver')
+        self.existing_options = {}
         super().__init__()
 
     @property
