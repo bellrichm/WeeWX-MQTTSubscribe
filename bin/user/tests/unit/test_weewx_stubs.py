@@ -22,6 +22,9 @@ def random_string(length=32):
 def random_ascii_letters(length=32):
     return''.join([random.choice(string.ascii_letters) for n in range(length)]) # pylint: disable=unused-variable
 
+class weecfg:
+    pass
+
 class weeutil:
     class config:
         def merge_config(self):
@@ -272,6 +275,7 @@ except ImportError: # pragma: no cover
 sys.modules['weewx'] = weewx
 sys.modules['weewx.drivers'] = weewx.drivers
 sys.modules['weewx.engine'] = weewx.engine
+sys.modules['weecfg'] = weecfg
 sys.modules['weeutil'] = weeutil
 sys.modules['weeutil.config'] = weeutil.config
 sys.modules['weeutil.weeutil'] = weeutil.weeutil

@@ -24,8 +24,9 @@ else
     CODE=$3
 fi
 
-while inotifywait -e modify devtools/watchlint.sh devtools/lint.sh $CODE
+./devtools/lint.sh $WEEWX_VERSION $PY_VERSION $CODE
 
+while inotifywait -e modify devtools/watchlint.sh devtools/lint.sh $CODE
 do
     ./devtools/lint.sh $WEEWX_VERSION $PY_VERSION $CODE
 done

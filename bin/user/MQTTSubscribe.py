@@ -23,9 +23,16 @@ Overview:
 
     The driver processes the queue and generates a packet for each element currently in the queue.
     A topic can be desinated as an 'archive topic'. Data in this topic is returned as an archive record.
+"""
 
-Configuration:
-[MQTTSubscribeService] or [MQTTSubscribeDriver]
+CONFIG_SPEC_TEXT = \
+"""
+# [MQTTSubscribeService] or [MQTTSubscribeDriver]
+[MQTTSubscribe]
+    # The driver to use.
+    # Only used by the driver.
+    driver = user.MQTTSubscribe
+
     # The MQTT server.
     # Default is localhost.
     host = localhost
@@ -53,6 +60,10 @@ Configuration:
     # password for broker authentication.
     # Default is None.
     password = None
+
+    # The MQTT clean_session setting.
+    # Default is True
+    clean_session = True
 
     # Controls the MQTT logging.
     # Default is false.
@@ -96,9 +107,17 @@ Configuration:
     # Only used when the archive_topic is set and MQTTSubscribe is running in 'hardware generation' mode.
     archive_interval = 300
 
+    # The name of a file to log to.
+    # The default is None.
+    logging_filename = None
+
     # The TLS options that are passed to tls_set method of the MQTT client.
     # For additional information see, https://eclipse.org/paho/clients/python/docs/strptime-format-codes
     [[tls]]
+        # Turn tls on and off.
+        # Default is true.
+        enable = false
+
         # Path to the Certificate Authority certificate files that are to be treated as trusted by this client.
         ca_certs =
 
@@ -144,23 +163,16 @@ Configuration:
         # Default is "=".
         keyword_separator = "="
 
-    [[topics]
+    [[topics]]
         # Controls if this topic is subscribed to.
         # Default is True.
         subscribe = True
-        # The QOS level to subscribe to.
-        # Default is 0
-        qos = 0
 
         # Units for MQTT payloads without unit value.
         # Valid values: US, METRIC, METRICWX.
         # For more information see, http://weewx.com/docs/customizing.htm#units
         # Default is US.
         unit_system = US
-
-        # Controls if an actual subscription request is made to the broker for this topic.
-        # Default is True.
-        subscribe = True
 
         # By default wind data is collected together across generation of loop packets.
         # Setting to false results in the data only being collected together within a loop packet.
@@ -191,6 +203,10 @@ Configuration:
         # Default is False.
         # DEPRECATED - no longer needed
         use_topic_as_fieldname = False
+
+        # The name of the MQTT on_message callback.
+        # Default is 'message'.
+        callback_config_name = message
 
         # Formatting string for converting a timestamp to an epoch datetime.
         # For additional information see, https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes
@@ -234,7 +250,7 @@ Configuration:
         # between the driver creating packets is large and the MQTT broker publishes frequently.
         # Or if subscribing to 'individual' payloads with wildcards. This results in many topic
         # in a single queue.
-        max_queue = sys.maxsize
+        max_queue = sys.maxsize         
 
         # Configuration information about the MQTT message format for this topic
         [[[message]]]
@@ -253,14 +269,23 @@ Configuration:
 
             # The separator between fieldname and value pairs. (field1=value1, field2=value2).
             # Default is "=".
-            keyword_separator = "="
+            keyword_separator = "="               
 
         # The first topic to subscribe to
-        [[[first/topic]]]
+        [[[REPLACE_ME]]]
             # When set to false, the topic is not subscribed to.
             # Valid values: True, False
             # Default is True
             subscribe = True
+
+            # True if the incoming data should not be processed into WeeWX.
+            # Valid values: True, False.
+            # Default is False.
+            ignore = False            
+
+            # The QOS level to subscribe to.
+            # Default is 0
+            qos = 0            
 
             # Specifies a field name in the mqtt message.
             # The value of the field is appended to every field name in the mqtt message.
@@ -269,11 +294,30 @@ Configuration:
             # Only used with json payloads.
             msg_id_field = None
 
+            # Configuration information about the MQTT message format for this topic
+            [[[[message]]]]
+                # The format of the MQTT payload.
+                # Currently support: individual, json, keyword.
+                # Must be specified.
+                type = REPLACE_ME
+
+                # When the json is nested, the delimiter between the hierarchies.
+                # Default is _.
+                flatten_delimiter = _
+
+                # The delimiter between fieldname and value pairs. (field1=value1, field2=value2).
+                # Default is is ",".
+                keyword_delimiter = ","
+
+                # The separator between fieldname and value pairs. (field1=value1, field2=value2).
+                # Default is "=".
+                keyword_separator = "="               
+
             # The incoming field name from MQTT.
-            [[[[temp1]]]
+            [[[[REPLACE_ME]]]]
                 # The WeeWX name.
                 # Default is the name from MQTT.
-                name = extraTemp1
+                name = REPLACE_ME
 
                 # When True, the value in the field specified in msg_id_field is not appended to the fieldname in the mqtt message.
                 # Valid values: True, False.
@@ -301,9 +345,9 @@ Configuration:
                 conversion_type = float
 
                 # Valid values, a Python expression that when evaluated returns a valid value.
-                Example, conversion_func = lambda x: True if x == 'ON' else False
+                # Example, conversion_func = lambda x: True if x == 'ON' else False
                 # Default is not set.
-                conversion_func =
+                conversion_func = NOT_SET
 
                 # When True: if there is an exception converting the data type, the value is set to None.
                 # When False: if there is an exception converting the data type, an error is logged and the MQTT msg is skipped.
@@ -322,7 +366,7 @@ Configuration:
                 # Useful if this field's units differ from the topic's unit_system's units.
                 # Valid values: see, http://www.weewx.com/docs/customizing.htm#units
                 # Default is not set.
-                # units = degree_C
+                units = NOT_SET
 
                 # In seconds how long the cache is valid.
                 # Value of 0 means the cache is always expired.
@@ -330,11 +374,21 @@ Configuration:
                 # Value of None means the cache never expires.
                 # Default is not set.
                 # EXPERIMENTAL - may be removed
-                # expires_after = None
+                expires_after = NOT_SET
+
+                # This is only valid when the fieldname is an array. Each subsection 'names' the element in the array.
+                [[[[[subfields]]]]]
+                    foo = foo # This is here to make ConfigObj formatting work
+                    # Each subfield can be configured like a field in the json.
+					[[[[[[REPLACE_ME]]]]]]
+                        name = REPLACE_ME
 
         # The second topic to subscribe to
-        [[[second/topic]]]
+        [[[REPLACE_ME_TOO]]]
+"""
 
+ADDITIONAL_CONFIG_INFO = \
+"""            
     # Configure additional observations and units for WeeWX to use.
     # See, http://weewx.com/docs/customizing.htm#Creating_a_new_unit_group
     # This assumes a good knowledge of customizing WeeWX.
@@ -363,6 +417,7 @@ Configuration:
                 unit_system = metric, metricwx
 """
 
+# readability, I want the config spec at the top of the file pylint: disable=wrong-import-position
 import argparse
 import copy
 import datetime
@@ -384,6 +439,8 @@ import configobj
 import paho.mqtt.client as mqtt
 from paho.mqtt.client import connack_string
 
+import weecfg
+
 import weeutil
 import weeutil.logger
 from weeutil.weeutil import to_bool, to_float, to_int, to_sorted_string
@@ -393,6 +450,7 @@ from weeutil.config import merge_config
 import weewx
 import weewx.drivers
 from weewx.engine import StdEngine, StdService
+# pylint: enable=wrong-import-position
 
 VERSION = '3.0.0-rc01'
 DRIVER_NAME = 'MQTTSubscribeDriver'
@@ -1688,7 +1746,7 @@ class MQTTSubscriber():
         self.userdata['connect_flags'] = 0
         self.client = mqtt.Client(client_id=mqtt_options['clientid'], userdata=self.userdata, clean_session=mqtt_options['clean_session'])
 
-        if mqtt_options['tls_dict']:
+        if mqtt_options['tls_dict'] and mqtt_options['tls_dict'].get('enable', True):
             self.config_tls(mqtt_options['tls_dict'])
 
         if mqtt_options['log_mqtt']:
@@ -2114,137 +2172,238 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice):
 
 class MQTTSubscribeDriverConfEditor(weewx.drivers.AbstractConfEditor): # pragma: no cover
     """ Methods for producing and updating configuration stanzas for use in configuration file. """
+    def __init__(self):
+        self.mqttsubscribe_configuration = MQTTSubscribeConfiguration('MQTTSubscribeDriver')
+        self.existing_options = {}
+        super().__init__()
+
     @property
     def default_stanza(self):
         """ The default configuration stanza. """
-        return """
-[MQTTSubscribeDriver]
-    # This section is for the MQTTSubscribe driver.
+        mqttsubscribe_configuration = MQTTSubscribeConfiguration('MQTTSubscribeDriver')
+        return mqttsubscribe_configuration.default_stanza
 
-    # The driver to use:
-    driver = user.MQTTSubscribe
-
-    # The MQTT server.
-    # Default is localhost.
-    host = localhost
-
-    # The port to connect to.
-    # Default is 1883.
-    port = 1883
-
-    # Maximum period in seconds allowed between communications with the broker.
-    # Default is 60.
-    keepalive = 60
-    
-    # username for broker authentication.
-    # Default is None.
-    username = None
-
-    # password for broker authentication.
-    # Default is None.
-    password = None
-
-    # Configuration for the message callback.
-    [[message_callback]]
-        # The format of the MQTT payload.
-        # Currently support: individual, json, keyword
-        # Must be specified.
-        type = REPLACE_ME
-
-    # The topics to subscribe to.
-    [[topics]]
-
-        # Units for MQTT payloads without unit value.
-        # Valid values: US, METRIC, METRICWX
-        # Default is: US
-        unit_system = US
-
-        [[[FIRST/REPLACE_ME]]]
-        [[[SECOND/REPLACE_ME]]]
-"""
     def prompt_for_settings(self):
         """ Prompt for settings required for proper operation of this driver. """
+        default_config = self.mqttsubscribe_configuration.default_config
+
         settings = {}
-        settings['message_callback'] = {}
-        settings['topics'] = {}
+        self._configure(default_config['MQTTSubscribeDriver'], settings)
 
-        print("Enter the host.")
-        settings['host'] = self._prompt('host', 'localhost')
-
-        print("Enter the port on the host.")
-        settings['port'] = self._prompt('port', '1883')
-
-        print("Enter the maximum period in seconds allowed between communications with the broker.")
-        settings['keepalive'] = self._prompt('keepalive', '60')
-
-        print("Enter the units for MQTT payloads without unit value: US|METRIC|METRICWX")
-        settings['topics']['unit_system'] = self._prompt('unit_system', 'US', ['US', 'METRIC', 'METRICWX'])
-
-        print("Enter a topic to subscribe to. ")
-        topic = self._prompt('topic')
-        while topic:
-            settings['topics'][topic] = {}
-            print("Enter a topic to subscribe to. Leave blank when done.")
-            topic = self._prompt('topic')
-
-        print("Enter the MQTT paylod type: individual|json|keyword")
-        settings['message_callback']['type'] = self._prompt('type', 'json', ['individual', 'json', 'keyword'])
+        if len(self.existing_options['topics']) > 1:
+            print("Topics have been configured, currently these cannot be changed interactively.")
+        else:
+            settings['topics'] = {}
+            topic = 'REPLACE_ME'
+            while topic:
+                print("Enter a topic to subscribe to. Leave blank when done.")
+                topic = self._prompt('topic')
+                if topic:
+                    settings['topics'][topic] = {}
+                    settings['topics'][topic]['message'] = {}
+                    print("Enter the MQTT paylod type: individual|json|keyword")
+                    settings['topics'][topic]['message']['type'] = self._prompt('type', 'json', ['individual', 'json', 'keyword'])
+                else:
+                    if len(settings['topics']) == 1:
+                        topic = 'REPLACE_ME'
 
         return settings
+
+    def _configure(self, section, settings):
+        for key, _ in section.items():
+            if key not in section.sections:
+                for comment in section.comments[key]:
+                    print(comment.replace('#', '', 1).lstrip())
+                settings[key] = self._prompt(key, section[key])
+
+        for key in section.sections:
+            if key == 'topics':
+                continue
+
+            settings[key] = {}
+            print("")
+            print(f"Configuring section '{key}'")
+            print("")
+            self._configure(section[key], settings[key])
+
+class MQTTSubscribeConfiguration():
+    """ Manage the MQTTSubscribe configuration. """
+    def __init__(self, section=None):
+        self.section = section
+
+    @property
+    def default_config(self):
+        """ The default configuration. """
+
+        example_intial_comment = f'''#
+# This is an example configuration for MQTTSubscribe
+# It was created on {datetime.date.today()} at {datetime.datetime.now().strftime("%H:%M:%S")}
+#
+
+'''
+
+        config_spec = configobj.ConfigObj(CONFIG_SPEC_TEXT.splitlines())
+
+
+        remove_items = {
+            'archive_interval': ['MQTTSubscribe'],
+            'archive_topic': ['MQTTSubscribe'],
+            'clean_session': ['MQTTSubscribe'],
+            'clientid': ['MQTTSubscribe'],
+            'keepalive': ['MQTTSubscribe'],
+            'logging_filename': ['MQTTSubscribe'],
+            'message_callback': ['MQTTSubscribe'],
+            'max_delay': ['MQTTSubscribe'],
+            'max_loop_interval': ['MQTTSubscribe'],
+            'min_delay': ['MQTTSubscribe'],
+            'wait_before_retry': ['MQTTSubscribe'],
+            'adjust_end_time': ['MQTTSubscribe', 'topics'],
+            'adjust_start_time': ['MQTTSubscribe', 'topics'],
+            'callback_config_name': ['MQTTSubscribe', 'topics'],
+            'collect_observations': ['MQTTSubscribe', 'topics'],
+            'collect_wind_across_loops': ['MQTTSubscribe', 'topics'],
+            'datetime_format': ['MQTTSubscribe', 'topics'],
+            'ignore_end_time': ['MQTTSubscribe', 'topics'],
+            'ignore_start_time': ['MQTTSubscribe', 'topics'],
+            'max_queue': ['MQTTSubscribe', 'topics'],
+            'message': ['MQTTSubscribe', 'topics'],
+            'offset_format': ['MQTTSubscribe', 'topics'],
+            'single_queue': ['MQTTSubscribe', 'topics'],
+            'topic_tail_is_fieldname': ['MQTTSubscribe', 'topics'],
+            'use_server_datetime': ['MQTTSubscribe', 'topics'],
+            'use_topic_as_fieldname': ['MQTTSubscribe', 'topics'],
+            'msg_id_field': ['MQTTSubscribe', 'topics', 'REPLACE_ME'],
+            'qos': ['MQTTSubscribe', 'topics', 'REPLACE_ME'],
+            'flatten_delimiter': ['MQTTSubscribe', 'topics', 'REPLACE_ME', 'message'],
+            'keyword_delimiter': ['MQTTSubscribe', 'topics', 'REPLACE_ME', 'message'],
+            'keyword_separator': ['MQTTSubscribe', 'topics', 'REPLACE_ME', 'message'],
+            'conversion_error_to_none': ['MQTTSubscribe', 'topics', 'REPLACE_ME', 'REPLACE_ME'],
+            'conversion_func': ['MQTTSubscribe', 'topics', 'REPLACE_ME', 'REPLACE_ME'],
+            'conversion_type': ['MQTTSubscribe', 'topics', 'REPLACE_ME', 'REPLACE_ME'],
+            'expires_after': ['MQTTSubscribe', 'topics', 'REPLACE_ME', 'REPLACE_ME'],
+            'ignore_msg_id_field': ['MQTTSubscribe', 'topics', 'REPLACE_ME', 'REPLACE_ME'],
+            'subfields': ['MQTTSubscribe', 'topics', 'REPLACE_ME', 'REPLACE_ME'],
+            'total_wrap_around': ['MQTTSubscribe', 'topics', 'REPLACE_ME', 'REPLACE_ME'],
+            'units': ['MQTTSubscribe', 'topics', 'REPLACE_ME', 'REPLACE_ME'],
+        }
+
+        if self.section != 'MQTTSubscribeDriver':
+            del config_spec['MQTTSubscribe']['driver']
+
+        for remove_item, _ in remove_items.items():
+            current_section = config_spec
+            for key in remove_items[remove_item]:
+                if key in current_section:
+                    current_section = current_section[key]
+                else:
+                    current_section = {}
+                    break
+
+            if remove_item in current_section:
+                del current_section[remove_item]
+            else:
+                raise ValueError(f"Trying to remove {remove_item} and it is not in the config spec.")
+
+        if self.section:
+            config_spec.rename('MQTTSubscribe', self.section)
+
+        config_spec.initial_comment = example_intial_comment.splitlines()
+        if not self.section:
+            config_spec.initial_comment.append("# [MQTTSubscribeService] or [MQTTSubscribeDriver]")
+
+        return config_spec
+
+    @property
+    def default_stanza(self):
+        """ The default configuration stanza. """
+        return self.default_config.write()
 
 class Simulator():
     """ Run the service or driver. """
     # pylint: disable=too-many-instance-attributes
-    def __init__(self):
-        """ Initialize the new instance. """
-        usage = """MQTTSubscribeService --help
-                CONFIG_FILE
-                [--records=RECORD_COUNT]
-                [--interval=INTERVAL]
-                [--delay=DELAY]
-                [--units=US|METRIC|METRICWX]
-                [--binding=archive|loop]
-                [--type=driver|service]
-                [--verbose]
-                [--console]
 
-        CONFIG_FILE = The WeeWX configuration file, typically weewx.conf.
-        """
+    usage = """
+            [--conf=CONFIG]
+            [--records=RECORD_COUNT]
+            [--interval=INTERVAL]
+            [--delay=DELAY]
+            [--units=US|METRIC|METRICWX]
+            [--binding=archive|loop]
+            [--verbose]
+            [--console]
 
-        parser = argparse.ArgumentParser(usage=usage)
-        parser.add_argument('--version', action='version', version=f"MQTTSubscribe version is {VERSION}")
-        parser.add_argument('--records', dest='record_count', type=int,
+    CONFIG = The WeeWX configuration file, typically weewx.conf.
+    """
+
+    @classmethod
+    def add_parsers(cls, parser):
+        ''' Add the parsers. '''
+        cls.simulator_parser = parser.add_parser('simulate')
+        simulator_subparsers = cls.simulator_parser.add_subparsers(dest='type')
+
+        simulate_service_parser = simulator_subparsers.add_parser('service', usage=f"MQTTSubscribe.py simulate service {cls.usage}")
+        simulate_service_parser.add_argument("--conf", required=False,
+                            help="The WeeWX configuration file. Typically weewx.conf.")
+        simulate_service_parser.add_argument('--records', dest='record_count', type=int,
                             help='The number of archive records to create.',
                             default=2)
-        parser.add_argument('--interval', dest='interval', type=int,
+        simulate_service_parser.add_argument('--interval', dest='interval', type=int,
                             help='The archive interval in seconds.',
                             default=300)
-        parser.add_argument('--delay', dest='delay', type=int,
+        simulate_service_parser.add_argument('--delay', dest='delay', type=int,
                             help='The archive delay in seconds.',
                             default=15)
-        parser.add_argument("--units", choices=["US", "METRIC", "METRICWX"],
+        simulate_service_parser.add_argument("--units", choices=["US", "METRIC", "METRICWX"],
                             help="The default units if not in MQTT payload.",
                             default="US")
-        parser.add_argument("--binding", choices=["archive", "loop"],
+        simulate_service_parser.add_argument("--binding", choices=["archive", "loop"],
                             help="The type of binding.",
                             default="archive")
-        parser.add_argument("--type", choices=["driver", "service"],
-                            help="The simulation type.",
-                            default="driver")
-        parser.add_argument("--verbose", action="store_true", dest="verbose",
+        simulate_service_parser.add_argument("--verbose", action="store_true", dest="verbose",
                             help="Log extra output (debug=1).")
-        parser.add_argument("--console", action="store_true", dest="console",
+        simulate_service_parser.add_argument("--console", action="store_true", dest="console",
                             help="Log to console in addition to syslog.")
-        parser.add_argument("--host",
+        simulate_service_parser.add_argument("--host",
                             help="The MQTT server.")
-        parser.add_argument("--topics",
+        simulate_service_parser.add_argument("--topics",
                             help="Comma separated list of topics to subscribe to.")
-        parser.add_argument("--callback",
+        simulate_service_parser.add_argument("--callback",
                             help="The callback type.")
-        parser.add_argument("config_file")
 
-        options = parser.parse_args()
+        simulate_driver_parser = simulator_subparsers.add_parser('driver', usage=f"MQTTSubscribe.py simulate driver {cls.usage}")
+        simulate_driver_parser.add_argument("--conf", required=False,
+                            help="The WeeWX configuration file. Typicall weewx.conf.")
+        simulate_driver_parser.add_argument('--records', dest='record_count', type=int,
+                            help='The number of archive records to create.',
+                            default=2)
+        simulate_driver_parser.add_argument('--interval', dest='interval', type=int,
+                            help='The archive interval in seconds.',
+                            default=300)
+        simulate_driver_parser.add_argument('--delay', dest='delay', type=int,
+                            help='The archive delay in seconds.',
+                            default=15)
+        simulate_driver_parser.add_argument("--units", choices=["US", "METRIC", "METRICWX"],
+                            help="The default units if not in MQTT payload.",
+                            default="US")
+        simulate_driver_parser.add_argument("--binding", choices=["archive", "loop"],
+                            help="The type of binding.",
+                            default="archive")
+        simulate_driver_parser.add_argument("--verbose", action="store_true", dest="verbose",
+                            help="Log extra output (debug=1).")
+        simulate_driver_parser.add_argument("--console", action="store_true", dest="console",
+                            help="Log to console in addition to syslog.")
+        simulate_driver_parser.add_argument("--host",
+                            help="The MQTT server.")
+        simulate_driver_parser.add_argument("--topics",
+                            help="Comma separated list of topics to subscribe to.")
+        simulate_driver_parser.add_argument("--callback",
+                            help="The callback type.")
 
+    def __init__(self, options):
+        """ Initialize the new instance. """
+        if not options.type:
+            self.simulator_parser.print_help()
+            sys.exit(2)
         self.simulation_type = options.type
         self.binding = options.binding
         self.record_count = options.record_count
@@ -2254,7 +2413,7 @@ class Simulator():
         self.topics = options.topics
         self.host = options.host
         self.console = options.console
-        self.config_file = options.config_file
+        self.config_file = options.conf
         self.units = options.units
         self.verbose = options.verbose
 
@@ -2405,6 +2564,207 @@ class Simulator():
             elif self.binding == "loop":
                 self.simulate_driver_packet(driver)
 
+class Configurator():
+    ''' Configure the service or driver.'''
+    # pylint: disable=too-many-instance-attributes
+
+    @classmethod
+    def add_parsers(cls, parser):
+        ''' Add the parsers.'''
+        subparser = parser.add_parser('configure')
+        subparser.add_argument("--create-example",
+                            help="Export the existing configuration.")
+
+        configurator_subparsers = subparser.add_subparsers(dest='type')
+        configurator_service_parser = configurator_subparsers.add_parser('service')
+        configure_service_group = configurator_service_parser.add_mutually_exclusive_group(required=False)
+        configurator_service_parser.add_argument("--conf",
+                            help="The WeeWX configuration file. Typically weewx.conf.")
+        configure_service_group.add_argument("--add-from",
+                            help="The configuration that will and add to (but not update existing settings) the existing configuration.")
+        configure_service_group.add_argument("--export",
+                            help="Export the existing configuration.")
+        configure_service_group.add_argument("--print-configspec",
+                            help="Write the configspec to a file.")
+        configure_service_group.add_argument("--replace-with",
+                            help="The configuration that will replace the existing configuration.")
+        configure_service_group.add_argument("--update-from",
+                            help="The configuration that will update (and add to) the existing configuration.")
+        configure_service_group.add_argument("--validate",  action="store_true", dest="validate",
+                            help="Validate the configuration file.")
+        # The following is only used by the service
+        configurator_service_parser.add_argument("--enable", dest="enable",
+                            help="Enable/Disable the service.")
+        configurator_service_parser.add_argument("--no-backup", action="store_true", default=False,
+                            help="When updating the WeeWX configuration (--conf), do not back it up.")
+        configurator_service_parser.add_argument("--output",
+                            help="Instead of updating the WeeWX configuration (--conf), write it to this file")
+
+        configurator_driver_parser = configurator_subparsers.add_parser('driver')
+        configure_driver_group = configurator_driver_parser.add_mutually_exclusive_group(required=False)
+        configurator_driver_parser.add_argument("--conf",
+                            help="The WeeWX configuration file. Typicall weewx.conf.")
+        configure_driver_group.add_argument("--add-from",
+                            help="The configuration that will and add to (but not update existing settings) the existing configuration.")
+        configure_driver_group.add_argument("--export",
+                            help="Export the existing configuration.")
+        configure_driver_group.add_argument("--print-configspec",
+                            help="Write the configspec to a file.")
+        configure_driver_group.add_argument("--replace-with",
+                            help="The configuration that will replace the existing configuration.")
+        configure_driver_group.add_argument("--update-from",
+                            help="The configuration that will update (and add to) the existing configuration.")
+        configure_driver_group.add_argument("--validate",  action="store_true", dest="validate",
+                            help="Validate the configuration file.")
+        configure_driver_group.add_argument("--no-backup", action="store_true", default=False,
+                            help="When updating the WeeWX configuration (--conf), do not back it up.")
+        configurator_driver_parser.add_argument("--output",
+                            help="Instead of updating the WeeWX configuration (--conf), write it to this file")
+
+        return subparser
+
+    def __init__(self, parser, options):
+        self.no_update_actions = ["--create-example", "--export", "--print-configspec", "--validate"]
+        if (options.type and options.create_example) or (not options.type and not options.create_example):
+            parser.error("Either 'service|driver' or '--create-example' is required.")
+
+        if options.type == 'MQTTSubscribe' and options.enable and len(sys.argv) > 2:
+            parser.error("'--enable' is mutually exclusive with all other options.")
+
+        if options.type and options.output and options.export:
+            parser.error("'--output' is mutually exclusive with '--create-example'")
+
+        if options.type == 'service':
+            self.section = 'MQTTSubscribeService'
+        elif options.type == 'driver':
+            self.section = 'MQTTSubscribeDriver'
+        else:
+            self.section = None
+
+        self.config_spec = configobj.ConfigObj(CONFIG_SPEC_TEXT.splitlines())
+
+        self.config_input_dict = None
+        self.config_dict = None
+        self.config_output_path = None
+        self.oputput_path = None
+        self.action = None
+        self.enable = None
+
+        if options.type:
+            self._setup_subcommand(options)
+        elif options.create_example:
+            self.action = '--create-example'
+            self.config_output_path = os.path.abspath(options.create_example)
+
+        if options.type and options.no_backup and self.action in self.no_update_actions:
+            parser.error(f"'--output' is mutually exclusive with '{self.no_update_actions}'")
+
+        if options.type:
+            self.no_backup = options.no_backup
+
+    def _setup_subcommand(self, options):
+        if options.conf:
+            config_path = os.path.abspath(options.conf)
+            self.config_dict = configobj.ConfigObj(config_path, encoding='utf-8', file_error=True)
+            self.oputput_path = config_path
+
+        config_input = None
+        if options.add_from:
+            self.action = '--add-from'
+            config_input = options.add_from
+        elif options.export:
+            self.action = '--export'
+            self.config_output_path = os.path.abspath(options.export)
+        elif options.print_configspec:
+            self.action = '--print-configspec'
+            self.config_output_path = os.path.abspath(options.print_configspec)
+        if options.replace_with:
+            self.action = '--replace-with'
+            config_input = options.replace_with
+        if options.validate:
+            self.action = '--validate'
+        if options.update_from:
+            self.action = '--update-from'
+            config_input = options.update_from
+
+        if options.type == 'service' and options.enable:
+            self.enable = to_bool(options.enable)
+
+        if options.output:
+            self.config_output_path = os.path.abspath(options.output)
+
+        if config_input:
+            config_input_path = os.path.abspath(config_input)
+            config_input_dict = configobj.ConfigObj(config_input_path, encoding='utf-8', file_error=True)
+            self.config_input_dict = weeutil.config.deep_copy(config_input_dict[self.section])
+
+    def run(self):
+        ''' Update the configuration. '''
+        if self.action == '--add-from':
+            weeutil.config.conditional_merge(self.config_dict[self.section], self.config_input_dict)
+        elif self.action == '--create-example':
+            mqttsubscribe_configuration = MQTTSubscribeConfiguration(None)
+            default_configuration = mqttsubscribe_configuration.default_config
+            default_configuration.filename = self.config_output_path
+            default_configuration.write()
+        elif self.action == '--export':
+            export_dict = {}
+            export_dict[self.section] = self.config_dict[self.section]
+            export_config = configobj.ConfigObj(export_dict)
+            export_config.filename = self.config_output_path
+            export_config.write()
+        elif self.action == '--print-configspec':
+            self.config_spec.filename = self.config_output_path
+            self.config_spec.write()
+        elif self.action == '--replace-with':
+            del self.config_dict[self.section]
+            self.config_dict[self.section] = self.config_input_dict
+        elif self.action == '--validate':
+            self._validate("", "", self.config_dict[self.section], self.config_spec['MQTTSubscribe'])
+        elif self.action == '--update-from':
+            self.config_dict[self.section] = self.config_input_dict
+        else:
+            conf_editor = MQTTSubscribeDriverConfEditor()
+            conf_editor.existing_options = self.config_dict.get(self.section, {})
+            settings = conf_editor.prompt_for_settings()
+            # copy the keys that have been configured/channged, similar to weecfg.modify_config
+            for key, value in settings.items():
+                self.config_dict[self.section][key] = value
+
+        if self.section == 'MQTTSubscribService' and self.enable is not None:
+            self.config_dict[self.section]['enable'] = self.enable
+
+        if self.action not in self.no_update_actions:
+            weecfg.save(self.config_dict, self.config_output_path, not self.no_backup)
+            #self.config_dict.filename = self.config_output_path
+            #self.config_dict.write()
+
+    def _validate(self, parent, hierarchy, section, section_configspec):
+        hierarchy += f"{section.name}-"
+        for key, value in section.items():
+            if key in section.sections:
+                continue
+            if key not in section_configspec:
+                print(f"ERROR: Unknown option: {hierarchy}{key}")
+            if "REPLACE_ME" in value:
+                print(f"ERROR: Specify a value for: {hierarchy}{key}")
+
+        for subsection in section.sections:
+            if "REPLACE_ME" in subsection:
+                print(f"ERROR: Specify a value for: {hierarchy}{subsection}")
+            elif subsection not in section_configspec.sections and parent == 'subfields':
+                self._validate(subsection,
+                               hierarchy,
+                               section[subsection],
+                               self.config_spec['MQTTSubscribe']['topics']['REPLACE_ME']["REPLACE_ME"])
+            elif subsection not in section_configspec.sections:
+                if "REPLACE_ME" in section_configspec.sections:
+                    self._validate(subsection, hierarchy, section[subsection], section_configspec["REPLACE_ME"])
+                else:
+                    print(f"ERROR: Unknown option: {hierarchy}{subsection}")
+            else:
+                self._validate(subsection, hierarchy, section[subsection], section_configspec[subsection])
+
 # To Run
 # setup.py install:
 # PYTHONPATH=/home/weewx/bin python /home/weewx/bin/user/MQTTSubscribe.py
@@ -2414,11 +2774,29 @@ class Simulator():
 if __name__ == '__main__': # pragma: no cover
     def main():
         """ Run it."""
+
         print("start")
-        simulator = Simulator()
-        simulator.init_configuration()
-        simulator.init_weewx()
-        simulator.run()
+        parser = argparse.ArgumentParser()
+        parser.add_argument('--version', action='version', version=f"MQTTSubscribe version is {VERSION}")
+
+        subparsers = parser.add_subparsers(dest='command')
+
+        Simulator.add_parsers(subparsers)
+        configurator_subparser = Configurator.add_parsers(subparsers)
+
+        options = parser.parse_args()
+
+        if options.command == 'simulate':
+            simulator = Simulator(options)
+            simulator.init_configuration()
+            simulator.init_weewx()
+            simulator.run()
+        elif options.command == 'configure':
+            configurator = Configurator(configurator_subparser, options)
+            configurator.run()
+        else:
+            parser.print_help()
+
         print("done")
 
     main()

@@ -22,6 +22,8 @@ else
     TEST=$3
 fi
 
+./devtools/itest.sh $WEEWX_VERSION $PY_VERSION $TEST
+
 while inotifywait -e modify devtools/watchitest.sh devtools/itest.sh bin/user/MQTTSubscribe.py bin/user/tests/integ/utils.py bin/user/tests/integ/data bin/user/tests/integ/$TEST
 do
     ./devtools/itest.sh $WEEWX_VERSION $PY_VERSION $TEST

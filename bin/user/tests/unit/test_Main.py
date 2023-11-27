@@ -55,7 +55,7 @@ class test_simulate_driver(unittest.TestCase):
         options.topics = random_string()
         options.host = random_string()
         options.console = random_string()
-        options.config_file = random_string()
+        options.conf = random_string()
         options.verbose = random_string()
 
         mock_driver = mock.Mock()
@@ -65,25 +65,20 @@ class test_simulate_driver(unittest.TestCase):
         mock_driver.genLoopPackets.return_value = [data]
         driver_loader_stub = DriverLoaderStub(mock_driver)
 
-        with mock.patch('user.MQTTSubscribe.argparse') as mock_argparse:
-            with mock.patch('user.MQTTSubscribe.print'):
-                with mock.patch('user.MQTTSubscribe.time') as mock_time:
-                    with mock.patch('user.MQTTSubscribe.weeutil'):
-                        with mock.patch('user.MQTTSubscribe.to_sorted_string'):
-                            with mock.patch(f'{builtins_module_name}.__import__'):
-                                with mock.patch.dict(sys.modules, {'user.MQTTSubscribe':driver_loader_stub}):
-                                    mock_parser = mock.Mock()
-                                    mock_parser.parse_args.return_value = options
-                                    mock_argparse.ArgumentParser.return_value = mock_parser
+        with mock.patch('user.MQTTSubscribe.print'):
+            with mock.patch('user.MQTTSubscribe.time') as mock_time:
+                with mock.patch('user.MQTTSubscribe.weeutil'):
+                    with mock.patch('user.MQTTSubscribe.to_sorted_string'):
+                        with mock.patch(f'{builtins_module_name}.__import__'):
+                            with mock.patch.dict(sys.modules, {'user.MQTTSubscribe':driver_loader_stub}):
+                                mock_time.time.return_value = current_time
 
-                                    mock_time.time.return_value = current_time
+                                SUT = user.MQTTSubscribe.Simulator(options)
 
-                                    SUT = user.MQTTSubscribe.Simulator()
+                                SUT.run()
 
-                                    SUT.run()
-
-                                    mock_time.sleep.assert_called_once_with(sleep_amount)
-                                    mock_driver.genArchiveRecords.assert_called_once_with(end_period_ts)
+                                mock_time.sleep.assert_called_once_with(sleep_amount)
+                                mock_driver.genArchiveRecords.assert_called_once_with(end_period_ts)
 
     @staticmethod
     def test_simulate_loop():
@@ -102,7 +97,7 @@ class test_simulate_driver(unittest.TestCase):
         options.topics = random_string()
         options.host = random_string()
         options.console = random_string()
-        options.config_file = random_string()
+        options.conf = random_string()
         options.verbose = random_string()
 
         mock_driver = mock.Mock()
@@ -112,21 +107,17 @@ class test_simulate_driver(unittest.TestCase):
         mock_driver.genLoopPackets.return_value = [data]
         driver_loader_stub = DriverLoaderStub(mock_driver)
 
-        with mock.patch('user.MQTTSubscribe.argparse') as mock_argparse:
-            with mock.patch('user.MQTTSubscribe.print'):
-                with mock.patch('user.MQTTSubscribe.weeutil'):
-                    with mock.patch('user.MQTTSubscribe.to_sorted_string'):
-                        with mock.patch(f'{builtins_module_name}.__import__'):
-                            with mock.patch.dict(sys.modules, {'user.MQTTSubscribe':driver_loader_stub}):
-                                mock_parser = mock.Mock()
-                                mock_parser.parse_args.return_value = options
-                                mock_argparse.ArgumentParser.return_value = mock_parser
+        with mock.patch('user.MQTTSubscribe.print'):
+            with mock.patch('user.MQTTSubscribe.weeutil'):
+                with mock.patch('user.MQTTSubscribe.to_sorted_string'):
+                    with mock.patch(f'{builtins_module_name}.__import__'):
+                        with mock.patch.dict(sys.modules, {'user.MQTTSubscribe':driver_loader_stub}):
 
-                                SUT = user.MQTTSubscribe.Simulator()
+                            SUT = user.MQTTSubscribe.Simulator(options)
 
-                                SUT.run()
+                            SUT.run()
 
-                                mock_driver.genLoopPackets.assert_called_once()
+                            mock_driver.genLoopPackets.assert_called_once()
 
 class test_simulate_service(unittest.TestCase):
     @staticmethod
@@ -153,33 +144,29 @@ class test_simulate_service(unittest.TestCase):
         options.topics = random_string()
         options.host = random_string()
         options.console = random_string()
-        options.config_file = random_string()
+        options.conf = random_string()
         options.verbose = random_string()
 
-        with mock.patch('user.MQTTSubscribe.argparse') as mock_argparse:
-            with mock.patch('user.MQTTSubscribe.print'):
-                with mock.patch('user.MQTTSubscribe.time') as mock_time:
-                    with mock.patch('user.MQTTSubscribe.MQTTSubscribeService'):
-                        with mock.patch('user.MQTTSubscribe.weewx'):
-                            with mock.patch('user.MQTTSubscribe.weeutil'):
-                                with mock.patch('user.MQTTSubscribe.to_sorted_string'):
-                                    mock_parser = mock.Mock()
-                                    mock_parser.parse_args.return_value = options
-                                    mock_argparse.ArgumentParser.return_value = mock_parser
+        with mock.patch('user.MQTTSubscribe.print'):
+            with mock.patch('user.MQTTSubscribe.time') as mock_time:
+                with mock.patch('user.MQTTSubscribe.MQTTSubscribeService'):
+                    with mock.patch('user.MQTTSubscribe.weewx'):
+                        with mock.patch('user.MQTTSubscribe.weeutil'):
+                            with mock.patch('user.MQTTSubscribe.to_sorted_string'):
 
-                                    mock_time.time.return_value = current_time
+                                mock_time.time.return_value = current_time
 
-                                    SUT = user.MQTTSubscribe.Simulator()
+                                SUT = user.MQTTSubscribe.Simulator(options)
 
-                                    mock_engine = mock.Mock()
-                                    SUT.engine = mock_engine
-                                    SUT.config_dict = {}
-                                    SUT.config_dict['MQTTSubscribeDriver'] = {}
+                                mock_engine = mock.Mock()
+                                SUT.engine = mock_engine
+                                SUT.config_dict = {}
+                                SUT.config_dict['MQTTSubscribeDriver'] = {}
 
-                                    SUT.run()
+                                SUT.run()
 
-                                    mock_time.sleep.assert_called_once_with(sleep_amount)
-                                    mock_engine.dispatchEvent.assert_called_once()
+                                mock_time.sleep.assert_called_once_with(sleep_amount)
+                                mock_engine.dispatchEvent.assert_called_once()
 
     @staticmethod
     def test_simulate_loop():
@@ -205,32 +192,28 @@ class test_simulate_service(unittest.TestCase):
         options.topics = random_string()
         options.host = random_string()
         options.console = random_string()
-        options.config_file = random_string()
+        options.conf = random_string()
         options.verbose = random_string()
 
-        with mock.patch('user.MQTTSubscribe.argparse') as mock_argparse:
-            with mock.patch('user.MQTTSubscribe.print'):
-                with mock.patch('user.MQTTSubscribe.time') as mock_time:
-                    with mock.patch('user.MQTTSubscribe.MQTTSubscribeService'):
-                        with mock.patch('user.MQTTSubscribe.weewx'):
-                            with mock.patch('user.MQTTSubscribe.weeutil'):
-                                with mock.patch('user.MQTTSubscribe.to_sorted_string'):
-                                    mock_parser = mock.Mock()
-                                    mock_parser.parse_args.return_value = options
-                                    mock_argparse.ArgumentParser.return_value = mock_parser
+        with mock.patch('user.MQTTSubscribe.print'):
+            with mock.patch('user.MQTTSubscribe.time') as mock_time:
+                with mock.patch('user.MQTTSubscribe.MQTTSubscribeService'):
+                    with mock.patch('user.MQTTSubscribe.weewx'):
+                        with mock.patch('user.MQTTSubscribe.weeutil'):
+                            with mock.patch('user.MQTTSubscribe.to_sorted_string'):
 
-                                    mock_time.time.return_value = current_time
+                                mock_time.time.return_value = current_time
 
-                                    SUT = user.MQTTSubscribe.Simulator()
+                                SUT = user.MQTTSubscribe.Simulator(options)
 
-                                    mock_engine = mock.Mock()
-                                    SUT.engine = mock_engine
-                                    SUT.config_dict = {}
-                                    SUT.config_dict['MQTTSubscribeDriver'] = {}
+                                mock_engine = mock.Mock()
+                                SUT.engine = mock_engine
+                                SUT.config_dict = {}
+                                SUT.config_dict['MQTTSubscribeDriver'] = {}
 
-                                    SUT.run()
-                                    mock_time.sleep.assert_called_once_with(sleep_amount)
-                                    mock_engine.dispatchEvent.assert_called_once()
+                                SUT.run()
+                                mock_time.sleep.assert_called_once_with(sleep_amount)
+                                mock_engine.dispatchEvent.assert_called_once()
 
 class test_init_config(unittest.TestCase):
     def test_init_topics(self):
@@ -267,60 +250,56 @@ class test_init_config(unittest.TestCase):
         options.host = None
         options.console = None
 
-        options.type = None
+        options.type = random_string()
         options.record_count = random.randint(1, 99)
         options.interval = random.randint(1, 99)
         options.delay = random.randint(1, 99)
         options.units = None
 
-        options.config_file = random_string()
+        options.conf = random_string()
         options.verbose = random_string()
 
-        with mock.patch('user.MQTTSubscribe.argparse') as mock_argparse:
-            with mock.patch('user.MQTTSubscribe.print'):
-                with mock.patch('user.MQTTSubscribe.os'):
-                    with mock.patch('user.MQTTSubscribe.configobj') as mock_configobj:
-                        with mock.patch('user.MQTTSubscribe.weeutil'):
-                            with mock.patch('user.MQTTSubscribe.merge_config') as mock_merge_config:
-                                mock_parser = mock.Mock()
-                                mock_parser.parse_args.return_value = options
-                                mock_argparse.ArgumentParser.return_value = mock_parser
+        with mock.patch('user.MQTTSubscribe.print'):
+            with mock.patch('user.MQTTSubscribe.os'):
+                with mock.patch('user.MQTTSubscribe.configobj') as mock_configobj:
+                    with mock.patch('user.MQTTSubscribe.weeutil'):
+                        with mock.patch('user.MQTTSubscribe.merge_config') as mock_merge_config:
 
-                                mock_configobj.ConfigObj.return_value = config_dict
+                            mock_configobj.ConfigObj.return_value = config_dict
 
-                                SUT = user.MQTTSubscribe.Simulator()
+                            SUT = user.MQTTSubscribe.Simulator(options)
 
-                                SUT.init_configuration()
+                            SUT.init_configuration()
 
-                                call_args_list = mock_merge_config.call_args_list
+                            call_args_list = mock_merge_config.call_args_list
 
-                                self.assertEqual(len(call_args_list), 1 + (2 * topic_count))
-                                self.assertEqual(call_args_list[0].args[0], config_dict)
-                                self.assertEqual(call_args_list[0].args[1], MQTTSubscribeService_binding_config)
+                            self.assertEqual(len(call_args_list), 1 + (2 * topic_count))
+                            self.assertEqual(call_args_list[0].args[0], config_dict)
+                            self.assertEqual(call_args_list[0].args[1], MQTTSubscribeService_binding_config)
 
-                                i = 0
-                                while i < topic_count:
-                                    MQTTSubscribeService_topic_config = {
-                                        'MQTTSubscribeService': {
-                                            'topics':  {
-                                                topics[i]: {}
-                                            }
+                            i = 0
+                            while i < topic_count:
+                                MQTTSubscribeService_topic_config = {
+                                    'MQTTSubscribeService': {
+                                        'topics':  {
+                                            topics[i]: {}
                                         }
                                     }
+                                }
 
-                                    MQTTSubscribeDriver_topic_config = {
-                                        'MQTTSubscribeDriver': {
-                                            'topics': {
-                                                topics[i]: {}
-                                            }
+                                MQTTSubscribeDriver_topic_config = {
+                                    'MQTTSubscribeDriver': {
+                                        'topics': {
+                                            topics[i]: {}
                                         }
                                     }
+                                }
 
-                                    self.assertEqual(call_args_list[2*i+1].args[0], config_dict)
-                                    self.assertEqual(call_args_list[2*i+1].args[1], MQTTSubscribeService_topic_config)
-                                    self.assertEqual(call_args_list[2*i+2].args[0], config_dict)
-                                    self.assertEqual(call_args_list[2*i+2].args[1], MQTTSubscribeDriver_topic_config)
-                                    i += 1
+                                self.assertEqual(call_args_list[2*i+1].args[0], config_dict)
+                                self.assertEqual(call_args_list[2*i+1].args[1], MQTTSubscribeService_topic_config)
+                                self.assertEqual(call_args_list[2*i+2].args[0], config_dict)
+                                self.assertEqual(call_args_list[2*i+2].args[1], MQTTSubscribeDriver_topic_config)
+                                i += 1
 
     def test_init_host(self):
         config_dict = {}
@@ -352,40 +331,35 @@ class test_init_config(unittest.TestCase):
         options.host = host
         options.console = None
 
-        options.type = None
+        options.type = random_string()
         options.record_count = random.randint(1, 99)
         options.interval = random.randint(1, 99)
         options.delay = random.randint(1, 99)
         options.units = None
 
-        options.config_file = random_string()
+        options.conf = random_string()
         options.verbose = random_string()
 
-        with mock.patch('user.MQTTSubscribe.argparse') as mock_argparse:
-            with mock.patch('user.MQTTSubscribe.print'):
-                with mock.patch('user.MQTTSubscribe.os'):
-                    with mock.patch('user.MQTTSubscribe.configobj') as mock_configobj:
-                        with mock.patch('user.MQTTSubscribe.weeutil'):
-                            with mock.patch('user.MQTTSubscribe.merge_config') as mock_merge_config:
-                                mock_parser = mock.Mock()
-                                mock_parser.parse_args.return_value = options
-                                mock_argparse.ArgumentParser.return_value = mock_parser
+        with mock.patch('user.MQTTSubscribe.print'):
+            with mock.patch('user.MQTTSubscribe.os'):
+                with mock.patch('user.MQTTSubscribe.configobj') as mock_configobj:
+                    with mock.patch('user.MQTTSubscribe.weeutil'):
+                        with mock.patch('user.MQTTSubscribe.merge_config') as mock_merge_config:
+                            mock_configobj.ConfigObj.return_value = config_dict
 
-                                mock_configobj.ConfigObj.return_value = config_dict
+                            SUT = user.MQTTSubscribe.Simulator(options)
 
-                                SUT = user.MQTTSubscribe.Simulator()
+                            SUT.init_configuration()
 
-                                SUT.init_configuration()
+                            call_args_list = mock_merge_config.call_args_list
 
-                                call_args_list = mock_merge_config.call_args_list
-
-                                self.assertEqual(len(call_args_list), 3)
-                                self.assertEqual(call_args_list[0].args[0], config_dict)
-                                self.assertEqual(call_args_list[0].args[1], MQTTSubscribeService_binding_config)
-                                self.assertEqual(call_args_list[1].args[0], config_dict)
-                                self.assertEqual(call_args_list[1].args[1], MQTTSubscribeService_host_config)
-                                self.assertEqual(call_args_list[2].args[0], config_dict)
-                                self.assertEqual(call_args_list[2].args[1], MQTTSubscribeDriver_host_config)
+                            self.assertEqual(len(call_args_list), 3)
+                            self.assertEqual(call_args_list[0].args[0], config_dict)
+                            self.assertEqual(call_args_list[0].args[1], MQTTSubscribeService_binding_config)
+                            self.assertEqual(call_args_list[1].args[0], config_dict)
+                            self.assertEqual(call_args_list[1].args[1], MQTTSubscribeService_host_config)
+                            self.assertEqual(call_args_list[2].args[0], config_dict)
+                            self.assertEqual(call_args_list[2].args[1], MQTTSubscribeDriver_host_config)
 
     def test_init_callback(self):
         config_dict = {}
@@ -421,40 +395,35 @@ class test_init_config(unittest.TestCase):
         options.host = None
         options.console = None
 
-        options.type = None
+        options.type = random_string()
         options.record_count = random.randint(1, 99)
         options.interval = random.randint(1, 99)
         options.delay = random.randint(1, 99)
         options.units = None
 
-        options.config_file = random_string()
+        options.conf = random_string()
         options.verbose = random_string()
 
-        with mock.patch('user.MQTTSubscribe.argparse') as mock_argparse:
-            with mock.patch('user.MQTTSubscribe.print'):
-                with mock.patch('user.MQTTSubscribe.os'):
-                    with mock.patch('user.MQTTSubscribe.configobj') as mock_configobj:
-                        with mock.patch('user.MQTTSubscribe.weeutil'):
-                            with mock.patch('user.MQTTSubscribe.merge_config') as mock_merge_config:
-                                mock_parser = mock.Mock()
-                                mock_parser.parse_args.return_value = options
-                                mock_argparse.ArgumentParser.return_value = mock_parser
+        with mock.patch('user.MQTTSubscribe.print'):
+            with mock.patch('user.MQTTSubscribe.os'):
+                with mock.patch('user.MQTTSubscribe.configobj') as mock_configobj:
+                    with mock.patch('user.MQTTSubscribe.weeutil'):
+                        with mock.patch('user.MQTTSubscribe.merge_config') as mock_merge_config:
+                            mock_configobj.ConfigObj.return_value = config_dict
 
-                                mock_configobj.ConfigObj.return_value = config_dict
+                            SUT = user.MQTTSubscribe.Simulator(options)
 
-                                SUT = user.MQTTSubscribe.Simulator()
+                            SUT.init_configuration()
 
-                                SUT.init_configuration()
+                            call_args_list = mock_merge_config.call_args_list
 
-                                call_args_list = mock_merge_config.call_args_list
-
-                                self.assertEqual(len(call_args_list), 3)
-                                self.assertEqual(call_args_list[0].args[0], config_dict)
-                                self.assertEqual(call_args_list[0].args[1], MQTTSubscribeService_binding_config)
-                                self.assertEqual(call_args_list[1].args[0], config_dict)
-                                self.assertEqual(call_args_list[1].args[1], MQTTSubscribeService_callback_config)
-                                self.assertEqual(call_args_list[2].args[0], config_dict)
-                                self.assertEqual(call_args_list[2].args[1], MQTTSubscribeDriver_callback_config)
+                            self.assertEqual(len(call_args_list), 3)
+                            self.assertEqual(call_args_list[0].args[0], config_dict)
+                            self.assertEqual(call_args_list[0].args[1], MQTTSubscribeService_binding_config)
+                            self.assertEqual(call_args_list[1].args[0], config_dict)
+                            self.assertEqual(call_args_list[1].args[1], MQTTSubscribeService_callback_config)
+                            self.assertEqual(call_args_list[2].args[0], config_dict)
+                            self.assertEqual(call_args_list[2].args[1], MQTTSubscribeDriver_callback_config)
 
     def test_init_console(self):
         config_dict = {}
@@ -485,40 +454,35 @@ class test_init_config(unittest.TestCase):
         options.host = None
         options.console = random_string()
 
-        options.type = None
+        options.type = random_string()
         options.record_count = random.randint(1, 99)
         options.interval = random.randint(1, 99)
         options.delay = random.randint(1, 99)
         options.units = None
 
-        options.config_file = random_string()
+        options.conf = random_string()
         options.verbose = random_string()
 
-        with mock.patch('user.MQTTSubscribe.argparse') as mock_argparse:
-            with mock.patch('user.MQTTSubscribe.print'):
-                with mock.patch('user.MQTTSubscribe.os'):
-                    with mock.patch('user.MQTTSubscribe.configobj') as mock_configobj:
-                        with mock.patch('user.MQTTSubscribe.weeutil'):
-                            with mock.patch('user.MQTTSubscribe.merge_config') as mock_merge_config:
-                                mock_parser = mock.Mock()
-                                mock_parser.parse_args.return_value = options
-                                mock_argparse.ArgumentParser.return_value = mock_parser
+        with mock.patch('user.MQTTSubscribe.print'):
+            with mock.patch('user.MQTTSubscribe.os'):
+                with mock.patch('user.MQTTSubscribe.configobj') as mock_configobj:
+                    with mock.patch('user.MQTTSubscribe.weeutil'):
+                        with mock.patch('user.MQTTSubscribe.merge_config') as mock_merge_config:
+                            mock_configobj.ConfigObj.return_value = config_dict
 
-                                mock_configobj.ConfigObj.return_value = config_dict
+                            SUT = user.MQTTSubscribe.Simulator(options)
 
-                                SUT = user.MQTTSubscribe.Simulator()
+                            SUT.init_configuration()
 
-                                SUT.init_configuration()
+                            call_args_list = mock_merge_config.call_args_list
 
-                                call_args_list = mock_merge_config.call_args_list
-
-                                self.assertEqual(len(call_args_list), 3)
-                                self.assertEqual(call_args_list[0].args[0], config_dict)
-                                self.assertEqual(call_args_list[0].args[1], MQTTSubscribeService_binding_config)
-                                self.assertEqual(call_args_list[1].args[0], config_dict)
-                                self.assertEqual(call_args_list[1].args[1], MQTTSubscribeService_console_config)
-                                self.assertEqual(call_args_list[2].args[0], config_dict)
-                                self.assertEqual(call_args_list[2].args[1], MQTTSubscribeDriver_console_config)
+                            self.assertEqual(len(call_args_list), 3)
+                            self.assertEqual(call_args_list[0].args[0], config_dict)
+                            self.assertEqual(call_args_list[0].args[1], MQTTSubscribeService_binding_config)
+                            self.assertEqual(call_args_list[1].args[0], config_dict)
+                            self.assertEqual(call_args_list[1].args[1], MQTTSubscribeService_console_config)
+                            self.assertEqual(call_args_list[2].args[0], config_dict)
+                            self.assertEqual(call_args_list[2].args[1], MQTTSubscribeDriver_console_config)
 
 if __name__ == '__main__':
     # test_suite = unittest.TestSuite()
