@@ -2723,7 +2723,9 @@ class Configurator():
             conf_editor = MQTTSubscribeDriverConfEditor()
             conf_editor.existing_options = self.config_dict.get(self.section, {})
             settings = conf_editor.prompt_for_settings()
-            self.config_dict[self.section] = settings
+            # copy the keys that have been configured/channged, similar to weecfg.modify_config
+            for key, value in settings.items():
+                self.config_dict[self.section][key] = value
 
         if self.section == 'MQTTSubscribService' and self.enable is not None:
             self.config_dict[self.section]['enable'] = self.enable
