@@ -2220,6 +2220,9 @@ class MQTTSubscribeDriverConfEditor(weewx.drivers.AbstractConfEditor): # pragma:
                 continue
 
             settings[key] = {}
+            print("")
+            print(f"Configuring section '{key}'")
+            print("")
             self._configure(section[key], settings[key])
 
 class MQTTSubscribeConfiguration():
