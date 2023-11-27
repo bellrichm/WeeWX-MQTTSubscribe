@@ -2195,19 +2195,22 @@ class MQTTSubscribeDriverConfEditor(weewx.drivers.AbstractConfEditor): # pragma:
         print("Enter the units for MQTT payloads without unit value: US|METRIC|METRICWX")
         settings['topics']['unit_system'] = self._prompt('unit_system', 'US', ['US', 'METRIC', 'METRICWX'])
 
-
-        topic = 'REPLACE_ME'
-        while topic:
-            print("Enter a topic to subscribe to. Leave blank when done.")
-            topic = self._prompt('topic')
-            if topic:
-                settings['topics'][topic] = {}
-                settings['topics'][topic]['message'] = {}
-                print("Enter the MQTT paylod type: individual|json|keyword")
-                settings['topics'][topic]['message']['type'] = self._prompt('type', 'json', ['individual', 'json', 'keyword'])
-            else:
-                if len(settings['topics']) == 1:
-                    topic = 'REPLACE_ME'
+        if len(self.existing_options['topics']) > 1:
+            print("Topics have been configured, currently these cannot be changed interactively.")
+            settings['topics'] = self.existing_options['topics']
+        else:
+            topic = 'REPLACE_ME'
+            while topic:
+                print("Enter a topic to subscribe to. Leave blank when done.")
+                topic = self._prompt('topic')
+                if topic:
+                    settings['topics'][topic] = {}
+                    settings['topics'][topic]['message'] = {}
+                    print("Enter the MQTT paylod type: individual|json|keyword")
+                    settings['topics'][topic]['message']['type'] = self._prompt('type', 'json', ['individual', 'json', 'keyword'])
+                else:
+                    if len(settings['topics']) == 1:
+                        topic = 'REPLACE_ME'
 
         return settings
 
