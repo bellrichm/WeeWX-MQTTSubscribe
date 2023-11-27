@@ -33,69 +33,41 @@ CONFIG_SPEC_TEXT = \
     # Only used by the driver.
     driver = user.MQTTSubscribe
 
+    # Turn the service on and off.
+    # Default is true.
+    # Only used by the service.
+    enable = false    
+
+    # The binding, loop or archive.
+    # Default is loop.
+    # Only used by the service.
+    binding = loop    
+
     # The MQTT server.
     # Default is localhost.
     host = localhost
-
-    # The port to connect to.
-    # Default is 1883.
-    port = 1883
 
     # Maximum period in seconds allowed between communications with the broker.
     # Default is 60.
     keepalive = 60
 
-    # username for broker authentication.
-    # Default is None.
-    username = None
-
-    # The minimum time in seconds that the client will wait before trying to reconnect.
-    # Default is 1
-    min_delay = 1
-
-    # The maximum time in seconds that the client will wait before trying to reconnect.
-    # Default is 120
-    max_delay = 120
+    # Controls the MQTT logging.
+    # Default is false.
+    log = false
 
     # password for broker authentication.
     # Default is None.
     password = None
 
-    # The MQTT clean_session setting.
-    # Default is True
-    clean_session = True
+    # The port to connect to.
+    # Default is 1883.
+    port = 1883
 
-    # Controls the MQTT logging.
-    # Default is false.
-    log = false
+    # username for broker authentication.
+    # Default is None.
+    username = None
 
-    # The clientid to connect with.
-    # Service default is MQTTSubscribeService-xxxx.
-    # Driver default is MQTTSubscribeDriver-xxxx.
-    #    Where xxxx is a random number between 1000 and 9999.
-    clientid =
-
-    # Turn the service on and off.
-    # Default is true.
-    # Only used by the service.
-    enable = false
-
-    # The binding, loop or archive.
-    # Default is loop.
-    # Only used by the service.
-    binding = loop
-
-    # When the MQTT queue has no data, the amount of time in seconds to wait
-    # before checking again.
-    # Default is 2.
-    # Only used by the driver
-    wait_before_retry = 2
-
-    # When no loop packet has been generated in max_loop_interval, MQTTSubscribeDriver will generate an 'empty' packet.
-    # This can be useful to ensure that archive processing regulary happens when the MQTT payload arrives very irregularly.
-    # Default is 0 (off).
-    # Only used by the driver
-    max_loop_interval= 0
+    # Less common options follow
 
     # Payload in this topic is processed like an archive record.
     # Default is None.
@@ -107,9 +79,39 @@ CONFIG_SPEC_TEXT = \
     # Only used when the archive_topic is set and MQTTSubscribe is running in 'hardware generation' mode.
     archive_interval = 300
 
+    # The MQTT clean_session setting.
+    # Default is True
+    clean_session = True
+
+    # The clientid to connect with.
+    # Service default is MQTTSubscribeService-xxxx.
+    # Driver default is MQTTSubscribeDriver-xxxx.
+    #    Where xxxx is a random number between 1000 and 9999.
+    clientid =
+
     # The name of a file to log to.
     # The default is None.
     logging_filename = None
+
+    # The maximum time in seconds that the client will wait before trying to reconnect.
+    # Default is 120
+    max_delay = 120
+
+    # When no loop packet has been generated in max_loop_interval, MQTTSubscribeDriver will generate an 'empty' packet.
+    # This can be useful to ensure that archive processing regulary happens when the MQTT payload arrives very irregularly.
+    # Default is 0 (off).
+    # Only used by the driver
+    max_loop_interval= 0
+
+    # The minimum time in seconds that the client will wait before trying to reconnect.
+    # Default is 1
+    min_delay = 1    
+
+    # When the MQTT queue has no data, the amount of time in seconds to wait
+    # before checking again.
+    # Default is 2.
+    # Only used by the driver
+    wait_before_retry = 2
 
     # The TLS options that are passed to tls_set method of the MQTT client.
     # For additional information see, https://eclipse.org/paho/clients/python/docs/strptime-format-codes
@@ -2291,8 +2293,11 @@ class MQTTSubscribeConfiguration():
             'units': ['MQTTSubscribe', 'topics', 'REPLACE_ME', 'REPLACE_ME'],
         }
 
-        if self.section != 'MQTTSubscribeDriver':
+        if self.section and self.section != 'MQTTSubscribeDriver':
             del config_spec['MQTTSubscribe']['driver']
+
+        if self.section and self.section != 'MQTTSubscribeService':
+            del config_spec['MQTTSubscribe']['enable']
 
         for remove_item, _ in remove_items.items():
             current_section = config_spec
