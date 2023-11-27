@@ -22,6 +22,9 @@ def random_string(length=32):
 def random_ascii_letters(length=32):
     return''.join([random.choice(string.ascii_letters) for n in range(length)]) # pylint: disable=unused-variable
 
+class weecfg:
+    pass
+
 class weeutil:
     class config:
         def merge_config(self):
@@ -35,9 +38,6 @@ class weeutil:
             self.maps.append(m)
         def prepend(self, m):
             self.maps.insert(0, m)
-
-    class weecfg:
-        pass
 
     class weeutil:
         class TimeSpan(tuple):
