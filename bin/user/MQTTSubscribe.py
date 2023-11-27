@@ -2172,6 +2172,10 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice):
 
 class MQTTSubscribeDriverConfEditor(weewx.drivers.AbstractConfEditor): # pragma: no cover
     """ Methods for producing and updating configuration stanzas for use in configuration file. """
+    def __init__(self):
+        self.mqttsubscribe_configuration = MQTTSubscribeConfiguration('MQTTSubscribeDriver')
+        super().__init__()
+
     @property
     def default_stanza(self):
         """ The default configuration stanza. """
@@ -2180,25 +2184,15 @@ class MQTTSubscribeDriverConfEditor(weewx.drivers.AbstractConfEditor): # pragma:
 
     def prompt_for_settings(self):
         """ Prompt for settings required for proper operation of this driver. """
+        default_config = self.mqttsubscribe_configuration.default_config
+
         settings = {}
-        settings['topics'] = {}
-
-        print("Enter the host.")
-        settings['host'] = self._prompt('host', 'localhost')
-
-        print("Enter the port on the host.")
-        settings['port'] = self._prompt('port', '1883')
-
-        print("Enter the maximum period in seconds allowed between communications with the broker.")
-        settings['keepalive'] = self._prompt('keepalive', '60')
-
-        print("Enter the units for MQTT payloads without unit value: US|METRIC|METRICWX")
-        settings['topics']['unit_system'] = self._prompt('unit_system', 'US', ['US', 'METRIC', 'METRICWX'])
+        self._configure(default_config['MQTTSubscribeDriver'], settings)
 
         if len(self.existing_options['topics']) > 1:
             print("Topics have been configured, currently these cannot be changed interactively.")
-            settings['topics'] = self.existing_options['topics']
         else:
+            settings['topics'] = {}
             topic = 'REPLACE_ME'
             while topic:
                 print("Enter a topic to subscribe to. Leave blank when done.")
@@ -2213,6 +2207,20 @@ class MQTTSubscribeDriverConfEditor(weewx.drivers.AbstractConfEditor): # pragma:
                         topic = 'REPLACE_ME'
 
         return settings
+
+    def _configure(self, section, settings):
+        for key, _ in section.items():
+            if key not in section.sections:
+                for comment in section.comments[key]:
+                    print(comment.replace('#', '', 1).lstrip())
+                settings[key] = self._prompt(key, section[key])
+
+        for key in section.sections:
+            if key == 'topics':
+                continue
+
+            settings[key] = {}
+            self._configure(section[key], settings[key])
 
 class MQTTSubscribeConfiguration():
     """ Manage the MQTTSubscribe configuration. """
