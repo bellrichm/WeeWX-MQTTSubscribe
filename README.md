@@ -37,119 +37,43 @@ It can be controlled more granularly by setting adjust_end_time to the number of
 
 ## Installation notes
 
+**To install version 2.x and prior see,
+[Installing and Updating Version 2.X and Earlier](https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/Installing-and-updating-version-2.x-and-earlier).**
+
 **Note:** It is rare that MQTTSubscribe should be configured to run as both a `service` and `driver`.
 If you are augmenting an existing driver's data, run MQTTSubscribe as a `service`. Otherwise, run it as a `driver`.
 
-Because there are [multiple methods to install WeeWX](http://weewx.com/docs/usersguide.htm#installation_methods), location of files can vary.
-See [where to find things](http://weewx.com/docs/usersguide.htm#Where_to_find_things)
-in the WeeWX [User's Guide](http://weewx.com/docs/usersguide.htm") for the definitive information.
+Because there are multiple methods to install [WeeWX V5](https://weewx.com/docs/5.0/usersguide/installing/) and
+[WeeWX V4](http://weewx.com/docs/4.10/usersguide.htm#installing), location of files can vary.
+For [WeeWX V5 see](https://weewx.com/docs/5.0/usersguide/where/) and
+for [WeeWX V4 see](http://weewx.com/docs/4.10/usersguide.htm#Where_to_find_things) for the definitive information.
 The following symbolic names are used to define the various locations:
 
-* *$DOWNLOAD_ROOT* - The directory containing the downloaded *MQTTSubscribe* extension.
-* *$CONFIG_ROOT* - The directory where the configuration (typically, weewx.conf) is located.
+* *BIN_DIR*       - The directory containing the WeeWX executables.
+* *$CONFIG_DIR*   - The directory where the configuration (typically, weewx.conf) is located.
+* *$DOWNLOAD_DIR* - The directory containing the downloaded *MQTTSubscribe* extension.
+* *EXTENSION_DIR* - The directory containing the WeeWX extension, MQTTSubscribe.
 
-The notation vX.Y.Z designates the version being installed.
-X.Y.Z is the release.
+The notation vX.Y.Z designates the version of MQTTSubscribe being installed.
 
 Prior to making any updates/changes, always make a backup.
 
-## Preqrequisites
+## Prerequisites
 
-|WeeWX version   |Python version                               |
-|----------------|---------------------------------------------|
-|3.7.1 or greater|Python 2.7.x                                 |
-|4.0.0 or greater|Python 2.7.x <br>or<br> Python 3.5 or greater|
+* Python 3.7 or higher
+* [Paho MQTT Python client](https://pypi.org/project/paho-mqtt/)
 
-See the [current MQTTSubscribe build/test matrix](https://ci.appveyor.com/project/bellrichm/weewx-mqttsubscribe)
-for the current WeeWX and python versions being tested.
+## Installing with WeeWX Version 5.x
 
-Install the Paho MQTT python client.
+### WeeWX Version 5.x Package Install
 
-* For Debian based distributions (Ubuntu, Raspberry Pi OS, etc)
+### WeeWX Version 5.x pip Install
 
-    For python 3: `sudo apt-get install python3-paho-mqtt`
+## Installing with WeeWX Version 4.x
 
-    For python 2: `sudo apt-get install python-paho-mqtt`
+### WeeWX Version 4.x Package Install
 
-* For other distributions or if the package install does not work
-
-    For python 3: `pip3 install paho-mqtt`
-
-    For python 2: `pip install paho-mqtt`
-
-## Installation
-
-1. Download MQTTSubscribe
-
-    ```
-    wget -P $DOWNLOAD_ROOT https://github.com/bellrichm/WeeWX-MQTTSubscribe/archive/vX.Y.Z.tar.gz
-    ```
-
-    All of the releases can be found [here](https://github.com/bellrichm/WeeWX-MQTTSubscribe/releases) and this is the [latest](https://github.com/bellrichm/WeeWX-MQTTSubscribe/releases/latest).
-
-2. Install MQTTSubscribe
-    * As a driver
-
-        ```
-        wee_extension --install=$DOWNLOAD_ROOT/vX.Y.Z.tar.gz
-        wee_config --reconfig
-        ```
-
-        **Note:** By default when installing, the service is installed and configured, but not enabled.
-        To not install and configure the service (only install the file(s)),
-        set the environment variable MQTTSubscribe_install_type to DRIVER. For example,
-
-        ```
-        MQTTSubscribe_install_type=DRIVER wee_extension --install=$DOWNLOAD_ROOT/vX.Y.Z.tar.gz
-        ```
-
-        And then configure the driver.
-
-        ```
-        wee_config --reconfig
-        ```
-
-    * As a service
-
-        ```
-        wee_extension --install=$DOWNLOAD_DIR/vX.Y.Z.tar.gz
-        ```
-
-        **Note:** By default when installing, the service is installed and configured, but not enabled.
-        To enable, set the environment variable MQTTSubscribe_install_type to SERVICE. For example,
-
-        ```
-        MQTTSubscribe_install_type=SERVICE wee_extension --install=$DOWNLOAD_DIR/vX.Y.Z.tar.gz
-        ```
-
-    In either case, **edit the [MQTTSubscribeDriver] or [MQTTSubscribeService] stanza as required**.
-    At the very least the [\[topics\]] stanza must be configured to the topics to subscribe to.
-    Other settings such as host and port may need to be changed.
-    See, [configuring MQTTSubscribe](https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/Configuring).
-
-    **Note:** For some WeeWX install types, the weew_extension and wee_config commands will neeed its path prepended to it.
-
-3. Restart WeeWX
-
-    ```
-    sudo /etc/init.d/weewx restart
-    ```
-
-    or
-
-    ```
-    sudo sudo service restart weewx
-    ```
-
-    or
-
-    ```
-    sudo systemctl restart weewx
-    ```
-
-## Manual Installation
-
-See, [manual installation](https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/Manual-installation).
+### WeeWX Version 4.x setup.py Install
 
 ## Debugging
 
