@@ -2393,7 +2393,7 @@ class Simulator():
                             help="The WeeWX configuration file. Typicall weewx.conf.")
         simulate_driver_parser.add_argument('--records', dest='record_count', type=int,
                             help='The number of archive records to create.',
-                            default=2)
+                            default=10)
         simulate_driver_parser.add_argument('--interval', dest='interval', type=int,
                             help='The archive interval in seconds.',
                             default=300)
@@ -2405,7 +2405,7 @@ class Simulator():
                             default="US")
         simulate_driver_parser.add_argument("--binding", choices=["archive", "loop"],
                             help="The type of binding.",
-                            default="archive")
+                            default="loop")
         simulate_driver_parser.add_argument("--verbose", action="store_true", dest="verbose",
                             help="Log extra output (debug=1).")
         simulate_driver_parser.add_argument("--console", action="store_true", dest="console",
