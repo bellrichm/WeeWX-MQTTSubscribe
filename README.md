@@ -65,6 +65,59 @@ Prior to making any updates/changes, always make a backup.
 
 ## Installing with WeeWX Version 5.x
 
+1. Setup
+    Set the download directory.
+
+    ```
+    DOWNLOAD_DIR=/tmp
+    ```
+
+    For a pip install, set the extension directory, the configuration file, and activate the environment.
+
+    ```
+    EXTENSION_DIR=~/weewx-data/bin/user
+    BIN_DIR=~/weewx-data/bin
+    source ~/weewx-venv/bin/activate
+    ```
+
+    For a package install, set the extension directory and the configuration file,
+
+2. Download MQTTSubscribe
+
+    ```bash
+    wget -P $DOWNLOAD_DIR https://github.com/bellrichm/WeeWX-MQTTSubscribe/archive/vX.Y.Z.tar.gz
+    ```
+
+    All of the releases can be found [here](https://github.com/bellrichm/WeeWX-MQTTSubscribe/releases) and this is the [latest](https://github.com/bellrichm/WeeWX-MQTTSubscribe/releases/latest).
+
+3. Install MQTTSubscribe
+        ```
+        weectl extension install $DOWNLOAD_DIR/vX.Y.Z.tar.gz
+        ```
+4. Create an example `mqttsubscribe.template.conf`
+
+    ```
+    python3 $EXTENSION_DIR/MQTTSubscribe.py configure --create-example mqttsubscribe.template.conf
+    ```
+
+5. Edit the `mqttsubscribe.template.conf` file
+
+6. Validate the `mqttsubscribe.template.conf` file
+
+    If running as a driver,
+
+    ```
+    python3 $EXTENSION_DIR/MQTTSubscribe.py configure driver --validate mqttsubscribe.template.conf
+    ```
+
+7. Run in simulation mode
+
+    If running as a driver,
+
+    ```
+    PYTHONPATH=$BIN_DIR python3 $EXTENSION_DIR/MQTTSubscribe.py simulate driver --conf mqttsubscribe.template.conf
+    ```
+
 ### WeeWX Version 5.x Package Install
 
 ### WeeWX Version 5.x pip Install
