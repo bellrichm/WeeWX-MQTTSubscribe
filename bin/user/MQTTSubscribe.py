@@ -1759,7 +1759,7 @@ class MQTTSubscriber():
         self.userdata['connect_flags'] = 0
         self.client = mqtt.Client(client_id=mqtt_options['clientid'], userdata=self.userdata, clean_session=mqtt_options['clean_session'])
 
-        if mqtt_options['tls_dict'] and mqtt_options['tls_dict'].get('enable', True):
+        if mqtt_options['tls_dict'] and to_bool(mqtt_options['tls_dict'].get('enable', True)):
             self.config_tls(mqtt_options['tls_dict'])
 
         if mqtt_options['log_mqtt']:
