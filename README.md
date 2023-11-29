@@ -76,6 +76,7 @@ Prior to making any updates/changes, always make a backup.
 
     ```
     EXTENSION_DIR=~/weewx-data/bin/user
+    CONFIG_FILE=~/weewx-data/weewx.conf
     BIN_DIR=~/weewx-data/bin
     source ~/weewx-venv/bin/activate
     ```
@@ -117,6 +118,14 @@ Prior to making any updates/changes, always make a backup.
     ```
     PYTHONPATH=$BIN_DIR python3 $EXTENSION_DIR/MQTTSubscribe.py simulate driver --conf mqttsubscribe.template.conf
     ```
+
+8. Update weewx.conf
+    ```
+    weectl station reconfigure --driver=user.MQTTSubscribe --no-prompt
+    python3 $EXTENSION_DIR/MQTTSubscribe.py configure driver --replace-with mqttsubscribe.template.conf --conf $CONFIG_FILE
+    ```
+
+9. Restart WeeWX
 
 ### WeeWX Version 5.x Package Install
 
