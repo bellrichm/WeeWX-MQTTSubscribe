@@ -135,9 +135,9 @@
                 "driver",
                 //"--create-example", "tmp/temp.conf",
                 //"--enable", "false",
-                //"--validate",
-                "--replace-with", "/home/richbell/mqttsubscribe.template.conf",
-                "--conf", "~/weewx-data/weewx.conf"
+                "--validate", "/home/richbell/mqttsubscribe.template.conf",
+                //"--replace-with", "/home/richbell/mqttsubscribe.template.conf",
+                //"--conf", "~/weewx-data/weewx.conf"
                 //"--output", "${workspaceFolder}/tmp/temp.conf",
                // "--add-from", "${workspaceFolder}/devtools/smoketest.archive.conf",                
                 //"--export", "${workspaceFolder}/tmp/temp.conf",

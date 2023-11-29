@@ -2632,7 +2632,7 @@ class Configurator():
                             help="The configuration that will replace the existing configuration.")
         configure_driver_group.add_argument("--update-from",
                             help="The configuration that will update (and add to) the existing configuration.")
-        configure_driver_group.add_argument("--validate",  action="store_true", dest="validate",
+        configure_driver_group.add_argument("--validate",
                             help="Validate the configuration file.")
         configure_driver_group.add_argument("--no-backup", action="store_true", default=False,
                             help="When updating the WeeWX configuration (--conf), do not back it up.")
@@ -2703,6 +2703,7 @@ class Configurator():
             self.config_output_path = os.path.abspath(options.conf)
         if options.validate:
             self.action = '--validate'
+            config_input = options.validate
         if options.update_from:
             self.action = '--update-from'
             config_input = options.update_from
@@ -2741,7 +2742,7 @@ class Configurator():
             #del self.config_dict[self.section]
             self.config_dict[self.section] = self.config_input_dict
         elif self.action == '--validate':
-            self._validate("", "", self.config_dict[self.section], self.config_spec['MQTTSubscribe'])
+            self._validate("", "", self.config_input_dict, self.config_spec['MQTTSubscribe'])
         elif self.action == '--update-from':
             self.config_dict[self.section] = self.config_input_dict
         else:
