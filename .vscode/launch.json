@@ -27,7 +27,7 @@
         "justMyCode": true,
         "name": "Debug",
         "type": "python",
-        "request": "launc
+        "request": "launch",
         "program": "${workspaceFolder}/bin/user/MQTTSubscribe.py",
         "args": [
             "simulate",
