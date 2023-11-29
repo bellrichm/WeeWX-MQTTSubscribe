@@ -129,7 +129,7 @@ Prior to making any updates/changes, always make a backup.
     ```
 
     ```
-    PYTHONPATH=$BIN_DIR python3 $EXTENSION_DIR/MQTTSubscribe.py simulate service --conf mqttsubscribe.template.conf
+    python3 $EXTENSION_DIR/MQTTSubscribe.py simulate service --conf mqttsubscribe.template.conf
     ```
 
 7. Update weewx.conf
