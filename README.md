@@ -102,6 +102,12 @@ Prior to making any updates/changes, always make a backup.
     weectl extension install $DOWNLOAD_DIR/vX.Y.Z.tar.gz
     ```
 
+    To Do, install from URL
+
+    ```
+    weectl extension install https://github.com/bellrichm/WeeWX-MQTTSubscribe/archive/refs/heads/v3.zip
+    ```
+
 4. Create an example `mqttsubscribe.template.conf`
 
     ```
