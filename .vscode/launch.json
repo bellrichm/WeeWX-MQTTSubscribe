@@ -32,10 +32,9 @@
         "args": [
             "simulate",
             "driver",            
-            "--binding", "loop",
-            "--interval", "2",
-            "--delay", "0",
-            "--records", "2",
+            //"--interval", "2",
+            //"--delay", "0",
+            //"--records", "2",
             //"--host", "localhost",
             //"--topics", "weather/rain",
             //"--callback", "individual",
@@ -43,7 +42,8 @@
             //"--callback", "keyword",                
             "--verbose",
             "--console",
-            "${workspaceFolder}/devtools/debug.loop.conf"
+            //"${workspaceFolder}/mqttsubscribe..conf"
+            "--conf", "/home/richbell/mqttsubscribe.template.conf"
         ],            
         "console": "integratedTerminal"
     },    
@@ -132,11 +132,12 @@
             "program": "${workspaceFolder}/bin/user/MQTTSubscribe.py",
             "args": [
                 "configure",
-                //"driver",
-                "--create-example", "tmp/temp.conf",
+                "driver",
+                //"--create-example", "tmp/temp.conf",
                 //"--enable", "false",
                 //"--validate",
-                
+                "--replace-with", "/home/richbell/mqttsubscribe.template.conf",
+                "--conf", "~/weewx-data/weewx.conf"
                 //"--output", "${workspaceFolder}/tmp/temp.conf",
                // "--add-from", "${workspaceFolder}/devtools/smoketest.archive.conf",                
                 //"--export", "${workspaceFolder}/tmp/temp.conf",

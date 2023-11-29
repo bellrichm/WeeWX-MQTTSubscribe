@@ -2690,6 +2690,7 @@ class Configurator():
         if options.add_from:
             self.action = '--add-from'
             config_input = options.add_from
+            self.config_output_path = os.path.abspath(options.conf)
         elif options.export:
             self.action = '--export'
             self.config_output_path = os.path.abspath(options.export)
@@ -2699,11 +2700,13 @@ class Configurator():
         if options.replace_with:
             self.action = '--replace-with'
             config_input = options.replace_with
+            self.config_output_path = os.path.abspath(options.conf)
         if options.validate:
             self.action = '--validate'
         if options.update_from:
             self.action = '--update-from'
             config_input = options.update_from
+            self.config_output_path = os.path.abspath(options.conf)
 
         if options.type == 'service' and options.enable:
             self.enable = to_bool(options.enable)
@@ -2735,7 +2738,7 @@ class Configurator():
             self.config_spec.filename = self.config_output_path
             self.config_spec.write()
         elif self.action == '--replace-with':
-            del self.config_dict[self.section]
+            #del self.config_dict[self.section]
             self.config_dict[self.section] = self.config_input_dict
         elif self.action == '--validate':
             self._validate("", "", self.config_dict[self.section], self.config_spec['MQTTSubscribe'])
