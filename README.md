@@ -240,7 +240,34 @@ Prior to making any updates/changes, always make a backup.
 
 ## Updating MQTTSubscribe
 
+### pip Install: Updating MQTTSubscribe
+
+https://github.com/bellrichm/WeeWX-MQTTSubscribe/tree/v3#pip-install-install-mqttsubscribe
+
+### package Install: Updating MQTTSubscribe
+
+https://github.com/bellrichm/WeeWX-MQTTSubscribe/tree/v3#package-install-install-mqttsubscribe
+
 ## Reconfiguring MQTTSubscribe
+
+### pip Install: Reconfiguring MQTTSubscribe
+
+export current
+python3 $EXTENSION_DIR/MQTTSubscribe.py configure service --export mqttsubscribe.template.conf --conf $CONFIG_FILE 
+
+
+https://github.com/bellrichm/WeeWX-MQTTSubscribe/tree/v3#pip-install-configure-mqttsubscribe
+
+https://github.com/bellrichm/WeeWX-MQTTSubscribe/tree/v3#pip-install-update-weewxconf-with-mqttsubscribes-configuration
+
+### package Install: Reconfiguring MQTTSubscribe
+
+export current
+PYTHONPATH=$BIN_DIR python3 $EXTENSION_DIR/MQTTSubscribe.py configure --export mqttsubscribe.template.conf --conf $CONF_FILE
+
+https://github.com/bellrichm/WeeWX-MQTTSubscribe/tree/v3#package-install-configure-mqttsubscribe
+
+https://github.com/bellrichm/WeeWX-MQTTSubscribe/tree/v3#package-install-update-weewxconf-with-mqttsubscribes-configuration
 
 ## Debugging
 
