@@ -2608,7 +2608,7 @@ class Configurator():
                             help="The configuration that will replace the existing configuration.")
         configure_service_group.add_argument("--update-from",
                             help="The configuration that will update (and add to) the existing configuration.")
-        configure_service_group.add_argument("--validate",  action="store_true", dest="validate",
+        configure_service_group.add_argument("--validate",
                             help="Validate the configuration file.")
         # The following is only used by the service
         configurator_service_parser.add_argument("--enable", dest="enable",
