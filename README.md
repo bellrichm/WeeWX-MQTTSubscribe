@@ -75,21 +75,11 @@ Prior to making any updates/changes, always make a backup.
 
     Set the file locations
 
-    * For a pip install,
-
-        ```
-        BIN_DIR=~/weewx-data/bin
-        CONFIG_FILE=~/weewx-data/weewx.conf
-        EXTENSION_DIR=~/weewx-data/bin/user
-        ```
-
-    * For a package install,
-
-        ```
-        BIN_DIR=/usr/share/weewx
-        CONFIG_FILE=
-        EXTENSION_DIR=/etc/weewx/bin/user
-        ```
+    ```
+    BIN_DIR=~/weewx-data/bin
+    CONFIG_FILE=~/weewx-data/weewx.conf
+    EXTENSION_DIR=~/weewx-data/bin/user
+    ```
 
     Activate the environmet
 
@@ -107,8 +97,6 @@ Prior to making any updates/changes, always make a backup.
 
 3. Install MQTTSubscribe
 
-    Note, package install might require 'sudo'
-
     ```
     weectl extension install $DOWNLOAD_DIR/vX.Y.Z.tar.gz
     ```
@@ -119,17 +107,9 @@ Prior to making any updates/changes, always make a backup.
     python3 $EXTENSION_DIR/MQTTSubscribe.py configure --create-example mqttsubscribe.template.conf
     ```
 
-    package
-
-    ```
-    PYTHONPATH=$BIN_DIR python3 $EXTENSION_DIR/MQTTSubscribe.py configure --create-example mqttsubscribe.template.conf
-    ```
-
 5. Edit the `mqttsubscribe.template.conf` file
 
 6. Validate and test the `mqttsubscribe.template.conf` file
-
-    package requres, PYTHONPATH
 
     If running as a driver,
 
@@ -154,7 +134,6 @@ Prior to making any updates/changes, always make a backup.
 7. Update weewx.conf
 
     If running as a driver,
-    package and PYTHONPATH
 
     ```
     weectl station reconfigure --driver=user.MQTTSubscribe --no-prompt
