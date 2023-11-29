@@ -40,19 +40,20 @@ It can be controlled more granularly by setting adjust_end_time to the number of
 **To install version 2.x and prior see,
 [Installing and Updating Version 2.X and Earlier](https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/Installing-and-updating-version-2.x-and-earlier).**
 
+**To install version 3.x with WeeWX 4.x see,
+[Installing and updating version 3.x with WeeWX 4.x](https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/Installing-and-updating-version-3.x--with-WeeWX-4.x)**
+
 **Note:** It is rare that MQTTSubscribe should be configured to run as both a `service` and `driver`.
 If you are augmenting an existing driver's data, run MQTTSubscribe as a `service`. Otherwise, run it as a `driver`.
 
-Because there are multiple methods to install [WeeWX V5](https://weewx.com/docs/5.0/usersguide/installing/) and
-[WeeWX V4](http://weewx.com/docs/4.10/usersguide.htm#installing), location of files can vary.
-For [WeeWX V5 see](https://weewx.com/docs/5.0/usersguide/where/) and
-for [WeeWX V4 see](http://weewx.com/docs/4.10/usersguide.htm#Where_to_find_things) for the definitive information.
+Because there are multiple methods to install [WeeWX V5](https://weewx.com/docs/5.0/usersguide/installing/), location of files can vary.
+[See](https://weewx.com/docs/5.0/usersguide/where/) for the definitive information.
 The following symbolic names are used to define the various locations:
 
-* *BIN_DIR*       - The directory containing the WeeWX executables.
+* *$BIN_DIR*       - The directory containing the WeeWX executables.
 * *$CONFIG_DIR*   - The directory where the configuration (typically, weewx.conf) is located.
 * *$DOWNLOAD_DIR* - The directory containing the downloaded *MQTTSubscribe* extension.
-* *EXTENSION_DIR* - The directory containing the WeeWX extension, MQTTSubscribe.
+* *$EXTENSION_DIR* - The directory containing the WeeWX extension, MQTTSubscribe.
 
 The notation vX.Y.Z designates the version of MQTTSubscribe being installed.
 
@@ -243,8 +244,6 @@ Prior to making any updates/changes, always make a backup.
     ```
 
 8. Restart WeeWX
-
-## Installing with WeeWX Version 4.x
 
 ## Debugging
 
