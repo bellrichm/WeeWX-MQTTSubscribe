@@ -111,6 +111,12 @@ Prior to making any updates/changes, always make a backup.
     python3 $EXTENSION_DIR/MQTTSubscribe.py configure driver --validate mqttsubscribe.template.conf
     ```
 
+    If running as a service,
+
+    ```
+    python3 $EXTENSION_DIR/MQTTSubscribe.py configure service --validate mqttsubscribe.template.conf
+    ```
+
 7. Run in simulation mode
 
     If running as a driver,
@@ -118,6 +124,13 @@ Prior to making any updates/changes, always make a backup.
     ```
     PYTHONPATH=$BIN_DIR python3 $EXTENSION_DIR/MQTTSubscribe.py simulate driver --conf mqttsubscribe.template.conf
     ```
+
+    If running as a service,
+
+    ```
+    PYTHONPATH=$BIN_DIR python3 $EXTENSION_DIR/MQTTSubscribe.py simulate service --conf mqttsubscribe.template.conf
+    ```
+
 
 8. Update weewx.conf
     ```

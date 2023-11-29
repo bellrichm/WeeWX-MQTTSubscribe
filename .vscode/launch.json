@@ -132,7 +132,7 @@
             "program": "${workspaceFolder}/bin/user/MQTTSubscribe.py",
             "args": [
                 "configure",
-                "driver",
+                "service",
                 //"--create-example", "tmp/temp.conf",
                 //"--enable", "false",
                 "--validate", "/home/richbell/mqttsubscribe.template.conf",
