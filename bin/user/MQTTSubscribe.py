@@ -2693,6 +2693,7 @@ class Configurator():
             self.config_output_path = os.path.abspath(options.conf)
         elif options.export:
             self.action = '--export'
+            config_input = os.path.abspath(options.conf)
             self.config_output_path = os.path.abspath(options.export)
         elif options.print_configspec:
             self.action = '--print-configspec'
