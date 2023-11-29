@@ -190,7 +190,7 @@ Prior to making any updates/changes, always make a backup.
     Note, package install might require 'sudo'
 
     ```
-    weectl extension install $DOWNLOAD_DIR/vX.Y.Z.tar.gz
+    sudo weectl extension install $DOWNLOAD_DIR/vX.Y.Z.tar.gz
     ```
 
 4. Create an example `mqttsubscribe.template.conf`
@@ -220,7 +220,7 @@ Prior to making any updates/changes, always make a backup.
     ```
 
     ```
-    PYTHONPATH=$BIN_DIR PYTHONPATH=$BIN_DIR python3 $EXTENSION_DIR/MQTTSubscribe.py simulate service --conf mqttsubscribe.template.conf
+    PYTHONPATH=$BIN_DIR:/etc/weewx/bin PYTHONPATH=$BIN_DIR python3 $EXTENSION_DIR/MQTTSubscribe.py simulate service --conf mqttsubscribe.template.conf
     ```
 
 7. Update weewx.conf
@@ -229,17 +229,17 @@ Prior to making any updates/changes, always make a backup.
     package and PYTHONPATH
 
     ```
-    weectl station reconfigure --driver=user.MQTTSubscribe --no-prompt
+    sudo weectl station reconfigure --driver=user.MQTTSubscribe --no-prompt
     ```
 
     ```
-    PYTHONPATH=$BIN_DIR python3 $EXTENSION_DIR/MQTTSubscribe.py configure driver --replace-with mqttsubscribe.template.conf --conf $CONFIG_FILE
+    sudo PYTHONPATH=$BIN_DIR python3 $EXTENSION_DIR/MQTTSubscribe.py configure driver --replace-with mqttsubscribe.template.conf --conf $CONFIG_FILE
     ```
 
     If running as a service,
 
     ```
-    PYTHONPATH=$BIN_DIR python3 $EXTENSION_DIR/MQTTSubscribe.py configure service --replace-with mqttsubscribe.template.conf --conf $CONFIG_FILE
+    sudo PYTHONPATH=$BIN_DIR python3 $EXTENSION_DIR/MQTTSubscribe.py configure service --replace-with mqttsubscribe.template.conf --conf $CONFIG_FILE
 
     ```
 
