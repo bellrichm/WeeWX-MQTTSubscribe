@@ -2364,19 +2364,19 @@ class Simulator():
                             help="The WeeWX configuration file. Typically weewx.conf.")
         simulate_service_parser.add_argument('--records', dest='record_count', type=int,
                             help='The number of archive records to create.',
-                            default=2)
+                            default=10)
         simulate_service_parser.add_argument('--interval', dest='interval', type=int,
                             help='The archive interval in seconds.',
-                            default=300)
+                            default=10)
         simulate_service_parser.add_argument('--delay', dest='delay', type=int,
                             help='The archive delay in seconds.',
-                            default=15)
+                            default=0)
         simulate_service_parser.add_argument("--units", choices=["US", "METRIC", "METRICWX"],
                             help="The default units if not in MQTT payload.",
                             default="US")
         simulate_service_parser.add_argument("--binding", choices=["archive", "loop"],
                             help="The type of binding.",
-                            default="archive")
+                            default="loop")
         simulate_service_parser.add_argument("--verbose", action="store_true", dest="verbose",
                             help="Log extra output (debug=1).")
         simulate_service_parser.add_argument("--console", action="store_true", dest="console",

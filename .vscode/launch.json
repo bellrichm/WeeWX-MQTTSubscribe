@@ -27,14 +27,14 @@
         "justMyCode": true,
         "name": "Debug",
         "type": "python",
-        "request": "launch",
+        "request": "launc
         "program": "${workspaceFolder}/bin/user/MQTTSubscribe.py",
         "args": [
             "simulate",
-            "driver",            
+            "service",            
             //"--interval", "2",
             //"--delay", "0",
-            //"--records", "2",
+            //"--records", "200",
             //"--host", "localhost",
             //"--topics", "weather/rain",
             //"--callback", "individual",
