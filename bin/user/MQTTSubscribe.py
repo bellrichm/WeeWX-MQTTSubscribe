@@ -537,12 +537,12 @@ class AbstractLogger():
         """ Log error messages. """
         raise NotImplementedError("Method 'error' not implemented")
 
-    def setup_logging(self, logging_level, config_dict):
-        """ Setup logging for running in standalone mode."""
-        if logging_level:
-            weewx.debug = logging_level
+def setup_logging(logging_level, config_dict):
+    """ Setup logging for running in standalone mode."""
+    if logging_level:
+        weewx.debug = logging_level
 
-        weeutil.logger.setup('wee_MQTTSS', config_dict)
+    weeutil.logger.setup('wee_MQTTSS', config_dict)
 
 class Logger(AbstractLogger):
     """ The logging class. """
@@ -2448,6 +2448,7 @@ class Simulator():
         config_path = os.path.abspath(self.config_file)
 
         self.config_dict = configobj.ConfigObj(config_path, file_error=True)
+        setup_logging(self.verbose, self.config_dict)
 
         # override the configured binding with the parameter value
         merge_config(self.config_dict, {'MQTTSubscribeService': {'binding': self.binding}})
