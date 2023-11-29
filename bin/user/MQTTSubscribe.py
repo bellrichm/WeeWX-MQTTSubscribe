@@ -2334,7 +2334,7 @@ class MQTTSubscribeConfiguration():
     @property
     def default_stanza(self):
         """ The default configuration stanza. """
-        return self.default_config.write()
+        return '\n'.join(self.default_config.write())
 
 class Simulator():
     """ Run the service or driver. """
