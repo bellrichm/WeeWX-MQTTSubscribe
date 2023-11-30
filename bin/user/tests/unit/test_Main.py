@@ -52,6 +52,7 @@ class test_simulate_driver(unittest.TestCase):
         options.units = 'US'
 
         options.console = random_string()
+        options.log_file = None
         options.conf = random_string()
         options.verbose = random_string()
 
@@ -90,6 +91,7 @@ class test_simulate_driver(unittest.TestCase):
 
         options.interval = random.randint(1, 99)
         options.delay = random.randint(1, 99)
+        options.log_file = None
         options.console = random_string()
         options.conf = random_string()
         options.verbose = random_string()
@@ -135,6 +137,7 @@ class test_simulate_service(unittest.TestCase):
         options.units = 'US'
 
         options.console = random_string()
+        options.log_file = None
         options.conf = random_string()
         options.verbose = random_string()
 
@@ -179,6 +182,7 @@ class test_simulate_service(unittest.TestCase):
         options.delay = delay
         options.units = 'US'
 
+        options.log_file = None
         options.console = random_string()
         options.conf = random_string()
         options.verbose = random_string()
@@ -208,9 +212,18 @@ class test_init_config(unittest.TestCase):
         config_dict = {}
         binding = 'loop'
 
+        options = argparse.Namespace()
+        options.log_file = random_string()
+
         MQTTSubscribeService_binding_config = {
             'MQTTSubscribeService': {
                 'binding': binding
+            }
+        }
+
+        MQTTSubscribeService_logfile_config = {
+            'MQTTSubscribeService': {
+                'logging_filename': options.log_file
             }
         }
 
@@ -220,13 +233,18 @@ class test_init_config(unittest.TestCase):
             }
         }
 
+        MQTTSubscribeDriver_logfile_config = {
+            'MQTTSubscribeDriver': {
+                'logging_filename': options.log_file
+            }
+        }
+
         MQTTSubscribeDriver_console_config = {
             'MQTTSubscribeDriver': {
                 'console': True
             }
         }
 
-        options = argparse.Namespace()
         options.binding = binding
         options.console = random_string()
 
@@ -252,13 +270,19 @@ class test_init_config(unittest.TestCase):
 
                             call_args_list = mock_merge_config.call_args_list
 
-                            self.assertEqual(len(call_args_list), 3)
+                            self.assertEqual(len(call_args_list), 5)
                             self.assertEqual(call_args_list[0].args[0], config_dict)
                             self.assertEqual(call_args_list[0].args[1], MQTTSubscribeService_binding_config)
                             self.assertEqual(call_args_list[1].args[0], config_dict)
-                            self.assertEqual(call_args_list[1].args[1], MQTTSubscribeService_console_config)
+                            self.assertEqual(call_args_list[1].args[1], MQTTSubscribeService_logfile_config)
+
                             self.assertEqual(call_args_list[2].args[0], config_dict)
-                            self.assertEqual(call_args_list[2].args[1], MQTTSubscribeDriver_console_config)
+                            self.assertEqual(call_args_list[2].args[1], MQTTSubscribeDriver_logfile_config)
+
+                            self.assertEqual(call_args_list[3].args[0], config_dict)
+                            self.assertEqual(call_args_list[3].args[1], MQTTSubscribeService_console_config)
+                            self.assertEqual(call_args_list[4].args[0], config_dict)
+                            self.assertEqual(call_args_list[4].args[1], MQTTSubscribeDriver_console_config)
 
 if __name__ == '__main__':
     # test_suite = unittest.TestSuite()

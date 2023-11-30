@@ -31,11 +31,12 @@
         "program": "${workspaceFolder}/bin/user/MQTTSubscribe.py",
         "args": [
             "simulate",
-            "driver",
-            "--binding", "archive",
+            "service",
+            "--binding", "loop",
             "--conf", "/home/richbell/mqttsubscribe.template.conf",
             //"--verbose",
             //"--console",
+            "--log-file", "${workspaceFolder}/tmp/temp.log",
 
             //"--interval", "2",
             //"--delay", "0",

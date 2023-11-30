@@ -2381,6 +2381,8 @@ class Simulator():
                             help="Log extra output (debug=1).")
         simulate_service_parser.add_argument("--console", action="store_true", dest="console",
                             help="Log to console in addition to syslog.")
+        simulate_service_parser.add_argument("--log-file",
+                            help="Log to specified file.")
 
         simulate_driver_parser = simulator_subparsers.add_parser('driver', usage=f"MQTTSubscribe.py simulate driver {cls.usage}")
         simulate_driver_parser.add_argument("--conf", required=False,
@@ -2404,6 +2406,8 @@ class Simulator():
                             help="Log extra output (debug=1).")
         simulate_driver_parser.add_argument("--console", action="store_true", dest="console",
                             help="Log to console in addition to syslog.")
+        simulate_driver_parser.add_argument("--log-file",
+                            help="Log to specified file.")
 
     def __init__(self, options):
         """ Initialize the new instance. """
@@ -2419,6 +2423,7 @@ class Simulator():
         self.config_file = options.conf
         self.units = options.units
         self.verbose = options.verbose
+        self.log_file = options.log_file
 
         self.engine = None
         self.config_dict = None
@@ -2437,6 +2442,9 @@ class Simulator():
 
         # override the configured binding with the parameter value
         merge_config(self.config_dict, {'MQTTSubscribeService': {'binding': self.binding}})
+
+        merge_config(self.config_dict, {'MQTTSubscribeService': {'logging_filename': self.log_file}})
+        merge_config(self.config_dict, {'MQTTSubscribeDriver': {'logging_filename': self.log_file}})
 
         if self.console:
             merge_config(self.config_dict, {'MQTTSubscribeService': {'console': True}})
