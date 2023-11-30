@@ -121,19 +121,16 @@ class test_simulate_service(unittest.TestCase):
         data = {}
         data['dateTime'] = 0
         interval = 300
-        delay = 5
 
         current_time = int(time.time() + 0.5)
         end_period_ts = (int(current_time / interval) + 1) * interval
-        end_delay_ts = end_period_ts + delay
-        sleep_amount = end_delay_ts - current_time
+        sleep_amount = end_period_ts - current_time
 
         options = argparse.Namespace()
         options.type = 'service'
         options.binding = 'archive'
         options.record_count = len(data)
         options.interval = interval
-        options.delay = delay
         options.units = 'US'
 
         options.console = random_string()
@@ -167,19 +164,16 @@ class test_simulate_service(unittest.TestCase):
         data = {}
         data['dateTime'] = 0
         interval = 300
-        delay = 5
 
         current_time = int(time.time() + 0.5)
         end_period_ts = (int(current_time / interval) + 1) * interval
-        end_delay_ts = end_period_ts + delay
-        sleep_amount = end_delay_ts - current_time
+        sleep_amount = end_period_ts - current_time
 
         options = argparse.Namespace()
         options.type = 'service'
         options.binding = 'loop'
         options.record_count = len(data)
         options.interval = interval
-        options.delay = delay
         options.units = 'US'
 
         options.log_file = None
