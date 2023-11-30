@@ -51,9 +51,6 @@ class test_simulate_driver(unittest.TestCase):
         options.delay = delay
         options.units = 'US'
 
-        options.callback = random_string()
-        options.topics = random_string()
-        options.host = random_string()
         options.console = random_string()
         options.conf = random_string()
         options.verbose = random_string()
@@ -93,9 +90,6 @@ class test_simulate_driver(unittest.TestCase):
 
         options.interval = random.randint(1, 99)
         options.delay = random.randint(1, 99)
-        options.callback = random_string()
-        options.topics = random_string()
-        options.host = random_string()
         options.console = random_string()
         options.conf = random_string()
         options.verbose = random_string()
@@ -140,9 +134,6 @@ class test_simulate_service(unittest.TestCase):
         options.delay = delay
         options.units = 'US'
 
-        options.callback = random_string()
-        options.topics = random_string()
-        options.host = random_string()
         options.console = random_string()
         options.conf = random_string()
         options.verbose = random_string()
@@ -188,9 +179,6 @@ class test_simulate_service(unittest.TestCase):
         options.delay = delay
         options.units = 'US'
 
-        options.callback = random_string()
-        options.topics = random_string()
-        options.host = random_string()
         options.console = random_string()
         options.conf = random_string()
         options.verbose = random_string()
@@ -216,215 +204,6 @@ class test_simulate_service(unittest.TestCase):
                                 mock_engine.dispatchEvent.assert_called_once()
 
 class test_init_config(unittest.TestCase):
-    def test_init_topics(self):
-        # pylint:  disable=too-many-locals
-        config_dict = {
-            'MQTTSubscribeDriver': {
-                'topics': {}
-            },
-            'MQTTSubscribeService': {
-                'topics': {}
-            }
-        }
-        binding = 'loop'
-        topic_count = random.randint(1, 5)
-
-        MQTTSubscribeService_binding_config = {
-            'MQTTSubscribeService': {
-                'binding': binding
-            }
-        }
-
-        topics = []
-        i = 0
-        while i < topic_count:
-            topics.append(random_string())
-            i += 1
-
-        topics_string = ','.join(topics)
-
-        options = argparse.Namespace()
-        options.binding = binding
-        options.callback = None
-        options.topics = topics_string
-        options.host = None
-        options.console = None
-
-        options.type = random_string()
-        options.record_count = random.randint(1, 99)
-        options.interval = random.randint(1, 99)
-        options.delay = random.randint(1, 99)
-        options.units = None
-
-        options.conf = random_string()
-        options.verbose = random_string()
-
-        with mock.patch('user.MQTTSubscribe.print'):
-            with mock.patch('user.MQTTSubscribe.os'):
-                with mock.patch('user.MQTTSubscribe.configobj') as mock_configobj:
-                    with mock.patch('user.MQTTSubscribe.weeutil'):
-                        with mock.patch('user.MQTTSubscribe.merge_config') as mock_merge_config:
-
-                            mock_configobj.ConfigObj.return_value = config_dict
-
-                            SUT = user.MQTTSubscribe.Simulator(options)
-
-                            SUT.init_configuration()
-
-                            call_args_list = mock_merge_config.call_args_list
-
-                            self.assertEqual(len(call_args_list), 1 + (2 * topic_count))
-                            self.assertEqual(call_args_list[0].args[0], config_dict)
-                            self.assertEqual(call_args_list[0].args[1], MQTTSubscribeService_binding_config)
-
-                            i = 0
-                            while i < topic_count:
-                                MQTTSubscribeService_topic_config = {
-                                    'MQTTSubscribeService': {
-                                        'topics':  {
-                                            topics[i]: {}
-                                        }
-                                    }
-                                }
-
-                                MQTTSubscribeDriver_topic_config = {
-                                    'MQTTSubscribeDriver': {
-                                        'topics': {
-                                            topics[i]: {}
-                                        }
-                                    }
-                                }
-
-                                self.assertEqual(call_args_list[2*i+1].args[0], config_dict)
-                                self.assertEqual(call_args_list[2*i+1].args[1], MQTTSubscribeService_topic_config)
-                                self.assertEqual(call_args_list[2*i+2].args[0], config_dict)
-                                self.assertEqual(call_args_list[2*i+2].args[1], MQTTSubscribeDriver_topic_config)
-                                i += 1
-
-    def test_init_host(self):
-        config_dict = {}
-        binding = 'loop'
-        host = random_string()
-
-        MQTTSubscribeService_binding_config = {
-            'MQTTSubscribeService': {
-                'binding': binding
-            }
-        }
-
-        MQTTSubscribeService_host_config = {
-            'MQTTSubscribeService': {
-                'host':  host
-            }
-        }
-
-        MQTTSubscribeDriver_host_config = {
-            'MQTTSubscribeDriver': {
-                'host': host
-            }
-        }
-
-        options = argparse.Namespace()
-        options.binding = binding
-        options.callback = None
-        options.topics = None
-        options.host = host
-        options.console = None
-
-        options.type = random_string()
-        options.record_count = random.randint(1, 99)
-        options.interval = random.randint(1, 99)
-        options.delay = random.randint(1, 99)
-        options.units = None
-
-        options.conf = random_string()
-        options.verbose = random_string()
-
-        with mock.patch('user.MQTTSubscribe.print'):
-            with mock.patch('user.MQTTSubscribe.os'):
-                with mock.patch('user.MQTTSubscribe.configobj') as mock_configobj:
-                    with mock.patch('user.MQTTSubscribe.weeutil'):
-                        with mock.patch('user.MQTTSubscribe.merge_config') as mock_merge_config:
-                            mock_configobj.ConfigObj.return_value = config_dict
-
-                            SUT = user.MQTTSubscribe.Simulator(options)
-
-                            SUT.init_configuration()
-
-                            call_args_list = mock_merge_config.call_args_list
-
-                            self.assertEqual(len(call_args_list), 3)
-                            self.assertEqual(call_args_list[0].args[0], config_dict)
-                            self.assertEqual(call_args_list[0].args[1], MQTTSubscribeService_binding_config)
-                            self.assertEqual(call_args_list[1].args[0], config_dict)
-                            self.assertEqual(call_args_list[1].args[1], MQTTSubscribeService_host_config)
-                            self.assertEqual(call_args_list[2].args[0], config_dict)
-                            self.assertEqual(call_args_list[2].args[1], MQTTSubscribeDriver_host_config)
-
-    def test_init_callback(self):
-        config_dict = {}
-        binding = 'loop'
-        callback = random_string()
-
-        MQTTSubscribeService_binding_config = {
-            'MQTTSubscribeService': {
-                'binding': binding
-            }
-        }
-
-        MQTTSubscribeService_callback_config = {
-            'MQTTSubscribeService': {
-                'message_callback': {
-                    'type': callback
-                }
-            }
-        }
-
-        MQTTSubscribeDriver_callback_config = {
-            'MQTTSubscribeDriver': {
-                'message_callback': {
-                    'type': callback
-                }
-            }
-        }
-
-        options = argparse.Namespace()
-        options.binding = binding
-        options.callback = callback
-        options.topics = None
-        options.host = None
-        options.console = None
-
-        options.type = random_string()
-        options.record_count = random.randint(1, 99)
-        options.interval = random.randint(1, 99)
-        options.delay = random.randint(1, 99)
-        options.units = None
-
-        options.conf = random_string()
-        options.verbose = random_string()
-
-        with mock.patch('user.MQTTSubscribe.print'):
-            with mock.patch('user.MQTTSubscribe.os'):
-                with mock.patch('user.MQTTSubscribe.configobj') as mock_configobj:
-                    with mock.patch('user.MQTTSubscribe.weeutil'):
-                        with mock.patch('user.MQTTSubscribe.merge_config') as mock_merge_config:
-                            mock_configobj.ConfigObj.return_value = config_dict
-
-                            SUT = user.MQTTSubscribe.Simulator(options)
-
-                            SUT.init_configuration()
-
-                            call_args_list = mock_merge_config.call_args_list
-
-                            self.assertEqual(len(call_args_list), 3)
-                            self.assertEqual(call_args_list[0].args[0], config_dict)
-                            self.assertEqual(call_args_list[0].args[1], MQTTSubscribeService_binding_config)
-                            self.assertEqual(call_args_list[1].args[0], config_dict)
-                            self.assertEqual(call_args_list[1].args[1], MQTTSubscribeService_callback_config)
-                            self.assertEqual(call_args_list[2].args[0], config_dict)
-                            self.assertEqual(call_args_list[2].args[1], MQTTSubscribeDriver_callback_config)
-
     def test_init_console(self):
         config_dict = {}
         binding = 'loop'
@@ -449,9 +228,6 @@ class test_init_config(unittest.TestCase):
 
         options = argparse.Namespace()
         options.binding = binding
-        options.callback = None
-        options.topics = None
-        options.host = None
         options.console = random_string()
 
         options.type = random_string()

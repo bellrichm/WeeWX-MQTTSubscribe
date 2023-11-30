@@ -31,19 +31,16 @@
         "program": "${workspaceFolder}/bin/user/MQTTSubscribe.py",
         "args": [
             "simulate",
-            "service",            
+            "driver",
+            "--binding", "archive",
+            "--conf", "/home/richbell/mqttsubscribe.template.conf",
+            "--verbose",
+            //"--console",
+
             //"--interval", "2",
             //"--delay", "0",
             //"--records", "200",
-            //"--host", "localhost",
-            //"--topics", "weather/rain",
-            //"--callback", "individual",
-            //"--topics", "test-topic",
-            //"--callback", "keyword",                
-            "--verbose",
-            "--console",
-            //"${workspaceFolder}/mqttsubscribe..conf"
-            "--conf", "/home/richbell/mqttsubscribe.template.conf"
+            
         ],            
         "console": "integratedTerminal"
     },    

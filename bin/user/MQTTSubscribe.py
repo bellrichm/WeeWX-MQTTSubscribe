@@ -2381,12 +2381,6 @@ class Simulator():
                             help="Log extra output (debug=1).")
         simulate_service_parser.add_argument("--console", action="store_true", dest="console",
                             help="Log to console in addition to syslog.")
-        simulate_service_parser.add_argument("--host",
-                            help="The MQTT server.")
-        simulate_service_parser.add_argument("--topics",
-                            help="Comma separated list of topics to subscribe to.")
-        simulate_service_parser.add_argument("--callback",
-                            help="The callback type.")
 
         simulate_driver_parser = simulator_subparsers.add_parser('driver', usage=f"MQTTSubscribe.py simulate driver {cls.usage}")
         simulate_driver_parser.add_argument("--conf", required=False,
@@ -2410,12 +2404,6 @@ class Simulator():
                             help="Log extra output (debug=1).")
         simulate_driver_parser.add_argument("--console", action="store_true", dest="console",
                             help="Log to console in addition to syslog.")
-        simulate_driver_parser.add_argument("--host",
-                            help="The MQTT server.")
-        simulate_driver_parser.add_argument("--topics",
-                            help="Comma separated list of topics to subscribe to.")
-        simulate_driver_parser.add_argument("--callback",
-                            help="The callback type.")
 
     def __init__(self, options):
         """ Initialize the new instance. """
@@ -2427,9 +2415,6 @@ class Simulator():
         self.record_count = options.record_count
         self.interval = options.interval
         self.delay = options.delay
-        self.callback = options.callback
-        self.topics = options.topics
-        self.host = options.host
         self.console = options.console
         self.config_file = options.conf
         self.units = options.units
@@ -2452,24 +2437,6 @@ class Simulator():
 
         # override the configured binding with the parameter value
         merge_config(self.config_dict, {'MQTTSubscribeService': {'binding': self.binding}})
-
-        if self.topics:
-            topics = self.topics.split(',')
-            if 'MQTTSubscribeService' in self.config_dict and 'topics' in self.config_dict['MQTTSubscribeService']:
-                self.config_dict['MQTTSubscribeService']['topics'] = {}
-            if 'MQTTSubscribeDriver' in self.config_dict and 'topics' in self.config_dict['MQTTSubscribeDriver']:
-                self.config_dict['MQTTSubscribeDriver']['topics'] = {}
-            for topic in topics:
-                merge_config(self.config_dict, {'MQTTSubscribeService': {'topics': {topic:{}}}})
-                merge_config(self.config_dict, {'MQTTSubscribeDriver': {'topics': {topic:{}}}})
-
-        if self.host:
-            merge_config(self.config_dict, {'MQTTSubscribeService': {'host': self.host}})
-            merge_config(self.config_dict, {'MQTTSubscribeDriver': {'host': self.host}})
-
-        if self.callback:
-            merge_config(self.config_dict, {'MQTTSubscribeService': {'message_callback': {'type': self.callback}}})
-            merge_config(self.config_dict, {'MQTTSubscribeDriver': {'message_callback': {'type': self.callback}}})
 
         if self.console:
             merge_config(self.config_dict, {'MQTTSubscribeService': {'console': True}})
