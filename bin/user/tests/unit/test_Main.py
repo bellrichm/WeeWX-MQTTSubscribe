@@ -120,17 +120,17 @@ class test_simulate_service(unittest.TestCase):
     def test_simulate_archive():
         data = {}
         data['dateTime'] = 0
-        interval = 300
+        frequency = 300
 
         current_time = int(time.time() + 0.5)
-        end_period_ts = (int(current_time / interval) + 1) * interval
+        end_period_ts = (int(current_time / frequency) + 1) * frequency
         sleep_amount = end_period_ts - current_time
 
         options = argparse.Namespace()
         options.type = 'service'
         options.binding = 'archive'
         options.record_count = len(data)
-        options.interval = interval
+        options.frequency = frequency
         options.units = 'US'
 
         options.console = random_string()
@@ -163,17 +163,17 @@ class test_simulate_service(unittest.TestCase):
     def test_simulate_loop():
         data = {}
         data['dateTime'] = 0
-        interval = 300
+        frequency = 300
 
         current_time = int(time.time() + 0.5)
-        end_period_ts = (int(current_time / interval) + 1) * interval
+        end_period_ts = (int(current_time / frequency) + 1) * frequency
         sleep_amount = end_period_ts - current_time
 
         options = argparse.Namespace()
         options.type = 'service'
         options.binding = 'loop'
         options.record_count = len(data)
-        options.interval = interval
+        options.frequency = frequency
         options.units = 'US'
 
         options.log_file = None

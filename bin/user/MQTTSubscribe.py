@@ -2369,13 +2369,12 @@ class Simulator():
                             help="The default units if not in MQTT payload.",
                             default="US")
 
-        simulate_service_parser.add_argument('--interval', dest='interval', type=int,
-                            help='The archive interval in seconds.',
+        simulate_service_parser.add_argument('--frequency', type=int,
+                            help='The frequency that the simulated loop packets/archive records arrive',
                             default=10)
         simulate_service_parser.add_argument('--records', dest='record_count', type=int,
                             help='The number of archive records to create.',
                             default=10)
-
 
         simulate_service_parser.add_argument("--verbose", action="store_true", dest="verbose",
                             help="Log extra output (debug=1).")
@@ -2417,7 +2416,6 @@ class Simulator():
         self.simulation_type = options.type
         self.binding = options.binding
         self.record_count = options.record_count
-        self.interval = options.interval
 
         self.console = options.console
         self.config_file = options.conf
@@ -2427,9 +2425,11 @@ class Simulator():
 
         if self.simulation_type == 'driver':
             self.delay = options.delay
+            self.interval = options.interval
 
         if self.simulation_type == 'service':
             self.units = options.units
+            self.frequency = options.frequency
 
         self.engine = None
         self.config_dict = None
@@ -2506,7 +2506,7 @@ class Simulator():
         i = 0
         while i < self.record_count:
             current_time = int(time.time() + 0.5)
-            end_period_ts = (int(current_time /self.interval) + 1) * self.interval
+            end_period_ts = (int(current_time /self.frequency) + 1) * self.frequency
             sleep_amount = end_period_ts - current_time
 
             print(f"Sleeping {int(sleep_amount)} seconds")
@@ -2516,7 +2516,7 @@ class Simulator():
             data['dateTime'] = end_period_ts
             data['usUnits'] = units
 
-            data['interval'] = self.interval / 60
+            data['interval'] = self.frequency / 60
             new_archive_record_event = weewx.Event(weewx.NEW_ARCHIVE_RECORD,
                                                     record=data,
                                                     origin='hardware')
@@ -2538,7 +2538,7 @@ class Simulator():
         i = 0
         while i < self.record_count:
             current_time = int(time.time() + 0.5)
-            end_period_ts = (int(current_time /self.interval) + 1) * self.interval
+            end_period_ts = (int(current_time /self.frequency) + 1) * self.frequency
             sleep_amount = end_period_ts - current_time
 
             print(f"Sleeping {int(sleep_amount)} seconds")
