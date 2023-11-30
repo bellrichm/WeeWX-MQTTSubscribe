@@ -34,7 +34,7 @@
             "driver",
             "--binding", "archive",
             "--conf", "/home/richbell/mqttsubscribe.template.conf",
-            "--verbose",
+            //"--verbose",
             //"--console",
 
             //"--interval", "2",

@@ -2490,8 +2490,8 @@ class Simulator():
             if i >= self.record_count:
                 break
 
-    def simulate_service(self):
-        """ Simulate running MQTTSubscribe as a service. """
+    def simulate_service_archive(self):
+        """ Simulate running MQTTSubscribe as a service that updates archive records. """
         service = MQTTSubscribeService(self.engine, self.config_dict)
         units = weewx.units.unit_constants[self.units]
         i = 0
@@ -2508,24 +2508,46 @@ class Simulator():
             data['dateTime'] = end_period_ts
             data['usUnits'] = units
 
-            if self.binding == 'archive':
-                data['interval'] = self.interval / 60
-                new_archive_record_event = weewx.Event(weewx.NEW_ARCHIVE_RECORD,
-                                                       record=data,
-                                                       origin='hardware')
-                self.engine.dispatchEvent(new_archive_record_event)
-                print(
-                    (f"Archive Record is: "
-                    f"{weeutil.weeutil.timestamp_to_string(new_archive_record_event.record['dateTime'])} "
-                    f"{to_sorted_string(new_archive_record_event.record)}"))
-            elif self.binding == 'loop':
-                new_loop_packet_event = weewx.Event(weewx.NEW_LOOP_PACKET,
-                                                    packet=data)
-                self.engine.dispatchEvent(new_loop_packet_event)
-                print(
-                    (f"Loop packet is: "
-                    f"{weeutil.weeutil.timestamp_to_string(new_loop_packet_event.packet['dateTime'])} "
-                    f"{to_sorted_string(new_loop_packet_event.packet)}"))
+            data['interval'] = self.interval / 60
+            new_archive_record_event = weewx.Event(weewx.NEW_ARCHIVE_RECORD,
+                                                    record=data,
+                                                    origin='hardware')
+            self.engine.dispatchEvent(new_archive_record_event)
+            print(
+                (f"Archive Record is: "
+                f"{weeutil.weeutil.timestamp_to_string(new_archive_record_event.record['dateTime'])} "
+                f"{to_sorted_string(new_archive_record_event.record)}"))
+
+
+            i += 1
+
+        service.shutDown()
+
+    def simulate_service_packet(self):
+        """ Simulate running MQTTSubscribe as a service that updates loop packets. """
+        service = MQTTSubscribeService(self.engine, self.config_dict)
+        units = weewx.units.unit_constants[self.units]
+        i = 0
+        while i < self.record_count:
+            current_time = int(time.time() + 0.5)
+            end_period_ts = (int(current_time /self.interval) + 1) * self.interval
+            end_delay_ts = end_period_ts + self.delay
+            sleep_amount = end_delay_ts - current_time
+
+            print(f"Sleeping {int(sleep_amount)} seconds")
+            time.sleep(sleep_amount)
+
+            data = {}
+            data['dateTime'] = end_period_ts
+            data['usUnits'] = units
+
+            new_loop_packet_event = weewx.Event(weewx.NEW_LOOP_PACKET,
+                                                packet=data)
+            self.engine.dispatchEvent(new_loop_packet_event)
+            print(
+                (f"Loop packet is: "
+                f"{weeutil.weeutil.timestamp_to_string(new_loop_packet_event.packet['dateTime'])} "
+                f"{to_sorted_string(new_loop_packet_event.packet)}"))
 
             i += 1
 
@@ -2534,7 +2556,10 @@ class Simulator():
     def run(self):
         """ Run the driver or service in standalone mode. """
         if self.simulation_type == "service":
-            self.simulate_service()
+            if self.binding == "archive":
+                self.simulate_service_archive()
+            elif self.binding == "loop":
+                self.simulate_service_packet()
         elif self.simulation_type == "driver":
             driver = "user.MQTTSubscribe"
             __import__(driver)
