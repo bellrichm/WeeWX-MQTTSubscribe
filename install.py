@@ -13,7 +13,7 @@ import configobj
 
 from weecfg.extension import ExtensionInstaller
 
-VERSION = '3.0.0-rc01'
+VERSION = '3.0.0-rc02a'
 
 MQTTSUBSCRIBESERVICE_CONFIG = """
 [MQTTSubscribeService]
