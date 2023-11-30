@@ -2360,23 +2360,24 @@ class Simulator():
         simulator_subparsers = cls.simulator_parser.add_subparsers(dest='type')
 
         simulate_service_parser = simulator_subparsers.add_parser('service', usage=f"MQTTSubscribe.py simulate service {cls.usage}")
+        simulate_service_parser.add_argument("--binding", choices=["archive", "loop"],
+                            help="The type of binding.",
+                            default="loop")        
         simulate_service_parser.add_argument("--conf", required=False,
                             help="The WeeWX configuration file. Typically weewx.conf.")
-        simulate_service_parser.add_argument('--records', dest='record_count', type=int,
-                            help='The number of archive records to create.',
-                            default=10)
-        simulate_service_parser.add_argument('--interval', dest='interval', type=int,
-                            help='The archive interval in seconds.',
-                            default=10)
-        simulate_service_parser.add_argument('--delay', dest='delay', type=int,
-                            help='The archive delay in seconds.',
-                            default=0)
         simulate_service_parser.add_argument("--units", choices=["US", "METRIC", "METRICWX"],
                             help="The default units if not in MQTT payload.",
                             default="US")
-        simulate_service_parser.add_argument("--binding", choices=["archive", "loop"],
-                            help="The type of binding.",
-                            default="loop")
+
+
+        simulate_service_parser.add_argument('--interval', dest='interval', type=int,
+                            help='The archive interval in seconds.',
+                            default=10)
+        simulate_service_parser.add_argument('--records', dest='record_count', type=int,
+                            help='The number of archive records to create.',
+                            default=10)
+
+
         simulate_service_parser.add_argument("--verbose", action="store_true", dest="verbose",
                             help="Log extra output (debug=1).")
         simulate_service_parser.add_argument("--console", action="store_true", dest="console",
@@ -2418,20 +2419,18 @@ class Simulator():
         self.binding = options.binding
         self.record_count = options.record_count
         self.interval = options.interval
-        self.delay = options.delay
+        
         self.console = options.console
         self.config_file = options.conf
         self.units = options.units
         self.verbose = options.verbose
         self.log_file = options.log_file
 
+        if self.simulation_type == 'driver':
+            self.delay = options.delay
+
         self.engine = None
         self.config_dict = None
-
-        print(f"Simulation is {self.simulation_type}")
-        print(f"Creating {int(self.record_count)} {self.binding} records")
-        print(f"Interval is {int(self.interval)} seconds")
-        print(f"Delay is {int(self.delay)} seconds")
 
     def init_configuration(self):
         """ Initialuze the configuration object. """
@@ -2506,8 +2505,7 @@ class Simulator():
         while i < self.record_count:
             current_time = int(time.time() + 0.5)
             end_period_ts = (int(current_time /self.interval) + 1) * self.interval
-            end_delay_ts = end_period_ts + self.delay
-            sleep_amount = end_delay_ts - current_time
+            sleep_amount = end_period_ts - current_time
 
             print(f"Sleeping {int(sleep_amount)} seconds")
             time.sleep(sleep_amount)
@@ -2539,8 +2537,7 @@ class Simulator():
         while i < self.record_count:
             current_time = int(time.time() + 0.5)
             end_period_ts = (int(current_time /self.interval) + 1) * self.interval
-            end_delay_ts = end_period_ts + self.delay
-            sleep_amount = end_delay_ts - current_time
+            sleep_amount = end_period_ts - current_time
 
             print(f"Sleeping {int(sleep_amount)} seconds")
             time.sleep(sleep_amount)
