@@ -2378,11 +2378,9 @@ class Simulator():
                             help="The WeeWX configuration file. Typicall weewx.conf.")
 
         simulate_driver_parser.add_argument('--archive-interval', type=int,
-                            help='The simulated archive interval in seconds.',
-                            default=300)
+                            help='The simulated archive interval in seconds.')
         simulate_driver_parser.add_argument('--archive-delay', type=int,
-                            help='The simulated archive delay in seconds.',
-                            default=15)
+                            help='The simulated archive delay in seconds.')
 
         simulate_driver_parser.add_argument('--records', dest='record_count', type=int,
                             help='The number of archive records to create.',
@@ -2410,15 +2408,19 @@ class Simulator():
         self.verbose = options.verbose
         self.log_file = options.log_file
 
-        if self.simulation_type == 'driver':
-            self.archive_delay = options.archive_delay
-            self.archive_interval = options.archive_interval
-
         if self.simulation_type == 'driver' and options.binding == 'loop':
             if options.archive_interval:
                 parser.error("'--archive-interval' is not valid when performing driver simulation and '--binding=loop'.")
             if options.archive_delay:
                 parser.error("'--archive-delay' is not valid when performing driver simulation and '--binding=loop'.")
+
+        if self.simulation_type == 'driver':
+            self.archive_delay = options.archive_delay
+            if not self.archive_delay:
+                self.archive_delay = 15
+            self.archive_interval = options.archive_interval
+            if not self.archive_interval:
+                self.archive_interval = 300  
 
         if self.simulation_type == 'service':
             self.units = options.units
