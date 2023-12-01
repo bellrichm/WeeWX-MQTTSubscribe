@@ -2327,7 +2327,9 @@ class MQTTSubscribeConfiguration():
         config_spec.initial_comment = example_intial_comment.splitlines()
         if not self.section:
             config_spec.initial_comment.append("# Replace '[MQTTSubscribe]' with '[MQTTSubscribeService]' or '[MQTTSubscribeDriver]'")
-        config_spec.initial_comment.append("# For additional information see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/Configuring#the-mqttsubscribedrivermqttsubscribesection-section")
+        config_spec.initial_comment.append((\
+            "# For additional information see, "
+            "https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/Configuring#the-mqttsubscribedrivermqttsubscribesection-section"))
 
         return config_spec
 
@@ -2409,10 +2411,6 @@ class Simulator():
         self.log_file = options.log_file
 
         if self.simulation_type == 'driver':
-            if options.units:
-                parser.error("'--units' is not valid when performing driver simulation.")
-            if options.frequency:
-                parser.error("'--frequency' is not valid when performing driver simulation. Did you mean '--archive-interval'?")
             self.archive_delay = options.archive_delay
             self.archive_interval = options.archive_interval
 
@@ -2423,10 +2421,6 @@ class Simulator():
                 parser.error("'--archive-delay' is not valid when performing driver simulation and '--binding=loop'.")
 
         if self.simulation_type == 'service':
-            if options.archive_interval:
-                parser.error("'--archive-interval' is not valid when performing service simulation.")
-            if options.archive_delay:
-                parser.error("'--archive-delay' is not valid when performing service simulation.")
             self.units = options.units
             self.frequency = options.frequency
 
@@ -2474,6 +2468,7 @@ class Simulator():
 
     def simulate_driver_archive(self, driver):
         """ Simulate running MQTTSubscribe as a driver that generates archive records. """
+        logger = driver.logger
         i = 0
         while i < self.record_count:
             current_time = int(time.time() + 0.5)
@@ -2484,7 +2479,11 @@ class Simulator():
             time.sleep(sleep_amount)
 
             for record in driver.genArchiveRecords(end_period_ts):
-                print(f"Record {i} of {self.record_count} is: {weeutil.weeutil.timestamp_to_string(record['dateTime'])} {to_sorted_string(record)}")
+                record_msg =\
+                      (f"Record {i+1} of {self.record_count} is: "
+                      f"{weeutil.weeutil.timestamp_to_string(record['dateTime'])} {to_sorted_string(record)}")
+                logger.info(record_msg)
+                print(record_msg)
 
                 i += 1
                 if i >= self.record_count:
@@ -2492,9 +2491,14 @@ class Simulator():
 
     def simulate_driver_packet(self, driver):
         """ Simulate running MQTTSubscribe as a driver that generates loop packets. """
+        logger = driver.logger
         i = 0
         for packet in driver.genLoopPackets():
-            print(f"Packet {i} of {self.record_count} is: {weeutil.weeutil.timestamp_to_string(packet['dateTime'])} {to_sorted_string(packet)}")
+            record_msg =\
+                  (f"Packet {i+1} of {self.record_count} is: "
+                  f"{weeutil.weeutil.timestamp_to_string(packet['dateTime'])} {to_sorted_string(packet)}")
+            logger.info(record_msg)
+            print(record_msg)
             i += 1
             if i >= self.record_count:
                 break
@@ -2502,6 +2506,7 @@ class Simulator():
     def simulate_service_archive(self):
         """ Simulate running MQTTSubscribe as a service that updates archive records. """
         service = MQTTSubscribeService(self.engine, self.config_dict)
+        logger = service.logger
         units = weewx.units.unit_constants[self.units]
         i = 0
         while i < self.record_count:
@@ -2521,10 +2526,12 @@ class Simulator():
                                                     record=data,
                                                     origin='hardware')
             self.engine.dispatchEvent(new_archive_record_event)
-            print(
-                (f"Archive Record {i} of {self.record_count} is: "
+            packet_msg = \
+                (f"Archive Record {i+1} of {self.record_count} is: "
                 f"{weeutil.weeutil.timestamp_to_string(new_archive_record_event.record['dateTime'])} "
-                f"{to_sorted_string(new_archive_record_event.record)}"))
+                f"{to_sorted_string(new_archive_record_event.record)}")
+            logger.info(packet_msg)
+            print(packet_msg)
 
 
             i += 1
@@ -2534,7 +2541,7 @@ class Simulator():
     def simulate_service_packet(self):
         """ Simulate running MQTTSubscribe as a service that updates loop packets. """
         service = MQTTSubscribeService(self.engine, self.config_dict)
-        self.logger = service.logger
+        logger = service.logger
         units = weewx.units.unit_constants[self.units]
         i = 0
         while i < self.record_count:
@@ -2552,10 +2559,12 @@ class Simulator():
             new_loop_packet_event = weewx.Event(weewx.NEW_LOOP_PACKET,
                                                 packet=data)
             self.engine.dispatchEvent(new_loop_packet_event)
-            print(
-                (f"Loop packet {i} of {self.record_count} is: "
-                f"{weeutil.weeutil.timestamp_to_string(new_loop_packet_event.packet['dateTime'])} "
-                f"{to_sorted_string(new_loop_packet_event.packet)}"))
+            packet_msg = \
+                f"Loop packet {i+1} of {self.record_count} is: "\
+                f"{weeutil.weeutil.timestamp_to_string(new_loop_packet_event.packet['dateTime'])} "\
+                f"{to_sorted_string(new_loop_packet_event.packet)}"
+            logger.info(packet_msg)
+            print(packet_msg)
 
             i += 1
 

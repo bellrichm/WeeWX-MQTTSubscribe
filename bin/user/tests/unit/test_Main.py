@@ -145,7 +145,7 @@ class test_simulate_service(unittest.TestCase):
         options.verbose = random_string()
 
         options.archive_interval = None
-        options.archive_delay = None        
+        options.archive_delay = None
 
         with mock.patch('user.MQTTSubscribe.print'):
             with mock.patch('user.MQTTSubscribe.time') as mock_time:
@@ -191,7 +191,7 @@ class test_simulate_service(unittest.TestCase):
         options.verbose = random_string()
 
         options.archive_interval = None
-        options.archive_delay = None        
+        options.archive_delay = None
 
         with mock.patch('user.MQTTSubscribe.print'):
             with mock.patch('user.MQTTSubscribe.time') as mock_time:
