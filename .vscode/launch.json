@@ -31,7 +31,7 @@
         "program": "${workspaceFolder}/bin/user/MQTTSubscribe.py",
         "args": [
             "simulate",
-            "driver",
+            "service",
             "--binding", "loop",
             "--conf", "/home/richbell/mqttsubscribe.template.conf",
             //"--verbose",

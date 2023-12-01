@@ -2431,6 +2431,7 @@ class Simulator():
 
         self.engine = None
         self.config_dict = None
+        self.logger = None
 
     def init_configuration(self):
         """ Initialuze the configuration object. """
@@ -2532,6 +2533,7 @@ class Simulator():
     def simulate_service_packet(self):
         """ Simulate running MQTTSubscribe as a service that updates loop packets. """
         service = MQTTSubscribeService(self.engine, self.config_dict)
+        self.logger = service.logger
         units = weewx.units.unit_constants[self.units]
         i = 0
         while i < self.record_count:
