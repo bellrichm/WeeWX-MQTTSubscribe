@@ -2483,7 +2483,7 @@ class Simulator():
             time.sleep(sleep_amount)
 
             for record in driver.genArchiveRecords(end_period_ts):
-                print(f"Record is: {weeutil.weeutil.timestamp_to_string(record['dateTime'])} {to_sorted_string(record)}")
+                print(f"Record {i} of {self.record_count} is: {weeutil.weeutil.timestamp_to_string(record['dateTime'])} {to_sorted_string(record)}")
 
                 i += 1
                 if i >= self.record_count:
@@ -2493,7 +2493,7 @@ class Simulator():
         """ Simulate running MQTTSubscribe as a driver that generates loop packets. """
         i = 0
         for packet in driver.genLoopPackets():
-            print(f"Packet is: {weeutil.weeutil.timestamp_to_string(packet['dateTime'])} {to_sorted_string(packet)}")
+            print(f"Packet {i} of {self.record_count} is: {weeutil.weeutil.timestamp_to_string(packet['dateTime'])} {to_sorted_string(packet)}")
             i += 1
             if i >= self.record_count:
                 break
@@ -2521,7 +2521,7 @@ class Simulator():
                                                     origin='hardware')
             self.engine.dispatchEvent(new_archive_record_event)
             print(
-                (f"Archive Record is: "
+                (f"Archive Record {i} of {self.record_count} is: "
                 f"{weeutil.weeutil.timestamp_to_string(new_archive_record_event.record['dateTime'])} "
                 f"{to_sorted_string(new_archive_record_event.record)}"))
 
@@ -2552,7 +2552,7 @@ class Simulator():
                                                 packet=data)
             self.engine.dispatchEvent(new_loop_packet_event)
             print(
-                (f"Loop packet is: "
+                (f"Loop packet {i} of {self.record_count} is: "
                 f"{weeutil.weeutil.timestamp_to_string(new_loop_packet_event.packet['dateTime'])} "
                 f"{to_sorted_string(new_loop_packet_event.packet)}"))
 
@@ -2798,7 +2798,6 @@ if __name__ == '__main__': # pragma: no cover
     def main():
         """ Run it."""
 
-        print("start")
         parser = argparse.ArgumentParser()
         parser.add_argument('--version', action='version', version=f"MQTTSubscribe version is {VERSION}")
 
@@ -2819,7 +2818,5 @@ if __name__ == '__main__': # pragma: no cover
             configurator.run()
         else:
             parser.print_help()
-
-        print("done")
 
     main()
