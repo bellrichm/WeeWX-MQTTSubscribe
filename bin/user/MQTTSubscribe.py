@@ -2340,26 +2340,13 @@ class Simulator():
     """ Run the service or driver. """
     # pylint: disable=too-many-instance-attributes
 
-    usage = """
-            [--conf=CONFIG]
-            [--records=RECORD_COUNT]
-            [--interval=INTERVAL]
-            [--delay=DELAY]
-            [--units=US|METRIC|METRICWX]
-            [--binding=archive|loop]
-            [--verbose]
-            [--console]
-
-    CONFIG = The WeeWX configuration file, typically weewx.conf.
-    """
-
     @classmethod
     def add_parsers(cls, parser):
         ''' Add the parsers. '''
         cls.simulator_parser = parser.add_parser('simulate')
         simulator_subparsers = cls.simulator_parser.add_subparsers(dest='type')
 
-        simulate_service_parser = simulator_subparsers.add_parser('service', usage=f"MQTTSubscribe.py simulate service {cls.usage}")
+        simulate_service_parser = simulator_subparsers.add_parser('service')
         simulate_service_parser.add_argument("--binding", choices=["archive", "loop"],
                             help="The type of binding.",
                             default="loop")
@@ -2381,7 +2368,7 @@ class Simulator():
         simulate_service_parser.add_argument("--log-file",
                             help="Log to specified file.")
 
-        simulate_driver_parser = simulator_subparsers.add_parser('driver', usage=f"MQTTSubscribe.py simulate driver {cls.usage}")
+        simulate_driver_parser = simulator_subparsers.add_parser('driver')
         simulate_driver_parser.add_argument("--binding", choices=["archive", "loop"],
                             help="The type of binding.",
                             default="loop")
@@ -2406,7 +2393,7 @@ class Simulator():
         simulate_driver_parser.add_argument("--log-file",
                             help="Log to specified file.")
 
-    def __init__(self, options):
+    def __init__(self, parser, options):
         """ Initialize the new instance. """
         if not options.type:
             self.simulator_parser.print_help()
@@ -2422,10 +2409,24 @@ class Simulator():
         self.log_file = options.log_file
 
         if self.simulation_type == 'driver':
+            if options.units:
+                parser.error("'--units' is not valid when performing driver simulation.")
+            if options.frequency:
+                parser.error("'--frequency' is not valid when performing driver simulation. Did you mean '--archive-interval'?")
             self.archive_delay = options.archive_delay
             self.archive_interval = options.archive_interval
 
+        if self.simulation_type == 'driver' and options.binding == 'loop':
+            if options.archive_interval:
+                parser.error("'--archive-interval' is not valid when performing driver simulation and '--binding=loop'.")
+            if options.archive_delay:
+                parser.error("'--archive-delay' is not valid when performing driver simulation and '--binding=loop'.")
+
         if self.simulation_type == 'service':
+            if options.archive_interval:
+                parser.error("'--archive-interval' is not valid when performing service simulation.")
+            if options.archive_delay:
+                parser.error("'--archive-delay' is not valid when performing service simulation.")
             self.units = options.units
             self.frequency = options.frequency
 
@@ -2803,13 +2804,13 @@ if __name__ == '__main__': # pragma: no cover
 
         subparsers = parser.add_subparsers(dest='command')
 
-        Simulator.add_parsers(subparsers)
+        simulator_subparser = Simulator.add_parsers(subparsers)
         configurator_subparser = Configurator.add_parsers(subparsers)
 
         options = parser.parse_args()
 
         if options.command == 'simulate':
-            simulator = Simulator(options)
+            simulator = Simulator(simulator_subparser, options)
             simulator.init_configuration()
             simulator.init_weewx()
             simulator.run()

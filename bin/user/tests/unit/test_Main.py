@@ -49,12 +49,14 @@ class test_simulate_driver(unittest.TestCase):
         options.record_count = len(data)
         options.archive_interval = archive_interval
         options.archive_delay = archive_delay
-        options.units = 'US'
 
         options.console = random_string()
         options.log_file = None
         options.conf = random_string()
         options.verbose = random_string()
+
+        options.frequency = None
+        options.units = None
 
         mock_driver = mock.Mock()
         data = {}
@@ -71,7 +73,7 @@ class test_simulate_driver(unittest.TestCase):
                             with mock.patch.dict(sys.modules, {'user.MQTTSubscribe':driver_loader_stub}):
                                 mock_time.time.return_value = current_time
 
-                                SUT = user.MQTTSubscribe.Simulator(options)
+                                SUT = user.MQTTSubscribe.Simulator(None, options)
 
                                 SUT.run()
 
@@ -87,7 +89,6 @@ class test_simulate_driver(unittest.TestCase):
         options.type = 'driver'
         options.binding = 'loop'
         options.record_count = len(data)
-        options.units = 'US'
 
         options.archive_interval = random.randint(1, 99)
         options.archive_delay = random.randint(1, 99)
@@ -95,6 +96,11 @@ class test_simulate_driver(unittest.TestCase):
         options.console = random_string()
         options.conf = random_string()
         options.verbose = random_string()
+
+        options.frequency = None
+        options.units = None
+        options.archive_interval = None
+        options.archive_delay = None
 
         mock_driver = mock.Mock()
         data = {}
@@ -109,7 +115,7 @@ class test_simulate_driver(unittest.TestCase):
                     with mock.patch(f'{builtins_module_name}.__import__'):
                         with mock.patch.dict(sys.modules, {'user.MQTTSubscribe':driver_loader_stub}):
 
-                            SUT = user.MQTTSubscribe.Simulator(options)
+                            SUT = user.MQTTSubscribe.Simulator(None, options)
 
                             SUT.run()
 
@@ -138,6 +144,9 @@ class test_simulate_service(unittest.TestCase):
         options.conf = random_string()
         options.verbose = random_string()
 
+        options.archive_interval = None
+        options.archive_delay = None        
+
         with mock.patch('user.MQTTSubscribe.print'):
             with mock.patch('user.MQTTSubscribe.time') as mock_time:
                 with mock.patch('user.MQTTSubscribe.MQTTSubscribeService'):
@@ -147,7 +156,7 @@ class test_simulate_service(unittest.TestCase):
 
                                 mock_time.time.return_value = current_time
 
-                                SUT = user.MQTTSubscribe.Simulator(options)
+                                SUT = user.MQTTSubscribe.Simulator(None, options)
 
                                 mock_engine = mock.Mock()
                                 SUT.engine = mock_engine
@@ -181,6 +190,9 @@ class test_simulate_service(unittest.TestCase):
         options.conf = random_string()
         options.verbose = random_string()
 
+        options.archive_interval = None
+        options.archive_delay = None        
+
         with mock.patch('user.MQTTSubscribe.print'):
             with mock.patch('user.MQTTSubscribe.time') as mock_time:
                 with mock.patch('user.MQTTSubscribe.MQTTSubscribeService'):
@@ -190,7 +202,7 @@ class test_simulate_service(unittest.TestCase):
 
                                 mock_time.time.return_value = current_time
 
-                                SUT = user.MQTTSubscribe.Simulator(options)
+                                SUT = user.MQTTSubscribe.Simulator(None, options)
 
                                 mock_engine = mock.Mock()
                                 SUT.engine = mock_engine
@@ -258,7 +270,7 @@ class test_init_config(unittest.TestCase):
                         with mock.patch('user.MQTTSubscribe.merge_config') as mock_merge_config:
                             mock_configobj.ConfigObj.return_value = config_dict
 
-                            SUT = user.MQTTSubscribe.Simulator(options)
+                            SUT = user.MQTTSubscribe.Simulator(None, options)
 
                             SUT.init_configuration()
 
