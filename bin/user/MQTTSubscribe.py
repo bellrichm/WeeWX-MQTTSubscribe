@@ -2363,19 +2363,17 @@ class Simulator():
         simulate_service_parser.add_argument("--binding", choices=["archive", "loop"],
                             help="The type of binding.",
                             default="loop")
-        simulate_service_parser.add_argument("--conf", required=False,
+        simulate_service_parser.add_argument("--conf",
                             help="The WeeWX configuration file. Typically weewx.conf.")
         simulate_service_parser.add_argument("--units", choices=["US", "METRIC", "METRICWX"],
                             help="The default units if not in MQTT payload.",
                             default="US")
-
         simulate_service_parser.add_argument('--frequency', type=int,
                             help='The frequency that the simulated loop packets/archive records arrive',
                             default=10)
         simulate_service_parser.add_argument('--records', dest='record_count', type=int,
                             help='The number of archive records to create.',
                             default=10)
-
         simulate_service_parser.add_argument("--verbose", action="store_true", dest="verbose",
                             help="Log extra output (debug=1).")
         simulate_service_parser.add_argument("--console", action="store_true", dest="console",
@@ -2387,14 +2385,14 @@ class Simulator():
         simulate_driver_parser.add_argument("--binding", choices=["archive", "loop"],
                             help="The type of binding.",
                             default="loop")
-        simulate_driver_parser.add_argument("--conf", required=False,
+        simulate_driver_parser.add_argument("--conf",
                             help="The WeeWX configuration file. Typicall weewx.conf.")
 
-        simulate_driver_parser.add_argument('--interval', dest='interval', type=int,
-                            help='The archive interval in seconds.',
+        simulate_driver_parser.add_argument('--archive-interval', type=int,
+                            help='The simulated archive interval in seconds.',
                             default=300)
-        simulate_driver_parser.add_argument('--delay', dest='delay', type=int,
-                            help='The archive delay in seconds.',
+        simulate_driver_parser.add_argument('--archive-delay', type=int,
+                            help='The simulated archive delay in seconds.',
                             default=15)
 
         simulate_driver_parser.add_argument('--records', dest='record_count', type=int,
@@ -2424,8 +2422,8 @@ class Simulator():
         self.log_file = options.log_file
 
         if self.simulation_type == 'driver':
-            self.delay = options.delay
-            self.interval = options.interval
+            self.archive_delay = options.archive_delay
+            self.archive_interval = options.archive_interval
 
         if self.simulation_type == 'service':
             self.units = options.units
@@ -2477,8 +2475,8 @@ class Simulator():
         i = 0
         while i < self.record_count:
             current_time = int(time.time() + 0.5)
-            end_period_ts = (int(current_time / self.interval) + 1) * self.interval
-            end_delay_ts = end_period_ts + self.delay
+            end_period_ts = (int(current_time / self.archive_interval) + 1) * self.archive_interval
+            end_delay_ts = end_period_ts + self.archive_delay
             sleep_amount = end_delay_ts - current_time
             print(f"Sleeping {int(sleep_amount)} seconds")
             time.sleep(sleep_amount)

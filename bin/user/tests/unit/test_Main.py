@@ -35,20 +35,20 @@ class test_simulate_driver(unittest.TestCase):
     def test_simulate_archive():
         data = {}
         data['dateTime'] = 0
-        interval = 60
-        delay = 5
+        archive_interval = 60
+        archive_delay = 5
 
         current_time = int(time.time() + 0.5)
-        end_period_ts = (int(current_time / interval) + 1) * interval
-        end_delay_ts = end_period_ts + delay
+        end_period_ts = (int(current_time / archive_interval) + 1) * archive_interval
+        end_delay_ts = end_period_ts + archive_delay
         sleep_amount = end_delay_ts - current_time
 
         options = argparse.Namespace()
         options.type = 'driver'
         options.binding = 'archive'
         options.record_count = len(data)
-        options.interval = interval
-        options.delay = delay
+        options.archive_interval = archive_interval
+        options.archive_delay = archive_delay
         options.units = 'US'
 
         options.console = random_string()
@@ -89,8 +89,8 @@ class test_simulate_driver(unittest.TestCase):
         options.record_count = len(data)
         options.units = 'US'
 
-        options.interval = random.randint(1, 99)
-        options.delay = random.randint(1, 99)
+        options.archive_interval = random.randint(1, 99)
+        options.archive_delay = random.randint(1, 99)
         options.log_file = None
         options.console = random_string()
         options.conf = random_string()
@@ -244,8 +244,8 @@ class test_init_config(unittest.TestCase):
 
         options.type = random_string()
         options.record_count = random.randint(1, 99)
-        options.interval = random.randint(1, 99)
-        options.delay = random.randint(1, 99)
+        options.archive_interval = random.randint(1, 99)
+        options.archive_delay = random.randint(1, 99)
         options.units = None
 
         options.conf = random_string()
