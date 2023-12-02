@@ -145,20 +145,24 @@ If running as a driver,
 weectl station reconfigure --driver=user.MQTTSubscribe --no-prompt
 ```
 
-### pip Install: Update weewx.conf with MQTTSubscribe's configuration
+### pip Install: Update WeeWX with MQTTSubscribe's configuration
 
-If running as a driver,
+1. Update weewx.conf
 
-```
-python3 $USER_DIR/MQTTSubscribe.py configure driver --replace-with mqttsubscribe.template.conf --conf $CONFIG_FILE
-```
+    If running as a driver,
 
-If running as a service,
+    ```
+    python3 $USER_DIR/MQTTSubscribe.py configure driver --replace-with mqttsubscribe.template.conf --conf $CONFIG_FILE
+    ```
 
-```
-python3 $USER_DIR/MQTTSubscribe.py configure service --replace-with mqttsubscribe.template.conf --conf $CONFIG_FILE
+    If running as a service,
 
-```
+    ```
+    python3 $USER_DIR/MQTTSubscribe.py configure service --replace-with mqttsubscribe.template.conf --conf $CONFIG_FILE
+
+    ```
+
+2. Restart WeeWX
 
 ### package Install: Install MQTTSubscribe
 
@@ -231,73 +235,78 @@ Note, MQTTSubscribeDriver can also be configured and weewx.conf updated interact
 sudo weectl station reconfigure --driver=user.MQTTSubscribe --no-prompt
 ```
 
-### package Install: Update weewx.conf with MQTTSubscribe's configuration
+### package Install: Update WeeWX with MQTTSubscribe's configuration
 
-If running as a driver,
+1. Update weewx.conf
 
-```
-sudo PYTHONPATH=$BIN_DIR python3 $USER_DIR/MQTTSubscribe.py configure driver --replace-with mqttsubscribe.template.conf --conf $CONFIG_FILE
-```
+    If running as a driver,
 
-If running as a service,
+    ```
+    sudo PYTHONPATH=$BIN_DIR python3 $USER_DIR/MQTTSubscribe.py configure driver --replace-with mqttsubscribe.template.conf --conf $CONFIG_FILE
+    ```
 
-```
-sudo PYTHONPATH=$BIN_DIR python3 $USER_DIR/MQTTSubscribe.py configure service --replace-with mqttsubscribe.template.conf --conf $CONFIG_FILE
+    If running as a service,
 
-```
+    ```
+    sudo PYTHONPATH=$BIN_DIR python3 $USER_DIR/MQTTSubscribe.py configure service --replace-with mqttsubscribe.template.conf --conf $CONFIG_FILE
+
+    ```
+
+2. Restart WeeWX
 
 ## Updating MQTTSubscribe
 
 ### pip Install: Updating MQTTSubscribe
 
-Follow the steps to [install MQTTSubscribe in a WeeWX pip installation](https://github.com/bellrichm/WeeWX-MQTTSubscribe/tree/v3#pip-install-install-mqttsubscribe)
+1. Follow the steps to [install MQTTSubscribe in a WeeWX pip installation](https://github.com/bellrichm/WeeWX-MQTTSubscribe/tree/v3#pip-install-install-mqttsubscribe)
+2. Restart WeeWX
 
 ### package Install: Updating MQTTSubscribe
 
-Follow the steps to [install MQTTSubscribe in a WeeWX package installation](https://github.com/bellrichm/WeeWX-MQTTSubscribe/tree/v3#package-install-install-mqttsubscribe)
+1. Follow the steps to [install MQTTSubscribe in a WeeWX package installation](https://github.com/bellrichm/WeeWX-MQTTSubscribe/tree/v3#package-install-install-mqttsubscribe)
+2. Restart WeeWX
 
 ## Reconfiguring MQTTSubscribe
 
 ### pip Install: Reconfiguring MQTTSubscribe
 
-To reconfigure MQTTSubscribe, first export the current configuration settings.
+1. Export the current configuration settings.
 
-If running as a driver,
+    If running as a driver,
 
-```
-python3 $USER_DIR/MQTTSubscribe.py configure driver --export mqttsubscribe.template.conf --conf $CONFIG_FILE
-```
+    ```
+    python3 $USER_DIR/MQTTSubscribe.py configure driver --export mqttsubscribe.template.conf --conf $CONFIG_FILE
+    ```
 
-If running as a service,
+    If running as a service,
 
-```
-python3 $USER_DIR/MQTTSubscribe.py configure service --export mqttsubscribe.template.conf --conf $CONFIG_FILE
-```
+    ```
+    python3 $USER_DIR/MQTTSubscribe.py configure service --export mqttsubscribe.template.conf --conf $CONFIG_FILE
+    ```
 
-Follow the diections to
-[configure MQTTSunscribe](https://github.com/bellrichm/WeeWX-MQTTSubscribe/tree/v3#pip-install-configure-mqttsubscribe)
-and
-[update weewx.conf](https://github.com/bellrichm/WeeWX-MQTTSubscribe/tree/v3#pip-install-update-weewxconf-with-mqttsubscribes-configuration)
+2. Follow the diections to
+    * [Configure MQTTSunscribe](https://github.com/bellrichm/WeeWX-MQTTSubscribe/tree/v3#pip-install-configure-mqttsubscribe)
+    * [Update WeeWX](https://github.com/bellrichm/WeeWX-MQTTSubscribe/tree/v3#pip-install-update-weewxconf-with-mqttsubscribes-configuration)
 
 ### package Install: Reconfiguring MQTTSubscribe
 
-To reconfigure MQTTSubscribe, first export the current configuration settings.
+1. Export the current configuration settings.
 
-If running as a driver,
+    If running as a driver,
 
-```
-PYTHONPATH=$BIN_DIR python3 $USER_DIR/MQTTSubscribe.py configure driver --export mqttsubscribe.template.conf --conf $CONF_FILE
-```
+    ```
+    PYTHONPATH=$BIN_DIR python3 $USER_DIR/MQTTSubscribe.py configure driver --export mqttsubscribe.template.conf --conf $CONF_FILE
+    ```
 
-If running as a service,
+    If running as a service,
 
-```
-PYTHONPATH=$BIN_DIR python3 $USER_DIR/MQTTSubscribe.py configure service --export mqttsubscribe.template.conf --conf $CONF_FILE
-```
+    ```
+    PYTHONPATH=$BIN_DIR python3 $USER_DIR/MQTTSubscribe.py configure service --export mqttsubscribe.template.conf --conf $CONF_FILE
+    ```
 
-Follow the diections to [configure MQTTSubscribe](https://github.com/bellrichm/WeeWX-MQTTSubscribe/tree/v3#package-install-configure-mqttsubscribe)
-and
-[update weewx.conf](https://github.com/bellrichm/WeeWX-MQTTSubscribe/tree/v3#package-install-update-weewxconf-with-mqttsubscribes-configuration)
+2. Follow the diections to
+    * [Configure MQTTSubscribe](https://github.com/bellrichm/WeeWX-MQTTSubscribe/tree/v3#package-install-configure-mqttsubscribe)
+    * [Update WeeWX](https://github.com/bellrichm/WeeWX-MQTTSubscribe/tree/v3#package-install-update-weewxconf-with-mqttsubscribes-configuration)
 
 ## Debugging
 
