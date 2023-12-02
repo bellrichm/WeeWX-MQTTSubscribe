@@ -2250,7 +2250,7 @@ class MQTTSubscribeConfiguration():
 
         example_intial_comment = f'''#
 # This is an example configuration for MQTTSubscribe
-# It was created on {datetime.date.today()} at {datetime.datetime.now().strftime("%H:%M:%S")}
+# It was created on {datetime.date.today()} at {datetime.datetime.now().strftime("%H:%M:%S")} with MQTTSubscribe verdion{VERSION}
 #
 
 '''
@@ -2353,6 +2353,7 @@ class Simulator():
                             help="The type of binding.",
                             default="loop")
         simulate_service_parser.add_argument("--conf",
+                            required=True,
                             help="The WeeWX configuration file. Typically weewx.conf.")
         simulate_service_parser.add_argument("--units", choices=["US", "METRIC", "METRICWX"],
                             help="The default units if not in MQTT payload.",
@@ -2375,6 +2376,7 @@ class Simulator():
                             help="The type of binding.",
                             default="loop")
         simulate_driver_parser.add_argument("--conf",
+                            required=True,
                             help="The WeeWX configuration file. Typicall weewx.conf.")
 
         simulate_driver_parser.add_argument('--archive-interval', type=int,
@@ -2420,7 +2422,7 @@ class Simulator():
                 self.archive_delay = 15
             self.archive_interval = options.archive_interval
             if not self.archive_interval:
-                self.archive_interval = 300  
+                self.archive_interval = 300
 
         if self.simulation_type == 'service':
             self.units = options.units
@@ -2609,6 +2611,7 @@ class Configurator():
         configurator_service_parser = configurator_subparsers.add_parser('service')
         configure_service_group = configurator_service_parser.add_mutually_exclusive_group(required=False)
         configurator_service_parser.add_argument("--conf",
+                            required=True,
                             help="The WeeWX configuration file. Typically weewx.conf.")
         configure_service_group.add_argument("--add-from",
                             help="The configuration that will and add to (but not update existing settings) the existing configuration.")
@@ -2633,6 +2636,7 @@ class Configurator():
         configurator_driver_parser = configurator_subparsers.add_parser('driver')
         configure_driver_group = configurator_driver_parser.add_mutually_exclusive_group(required=False)
         configurator_driver_parser.add_argument("--conf",
+                            required=True,
                             help="The WeeWX configuration file. Typicall weewx.conf.")
         configure_driver_group.add_argument("--add-from",
                             help="The configuration that will and add to (but not update existing settings) the existing configuration.")
