@@ -1,5 +1,8 @@
 name: Keep the versions up-to-date
 
+env:
+  ACTIONS_STEP_DEBUG: true
+  
 on:
   release:
     types:
@@ -17,8 +20,8 @@ on:
 jobs:
   actions-tagger:
     runs-on: windows-latest
-    permissions: # (2)
-      contents: write
+    #permissions: # (2)
+    #  contents: write
     steps:
       - uses: Actions-R-Us/actions-tagger@v2
         with:
