@@ -2342,10 +2342,18 @@ class Simulator():
     """ Run the service or driver. """
     # pylint: disable=too-many-instance-attributes
 
+    description='''
+Run MQTTSubscribe in simulate mode. One can simulate either the driver or service. Simulate mode allows one to test and/or debug MQTTSubscribe without interfering with a running WeeWX instance.
+For more inforation see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/MQTTSubscribe-Simulator-mode
+'''
+
+
     @classmethod
     def add_parsers(cls, parser):
         ''' Add the parsers. '''
-        cls.simulator_parser = parser.add_parser('simulate')
+        cls.simulator_parser = parser.add_parser('simulate',
+                                                 description=cls.description,
+                                                 formatter_class=argparse.RawDescriptionHelpFormatter)
         simulator_subparsers = cls.simulator_parser.add_subparsers(dest='type')
 
         simulate_service_parser = simulator_subparsers.add_parser('service')
@@ -2600,10 +2608,17 @@ class Configurator():
     ''' Configure the service or driver.'''
     # pylint: disable=too-many-instance-attributes
 
+    description='''
+Run MQTTSubscribe in configure mode. One can configure either the driver or service. Configure mode provides utilities to make it easier to configure MQTTSubscribe.
+For more information see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/MQTTSubscribe-Configurator-Mode
+'''
+
     @classmethod
     def add_parsers(cls, parser):
         ''' Add the parsers.'''
-        subparser = parser.add_parser('configure')
+        subparser = parser.add_parser('configure',
+                                      description=cls.description,
+                                      formatter_class=argparse.RawDescriptionHelpFormatter)
         subparser.add_argument("--create-example",
                             help="Export the existing configuration.")
 
