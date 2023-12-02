@@ -57,7 +57,7 @@ The following symbolic names are used to define the various locations:
 
 The notation vX.Y.Z designates the version of MQTTSubscribe being installed.
 
-Prior to making any updates/changes, always make a backup.
+**Prior to making any updates/changes, always make a backup.**
 
 ## Prerequisites
 
@@ -99,7 +99,7 @@ Note, MQTTSubscribeDriver can also be configured and weewx.conf updated interact
 [weectl station](https://weewx.com/docs/5.0/utilities/weectl-about/). This method has the following disadvantages:
 
 * The options that can be configured are limited.
-* The configuration options can not be validated and test before restarting WeeWX.
+* The configuration options can not be validated and tested before restarting WeeWX.
 
 1. Create an example `mqttsubscribe.template.conf`
 
@@ -108,6 +108,12 @@ Note, MQTTSubscribeDriver can also be configured and weewx.conf updated interact
     ```
 
 2. Edit the `mqttsubscribe.template.conf` file
+
+    For example,
+
+    ```
+   nano mqttsubscribe.template.conf
+    ```
 
 3. Validate and test the `mqttsubscribe.template.conf` file
 
@@ -133,24 +139,26 @@ Note, MQTTSubscribeDriver can also be configured and weewx.conf updated interact
 
 ### pip Install: Set driver to MQTTSubcribe
 
-    If running as a driver,
+If running as a driver,
 
-    ```
-    weectl station reconfigure --driver=user.MQTTSubscribe --no-prompt
-    ```
+```
+weectl station reconfigure --driver=user.MQTTSubscribe --no-prompt
+```
 
 ### pip Install: Update weewx.conf with MQTTSubscribe's configuration
 
-    ```
-    python3 $USER_DIR/MQTTSubscribe.py configure driver --replace-with mqttsubscribe.template.conf --conf $CONFIG_FILE
-    ```
+If running as a driver,
 
-    If running as a service,
+```
+python3 $USER_DIR/MQTTSubscribe.py configure driver --replace-with mqttsubscribe.template.conf --conf $CONFIG_FILE
+```
 
-    ```
-    python3 $USER_DIR/MQTTSubscribe.py configure service --replace-with mqttsubscribe.template.conf --conf $CONFIG_FILE
+If running as a service,
 
-    ```
+```
+python3 $USER_DIR/MQTTSubscribe.py configure service --replace-with mqttsubscribe.template.conf --conf $CONFIG_FILE
+
+```
 
 ### package Install: Install MQTTSubscribe
 
@@ -179,7 +187,7 @@ Note, MQTTSubscribeDriver can also be configured and weewx.conf updated interact
 [weectl station](https://weewx.com/docs/5.0/utilities/weectl-about/). This method has the following disadvantages:
 
 * The options that can be configured are limited.
-* The configuration options can not be validated and test before restarting WeeWX.
+* The configuration options can not be validated and tested before restarting WeeWX.
 
 1. Create an example `mqttsubscribe.template.conf`
 
@@ -188,6 +196,12 @@ Note, MQTTSubscribeDriver can also be configured and weewx.conf updated interact
     ```
 
 2. Edit the `mqttsubscribe.template.conf` file
+
+    For example,
+
+    ```
+    nano mqttsubscribe.template.conf
+    ```
 
 3. Validate and test the `mqttsubscribe.template.conf` file
 
@@ -213,22 +227,24 @@ Note, MQTTSubscribeDriver can also be configured and weewx.conf updated interact
 
 ### package Install: Set driver to MQTTSubcribe
 
-    ```
-    sudo weectl station reconfigure --driver=user.MQTTSubscribe --no-prompt
-    ```
+```
+sudo weectl station reconfigure --driver=user.MQTTSubscribe --no-prompt
+```
 
 ### package Install: Update weewx.conf with MQTTSubscribe's configuration
 
-    ```
-    sudo PYTHONPATH=$BIN_DIR python3 $USER_DIR/MQTTSubscribe.py configure driver --replace-with mqttsubscribe.template.conf --conf $CONFIG_FILE
-    ```
+If running as a driver,
 
-    If running as a service,
+```
+sudo PYTHONPATH=$BIN_DIR python3 $USER_DIR/MQTTSubscribe.py configure driver --replace-with mqttsubscribe.template.conf --conf $CONFIG_FILE
+```
 
-    ```
-    sudo PYTHONPATH=$BIN_DIR python3 $USER_DIR/MQTTSubscribe.py configure service --replace-with mqttsubscribe.template.conf --conf $CONFIG_FILE
+If running as a service,
 
-    ```
+```
+sudo PYTHONPATH=$BIN_DIR python3 $USER_DIR/MQTTSubscribe.py configure service --replace-with mqttsubscribe.template.conf --conf $CONFIG_FILE
+
+```
 
 ## Updating MQTTSubscribe
 
