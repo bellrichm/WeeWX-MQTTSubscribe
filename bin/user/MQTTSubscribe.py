@@ -2788,7 +2788,11 @@ For more information see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/
             #del self.config_dict[self.section]
             self.config_dict[self.section] = self.config_input_dict
         elif self.action == '--validate':
-            self._validate(self.section, "", self.config_input_dict, self.config_spec['MQTTSubscribe'], MQTTSubscribeConfiguration.deprecated_options)
+            self._validate(self.section,
+                           "",
+                           self.config_input_dict,
+                           self.config_spec['MQTTSubscribe'],
+                           MQTTSubscribeConfiguration.deprecated_options)
         elif self.action == '--update-from':
             self.config_dict[self.section] = self.config_input_dict
         else:
@@ -2808,6 +2812,7 @@ For more information see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/
             #self.config_dict.write()
 
     def _validate(self, parent, hierarchy, section, section_configspec, section_deprecated_options):
+        # pylint: disable=too-many-arguments, disable=too-many-branches
         hierarchy += f"{parent}-"
         for key, value in section.items():
             if key in section.sections:
