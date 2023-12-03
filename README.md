@@ -88,7 +88,7 @@ The notation vX.Y.Z designates the version of MQTTSubscribe being installed.
 3. Install MQTTSubscribe
 
     ```
-    sudo weectl extension install https://github.com/bellrichm/WeeWX-MQTTSubscribe/archive/refs/tags/vX.Y.Z.tar.gz
+    sudo weectl extension install https://github.com/bellrichm/WeeWX-MQTTSubscribe/archive/refs/tags/latest.zip
     ```
 
     All of the releases can be found [here](https://github.com/bellrichm/WeeWX-MQTTSubscribe/releases) and this is the [latest](https://github.com/bellrichm/WeeWX-MQTTSubscribe/releases/latest).
@@ -112,7 +112,7 @@ Note, MQTTSubscribeDriver can also be configured and weewx.conf updated interact
     For example,
 
     ```
-   nano mqttsubscribe.template.conf
+    nano mqttsubscribe.template.conf
     ```
 
 3. Validate and test the `mqttsubscribe.template.conf` file
@@ -180,7 +180,7 @@ weectl station reconfigure --driver=user.MQTTSubscribe --no-prompt
 2. Install MQTTSubscribe
 
     ```
-    sudo weectl extension install https://github.com/bellrichm/WeeWX-MQTTSubscribe/archive/refs/tags/vX.Y.Z.tar.gz
+    sudo weectl extension install https://github.com/bellrichm/WeeWX-MQTTSubscribe/archive/refs/tags/latest.zip
     ```
 
     All of the releases can be found [here](https://github.com/bellrichm/WeeWX-MQTTSubscribe/releases) and this is the [latest](https://github.com/bellrichm/WeeWX-MQTTSubscribe/releases/latest).
