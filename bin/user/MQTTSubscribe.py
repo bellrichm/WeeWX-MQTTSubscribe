@@ -2295,6 +2295,7 @@ class MQTTSubscribeConfiguration():
             'conversion_func': ['MQTTSubscribe', 'topics', 'REPLACE_ME', 'REPLACE_ME'],
             'conversion_type': ['MQTTSubscribe', 'topics', 'REPLACE_ME', 'REPLACE_ME'],
             'expires_after': ['MQTTSubscribe', 'topics', 'REPLACE_ME', 'REPLACE_ME'],
+            'filter_out_message_when': ['MQTTSubscribe', 'topics', 'REPLACE_ME', 'REPLACE_ME'],
             'ignore_msg_id_field': ['MQTTSubscribe', 'topics', 'REPLACE_ME', 'REPLACE_ME'],
             'subfields': ['MQTTSubscribe', 'topics', 'REPLACE_ME', 'REPLACE_ME'],
             'total_wrap_around': ['MQTTSubscribe', 'topics', 'REPLACE_ME', 'REPLACE_ME'],
