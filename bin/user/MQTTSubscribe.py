@@ -2244,7 +2244,8 @@ class MQTTSubscribeConfiguration():
 
     deprecated_options = {
         'message_callback': {
-            'deprecated_msg': "Deprecated: '[[mesage_callback]] is replaced with [[topics]][[[message]]]",
+            'deprecated_msg': "\n".join(["Deprecated: '[[mesage_callback]]' is replaced with '[[topics]][[[message]]]'",
+                               "See, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/Configuring#the-topics-section"]),
         },
         'topics': {
             'use_topic_as_fieldname': {
@@ -2651,7 +2652,7 @@ For more information see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/
                             help="The configuration that will replace the existing configuration.")
         configure_service_group.add_argument("--update-from",
                             help="The configuration that will update (and add to) the existing configuration.")
-        configure_service_group.add_argument("--validate",
+        configure_service_group.add_argument("--validate", action="store_true", dest="validate",
                             help="Validate the configuration file.")
         # The following is only used by the service
         configurator_service_parser.add_argument("--enable", dest="enable",
@@ -2676,7 +2677,7 @@ For more information see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/
                             help="The configuration that will replace the existing configuration.")
         configure_driver_group.add_argument("--update-from",
                             help="The configuration that will update (and add to) the existing configuration.")
-        configure_driver_group.add_argument("--validate",
+        configure_driver_group.add_argument("--validate", action="store_true", dest="validate",
                             help="Validate the configuration file.")
         configure_driver_group.add_argument("--no-backup", action="store_true", default=False,
                             help="When updating the WeeWX configuration (--conf), do not back it up.")
@@ -2748,7 +2749,7 @@ For more information see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/
             self.config_output_path = os.path.abspath(options.conf)
         if options.validate:
             self.action = '--validate'
-            config_input = options.validate
+            config_input = os.path.abspath(options.conf)
         if options.update_from:
             self.action = '--update-from'
             config_input = options.update_from
