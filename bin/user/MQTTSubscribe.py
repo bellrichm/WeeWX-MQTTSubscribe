@@ -2241,6 +2241,18 @@ class MQTTSubscribeDriverConfEditor(weewx.drivers.AbstractConfEditor): # pragma:
 
 class MQTTSubscribeConfiguration():
     """ Manage the MQTTSubscribe configuration. """
+
+    deprecated_options = {
+        'message_callback': {
+            'deprecated_msg': "Deprecated: '[[mesage_callback]] is replaced with [[topics]][[[message]]]",
+        },
+        'topics': {
+            'use_topic_as_fieldname': {
+                'deprecated_msg': "Deprecated: '[[topics]][[[use_topic_as_fieldname]]]' is no longer needed."
+            },
+        },
+    }
+
     def __init__(self, section=None):
         self.section = section
 
@@ -2775,7 +2787,7 @@ For more information see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/
             #del self.config_dict[self.section]
             self.config_dict[self.section] = self.config_input_dict
         elif self.action == '--validate':
-            self._validate("", "", self.config_input_dict, self.config_spec['MQTTSubscribe'])
+            self._validate(self.section, "", self.config_input_dict, self.config_spec['MQTTSubscribe'], MQTTSubscribeConfiguration.deprecated_options)
         elif self.action == '--update-from':
             self.config_dict[self.section] = self.config_input_dict
         else:
@@ -2794,15 +2806,21 @@ For more information see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/
             #self.config_dict.filename = self.config_output_path
             #self.config_dict.write()
 
-    def _validate(self, parent, hierarchy, section, section_configspec):
-        hierarchy += f"{section.name}-"
+    def _validate(self, parent, hierarchy, section, section_configspec, section_deprecated_options):
+        hierarchy += f"{parent}-"
         for key, value in section.items():
             if key in section.sections:
+                if key in section_deprecated_options and 'deprecated_msg' in section_deprecated_options[key]:
+                    print(section_deprecated_options[key]['deprecated_msg'])
                 continue
+
             if key not in section_configspec:
                 print(f"ERROR: Unknown option: {hierarchy}{key}")
-            if "REPLACE_ME" in value:
+            elif "REPLACE_ME" in value:
                 print(f"ERROR: Specify a value for: {hierarchy}{key}")
+            else:
+                if key in section_deprecated_options and 'deprecated_msg' in section_deprecated_options[key]:
+                    print(section_deprecated_options[key]['deprecated_msg'])
 
         for subsection in section.sections:
             if "REPLACE_ME" in subsection:
@@ -2811,14 +2829,27 @@ For more information see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/
                 self._validate(subsection,
                                hierarchy,
                                section[subsection],
-                               self.config_spec['MQTTSubscribe']['topics']['REPLACE_ME']["REPLACE_ME"])
+                               self.config_spec['MQTTSubscribe']['topics']['REPLACE_ME']["REPLACE_ME"],
+                               section_deprecated_options.get('MQTTSubscribe', {})\
+                                                         .get('topics', {})\
+                                                         .get('REPLACE_ME', {})\
+                                                         .get('REPLACE_ME', {})
+                               )
             elif subsection not in section_configspec.sections:
                 if "REPLACE_ME" in section_configspec.sections:
-                    self._validate(subsection, hierarchy, section[subsection], section_configspec["REPLACE_ME"])
+                    self._validate(subsection,
+                                   hierarchy,
+                                   section[subsection],
+                                   section_configspec["REPLACE_ME"],
+                                   section_deprecated_options.get("REPLACE_ME", {}))
                 else:
                     print(f"ERROR: Unknown option: {hierarchy}{subsection}")
             else:
-                self._validate(subsection, hierarchy, section[subsection], section_configspec[subsection])
+                self._validate(subsection,
+                               hierarchy,
+                               section[subsection],
+                               section_configspec[subsection],
+                               section_deprecated_options.get(subsection, {}))
 
 # To Run
 # setup.py install:
