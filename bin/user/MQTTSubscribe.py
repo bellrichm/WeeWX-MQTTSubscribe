@@ -36,7 +36,11 @@ CONFIG_SPEC_TEXT = \
     # Turn the service on and off.
     # Default is true.
     # Only used by the service.
-    enable = false    
+    enable = false
+    
+    # Controls if validation errors raise an exception (stopping WeeWX from starting) or only logged.
+    # Default is true
+    log_validation_errors = false
 
     # The binding, loop or archive.
     # Default is loop.
@@ -1804,7 +1808,11 @@ class MQTTSubscriber():
         for msg in warn_msgs:
             self.logger.info(msg)
         if len(error_msgs) > 0:
-            raise ValueError('\n'.join(error_msgs))
+            if service_dict.get('log_validation_errors', False):
+                for msg in error_msgs:
+                    self.logger.info(msg)
+            else:
+                raise ValueError('\n'.join(error_msgs))
 
     @property
     def queues(self):
