@@ -465,7 +465,7 @@ import weewx.drivers
 from weewx.engine import StdEngine, StdService
 # pylint: enable=wrong-import-position
 
-VERSION = '3.0.0-rc02'
+VERSION = '3.0.0-rc03a'
 DRIVER_NAME = 'MQTTSubscribeDriver'
 DRIVER_VERSION = VERSION
 
@@ -2243,19 +2243,52 @@ class MQTTSubscribeConfiguration():
     """ Manage the MQTTSubscribe configuration. """
 
     deprecated_options = {
+        'overlap': {
+            'deprecated_severity': 'ERROR',
+            'deprecated_msg': "'overlap' is deprecated, use 'adjust_start_time'",
+        },
+        'topic': {
+            'deprecated_severity': 'ERROR',
+            'deprecated_msg': "'topic' is deprecated, use '[[topics]][[[topic name]]]'",
+        },
+        'archive_field_cache': {
+            'deprecated_severity': 'ERROR',
+            'deprecated_msg': "'archive_field_cache' is deprecated, use '[[topics]][[[topic name]]][[[[field name]]]]'",
+        },
         'message_callback': {
+            'deprecated_severity': 'WARN',
             'deprecated_msg': "\n".join(["Deprecated: '[[mesage_callback]]' is replaced with '[[topics]][[[message]]]'",
                                "See, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/Configuring#the-topics-section"]),
+            'contains_total': {
+                'deprecated_severity': 'ERROR',
+                'deprecated_msg': "'contains_total' is deprecated use '[[topics]][[[topic name]]][[[[field name]]]]' contains_total setting.",
+            },
+            'full_topic_fieldname': {
+                'deprecated_severity': 'ERROR',
+                'deprecated_msg': "'full_topic_fieldname' is deprecated, use '[[topics]][[[topic name]]][[[[field name]]]]'",
+            },
+            'fields': {
+                'deprecated_severity': 'ERROR',
+                'deprecated_msg': "'fields' is deprecated, use '[[topics]][[[topic name]]][[[[field name]]]]'",
+            },
+            'label_map': {
+                'deprecated_severity': 'ERROR',
+                'deprecated_msg': "'label_map' is deprecated use '[[topics]][[[topic name]]][[[[field name]]]]' name setting.",
+            },
         },
         'topics': {
             'use_topic_as_fieldname': {
-                'deprecated_msg': "Deprecated: '[[topics]][[[use_topic_as_fieldname]]]' is no longer needed."
+                'deprecated_severity': 'WARN',
+                'deprecated_msg': "Deprecated: '[[topics]][[[use_topic_as_fieldname]]]' is no longer needed.",
+
             },
         },
     }
 
     def __init__(self, section=None):
         self.section = section
+
+        self.config_spec = configobj.ConfigObj(CONFIG_SPEC_TEXT.splitlines())
 
     @property
     def default_config(self):
@@ -2351,6 +2384,70 @@ class MQTTSubscribeConfiguration():
     def default_stanza(self):
         """ The default configuration stanza. """
         return '\n'.join(self.default_config.write())
+
+    def validate(self, parent, hierarchy, section, section_configspec, section_deprecated_options, error_msgs, warn_msgs):
+        # pylint: disable=too-many-arguments, disable=too-many-branches
+        hierarchy += f"{parent}-"
+        for key, value in section.items():
+            if key in section.sections:
+                if key in section_deprecated_options and 'deprecated_msg' in section_deprecated_options[key]:
+                    if section_deprecated_options[key]['deprecated_severity'] == 'WARN':
+                        warn_msgs.append(section_deprecated_options[key]['deprecated_msg'])
+                    else:
+                        error_msgs.append(section_deprecated_options[key]['deprecated_msg'])
+                continue
+
+            if key not in section_configspec:
+                if key in section_deprecated_options and 'deprecated_msg' in section_deprecated_options[key]:
+                    if section_deprecated_options[key]['deprecated_severity'] == 'WARN':
+                        warn_msgs.append(section_deprecated_options[key]['deprecated_msg'])
+                    else:
+                        error_msgs.append(section_deprecated_options[key]['deprecated_msg'])
+                else:
+                    error_msgs.append(f"ERROR: Unknown option: {hierarchy}{key}")
+            elif "REPLACE_ME" in value:
+                error_msgs.append(f"ERROR: Specify a value for: {hierarchy}{key}")
+            else:
+                if key in section_deprecated_options and 'deprecated_msg' in section_deprecated_options[key]:
+                    if section_deprecated_options[key]['deprecated_severity'] == 'WARN':
+                        warn_msgs.append(section_deprecated_options[key]['deprecated_msg'])
+                    else:
+                        error_msgs.append(section_deprecated_options[key]['deprecated_msg'])
+
+        for subsection in section.sections:
+            if "REPLACE_ME" in subsection:
+                error_msgs.append(f"ERROR: Specify a value for: {hierarchy}{subsection}")
+            elif subsection not in section_configspec.sections and parent == 'subfields':
+                self.validate(subsection,
+                               hierarchy,
+                               section[subsection],
+                               self.config_spec['MQTTSubscribe']['topics']['REPLACE_ME']["REPLACE_ME"],
+                               section_deprecated_options.get('MQTTSubscribe', {})\
+                                                         .get('topics', {})\
+                                                         .get('REPLACE_ME', {})\
+                                                         .get('REPLACE_ME', {}),
+                                error_msgs,
+                                warn_msgs
+                               )
+            elif subsection not in section_configspec.sections:
+                if "REPLACE_ME" in section_configspec.sections:
+                    self.validate(subsection,
+                                   hierarchy,
+                                   section[subsection],
+                                   section_configspec["REPLACE_ME"],
+                                   section_deprecated_options.get("REPLACE_ME", {}),
+                                   error_msgs,
+                                   warn_msgs)
+                else:
+                    error_msgs.append(f"ERROR: Unknown option: {hierarchy}{subsection}")
+            else:
+                self.validate(subsection,
+                               hierarchy,
+                               section[subsection],
+                               section_configspec[subsection],
+                               section_deprecated_options.get(subsection, {}),
+                               error_msgs,
+                               warn_msgs)
 
 class Simulator():
     """ Run the service or driver. """
@@ -2788,11 +2885,20 @@ For more information see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/
             #del self.config_dict[self.section]
             self.config_dict[self.section] = self.config_input_dict
         elif self.action == '--validate':
-            self._validate(self.section,
+            mqttsubscribe_configuration = MQTTSubscribeConfiguration(None)
+            error_msgs = []
+            warn_msgs = []
+            mqttsubscribe_configuration.validate(self.section,
                            "",
                            self.config_input_dict,
                            self.config_spec['MQTTSubscribe'],
-                           MQTTSubscribeConfiguration.deprecated_options)
+                           MQTTSubscribeConfiguration.deprecated_options,
+                           error_msgs,
+                           warn_msgs)
+            for msg in warn_msgs:
+                print(msg)
+            for msg in error_msgs:
+                print(msg)
         elif self.action == '--update-from':
             self.config_dict[self.section] = self.config_input_dict
         else:
@@ -2810,52 +2916,6 @@ For more information see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/
             weecfg.save(self.config_dict, self.config_output_path, not self.no_backup)
             #self.config_dict.filename = self.config_output_path
             #self.config_dict.write()
-
-    def _validate(self, parent, hierarchy, section, section_configspec, section_deprecated_options):
-        # pylint: disable=too-many-arguments, disable=too-many-branches
-        hierarchy += f"{parent}-"
-        for key, value in section.items():
-            if key in section.sections:
-                if key in section_deprecated_options and 'deprecated_msg' in section_deprecated_options[key]:
-                    print(section_deprecated_options[key]['deprecated_msg'])
-                continue
-
-            if key not in section_configspec:
-                print(f"ERROR: Unknown option: {hierarchy}{key}")
-            elif "REPLACE_ME" in value:
-                print(f"ERROR: Specify a value for: {hierarchy}{key}")
-            else:
-                if key in section_deprecated_options and 'deprecated_msg' in section_deprecated_options[key]:
-                    print(section_deprecated_options[key]['deprecated_msg'])
-
-        for subsection in section.sections:
-            if "REPLACE_ME" in subsection:
-                print(f"ERROR: Specify a value for: {hierarchy}{subsection}")
-            elif subsection not in section_configspec.sections and parent == 'subfields':
-                self._validate(subsection,
-                               hierarchy,
-                               section[subsection],
-                               self.config_spec['MQTTSubscribe']['topics']['REPLACE_ME']["REPLACE_ME"],
-                               section_deprecated_options.get('MQTTSubscribe', {})\
-                                                         .get('topics', {})\
-                                                         .get('REPLACE_ME', {})\
-                                                         .get('REPLACE_ME', {})
-                               )
-            elif subsection not in section_configspec.sections:
-                if "REPLACE_ME" in section_configspec.sections:
-                    self._validate(subsection,
-                                   hierarchy,
-                                   section[subsection],
-                                   section_configspec["REPLACE_ME"],
-                                   section_deprecated_options.get("REPLACE_ME", {}))
-                else:
-                    print(f"ERROR: Unknown option: {hierarchy}{subsection}")
-            else:
-                self._validate(subsection,
-                               hierarchy,
-                               section[subsection],
-                               section_configspec[subsection],
-                               section_deprecated_options.get(subsection, {}))
 
 # To Run
 # setup.py install:

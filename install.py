@@ -5,15 +5,13 @@
 #
 """ Installer for MTTQSubscribe driver and service. """
 
-import os
-
 from io import StringIO
 
 import configobj
 
 from weecfg.extension import ExtensionInstaller
 
-VERSION = '3.0.0-rc02'
+VERSION = '3.0.0-rc03a'
 
 MQTTSUBSCRIBESERVICE_CONFIG = """
 [MQTTSubscribeService]
