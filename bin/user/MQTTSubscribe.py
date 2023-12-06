@@ -107,6 +107,9 @@ CONFIG_SPEC_TEXT = \
     # Only used by the driver
     max_loop_interval= 0
 
+    # Experimental option to specify different message parsers.
+    message_callback_provider = 
+
     # The minimum time in seconds that the client will wait before trying to reconnect.
     # Default is 1
     min_delay = 1    
