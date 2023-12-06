@@ -2422,7 +2422,7 @@ class MQTTSubscribeConfiguration():
                         error_msgs.append(section_deprecated_options[key]['deprecated_msg'])
 
         for subsection in section.sections:
-            if "REPLACE_ME" in subsection: # todo ==
+            if subsection == 'REPLAC_ME':
                 error_msgs.append(f"ERROR: Specify a value for: {hierarchy}{subsection}")
             elif subsection not in section_configspec.sections and parent == 'subfields':
                 self.validate(subsection,
