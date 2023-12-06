@@ -209,4 +209,8 @@ class TestWind(TestService):
             self.runit('keyword', file_pointer)
 
 if __name__ == '__main__':
-    unittest.main(exit=False, failfast=True)
+    test_suite = unittest.TestSuite()
+    test_suite.addTest(TestWindIndividualTopics('test_wind_individual_topic'))
+    unittest.TextTestRunner().run(test_suite)
+
+    # unittest.main(exit=False, failfast=True)
