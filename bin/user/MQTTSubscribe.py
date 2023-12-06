@@ -1789,23 +1789,22 @@ class MQTTSubscriber():
             raise weewx.WeeWxIOError(exception)
 
     def _check_deprecated_options(self, service_dict):
-        if 'topic' in service_dict:
-            raise ValueError("'topic' is deprecated, use '[[topics]][[[topic name]]]'")
-        if 'overlap' in service_dict:
-            raise ValueError("'overlap' is deprecated, use 'adjust_start_time'")
-        if 'archive_field_cache' in service_dict:
-            raise ValueError("'archive_field_cache' is deprecated, use '[[topics]][[[topic name]]][[[[field name]]]]'")
-        if 'message_callback' in service_dict:
-            if 'full_topic_fieldname' in service_dict['message_callback']:
-                raise ValueError("'full_topic_fieldname' is deprecated, use '[[topics]][[[topic name]]][[[[field name]]]]'")
-            if 'contains_total' in service_dict['message_callback']:
-                raise ValueError("'contains_total' is deprecated use '[[topics]][[[topic name]]][[[[field name]]]]' contains_total setting.")
-            if 'label_map' in service_dict['message_callback']:
-                raise ValueError("'label_map' is deprecated use '[[topics]][[[topic name]]][[[[field name]]]]' name setting.")
-            if 'fields' in service_dict['message_callback']:
-                raise ValueError("'fields' is deprecated, use '[[topics]][[[topic name]]][[[[field name]]]]'")
-            if 'use_topic_as_fieldname' in service_dict['topics']:
-                self.logger.info("'use_topic_as_fieldname' option is no longer needed and can be removed.")
+        self.config_spec = configobj.ConfigObj(CONFIG_SPEC_TEXT.splitlines())
+        mqttsubscribe_configuration = MQTTSubscribeConfiguration(None)
+        error_msgs = []
+        warn_msgs = []
+        mqttsubscribe_configuration.validate("MQTTSubscribe",
+                        "",
+                        service_dict,
+                        self.config_spec['MQTTSubscribe'],
+                        MQTTSubscribeConfiguration.deprecated_options,
+                        error_msgs,
+                        warn_msgs)
+
+        for msg in warn_msgs:
+            self.logger.info(msg)
+        if len(error_msgs) > 0:
+            raise ValueError('\n'.join(error_msgs))
 
     @property
     def queues(self):
@@ -2279,7 +2278,7 @@ class MQTTSubscribeConfiguration():
         'topics': {
             'use_topic_as_fieldname': {
                 'deprecated_severity': 'WARN',
-                'deprecated_msg': "Deprecated: '[[topics]][[[use_topic_as_fieldname]]]' is no longer needed.",
+                'deprecated_msg': "'use_topic_as_fieldname' option is no longer needed and can be removed.",
 
             },
         },
@@ -2386,6 +2385,7 @@ class MQTTSubscribeConfiguration():
         return '\n'.join(self.default_config.write())
 
     def validate(self, parent, hierarchy, section, section_configspec, section_deprecated_options, error_msgs, warn_msgs):
+        """ Validate a MQTTSubscribe configuration."""
         # pylint: disable=too-many-arguments, disable=too-many-branches
         hierarchy += f"{parent}-"
         for key, value in section.items():
@@ -2405,7 +2405,7 @@ class MQTTSubscribeConfiguration():
                         error_msgs.append(section_deprecated_options[key]['deprecated_msg'])
                 else:
                     error_msgs.append(f"ERROR: Unknown option: {hierarchy}{key}")
-            elif "REPLACE_ME" in value:
+            elif value == 'REPLACE_ME':
                 error_msgs.append(f"ERROR: Specify a value for: {hierarchy}{key}")
             else:
                 if key in section_deprecated_options and 'deprecated_msg' in section_deprecated_options[key]:

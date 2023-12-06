@@ -132,9 +132,6 @@ class TestInitialization(unittest.TestCase):
         port = random.randint(1000, 9999)
         keepalive = random.randint(1, 10)
         config_dict = {
-            'console': False,
-            'keyword_delimiter': None,
-            'keyword_separator': None,
             'host': host,
             'keepalive': keepalive,
             'port': port,
@@ -166,9 +163,6 @@ class TestInitialization(unittest.TestCase):
         port = random.randint(1000, 9999)
         keepalive = random.randint(1, 10)
         config_dict = {
-            'console': False,
-            'keyword_delimiter': None,
-            'keyword_separator': None,
             'host': host,
             'keepalive': keepalive,
             'port': port,
@@ -200,9 +194,6 @@ class TestInitialization(unittest.TestCase):
         port = random.randint(1000, 9999)
         keepalive = random.randint(1, 10)
         config_dict = {
-            'console': False,
-            'keyword_delimiter': None,
-            'keyword_separator': None,
             'host': host,
             'keepalive': keepalive,
             'port': port,
@@ -236,9 +227,6 @@ class TestInitialization(unittest.TestCase):
         username = random_string()
         password = random_string()
         config_dict = {
-            'console': False,
-            'keyword_delimiter': None,
-            'keyword_separator': None,
             'host': host,
             'keepalive': keepalive,
             'port': port,
@@ -625,7 +613,8 @@ class TestDeprecatedOptions(unittest.TestCase):
                     with self.assertRaises(ValueError) as error:
                         MQTTSubscriber(config, mock_logger)
                     self.assertEqual(error.exception.args[0],
-                                     "'label_map' is deprecated use '[[topics]][[[topic name]]][[[[field name]]]]' name setting.")
+                                     "'label_map' is deprecated use '[[topics]][[[topic name]]][[[[field name]]]]' name setting.\n"\
+                                     "ERROR: Unknown option: MQTTSubscribe-message_callback-label_map")
 
     def test_fields_is_deprecated(self):
         config_dict = {}
@@ -641,11 +630,13 @@ class TestDeprecatedOptions(unittest.TestCase):
                 with mock.patch('user.MQTTSubscribe.TopicManager'):
                     with self.assertRaises(ValueError) as error:
                         MQTTSubscriber(config, mock_logger)
-                    self.assertEqual(error.exception.args[0], "'fields' is deprecated, use '[[topics]][[[topic name]]][[[[field name]]]]'")
+                    self.assertEqual(error.exception.args[0],
+                                     "'fields' is deprecated, use '[[topics]][[[topic name]]][[[[field name]]]]'\n"\
+                                     "ERROR: Unknown option: MQTTSubscribe-message_callback-fields"
+)
 
     def test_use_topic_as_fieldname(self):
         config_dict = {}
-        config_dict['message_callback'] = {}
         config_dict['topics'] = {}
         config_dict['topics']['use_topic_as_fieldname'] = 'true'
         config = configobj.ConfigObj(config_dict)
@@ -840,10 +831,7 @@ class Teston_connect(unittest.TestCase):
     unit_system_name = 'US'
     unit_system = test_weewx_stubs.UNITS_CONSTANTS[unit_system_name]
     config_dict = {
-        'console': False,
-        'keyword_delimiter': None,
-        'keyword_separator': None,
-        'host': 'host',
+        'host': random_string(),
         'keepalive': random.randint(1, 10),
         'port': random.randint(1, 10),
         'username': random_string(),
@@ -855,7 +843,6 @@ class Teston_connect(unittest.TestCase):
         topic1 = random_string()
         topic2 = random_string()
         config_dict = dict(self.config_dict)
-        config_dict['unit_system'] = self.unit_system_name
         config_dict['topics'] = {}
         config_dict['topics'][topic1] = {}
         config_dict['topics'][topic1]['subscribe'] = True
