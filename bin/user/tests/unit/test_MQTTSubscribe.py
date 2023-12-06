@@ -613,8 +613,7 @@ class TestDeprecatedOptions(unittest.TestCase):
                     with self.assertRaises(ValueError) as error:
                         MQTTSubscriber(config, mock_logger)
                     self.assertEqual(error.exception.args[0],
-                                     "'label_map' is deprecated use '[[topics]][[[topic name]]][[[[field name]]]]' name setting.\n"\
-                                     "ERROR: Unknown option: MQTTSubscribe-message_callback-label_map")
+                                     "'label_map' is deprecated use '[[topics]][[[topic name]]][[[[field name]]]]' name setting.")
 
     def test_fields_is_deprecated(self):
         config_dict = {}
@@ -631,9 +630,7 @@ class TestDeprecatedOptions(unittest.TestCase):
                     with self.assertRaises(ValueError) as error:
                         MQTTSubscriber(config, mock_logger)
                     self.assertEqual(error.exception.args[0],
-                                     "'fields' is deprecated, use '[[topics]][[[topic name]]][[[[field name]]]]'\n"\
-                                     "ERROR: Unknown option: MQTTSubscribe-message_callback-fields"
-)
+                                     "'fields' is deprecated, use '[[topics]][[[topic name]]][[[[field name]]]]'")
 
     def test_use_topic_as_fieldname(self):
         config_dict = {}

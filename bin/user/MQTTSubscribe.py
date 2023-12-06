@@ -2243,14 +2243,17 @@ class MQTTSubscribeConfiguration():
 
     deprecated_options = {
         'overlap': {
+            # Removed in 2.0.0
             'deprecated_severity': 'ERROR',
             'deprecated_msg': "'overlap' is deprecated, use 'adjust_start_time'",
         },
         'topic': {
+            # Removed in 2.0.0
             'deprecated_severity': 'ERROR',
             'deprecated_msg': "'topic' is deprecated, use '[[topics]][[[topic name]]]'",
         },
         'archive_field_cache': {
+            # Removed in 2.0.0
             'deprecated_severity': 'ERROR',
             'deprecated_msg': "'archive_field_cache' is deprecated, use '[[topics]][[[topic name]]][[[[field name]]]]'",
         },
@@ -2259,18 +2262,22 @@ class MQTTSubscribeConfiguration():
             'deprecated_msg': "\n".join(["Deprecated: '[[mesage_callback]]' is replaced with '[[topics]][[[message]]]'",
                                "See, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/Configuring#the-topics-section"]),
             'contains_total': {
+                # Removed in 2.0.0
                 'deprecated_severity': 'ERROR',
                 'deprecated_msg': "'contains_total' is deprecated use '[[topics]][[[topic name]]][[[[field name]]]]' contains_total setting.",
             },
             'full_topic_fieldname': {
+                # Removed in 2.0.0
                 'deprecated_severity': 'ERROR',
                 'deprecated_msg': "'full_topic_fieldname' is deprecated, use '[[topics]][[[topic name]]][[[[field name]]]]'",
             },
             'fields': {
+                # Removed in 2.0.0
                 'deprecated_severity': 'ERROR',
                 'deprecated_msg': "'fields' is deprecated, use '[[topics]][[[topic name]]][[[[field name]]]]'",
             },
             'label_map': {
+                # Removed in 2.0.0
                 'deprecated_severity': 'ERROR',
                 'deprecated_msg': "'label_map' is deprecated use '[[topics]][[[topic name]]][[[[field name]]]]' name setting.",
             },
@@ -2415,7 +2422,7 @@ class MQTTSubscribeConfiguration():
                         error_msgs.append(section_deprecated_options[key]['deprecated_msg'])
 
         for subsection in section.sections:
-            if "REPLACE_ME" in subsection:
+            if "REPLACE_ME" in subsection: # todo ==
                 error_msgs.append(f"ERROR: Specify a value for: {hierarchy}{subsection}")
             elif subsection not in section_configspec.sections and parent == 'subfields':
                 self.validate(subsection,
@@ -2438,7 +2445,7 @@ class MQTTSubscribeConfiguration():
                                    section_deprecated_options.get("REPLACE_ME", {}),
                                    error_msgs,
                                    warn_msgs)
-                else:
+                elif subsection not in section_deprecated_options:
                     error_msgs.append(f"ERROR: Unknown option: {hierarchy}{subsection}")
             else:
                 self.validate(subsection,
