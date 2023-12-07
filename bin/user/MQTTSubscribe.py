@@ -2307,6 +2307,23 @@ class MQTTSubscribeConfiguration():
 
         self.config_spec = configobj.ConfigObj(CONFIG_SPEC_TEXT.splitlines())
 
+        self.topic_as_field_config_spec = copy.deepcopy(self.config_spec['MQTTSubscribe']['topics']['REPLACE_ME'])
+        del self.topic_as_field_config_spec['REPLACE_ME']
+        self.topic_as_field_config_spec.merge(self.config_spec['MQTTSubscribe']['topics']['REPLACE_ME']["REPLACE_ME"])
+
+        self.topic_as_field_deprecated_options = configobj.ConfigObj(MQTTSubscribeConfiguration.deprecated_options\
+                                                                .get('MQTTSubscribe', {})\
+                                                                .get('topics', {})\
+                                                                .get('REPLACE_ME', {}))
+        if 'REPLACE_ME' in self.topic_as_field_deprecated_options:
+            del self.topic_as_field_deprecated_options['REPLACE_ME']
+        self.topic_as_field_deprecated_options.merge(MQTTSubscribeConfiguration.deprecated_options\
+                                                                .get('MQTTSubscribe', {})\
+                                                                .get('topics', {})\
+                                                                .get('REPLACE_ME', {})\
+                                                                .get('REPLACE_ME', {}))
+
+
     @property
     def default_config(self):
         """ The default configuration. """
@@ -2435,6 +2452,15 @@ class MQTTSubscribeConfiguration():
         for subsection in section.sections:
             if subsection == 'REPLACE_ME':
                 error_msgs.append(f"ERROR: Specify a value for: {hierarchy}{subsection}")
+            elif parent == 'topics' and set(section[subsection].keys()).intersection(set(self.topic_as_field_config_spec.keys())):
+                self.validate(subsection,
+                              hierarchy,
+                              section[subsection],
+                              self.topic_as_field_config_spec,
+                              self.topic_as_field_deprecated_options,
+                              error_msgs,
+                              warn_msgs
+                              )
             elif subsection not in section_configspec.sections and parent == 'subfields':
                 self.validate(subsection,
                                hierarchy,
