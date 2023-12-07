@@ -1687,6 +1687,7 @@ class ManageWeewxConfig():
 
 class MQTTSubscriber():
     """ Manage MQTT sunscriptions. """
+    # pylint: disable=too-many-instance-attributes
     def __init__(self, service_dict, logger):
         self.logger = logger
 
@@ -2908,6 +2909,7 @@ For more information see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/
             self.config_input_dict = weeutil.config.deep_copy(config_input_dict[self.section])
 
     def run(self):
+        # pylint: disable=too-many-branches
         ''' Update the configuration. '''
         if self.action == '--add-from':
             weeutil.config.conditional_merge(self.config_dict[self.section], self.config_input_dict)
