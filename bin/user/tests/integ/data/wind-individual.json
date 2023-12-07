@@ -4,6 +4,7 @@
   ],
   "config": [
     "[MQTTSubscribeService]",
+    "    log_validation_errors = false",
     "    # Configuration for the message callback.",
     "    [[message_callback]]",
     "    # The topics to subscribe to.",
