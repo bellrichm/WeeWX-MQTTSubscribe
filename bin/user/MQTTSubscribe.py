@@ -2351,6 +2351,7 @@ class MQTTSubscribeConfiguration():
             'message_callback': ['MQTTSubscribe'],
             'max_delay': ['MQTTSubscribe'],
             'max_loop_interval': ['MQTTSubscribe'],
+            'message_callback_provider': ['MQTTSubscribe'],
             'min_delay': ['MQTTSubscribe'],
             'wait_before_retry': ['MQTTSubscribe'],
             'adjust_end_time': ['MQTTSubscribe', 'topics'],
