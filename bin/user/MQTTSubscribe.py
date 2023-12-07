@@ -1811,7 +1811,7 @@ class MQTTSubscriber():
         for msg in warn_msgs:
             self.logger.info(msg)
         if len(error_msgs) > 0:
-            if service_dict.get('log_validation_errors', False):
+            if to_bool(service_dict.get('log_validation_errors', False)):
                 for msg in error_msgs:
                     self.logger.info(msg)
             else:
