@@ -2270,6 +2270,7 @@ class MQTTSubscribeConfiguration():
             'deprecated_msg': "'archive_field_cache' is deprecated, use '[[topics]][[[topic name]]][[[[field name]]]]'",
         },
         'message_callback': {
+            # Deprecated in 2.1.0
             'deprecated_severity': 'WARN',
             'deprecated_msg': "\n".join(["Deprecated: '[[mesage_callback]]' is replaced with '[[topics]][[[message]]]'",
                                "See, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/Configuring#the-topics-section"]),
@@ -2296,6 +2297,7 @@ class MQTTSubscribeConfiguration():
         },
         'topics': {
             'use_topic_as_fieldname': {
+                # Deprecated in 2.0.0
                 'deprecated_severity': 'WARN',
                 'deprecated_msg': "'use_topic_as_fieldname' option is no longer needed and can be removed.",
 
