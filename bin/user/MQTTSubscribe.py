@@ -2963,8 +2963,6 @@ For more information see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/
 
         if self.action not in self.no_update_actions:
             weecfg.save(self.config_dict, self.config_output_path, not self.no_backup)
-            #self.config_dict.filename = self.config_output_path
-            #self.config_dict.write()
 
 # To Run
 # setup.py install:
