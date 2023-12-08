@@ -130,19 +130,21 @@
             "program": "${workspaceFolder}/bin/user/MQTTSubscribe.py",
             "args": [
                 "configure",
-                "service",
+                "driver",
+                //"service",
+
                 //"--create-example", "tmp/temp.conf",
-                //"--enable", "false",
-                //"--validate", "/home/richbell/mqttsubscribe.template.conf",
-                "--validate",
-                //"--replace-with", "/home/richbell/mqttsubscribe.template.conf",
-                "--conf", "/home/richbell/mqttsubscribe.template.conf",
-                //"--output", "${workspaceFolder}/tmp/temp.conf",
-               // "--add-from", "${workspaceFolder}/devtools/smoketest.archive.conf",                
                 //"--export", "${workspaceFolder}/tmp/temp.conf",
+                //"--enable", "false",
+                "--validate",
+
+                // "--add-from", "${workspaceFolder}/devtools/smoketest.archive.conf",
+                //"--replace-with", "/home/richbell/mqttsubscribe.template.conf",
                 //"--update-from", "${workspaceFolder}/devtools/smoketest.archive.conf",
-                //"${workspaceFolder}/devtools/debug.loop.conf",
-                //"/home/fork.weewx/weewx.debug.conf"
+
+                //"--conf", "/home/richbell/mqttsubscribe.template.conf",
+                "--conf", "/home/fork.weewx/weewx.debug.conf"
+                //"--output", "${workspaceFolder}/tmp/temp.conf",                
             ],            
             "console": "integratedTerminal"
         },        
