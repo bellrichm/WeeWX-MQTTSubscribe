@@ -2496,15 +2496,24 @@ class MQTTSubscribeConfiguration():
                                warn_msgs)
 
     def _validate_topics_section(self, parent, hierarchy, section, section_configspec, section_deprecated_options, error_msgs, warn_msgs):
-                # pylint: disable=too-many-arguments
-        #set(section[subsection].keys()).intersection(set(self.topic_as_field_config_spec.keys())):
-        self.validate(parent,
-                      hierarchy,
-                      section,
-                      section_configspec,
-                      section_deprecated_options,
-                      error_msgs,
-                      warn_msgs)
+        # pylint: disable=too-many-arguments
+        # Some fields are configured
+        if (len(section.sections) > 1) or (len(section.sections) == 1 and 'message' not in section.sections):
+            self.validate(parent,
+                        hierarchy,
+                        section,
+                        section_configspec,
+                        section_deprecated_options,
+                        error_msgs,
+                        warn_msgs)
+        else:
+            self.validate(parent,
+                        hierarchy,
+                        section,
+                        self.topic_as_field_config_spec,
+                        self.topic_as_field_deprecated_options,
+                        error_msgs,
+                        warn_msgs)
 
 class Simulator():
     """ Run the service or driver. """
