@@ -2456,15 +2456,13 @@ class MQTTSubscribeConfiguration():
         for subsection in section.sections:
             if subsection == 'REPLACE_ME':
                 error_msgs.append(f"ERROR: Specify a value for: {hierarchy}{subsection}")
-            elif parent == 'topics' and set(section[subsection].keys()).intersection(set(self.topic_as_field_config_spec.keys())):
-                self.validate(subsection,
-                              hierarchy,
-                              section[subsection],
-                              self.topic_as_field_config_spec,
-                              self.topic_as_field_deprecated_options,
-                              error_msgs,
-                              warn_msgs
-                              )
+            elif parent == 'topics' and subsection != 'message':
+                self._validate_topics_section(subsection,
+                                               hierarchy,
+                                               section[subsection],
+                                               section_configspec["REPLACE_ME"],
+                                               section_deprecated_options.get("REPLACE_ME", {}),
+                                               error_msgs, warn_msgs)
             elif subsection not in section_configspec.sections and parent == 'subfields':
                 self.validate(subsection,
                                hierarchy,
@@ -2496,6 +2494,17 @@ class MQTTSubscribeConfiguration():
                                section_deprecated_options.get(subsection, {}),
                                error_msgs,
                                warn_msgs)
+
+    def _validate_topics_section(self, parent, hierarchy, section, section_configspec, section_deprecated_options, error_msgs, warn_msgs):
+                # pylint: disable=too-many-arguments
+        #set(section[subsection].keys()).intersection(set(self.topic_as_field_config_spec.keys())):
+        self.validate(parent,
+                      hierarchy,
+                      section,
+                      section_configspec,
+                      section_deprecated_options,
+                      error_msgs,
+                      warn_msgs)
 
 class Simulator():
     """ Run the service or driver. """
