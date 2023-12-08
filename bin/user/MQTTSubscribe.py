@@ -2506,6 +2506,7 @@ class MQTTSubscribeConfiguration():
                         section_deprecated_options,
                         error_msgs,
                         warn_msgs)
+        # No fields configured, so the topic might be configured as a field.
         else:
             self.validate(parent,
                         hierarchy,
