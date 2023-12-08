@@ -76,6 +76,37 @@ class TestValidateTopicsSection(unittest.TestCase):
         self.assertEqual(warn_msgs, [])
         self.assertEqual(error_msgs, [f"ERROR: Unknown option: MQTTSubscribeDriver-topics-{topic_name}-name"])
 
+    def test_topic_has_a_message_configuration(self):
+        section = 'MQTTSubscribeDriver'
+        topic_name = 'topic1'
+
+        config_text = f'''
+[topics]
+    [[{topic_name}]]
+        qos = 0
+        name = foo
+        [[[message]]]
+'''
+
+        error_msgs = []
+        warn_msgs = []
+
+        SUT = MQTTSubscribeConfiguration(None)
+
+        SUT._validate_topics_section(topic_name,
+                        f'{section}-topics-',
+                        configobj.ConfigObj(config_text.splitlines())['topics'][topic_name],
+                        configobj.ConfigObj(CONFIG_SPEC_TEXT.splitlines())['MQTTSubscribe']['topics']['REPLACE_ME'],
+                        MQTTSubscribeConfiguration.deprecated_options\
+                            .get('MQTTSubscribe', {})\
+                            .get('topics', {})\
+                            .get('REPLACE_ME', {}),
+                        error_msgs,
+                        warn_msgs)
+
+        self.assertEqual(warn_msgs, [])
+        self.assertEqual(error_msgs, [])
+
 if __name__ == '__main__':
     # test_suite = unittest.TestSuite()
     # test_suite.addTest(TestValidateTopicsSection('test_topic_configured_as_field'))
