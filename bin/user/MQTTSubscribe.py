@@ -2779,7 +2779,7 @@ For more information see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/
                                       description=cls.description,
                                       formatter_class=argparse.RawDescriptionHelpFormatter)
         subparser.add_argument("--create-example",
-                            help="Export the existing configuration.")
+                            help="Create an example MQTTSubscribe configuration.")
 
         configurator_subparsers = subparser.add_subparsers(dest='type')
         configurator_service_parser = configurator_subparsers.add_parser('service')
