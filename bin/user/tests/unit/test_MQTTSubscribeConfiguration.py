@@ -63,7 +63,7 @@ class TestValidateTopicsSection(unittest.TestCase):
         SUT = MQTTSubscribeConfiguration(None)
 
         SUT._validate_topics_section(topic_name,
-                        f'{section}-topics',
+                        f'{section}-topics-',
                         configobj.ConfigObj(config_text.splitlines())['topics'][topic_name],
                         configobj.ConfigObj(CONFIG_SPEC_TEXT.splitlines())['MQTTSubscribe']['topics']['REPLACE_ME'],
                         MQTTSubscribeConfiguration.deprecated_options\
