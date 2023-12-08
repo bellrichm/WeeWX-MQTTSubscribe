@@ -2933,35 +2933,41 @@ For more information see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/
         elif self.action == '--replace-with':
             self.config_dict[self.section] = self.config_input_dict
         elif self.action == '--validate':
-            mqttsubscribe_configuration = MQTTSubscribeConfiguration(None)
-            error_msgs = []
-            warn_msgs = []
-            mqttsubscribe_configuration.validate(self.section,
-                           "",
-                           self.config_input_dict,
-                           self.config_spec['MQTTSubscribe'],
-                           MQTTSubscribeConfiguration.deprecated_options,
-                           error_msgs,
-                           warn_msgs)
-            for msg in warn_msgs:
-                print(msg)
-            for msg in error_msgs:
-                print(msg)
+            self._validate()
         elif self.action == '--update-from':
             self.config_dict[self.section] = self.config_input_dict
         else:
-            conf_editor = MQTTSubscribeDriverConfEditor()
-            conf_editor.existing_options = self.config_dict.get(self.section, {})
-            settings = conf_editor.prompt_for_settings()
-            # copy the keys that have been configured/channged, similar to weecfg.modify_config
-            for key, value in settings.items():
-                self.config_dict[self.section][key] = value
+            self._update_interactively()
 
         if self.section == 'MQTTSubscribService' and self.enable is not None:
             self.config_dict[self.section]['enable'] = self.enable
 
         if self.action not in self.no_update_actions:
-            weecfg.save(self.config_dict, self.config_output_path, not self.no_backup)
+            weecfg.save(self.config_dict, self.config_output_path, not self.no_backup)            
+
+    def _validate(self):
+        mqttsubscribe_configuration = MQTTSubscribeConfiguration(None)
+        error_msgs = []
+        warn_msgs = []
+        mqttsubscribe_configuration.validate(self.section,
+                        "",
+                        self.config_input_dict,
+                        self.config_spec['MQTTSubscribe'],
+                        MQTTSubscribeConfiguration.deprecated_options,
+                        error_msgs,
+                        warn_msgs)
+        for msg in warn_msgs:
+            print(msg)
+        for msg in error_msgs:
+            print(msg)
+    
+    def _update_interactively(self):
+        conf_editor = MQTTSubscribeDriverConfEditor()
+        conf_editor.existing_options = self.config_dict.get(self.section, {})
+        settings = conf_editor.prompt_for_settings()
+        # copy the keys that have been configured/channged, similar to weecfg.modify_config
+        for key, value in settings.items():
+            self.config_dict[self.section][key] = value
 
 # To Run
 # setup.py install:
