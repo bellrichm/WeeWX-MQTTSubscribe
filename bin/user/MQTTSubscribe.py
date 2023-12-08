@@ -2931,7 +2931,6 @@ For more information see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/
             self.config_spec.filename = self.config_output_path
             self.config_spec.write()
         elif self.action == '--replace-with':
-            #del self.config_dict[self.section]
             self.config_dict[self.section] = self.config_input_dict
         elif self.action == '--validate':
             mqttsubscribe_configuration = MQTTSubscribeConfiguration(None)
