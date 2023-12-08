@@ -2943,7 +2943,7 @@ For more information see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/
             self.config_dict[self.section]['enable'] = self.enable
 
         if self.action not in self.no_update_actions:
-            weecfg.save(self.config_dict, self.config_output_path, not self.no_backup)            
+            weecfg.save(self.config_dict, self.config_output_path, not self.no_backup)
 
     def _validate(self):
         mqttsubscribe_configuration = MQTTSubscribeConfiguration(None)
@@ -2960,7 +2960,7 @@ For more information see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/
             print(msg)
         for msg in error_msgs:
             print(msg)
-    
+
     def _update_interactively(self):
         conf_editor = MQTTSubscribeDriverConfEditor()
         conf_editor.existing_options = self.config_dict.get(self.section, {})

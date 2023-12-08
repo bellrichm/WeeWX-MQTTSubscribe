@@ -344,7 +344,7 @@ indent-string='    '
 max-line-length=145 # MQTTSubscribe override from 100
 
 # Maximum number of lines in a module.
-max-module-lines=3000 # MQTTSubscribe, up limit
+max-module-lines=3500 # MQTTSubscribe, up limit
 
 # Allow the body of a class to be on the same line as the declaration if body
 # contains single statement.
