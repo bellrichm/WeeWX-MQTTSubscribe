@@ -218,6 +218,12 @@ CONFIG_SPEC_TEXT = \
         # Default is None
         datetime_format = None
 
+        # Sets the default value for all topics.
+        # Setting the value to 'true' "opts out" and the desired topics/fields will need to set 'ignore = true'
+        # Valid values: True, False.
+        # Default is False.
+        ignore = False                    
+        
         # When the True, the MQTT data will continue to be processed even if its datetime is greater than the packet's datetime.
         # Default is False.
         # Only used by the service.
@@ -2350,6 +2356,7 @@ class MQTTSubscribeConfiguration():
             'archive_topic': ['MQTTSubscribe'],
             'clean_session': ['MQTTSubscribe'],
             'clientid': ['MQTTSubscribe'],
+            'console': ['MQTTSubscribe'],
             'keepalive': ['MQTTSubscribe'],
             'logging_filename': ['MQTTSubscribe'],
             'message_callback': ['MQTTSubscribe'],
@@ -2364,6 +2371,7 @@ class MQTTSubscribeConfiguration():
             'collect_observations': ['MQTTSubscribe', 'topics'],
             'collect_wind_across_loops': ['MQTTSubscribe', 'topics'],
             'datetime_format': ['MQTTSubscribe', 'topics'],
+            'ignore': ['MQTTSubscribe', 'topics'],
             'ignore_end_time': ['MQTTSubscribe', 'topics'],
             'ignore_start_time': ['MQTTSubscribe', 'topics'],
             'max_queue': ['MQTTSubscribe', 'topics'],
