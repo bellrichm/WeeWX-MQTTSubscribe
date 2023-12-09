@@ -93,6 +93,10 @@ CONFIG_SPEC_TEXT = \
     #    Where xxxx is a random number between 1000 and 9999.
     clientid =
 
+    # In addition to default logger, log to the console
+    # Default is False
+    console = False
+
     # The name of a file to log to.
     # The default is None.
     logging_filename = None
