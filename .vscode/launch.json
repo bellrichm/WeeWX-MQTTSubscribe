@@ -163,9 +163,38 @@
                 //"--no-prompt",
             ],            
             "console": "integratedTerminal"
-        },        
+        },
         {
-            "name": "Install",
+            "name": "Install 5.x",
+            "type": "python",
+            "request": "launch",
+
+            "program": "${workspaceFolder}/../weewx/src/weectl.py",
+            "args": [
+                "extension", "install",
+                //"--config", "${workspaceFolder}/../weewx/src/weewx_data/weewx.conf",
+                "--verbosity", "3",
+                //"--dry-run",
+                "."
+            ],            
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Uninstall 5.x",
+            "type": "python",
+            "request": "launch",
+
+            "program": "${workspaceFolder}/../weewx/src/weectl.py",
+            "args": [
+                "extension", "uninstall",
+                "--verbosity", "3",
+                //"--dry-run",
+                "MQTTSubscribe"
+            ],            
+            "console": "integratedTerminal"
+        },                         
+        {
+            "name": "Install 4.x",
             "type": "python",
             "request": "launch",
 
