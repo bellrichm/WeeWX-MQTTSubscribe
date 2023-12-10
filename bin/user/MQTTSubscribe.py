@@ -2824,8 +2824,10 @@ For more information see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/
                             help="Export the existing configuration.")
         configure_service_group.add_argument("--print-configspec",
                             help="Write the configspec to a file.")
+        configure_service_group.add_argument("--remove", action="store_true", dest="remove",
+                            help="Remove the MQTTSubscribe configuration section from '--conf'.")
         configure_service_group.add_argument("--replace-with",
-                            help="The configuration that will replace the existing configuration.")
+                            help="The configuration that will replace the existing configuration.")                            
         configure_service_group.add_argument("--update-from",
                             help="The configuration that will update (and add to) the existing configuration.")
         configure_service_group.add_argument("--validate", action="store_true", dest="validate",
@@ -2849,6 +2851,8 @@ For more information see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/
                             help="Export the existing configuration.")
         configure_driver_group.add_argument("--print-configspec",
                             help="Write the configspec to a file.")
+        configure_driver_group.add_argument("--remove", action="store_true", dest="remove",
+                            help="Remove the MQTTSubscribe configuration section from '--conf'.")                            
         configure_driver_group.add_argument("--replace-with",
                             help="The configuration that will replace the existing configuration.")
         configure_driver_group.add_argument("--update-from",
@@ -2919,6 +2923,10 @@ For more information see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/
         elif options.print_configspec:
             self.action = '--print-configspec'
             self.config_output_path = os.path.abspath(options.print_configspec)
+        if options.remove:
+            self.action = '--remove'
+            config_input = os.path.abspath(options.conf)
+            self.config_output_path = os.path.abspath(options.conf)
         if options.replace_with:
             self.action = '--replace-with'
             config_input = options.replace_with
@@ -2961,6 +2969,8 @@ For more information see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/
         elif self.action == '--print-configspec':
             self.config_spec.filename = self.config_output_path
             self.config_spec.write()
+        elif self.action == '--remove':
+            pass
         elif self.action == '--replace-with':
             self.config_dict[self.section] = self.config_input_dict
         elif self.action == '--validate':
