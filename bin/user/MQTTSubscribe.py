@@ -482,7 +482,7 @@ import weewx.drivers
 from weewx.engine import StdEngine, StdService
 # pylint: enable=wrong-import-position
 
-VERSION = '3.0.0-rc03a'
+VERSION = '3.0.0-rc03b'
 DRIVER_NAME = 'MQTTSubscribeDriver'
 DRIVER_VERSION = VERSION
 
@@ -2343,7 +2343,7 @@ class MQTTSubscribeConfiguration():
 
         example_intial_comment = f'''#
 # This is an example configuration for MQTTSubscribe
-# It was created on {datetime.date.today()} at {datetime.datetime.now().strftime("%H:%M:%S")} with MQTTSubscribe verdion{VERSION}
+# It was created on {datetime.date.today()} at {datetime.datetime.now().strftime("%H:%M:%S")} with MQTTSubscribe version {VERSION}
 #
 
 '''

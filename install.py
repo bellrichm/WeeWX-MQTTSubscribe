@@ -11,9 +11,17 @@ import configobj
 
 from weecfg.extension import ExtensionInstaller
 
-VERSION = '3.0.0-rc03a'
+VERSION = '3.0.0-rc03b'
 
-MQTTSUBSCRIBESERVICE_CONFIG = """
+MQTTSUBSCRIBE_CONFIG = """
+
+[MQTTSubscribeDriver]
+    # This section is for the MQTTSubscribe driver.
+
+    # The driver to use.
+    # Only used by the driver.
+    driver = user.MQTTSubscribe
+
 [MQTTSubscribeService]
     # This section is for the MQTTSubscribe service.
 
@@ -42,8 +50,8 @@ class MQTTSubscribeServiceInstaller(ExtensionInstaller):
             'files': [('bin/user', ['bin/user/MQTTSubscribe.py'])]
         }
 
-        MQTTSubscribeService_dict = configobj.ConfigObj(StringIO(MQTTSUBSCRIBESERVICE_CONFIG))  # pylint: disable = invalid-name
-        install_dict['config'] = MQTTSubscribeService_dict
+        MQTTSubscribe_dict = configobj.ConfigObj(StringIO(MQTTSUBSCRIBE_CONFIG))  # pylint: disable = invalid-name
+        install_dict['config'] = MQTTSubscribe_dict
         install_dict['data_services'] = 'user.MQTTSubscribe.MQTTSubscribeService'
 
         super().__init__(install_dict)
