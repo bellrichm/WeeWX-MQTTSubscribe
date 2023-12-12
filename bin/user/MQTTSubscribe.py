@@ -2827,7 +2827,7 @@ For more information see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/
         configure_service_group.add_argument("--remove", action="store_true", dest="remove",
                             help="Remove the MQTTSubscribe configuration section from '--conf'.")
         configure_service_group.add_argument("--replace-with",
-                            help="The configuration that will replace the existing configuration.")                            
+                            help="The configuration that will replace the existing configuration.")
         configure_service_group.add_argument("--update-from",
                             help="The configuration that will update (and add to) the existing configuration.")
         configure_service_group.add_argument("--validate", action="store_true", dest="validate",
@@ -2852,7 +2852,7 @@ For more information see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/
         configure_driver_group.add_argument("--print-configspec",
                             help="Write the configspec to a file.")
         configure_driver_group.add_argument("--remove", action="store_true", dest="remove",
-                            help="Remove the MQTTSubscribe configuration section from '--conf'.")                            
+                            help="Remove the MQTTSubscribe configuration section from '--conf'.")
         configure_driver_group.add_argument("--replace-with",
                             help="The configuration that will replace the existing configuration.")
         configure_driver_group.add_argument("--update-from",
@@ -2909,7 +2909,7 @@ For more information see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/
         if options.conf:
             config_path = os.path.abspath(options.conf)
             self.config_dict = configobj.ConfigObj(config_path, encoding='utf-8', file_error=True)
-            self.oputput_path = config_path
+            self.output_path = config_path
 
         config_input = None
         if options.add_from:
@@ -2953,8 +2953,9 @@ For more information see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/
     def run(self):
         # pylint: disable=too-many-branches
         ''' Update the configuration. '''
-        if self.action == '--add-from':
-            weeutil.config.conditional_merge(self.config_dict[self.section], self.config_input_dict)
+        if self.action == '--validate':
+            self._validate()
+
         elif self.action == '--create-example':
             mqttsubscribe_configuration = MQTTSubscribeConfiguration(None)
             default_configuration = mqttsubscribe_configuration.default_config
@@ -2969,22 +2970,26 @@ For more information see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/
         elif self.action == '--print-configspec':
             self.config_spec.filename = self.config_output_path
             self.config_spec.write()
-        elif self.action == '--remove':
-            pass
-        elif self.action == '--replace-with':
-            self.config_dict[self.section] = self.config_input_dict
-        elif self.action == '--validate':
-            self._validate()
-        elif self.action == '--update-from':
-            self.config_dict[self.section] = self.config_input_dict
         else:
-            self._update_interactively()
+            self._update()
 
         if self.section == 'MQTTSubscribService' and self.enable is not None:
             self.config_dict[self.section]['enable'] = self.enable
 
-        if self.action not in self.no_update_actions:
-            weecfg.save(self.config_dict, self.config_output_path, not self.no_backup)
+        weecfg.save(self.config_dict, self.config_output_path, not self.no_backup)
+
+    def _update(self):
+        if self.action == '--add-from':
+            weeutil.config.conditional_merge(self.config_dict[self.section], self.config_input_dict)
+        elif self.action == '--remove':
+            del self.config_dict[self.section]
+        elif self.action == '--replace-with':
+            self.config_dict[self.section] = self.config_input_dict
+        elif self.action == '--update-from':
+            weeutil.config.merge_config(self.config_dict[self.section], self.config_input_dict)
+        else:
+            self._update_interactively()
+
 
     def _validate(self):
         mqttsubscribe_configuration = MQTTSubscribeConfiguration(None)
