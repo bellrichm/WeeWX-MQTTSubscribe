@@ -14,7 +14,66 @@ import argparse
 
 from user.MQTTSubscribe import Configurator
 
-class TestUpdateFrom(unittest.TestCase):
+class TestUpdateConfig(unittest.TestCase):
+    @unittest.skip("Need to figure out what to do about mocking WeeWX functions")
+    def test_add_from(self):
+        options = argparse.Namespace()
+        options.type = 'driver'
+        options.create_example = None
+        options.export = None
+        options.print_configspec = None
+        options.validate = None
+        options.no_backup = True
+        options.add_from = 'bin/user/tests/unit/data/mqttsubscribe.conf'
+        options.remove = None
+        options.replace_with = None
+        options.update_from = None
+        options.output = 'bin/user/tests/unit/data/output.conf'
+        options.conf = 'bin/user/tests/unit/data/weewx.conf'
+
+        SUT = Configurator(None, options)
+
+        SUT.run()
+    @unittest.skip("Need to figure out what to do about mocking WeeWX functions")
+    def test_remove(self):
+        options = argparse.Namespace()
+        options.type = 'driver'
+        options.create_example = None
+        options.export = None
+        options.print_configspec = None
+        options.validate = None
+        options.no_backup = True
+        options.add_from = None
+        options.remove = True
+        options.replace_with = None
+        options.update_from = None
+        options.output = 'bin/user/tests/unit/data/output.conf'
+        options.conf = 'bin/user/tests/unit/data/weewx.conf'
+
+        SUT = Configurator(None, options)
+
+        SUT.run()    
+    @unittest.skip("Need to figure out what to do about mocking WeeWX functions")
+    def test_replace_with(self):
+        options = argparse.Namespace()
+        options.type = 'driver'
+        options.create_example = None
+        options.export = None
+        options.print_configspec = None
+        options.validate = None
+        options.no_backup = True
+        options.add_from = None
+        options.remove = None
+        options.replace_with = 'bin/user/tests/unit/data/mqttsubscribe.conf'
+        options.update_from = None
+        options.output = 'bin/user/tests/unit/data/output.conf'
+        options.conf = 'bin/user/tests/unit/data/weewx.conf'
+
+        SUT = Configurator(None, options)
+
+        SUT.run()
+
+    @unittest.skip("Need to figure out what to do about mocking WeeWX functions")
     def test_update_from(self):
         options = argparse.Namespace()
         options.type = 'driver'
@@ -22,7 +81,7 @@ class TestUpdateFrom(unittest.TestCase):
         options.export = None
         options.print_configspec = None
         options.validate = None
-        options.no_backup = None
+        options.no_backup = True
         options.add_from = None
         options.remove = None
         options.replace_with = None
