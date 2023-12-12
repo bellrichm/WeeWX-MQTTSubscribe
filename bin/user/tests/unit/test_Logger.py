@@ -14,7 +14,6 @@ import importlib
 import unittest
 import mock
 
-import random
 import sys
 
 from test_weewx_stubs import weeutil, weewx, random_string
