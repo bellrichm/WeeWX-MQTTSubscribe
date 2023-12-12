@@ -31,6 +31,8 @@ class weeutil:
             pass
         def merge_config(self):
             pass
+        def save(self):
+            pass        
     class logger:
         pass
 
