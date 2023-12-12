@@ -27,6 +27,8 @@ class weecfg:
 
 class weeutil:
     class config:
+        def deep_copy(self):
+            pass
         def merge_config(self):
             pass
     class logger:

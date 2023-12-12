@@ -15,7 +15,7 @@ import argparse
 from user.MQTTSubscribe import Configurator
 
 class TestUpdateConfig(unittest.TestCase):
-    @unittest.skip("Need to figure out what to do about mocking WeeWX functions")
+    #@unittest.skip("Need to figure out what to do about mocking WeeWX functions")
     def test_add_from(self):
         options = argparse.Namespace()
         options.type = 'driver'
@@ -34,7 +34,8 @@ class TestUpdateConfig(unittest.TestCase):
         SUT = Configurator(None, options)
 
         SUT.run()
-    @unittest.skip("Need to figure out what to do about mocking WeeWX functions")
+
+    #@unittest.skip("Need to figure out what to do about mocking WeeWX functions")
     def test_remove(self):
         options = argparse.Namespace()
         options.type = 'driver'
@@ -52,8 +53,9 @@ class TestUpdateConfig(unittest.TestCase):
 
         SUT = Configurator(None, options)
 
-        SUT.run()    
-    @unittest.skip("Need to figure out what to do about mocking WeeWX functions")
+        SUT.run()
+
+    #@unittest.skip("Need to figure out what to do about mocking WeeWX functions")
     def test_replace_with(self):
         options = argparse.Namespace()
         options.type = 'driver'
@@ -73,7 +75,7 @@ class TestUpdateConfig(unittest.TestCase):
 
         SUT.run()
 
-    @unittest.skip("Need to figure out what to do about mocking WeeWX functions")
+    #@unittest.skip("Need to figure out what to do about mocking WeeWX functions")
     def test_update_from(self):
         options = argparse.Namespace()
         options.type = 'driver'
