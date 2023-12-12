@@ -23,10 +23,15 @@ def random_ascii_letters(length=32):
     return''.join([random.choice(string.ascii_letters) for n in range(length)]) # pylint: disable=unused-variable
 
 class weecfg:
-    pass
+    def save(self):
+        pass
 
 class weeutil:
     class config:
+        def deep_copy(self):
+            pass
+        def conditional_merge(self):
+            pass
         def merge_config(self):
             pass
     class logger:
