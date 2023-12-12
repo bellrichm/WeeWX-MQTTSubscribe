@@ -7,8 +7,10 @@
 # pylint: disable=missing-docstring
 # pylint: disable=invalid-name
 # pylint: disable=protected-access
+# pylint: disable=wrong-import-order
 
 import unittest
+import mock
 
 import argparse
 
@@ -31,9 +33,11 @@ class TestUpdateConfig(unittest.TestCase):
         options.output = 'bin/user/tests/unit/data/output.conf'
         options.conf = 'bin/user/tests/unit/data/weewx.conf'
 
-        SUT = Configurator(None, options)
+        with mock.patch('weeutil.config.conditional_merge'):
+            with mock.patch('weecfg.save'):
+                SUT = Configurator(None, options)
 
-        SUT.run()
+                SUT.run()
 
     #@unittest.skip("Need to figure out what to do about mocking WeeWX functions")
     def test_remove(self):
@@ -51,9 +55,10 @@ class TestUpdateConfig(unittest.TestCase):
         options.output = 'bin/user/tests/unit/data/output.conf'
         options.conf = 'bin/user/tests/unit/data/weewx.conf'
 
-        SUT = Configurator(None, options)
+        with mock.patch('weecfg.save'):
+            SUT = Configurator(None, options)
 
-        SUT.run()
+            SUT.run()
 
     #@unittest.skip("Need to figure out what to do about mocking WeeWX functions")
     def test_replace_with(self):
@@ -71,9 +76,10 @@ class TestUpdateConfig(unittest.TestCase):
         options.output = 'bin/user/tests/unit/data/output.conf'
         options.conf = 'bin/user/tests/unit/data/weewx.conf'
 
-        SUT = Configurator(None, options)
+        with mock.patch('weecfg.save'):
+            SUT = Configurator(None, options)
 
-        SUT.run()
+            SUT.run()
 
     #@unittest.skip("Need to figure out what to do about mocking WeeWX functions")
     def test_update_from(self):
@@ -91,9 +97,11 @@ class TestUpdateConfig(unittest.TestCase):
         options.output = 'bin/user/tests/unit/data/output.conf'
         options.conf = 'bin/user/tests/unit/data/weewx.conf'
 
-        SUT = Configurator(None, options)
+        with mock.patch('weeutil.config.merge_config'):
+            with mock.patch('weecfg.save'):
+                SUT = Configurator(None, options)
 
-        SUT.run()
+                SUT.run()
 
 if __name__ == '__main__':
     # test_suite = unittest.TestSuite()
