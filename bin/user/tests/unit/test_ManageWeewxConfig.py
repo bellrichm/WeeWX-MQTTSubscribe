@@ -16,17 +16,17 @@ import unittest
 
 from test_weewx_stubs import random_string
 import weewx
-from test_weewx_stubs import weeutil
+import test_weewx_stubs
 
 from user.MQTTSubscribe import ManageWeewxConfig
 
 class TestObservationConfig(unittest.TestCase):
     def tearDown(self):
-        weewx.units.USUnits = weeutil.ListOfDicts({})
+        weewx.units.USUnits = test_weewx_stubs.ListOfDicts({})
 
-        weewx.units.MetricUnits = weeutil.ListOfDicts({})
+        weewx.units.MetricUnits = test_weewx_stubs.ListOfDicts({})
 
-        weewx.units.MetricWXUnits = weeutil.ListOfDicts({})
+        weewx.units.MetricWXUnits = test_weewx_stubs.ListOfDicts({})
 
         weewx.units.default_unit_format_dict = {}
 
@@ -195,7 +195,7 @@ class TestObservationConfig(unittest.TestCase):
 
         config = configobj.ConfigObj(config_dict)
 
-        units = weeutil.ListOfDicts({})
+        units = test_weewx_stubs.ListOfDicts({})
         units.extend({group: unit})
 
         SUT = ManageWeewxConfig()
@@ -219,7 +219,7 @@ class TestObservationConfig(unittest.TestCase):
 
         config = configobj.ConfigObj(config_dict)
 
-        units = weeutil.ListOfDicts({})
+        units = test_weewx_stubs.ListOfDicts({})
         units.extend({group: unit})
 
         SUT = ManageWeewxConfig()
@@ -243,7 +243,7 @@ class TestObservationConfig(unittest.TestCase):
 
         config = configobj.ConfigObj(config_dict)
 
-        units = weeutil.ListOfDicts({})
+        units = test_weewx_stubs.ListOfDicts({})
         units.extend({group: unit})
 
         SUT = ManageWeewxConfig()

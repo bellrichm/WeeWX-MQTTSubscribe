@@ -24,13 +24,12 @@ def random_string(length=32):
 def random_ascii_letters(length=32):
     return''.join([random.choice(string.ascii_letters) for n in range(length)]) # pylint: disable=unused-variable
 
-class weeutil:
-    class ListOfDicts(ChainMap):
-        # pylint: disable=too-many-ancestors
-        def extend(self, m):
-            self.maps.append(m)
-        def prepend(self, m):
-            self.maps.insert(0, m)
+class ListOfDicts(ChainMap):
+    # pylint: disable=too-many-ancestors
+    def extend(self, m):
+        self.maps.append(m)
+    def prepend(self, m):
+        self.maps.insert(0, m)
 
 UNITS_CONSTANTS = {'US': 1}
 
@@ -175,6 +174,7 @@ sys.modules['weeutil'].weeutil = mock.MagicMock()
 
 sys.modules['weeutil.weeutil'] = mock.MagicMock()
 sys.modules['weeutil.weeutil'].TimeSpan = TimeSpan
+sys.modules['weeutil'].weeutil.TimeSpan = TimeSpan
 sys.modules['weeutil'].weeutil.startOfInterval = lambda ts, interval: startOfInterval(ts, interval)
 sys.modules['weeutil.weeutil'].to_bool = lambda val: to_bool(val)
 sys.modules['weeutil.weeutil'].to_float = lambda val: to_float(val)
@@ -189,11 +189,11 @@ class units:
     METRICWX = 0x11
     US = 0x01
 
-    USUnits = weeutil.ListOfDicts({})
+    USUnits = ListOfDicts({})
 
-    MetricUnits = weeutil.ListOfDicts({})
+    MetricUnits = ListOfDicts({})
 
-    MetricWXUnits = weeutil.ListOfDicts({})
+    MetricWXUnits = ListOfDicts({})
 
     default_unit_format_dict = {}
 
@@ -208,7 +208,7 @@ class units:
         'METRICWX' : METRICWX
     }
 
-    obs_group_dict = weeutil.ListOfDicts({
+    obs_group_dict = ListOfDicts({
         'barfoo' : {},
         'subfield1': {}
     })
