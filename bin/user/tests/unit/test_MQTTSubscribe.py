@@ -19,7 +19,6 @@ import ssl
 
 import test_weewx_stubs
 from test_weewx_stubs import random_string
-import weewx
 
 from user.MQTTSubscribe import MQTTSubscriber, Logger
 
@@ -89,7 +88,7 @@ class TestInitialization(unittest.TestCase):
             with mock.patch('user.MQTTSubscribe.MessageCallbackProvider'):
                 mock_client.return_value = mock_client
                 mock_client.connect.side_effect = mock.Mock(side_effect=exception)
-                with self.assertRaises(weewx.WeeWxIOError) as error:
+                with self.assertRaises(test_weewx_stubs.WeeWxIOError) as error:
                     with mock.patch('user.MQTTSubscribe.TopicManager'):
                         MQTTSubscriber(config, mock_logger)
 
@@ -676,7 +675,7 @@ class TestStart(unittest.TestCase):
                 with mock.patch('user.MQTTSubscribe.TopicManager'):
                     with mock.patch('user.MQTTSubscribe.time'):
                         # pylint: disable=no-member
-                        with self.assertRaises(weewx.WeeWxIOError) as error:
+                        with self.assertRaises(test_weewx_stubs.WeeWxIOError) as error:
                             SUT = MQTTSubscriber(config, mock_logger)
 
                             SUT.userdata = {}

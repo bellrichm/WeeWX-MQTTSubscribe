@@ -19,8 +19,8 @@ import random
 import time
 
 from test_weewx_stubs import random_string
+import test_weewx_stubs
 import weeutil
-import weewx
 
 from user.MQTTSubscribe import TopicManager, Logger
 
@@ -1074,7 +1074,7 @@ class TestAccumulatedData(unittest.TestCase):
         with mock.patch('user.MQTTSubscribe.weewx.accum.Accum') as mock_Accum:
             with mock.patch('user.MQTTSubscribe.weewx.units.to_std_system') as mock_to_std_system:
                 type(mock_Accum.return_value).addRecord = \
-                    mock.Mock(side_effect=weewx.accum.OutOfSpan("Attempt to add out-of-interval record"))
+                    mock.Mock(side_effect=test_weewx_stubs.accum.OutOfSpan("Attempt to add out-of-interval record"))
 
                 SUT = TopicManager(None, self.config, mock_logger)
                 SUT.append_data(self.topic, queue_data)

@@ -14,7 +14,7 @@ import importlib
 import unittest
 import mock
 
-import weewx
+import sys
 
 from test_weewx_stubs import random_string
 
@@ -152,7 +152,7 @@ class TestV4Logging(unittest.TestCase):
         with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
             from user.MQTTSubscribe import Logger
 
-            weewx.debug = 2
+            sys.modules['weewx'].debug = 2
             mock_logging._checkLevel.return_value = 0 # pylint: disable=protected-access
             mode = random_string()
             message = random_string()
@@ -172,7 +172,7 @@ class TestV4Logging(unittest.TestCase):
         with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
             from user.MQTTSubscribe import Logger
 
-            weewx.debug = 0
+            sys.modules['weewx'].debug = 0
             mock_logging._checkLevel.return_value = 0 # pylint: disable=protected-access
             mode = random_string()
             message = random_string()
