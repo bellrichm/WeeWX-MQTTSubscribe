@@ -16,27 +16,15 @@ import time
 
 from collections import ChainMap
 
+import mock
+
 def random_string(length=32):
     return ''.join([random.choice(string.ascii_letters + string.digits) for n in range(length)]) # pylint: disable=unused-variable
 
 def random_ascii_letters(length=32):
     return''.join([random.choice(string.ascii_letters) for n in range(length)]) # pylint: disable=unused-variable
 
-class weecfg:
-    def save(self):
-        pass
-
 class weeutil:
-    class config:
-        def deep_copy(self):
-            pass
-        def conditional_merge(self):
-            pass
-        def merge_config(self):
-            pass
-    class logger:
-        pass
-
     class ListOfDicts(ChainMap):
         # pylint: disable=too-many-ancestors
         def extend(self, m):
@@ -45,22 +33,6 @@ class weeutil:
             self.maps.insert(0, m)
 
     class weeutil:
-        class TimeSpan(tuple):
-            """Represents a time span, exclusive on the left, inclusive on the right."""
-
-            def __new__(cls, *args):
-                if args[0] > args[1]:
-                    raise ValueError(f"start time ({int(args[0])}) is greater than stop time ({int(args[1])})")
-                return tuple.__new__(cls, args)
-
-        @staticmethod
-        def timestamp_to_string(ts, format_str="%Y-%m-%d %H:%M:%S %Z"):
-            # pylint: disable=no-else-return
-            if ts is not None:
-                return f"{time.strftime(format_str, time.localtime(ts))} ({int(ts)})"
-            else:
-                return "******* N/A *******     (    N/A   )"
-
         @staticmethod
         def get_object(module_class):
             """Given a string with a module class name, it imports and returns the class."""
@@ -80,51 +52,6 @@ class weeutil:
                 raise AttributeError( f"Module '{mod.__name__}' has no attribute '{part}' when searching for '{module_class}'") \
                       from exception
             return mod
-
-        @staticmethod
-        def option_as_list(option):
-            if option is None:
-                return None
-            return [option] if not isinstance(option, list) else option
-
-        @staticmethod
-        def to_sorted_string(rec):
-            return ", ".join([f"{k}: {rec.get(k)}" for k in sorted(rec, key=locale.strxfrm)])
-
-        @staticmethod
-        def to_bool(value):
-            # pylint: disable=no-else-return
-            try:
-                if value.lower() in ['true', 'yes']:
-                    return True
-                elif value.lower() in ['false', 'no']:
-                    return False
-            except AttributeError:
-                pass
-            try:
-                return bool(int(value))
-            except (ValueError, TypeError):
-                pass
-            raise ValueError(f"Unknown boolean specifier: '{value}'.")
-
-        @staticmethod
-        def to_float(value):
-            if isinstance(value, str) and value.lower() == 'none':
-                value = None
-            return float(value) if value is not None else None
-
-        @staticmethod
-        def to_int(value):
-            return int(value)
-
-        @staticmethod
-        def startOfInterval(time_ts, interval):
-            start_interval_ts = int(time_ts / interval) * interval
-
-            if time_ts == start_interval_ts:
-                start_interval_ts -= interval
-            return start_interval_ts
-
 class weewx: # pylint: disable=invalid-name
     __version__ = "unknown"
     debug = 2
@@ -276,12 +203,76 @@ except ImportError: # pragma: no cover
             if self.console:
                 print(f'{__name__}: {msg}')
 
+class TimeSpan(tuple):
+    """Represents a time span, exclusive on the left, inclusive on the right."""
+
+    def __new__(cls, *args):
+        if args[0] > args[1]:
+            raise ValueError(f"start time ({int(args[0])}) is greater than stop time ({int(args[1])})")
+        return tuple.__new__(cls, args)
+
+def to_bool(value):
+    # pylint: disable=no-else-return
+    try:
+        if value.lower() in ['true', 'yes']:
+            return True
+        elif value.lower() in ['false', 'no']:
+            return False
+    except AttributeError:
+        pass
+    try:
+        return bool(int(value))
+    except (ValueError, TypeError):
+        pass
+    raise ValueError(f"Unknown boolean specifier: '{value}'.")
+
+def to_float(value):
+    if isinstance(value, str) and value.lower() == 'none':
+        value = None
+    return float(value) if value is not None else None
+
+def to_int(value):
+    return int(value)
+
+def timestamp_to_string(ts, format_str="%Y-%m-%d %H:%M:%S %Z"):
+    # pylint: disable=no-else-return
+    if ts is not None:
+        return f"{time.strftime(format_str, time.localtime(ts))} ({int(ts)})"
+    else:
+        return "******* N/A *******     (    N/A   )"
+
+def startOfInterval(time_ts, interval):
+    start_interval_ts = int(time_ts / interval) * interval
+
+    if time_ts == start_interval_ts:
+        start_interval_ts -= interval
+    return start_interval_ts
+
+def to_sorted_string(rec):
+    return ", ".join([f"{k}: {rec.get(k)}" for k in sorted(rec, key=locale.strxfrm)])
+
+def option_as_list(option):
+    if option is None:
+        return None
+    return [option] if not isinstance(option, list) else option
 
 sys.modules['weewx'] = weewx
 sys.modules['weewx.drivers'] = weewx.drivers
 sys.modules['weewx.engine'] = weewx.engine
-sys.modules['weecfg'] = weecfg
-sys.modules['weeutil'] = weeutil
-sys.modules['weeutil.config'] = weeutil.config
-sys.modules['weeutil.weeutil'] = weeutil.weeutil
-sys.modules['weeutil.logger'] = weeutil.logger
+sys.modules['weecfg'] = mock.MagicMock()
+sys.modules['weeutil'] = mock.MagicMock
+sys.modules['weeutil.config'] = mock.MagicMock()
+sys.modules['weeutil'].config = mock.MagicMock()
+
+sys.modules['weeutil'].weeutil = mock.MagicMock()
+
+sys.modules['weeutil.weeutil'] = mock.MagicMock()
+sys.modules['weeutil.weeutil'].TimeSpan = TimeSpan
+sys.modules['weeutil'].weeutil.startOfInterval = lambda ts, interval: startOfInterval(ts, interval)
+sys.modules['weeutil.weeutil'].to_bool = lambda val: to_bool(val)
+sys.modules['weeutil.weeutil'].to_float = lambda val: to_float(val)
+sys.modules['weeutil.weeutil'].to_int = lambda val: to_int(val)
+sys.modules['weeutil.weeutil'].timestamp_to_string = lambda ts, fmt: timestamp_to_string(ts, fmt)
+sys.modules['weeutil.weeutil'].to_sorted_string = lambda rec: to_sorted_string(rec)
+sys.modules['weeutil'].weeutil.option_as_list = lambda opt: option_as_list(opt)
+sys.modules['weeutil.logger'] = mock.MagicMock()
