@@ -581,7 +581,7 @@ class TestJsonPayload(unittest.TestCase):
 
     def test_missing_dateTime(self):
         mock_manager = mock.Mock(spec=TopicManager)
-        stub_logger = test_weewx_stubs.Logger(console=True)
+        mock_logger = mock_logger = mock.Mock(spec=Logger)
         mock_manager.get_msg_id_field.return_value = None
         mock_manager.get_ignore_msg_id_field.return_value = []
         mock_manager.get_ignore_value.return_value = False
@@ -594,7 +594,7 @@ class TestJsonPayload(unittest.TestCase):
         mock_manager.get_message_dict.return_value = {'flatten_delimiter': '_'}
         mock_manager.subscribed_topics = {}
 
-        SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), stub_logger, mock_manager)
+        SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
 
         payload_dict = dict(self.payload_dict)
         payload_dict['usUnits'] = random.randint(1, 10)
@@ -609,7 +609,7 @@ class TestJsonPayload(unittest.TestCase):
 
     def test_missing_units(self):
         mock_manager = mock.Mock(spec=TopicManager)
-        stub_logger = test_weewx_stubs.Logger(console=True)
+        mock_logger = mock_logger = mock.Mock(spec=Logger)
         mock_manager.get_msg_id_field.return_value = None
         mock_manager.get_ignore_msg_id_field.return_value = []
         mock_manager.get_ignore_value.return_value = False
@@ -622,7 +622,7 @@ class TestJsonPayload(unittest.TestCase):
         mock_manager.get_message_dict.return_value = {'flatten_delimiter': '_'}
         mock_manager.subscribed_topics = {}
 
-        SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), stub_logger, mock_manager)
+        SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
 
         payload_dict = dict(self.payload_dict)
         payload_dict['dateTime'] = time.time()
@@ -637,7 +637,7 @@ class TestJsonPayload(unittest.TestCase):
 
     def test_payload_good(self):
         mock_manager = mock.Mock(spec=TopicManager)
-        stub_logger = test_weewx_stubs.Logger(console=True)
+        mock_logger = mock_logger = mock.Mock(spec=Logger)
         mock_manager.get_msg_id_field.return_value = None
         mock_manager.get_ignore_value.return_value = True
         mock_manager.get_ignore_msg_id_field.return_value = []
@@ -652,7 +652,7 @@ class TestJsonPayload(unittest.TestCase):
         mock_manager.get_message_dict.return_value = {'flatten_delimiter': '_'}
         mock_manager.subscribed_topics = {}
 
-        SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), stub_logger, mock_manager)
+        SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
 
         payload_dict = dict(self.payload_dict)
         payload_dict['dateTime'] = time.time()
@@ -672,7 +672,7 @@ class TestJsonPayload(unittest.TestCase):
 
     def test_msg_id_set(self):
         mock_manager = mock.Mock(spec=TopicManager)
-        stub_logger = test_weewx_stubs.Logger(console=True)
+        mock_logger = mock_logger = mock.Mock(spec=Logger)
         msg_id_field = random_string()
         mock_manager.get_msg_id_field.return_value = msg_id_field
         mock_manager.get_fields.return_value = {}
@@ -688,7 +688,7 @@ class TestJsonPayload(unittest.TestCase):
         mock_manager.subscribed_topics = {}
 
 
-        SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), stub_logger, mock_manager)
+        SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
 
         payload_dict = dict(self.payload_dict)
         payload_dict['dateTime'] = time.time()
@@ -716,7 +716,7 @@ class TestJsonPayload(unittest.TestCase):
 
     def test_ignore_msg_id_field_set(self):
         mock_manager = mock.Mock(spec=TopicManager)
-        stub_logger = test_weewx_stubs.Logger(console=True)
+        mock_logger = mock_logger = mock.Mock(spec=Logger)
         msg_id_field = random_string()
         mock_manager.get_msg_id_field.return_value = msg_id_field
         mock_manager.get_fields.return_value = {}
@@ -729,7 +729,7 @@ class TestJsonPayload(unittest.TestCase):
         mock_manager.get_message_dict.return_value = {'flatten_delimiter': '_'}
         mock_manager.subscribed_topics = {}
 
-        SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), stub_logger, mock_manager)
+        SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
 
         payload_dict = dict(self.payload_dict)
         payload_dict['dateTime'] = time.time()
@@ -923,7 +923,7 @@ class TestJsonPayload(unittest.TestCase):
 
     def test_payload_nested(self):
         mock_manager = mock.Mock(spec=TopicManager)
-        stub_logger = test_weewx_stubs.Logger(console=True)
+        mock_logger = mock_logger = mock.Mock(spec=Logger)
         mock_manager.get_msg_id_field.return_value = None
         mock_manager.get_ignore_msg_id_field.return_value = []
         mock_manager.get_ignore_value.return_value = False
@@ -936,7 +936,7 @@ class TestJsonPayload(unittest.TestCase):
         mock_manager.get_message_dict.return_value = {'flatten_delimiter': '_'}
         mock_manager.subscribed_topics = {}
 
-        SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), stub_logger, mock_manager)
+        SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
 
         payload_dict = {
             'nested01': {
@@ -965,7 +965,7 @@ class TestJsonPayload(unittest.TestCase):
 
     def test_payload_nested_rename(self):
         mock_manager = mock.Mock(spec=TopicManager)
-        stub_logger = test_weewx_stubs.Logger(console=True)
+        mock_logger = mock_logger = mock.Mock(spec=Logger)
         mock_manager.get_msg_id_field.return_value = None
         mock_manager.get_ignore_msg_id_field.return_value = []
         mock_manager.get_ignore_value.return_value = False
@@ -983,7 +983,7 @@ class TestJsonPayload(unittest.TestCase):
         message_handler_config_dict['fields']['nested01_inTemp'] = {}
         message_handler_config_dict['fields']['nested01_inTemp']['name'] = 'inTemp'
 
-        SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), stub_logger, mock_manager)
+        SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), mock_logger, mock_manager)
 
         payload_dict = {
             'nested01': {

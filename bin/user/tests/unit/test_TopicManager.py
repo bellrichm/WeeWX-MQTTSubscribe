@@ -18,8 +18,8 @@ import datetime
 import random
 import time
 
-import test_weewx_stubs
 from test_weewx_stubs import random_string
+import test_weewx_stubs
 
 from user.MQTTSubscribe import TopicManager, Logger
 
@@ -1000,7 +1000,7 @@ class TestAccumulatedData(unittest.TestCase):
 
                 accumulated_data = SUT.get_accumulated_data(SUT.subscribed_topics[self.topic]['queue'], 0, end_ts, 0)
 
-                mock_Accum.assert_called_once_with(test_weewx_stubs.weeutil.weeutil.TimeSpan(start_ts - adjust_start_time, end_ts))
+                mock_Accum.assert_called_once_with(test_weewx_stubs.TimeSpan(start_ts - adjust_start_time, end_ts))
                 self.assertDictEqual(accumulated_data, final_record_data)
 
     def test_ignore_start_set_and_adjusted(self):
@@ -1033,7 +1033,7 @@ class TestAccumulatedData(unittest.TestCase):
 
                 accumulated_data = SUT.get_accumulated_data(SUT.subscribed_topics[self.topic]['queue'], 0, end_ts, 0)
 
-                mock_Accum.assert_called_once_with(test_weewx_stubs.weeutil.weeutil.TimeSpan(start_ts - adjust_start_time, end_ts))
+                mock_Accum.assert_called_once_with(test_weewx_stubs.TimeSpan(start_ts - adjust_start_time, end_ts))
                 self.assertDictEqual(accumulated_data, final_record_data)
 
     def test_ignore_end_set(self):
@@ -1063,7 +1063,7 @@ class TestAccumulatedData(unittest.TestCase):
 
                 accumulated_data = SUT.get_accumulated_data(SUT.subscribed_topics[self.topic]['queue'], 0, 0, 0)
 
-                mock_Accum.assert_called_once_with(test_weewx_stubs.weeutil.weeutil.TimeSpan(0, end_ts))
+                mock_Accum.assert_called_once_with(test_weewx_stubs.TimeSpan(0, end_ts))
                 self.assertDictEqual(accumulated_data, final_record_data)
 
     def test_queue_element_before_start(self):
@@ -1073,7 +1073,7 @@ class TestAccumulatedData(unittest.TestCase):
         with mock.patch('user.MQTTSubscribe.weewx.accum.Accum') as mock_Accum:
             with mock.patch('user.MQTTSubscribe.weewx.units.to_std_system') as mock_to_std_system:
                 type(mock_Accum.return_value).addRecord = \
-                    mock.Mock(side_effect=test_weewx_stubs.weewx.accum.OutOfSpan("Attempt to add out-of-interval record"))
+                    mock.Mock(side_effect=test_weewx_stubs.accum.OutOfSpan("Attempt to add out-of-interval record"))
 
                 SUT = TopicManager(None, self.config, mock_logger)
                 SUT.append_data(self.topic, queue_data)

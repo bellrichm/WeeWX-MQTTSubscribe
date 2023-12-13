@@ -10,30 +10,30 @@
 # pylint: disable=invalid-name
 
 import configobj
+import sys
 import types
 
 import unittest
 
 from test_weewx_stubs import random_string
-from test_weewx_stubs import weewx
-from test_weewx_stubs import weeutil
+import test_weewx_stubs
 
 from user.MQTTSubscribe import ManageWeewxConfig
 
 class TestObservationConfig(unittest.TestCase):
     def tearDown(self):
-        weewx.units.USUnits = weeutil.ListOfDicts({})
+        sys.modules['weewx'].units.USUnits = test_weewx_stubs.ListOfDicts({})
 
-        weewx.units.MetricUnits = weeutil.ListOfDicts({})
+        sys.modules['weewx'].units.MetricUnits = test_weewx_stubs.ListOfDicts({})
 
-        weewx.units.MetricWXUnits = weeutil.ListOfDicts({})
+        sys.modules['weewx'].units.MetricWXUnits = test_weewx_stubs.ListOfDicts({})
 
-        weewx.units.default_unit_format_dict = {}
+        sys.modules['weewx'].units.default_unit_format_dict = {}
 
-        weewx.units.default_unit_label_dict = {}
+        sys.modules['weewx'].units.default_unit_label_dict = {}
 
-        weewx.units.conversionDict = {}
-        weewx.units.conversionDict['unit_name'] = {'foobar': lambda x: x / 1}
+        sys.modules['weewx'].units.conversionDict = {}
+        sys.modules['weewx'].units.conversionDict['unit_name'] = {'foobar': lambda x: x / 1}
 
     def test_configure_observation(self):
 
@@ -50,9 +50,9 @@ class TestObservationConfig(unittest.TestCase):
         SUT = ManageWeewxConfig()
         SUT.add_observation_to_unit_dict(config)
 
-        self.assertEqual(len(weewx.units.obs_group_dict), 3)
-        self.assertIn(name, weewx.units.obs_group_dict)
-        self.assertEqual(value, weewx.units.obs_group_dict[name])
+        self.assertEqual(len(sys.modules['weewx'].units.obs_group_dict), 3)
+        self.assertIn(name, sys.modules['weewx'].units.obs_group_dict)
+        self.assertEqual(value, sys.modules['weewx'].units.obs_group_dict[name])
 
     def test_missing_group(self):
         unit = random_string(5)
@@ -127,7 +127,7 @@ class TestObservationConfig(unittest.TestCase):
         SUT = ManageWeewxConfig()
         SUT.update_unit_config(config)
 
-        self.assertDictEqual(weewx.units.default_unit_label_dict, default_unit_label_dict)
+        self.assertDictEqual(sys.modules['weewx'].units.default_unit_label_dict, default_unit_label_dict)
 
     def test_configure_default_format(self):
         unit = random_string(5)
@@ -150,7 +150,7 @@ class TestObservationConfig(unittest.TestCase):
         SUT = ManageWeewxConfig()
         SUT.update_unit_config(config)
 
-        self.assertDictEqual(weewx.units.default_unit_format_dict, default_unit_format_dict)
+        self.assertDictEqual(sys.modules['weewx'].units.default_unit_format_dict, default_unit_format_dict)
 
     def test_configure_conversion(self):
         unit = random_string(5)
@@ -174,13 +174,13 @@ class TestObservationConfig(unittest.TestCase):
         SUT = ManageWeewxConfig()
         SUT.update_unit_config(config)
 
-        self.assertEqual(len(weewx.units.conversionDict), len(conversionDict))
+        self.assertEqual(len(sys.modules['weewx'].units.conversionDict), len(conversionDict))
         for key, value in conversionDict.items():
-            self.assertIn(key, weewx.units.conversionDict)
-            self.assertEqual(len(weewx.units.conversionDict[key]), len(value))
+            self.assertIn(key, sys.modules['weewx'].units.conversionDict)
+            self.assertEqual(len(sys.modules['weewx'].units.conversionDict[key]), len(value))
             for key2 in value:
-                self.assertIn(key2, weewx.units.conversionDict[key])
-                self.assertIsInstance(weewx.units.conversionDict[key][key2], types.FunctionType)
+                self.assertIn(key2, sys.modules['weewx'].units.conversionDict[key])
+                self.assertIsInstance(sys.modules['weewx'].units.conversionDict[key][key2], types.FunctionType)
 
     def test_unit_system_us(self):
         unit = random_string(5)
@@ -195,16 +195,16 @@ class TestObservationConfig(unittest.TestCase):
 
         config = configobj.ConfigObj(config_dict)
 
-        units = weeutil.ListOfDicts({})
+        units = test_weewx_stubs.ListOfDicts({})
         units.extend({group: unit})
 
         SUT = ManageWeewxConfig()
         SUT.update_unit_config(config)
 
-        self.assertEqual(len(weewx.units.USUnits), len(units))
+        self.assertEqual(len(sys.modules['weewx'].units.USUnits), len(units))
         for key in units:
-            self.assertIn(key, weewx.units.USUnits)
-            self.assertEqual(units[key], weewx.units.USUnits[key])
+            self.assertIn(key, sys.modules['weewx'].units.USUnits)
+            self.assertEqual(units[key], sys.modules['weewx'].units.USUnits[key])
 
     def test_unit_system_metric(self):
         unit = random_string(5)
@@ -219,16 +219,16 @@ class TestObservationConfig(unittest.TestCase):
 
         config = configobj.ConfigObj(config_dict)
 
-        units = weeutil.ListOfDicts({})
+        units = test_weewx_stubs.ListOfDicts({})
         units.extend({group: unit})
 
         SUT = ManageWeewxConfig()
         SUT.update_unit_config(config)
 
-        self.assertEqual(len(weewx.units.MetricUnits), len(units))
+        self.assertEqual(len(sys.modules['weewx'].units.MetricUnits), len(units))
         for key in units:
-            self.assertIn(key, weewx.units.MetricUnits)
-            self.assertEqual(units[key], weewx.units.MetricUnits[key])
+            self.assertIn(key, sys.modules['weewx'].units.MetricUnits)
+            self.assertEqual(units[key], sys.modules['weewx'].units.MetricUnits[key])
 
     def test_unit_system_metricwx(self):
         unit = random_string(5)
@@ -243,16 +243,16 @@ class TestObservationConfig(unittest.TestCase):
 
         config = configobj.ConfigObj(config_dict)
 
-        units = weeutil.ListOfDicts({})
+        units = test_weewx_stubs.ListOfDicts({})
         units.extend({group: unit})
 
         SUT = ManageWeewxConfig()
         SUT.update_unit_config(config)
 
-        self.assertEqual(len(weewx.units.MetricWXUnits), len(units))
+        self.assertEqual(len(sys.modules['weewx'].units.MetricWXUnits), len(units))
         for key in units:
-            self.assertIn(key, weewx.units.MetricWXUnits)
-            self.assertEqual(units[key], weewx.units.MetricWXUnits[key])
+            self.assertIn(key, sys.modules['weewx'].units.MetricWXUnits)
+            self.assertEqual(units[key], sys.modules['weewx'].units.MetricWXUnits[key])
 
 
 if __name__ == '__main__':

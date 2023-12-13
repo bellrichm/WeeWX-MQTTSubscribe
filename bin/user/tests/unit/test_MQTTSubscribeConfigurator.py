@@ -97,11 +97,9 @@ class TestUpdateConfig(unittest.TestCase):
         options.output = 'bin/user/tests/unit/data/output.conf'
         options.conf = 'bin/user/tests/unit/data/weewx.conf'
 
-        with mock.patch('weeutil.config.merge_config'):
-            with mock.patch('weecfg.save'):
-                SUT = Configurator(None, options)
+        SUT = Configurator(None, options)
 
-                SUT.run()
+        SUT.run()
 
 if __name__ == '__main__':
     # test_suite = unittest.TestSuite()
