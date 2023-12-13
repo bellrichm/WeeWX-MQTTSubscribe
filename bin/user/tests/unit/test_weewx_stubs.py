@@ -57,61 +57,6 @@ class Event:
         s = "; ".join(f"{k}: {v}" for k,v in self.__dict__.items() if k != "event_type")
         return et + s
 
-try:
-    import logging
-
-    class Logger:
-        """ The logging class. """
-        def __init__(self, console=None):
-            self._logmsg = logging.getLogger(__name__)
-            if console:
-                self._logmsg.addHandler(logging.StreamHandler(sys.stdout))
-
-        def trace(self, msg):
-            """ Log trace messages. """
-            self._logmsg.debug(msg)
-
-        def debug(self, msg):
-            """ Log debug messages. """
-            self._logmsg.debug(msg)
-
-        def info(self, msg):
-            """ Log informational messages. """
-            self._logmsg.info(msg)
-
-        def error(self, msg):
-            """ Log error messages. """
-            self._logmsg.error(msg)
-except ImportError: # pragma: no cover
-    import syslog
-
-    class Logger:
-        """ The logging class. """
-        def __init__(self, console=None):
-            syslog.setlogmask(syslog.LOG_UPTO(syslog.LOG_ERR))
-            self.console = console
-
-        def trace(self, msg):
-            """ Log trace messages. """
-            self._logmsg(syslog.LOG_DEBUG, msg)
-
-        def debug(self, msg):
-            """ Log debug messages. """
-            self._logmsg(syslog.LOG_DEBUG, msg)
-
-        def info(self, msg):
-            """ Log informational messages. """
-            self._logmsg(syslog.LOG_INFO, msg)
-
-        def error(self, msg):
-            """ Log error messages. """
-            self._logmsg(syslog.LOG_ERR, msg)
-
-        def _logmsg(self, dst, msg):
-            syslog.syslog(dst, f'{__name__}: {msg}')
-            if self.console:
-                print(f'{__name__}: {msg}')
-
 class TimeSpan(tuple):
     """Represents a time span, exclusive on the left, inclusive on the right."""
 
