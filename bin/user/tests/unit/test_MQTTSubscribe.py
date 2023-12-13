@@ -19,7 +19,7 @@ import ssl
 
 import test_weewx_stubs
 from test_weewx_stubs import random_string
-from test_weewx_stubs import weewx
+import weewx
 
 from user.MQTTSubscribe import MQTTSubscriber, Logger
 

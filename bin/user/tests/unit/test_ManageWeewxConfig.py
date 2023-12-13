@@ -15,7 +15,7 @@ import types
 import unittest
 
 from test_weewx_stubs import random_string
-from test_weewx_stubs import weewx
+import weewx
 from test_weewx_stubs import weeutil
 
 from user.MQTTSubscribe import ManageWeewxConfig

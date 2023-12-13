@@ -14,9 +14,9 @@ import importlib
 import unittest
 import mock
 
-import sys
+import weewx
 
-from test_weewx_stubs import weewx, random_string
+from test_weewx_stubs import random_string
 
 class TestV4Logging(unittest.TestCase):
     def test_init_set_trace_log_level(self):

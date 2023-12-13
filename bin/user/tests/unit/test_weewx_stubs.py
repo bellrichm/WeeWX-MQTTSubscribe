@@ -53,51 +53,6 @@ class weeutil:
                       from exception
             return mod
 class weewx: # pylint: disable=invalid-name
-    __version__ = "unknown"
-    debug = 2
-
-    class WeeWxIOError(IOError):
-        """Base class of exceptions thrown when encountering an input/output error
-        with the hardware."""
-
-    class units:
-        METRIC = 0x10
-        METRICWX = 0x11
-        US = 0x01
-
-        USUnits = weeutil.ListOfDicts({})
-
-        MetricUnits = weeutil.ListOfDicts({})
-
-        MetricWXUnits = weeutil.ListOfDicts({})
-
-        default_unit_format_dict = {}
-
-        default_unit_label_dict = {}
-
-        conversionDict = {}
-        conversionDict['unit_name'] = {'foobar': lambda x: x / 1}
-
-        unit_constants = {
-            'US'       : US,
-            'METRIC'   : METRIC,
-            'METRICWX' : METRICWX
-        }
-
-        obs_group_dict = weeutil.ListOfDicts({
-            'barfoo' : {},
-            'subfield1': {}
-        })
-
-        def to_std_system(self):
-            pass
-
-    class accum:
-        def Accum(self):
-            pass
-
-        class OutOfSpan(ValueError):
-            """Raised when attempting to add a record outside of the timespan held by an acumulator"""
 
     class NEW_LOOP_PACKET:
         """Event issued when a new LOOP packet is available. The event contains
@@ -106,21 +61,6 @@ class weewx: # pylint: disable=invalid-name
     class NEW_ARCHIVE_RECORD:
         """Event issued when a new archive record is available. The event contains
         attribute 'record', which is the new archive record."""
-
-    class engine:
-        class StdEngine:
-            pass
-        class StdService:
-            def __init__(self, engine, config_dict):
-                pass
-            def bind(self, p1, p2):
-                pass
-    class drivers: # pylint: disable=invalid-name
-        class AbstractDevice:
-            pass
-        class AbstractConfEditor:
-            pass
-
 
 UNITS_CONSTANTS = {'US': 1}
 
@@ -256,9 +196,6 @@ def option_as_list(option):
         return None
     return [option] if not isinstance(option, list) else option
 
-sys.modules['weewx'] = weewx
-sys.modules['weewx.drivers'] = weewx.drivers
-sys.modules['weewx.engine'] = weewx.engine
 sys.modules['weecfg'] = mock.MagicMock()
 sys.modules['weeutil'] = mock.MagicMock
 sys.modules['weeutil.config'] = mock.MagicMock()
@@ -276,3 +213,71 @@ sys.modules['weeutil.weeutil'].timestamp_to_string = lambda ts, fmt: timestamp_t
 sys.modules['weeutil.weeutil'].to_sorted_string = lambda rec: to_sorted_string(rec)
 sys.modules['weeutil'].weeutil.option_as_list = lambda opt: option_as_list(opt)
 sys.modules['weeutil.logger'] = mock.MagicMock()
+
+class units:
+    METRIC = 0x10
+    METRICWX = 0x11
+    US = 0x01
+
+    USUnits = weeutil.ListOfDicts({})
+
+    MetricUnits = weeutil.ListOfDicts({})
+
+    MetricWXUnits = weeutil.ListOfDicts({})
+
+    default_unit_format_dict = {}
+
+    default_unit_label_dict = {}
+
+    conversionDict = {}
+    conversionDict['unit_name'] = {'foobar': lambda x: x / 1}
+
+    unit_constants = {
+        'US'       : US,
+        'METRIC'   : METRIC,
+        'METRICWX' : METRICWX
+    }
+
+    obs_group_dict = weeutil.ListOfDicts({
+        'barfoo' : {},
+        'subfield1': {}
+    })
+
+    def to_std_system(self):
+        pass
+
+class accum:
+    def Accum(self):
+        pass
+
+    class OutOfSpan(ValueError):
+        """Raised when attempting to add a record outside of the timespan held by an acumulator"""
+
+class WeeWxIOError(IOError):
+    """Base class of exceptions thrown when encountering an input/output error
+    with the hardware."""
+
+class engine:
+    class StdEngine:
+        pass
+    class StdService:
+        def __init__(self, engine, config_dict):
+            pass
+        def bind(self, p1, p2):
+            pass
+class drivers: # pylint: disable=invalid-name
+    class AbstractDevice:
+        pass
+    class AbstractConfEditor:
+        pass
+
+sys.modules['weewx'] = mock.MagicMock()
+sys.modules['weewx'].drivers = drivers
+sys.modules['weewx.drivers'] = mock.MagicMock()
+sys.modules['weewx.engine'] = engine
+
+sys.modules['weewx'].units = units
+sys.modules['weewx'].accum = accum
+sys.modules['weewx'].WeeWxIOError = WeeWxIOError
+sys.modules['weewx'].__version__ = "unknown"
+sys.modules['weewx'].debug = 2
