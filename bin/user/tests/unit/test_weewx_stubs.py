@@ -32,36 +32,6 @@ class weeutil:
         def prepend(self, m):
             self.maps.insert(0, m)
 
-    class weeutil:
-        @staticmethod
-        def get_object(module_class):
-            """Given a string with a module class name, it imports and returns the class."""
-            # Split the path into its parts
-            parts = module_class.split('.')
-            # Strip off the classname:
-            module = '.'.join(parts[:-1])
-            # Import the top level module
-            mod = __import__(module)
-            # Recursively work down from the top level module to the class name.
-            # Be prepared to catch an exception if something cannot be found.
-            try:
-                for part in parts[1:]:
-                    mod = getattr(mod, part)
-            except AttributeError as exception:
-                # Can't find something. Give a more informative error message:
-                raise AttributeError( f"Module '{mod.__name__}' has no attribute '{part}' when searching for '{module_class}'") \
-                      from exception
-            return mod
-class weewx: # pylint: disable=invalid-name
-
-    class NEW_LOOP_PACKET:
-        """Event issued when a new LOOP packet is available. The event contains
-        attribute 'packet', which is the new LOOP packet."""
-
-    class NEW_ARCHIVE_RECORD:
-        """Event issued when a new archive record is available. The event contains
-        attribute 'record', which is the new archive record."""
-
 UNITS_CONSTANTS = {'US': 1}
 
 class NEW_LOOP_PACKET:
