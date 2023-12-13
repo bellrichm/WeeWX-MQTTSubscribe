@@ -94,13 +94,13 @@ sys.modules['weeutil'].weeutil = mock.MagicMock()
 sys.modules['weeutil.weeutil'] = mock.MagicMock()
 sys.modules['weeutil.weeutil'].TimeSpan = TimeSpan
 sys.modules['weeutil'].weeutil.TimeSpan = TimeSpan
-sys.modules['weeutil'].weeutil.startOfInterval = lambda ts, interval: startOfInterval(ts, interval)
-sys.modules['weeutil.weeutil'].to_bool = lambda val: to_bool(val)
-sys.modules['weeutil.weeutil'].to_float = lambda val: to_float(val)
-sys.modules['weeutil.weeutil'].to_int = lambda val: to_int(val)
-sys.modules['weeutil.weeutil'].timestamp_to_string = lambda ts, fmt: timestamp_to_string(ts, fmt)
-sys.modules['weeutil.weeutil'].to_sorted_string = lambda rec: to_sorted_string(rec)
-sys.modules['weeutil'].weeutil.option_as_list = lambda opt: option_as_list(opt)
+sys.modules['weeutil'].weeutil.startOfInterval = startOfInterval
+sys.modules['weeutil.weeutil'].to_bool = to_bool
+sys.modules['weeutil.weeutil'].to_float = to_float
+sys.modules['weeutil.weeutil'].to_int = to_int
+sys.modules['weeutil.weeutil'].timestamp_to_string = timestamp_to_string
+sys.modules['weeutil.weeutil'].to_sorted_string = to_sorted_string
+sys.modules['weeutil'].weeutil.option_as_list = option_as_list
 sys.modules['weeutil.logger'] = mock.MagicMock()
 
 class units:
