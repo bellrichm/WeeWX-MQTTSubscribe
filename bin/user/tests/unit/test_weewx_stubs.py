@@ -231,7 +231,7 @@ class engine:
     class StdEngine:
         pass
     class StdService:
-        def __init__(self, engine, config_dict):
+        def __init__(self, eng, config_dict):
             pass
         def bind(self, p1, p2):
             pass
