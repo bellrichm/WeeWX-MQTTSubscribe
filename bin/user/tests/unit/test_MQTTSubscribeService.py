@@ -16,7 +16,6 @@ import copy
 import random
 import time
 
-import test_weewx_stubs
 from test_weewx_stubs import random_string
 
 import user.MQTTSubscribe
@@ -217,8 +216,8 @@ class Testnew_loop_packet(unittest.TestCase):
             {'name': topic}
             )
 
-        new_loop_packet_event = test_weewx_stubs.Event(test_weewx_stubs.NEW_LOOP_PACKET,
-                                                       packet=self.packet_data)
+        mock_new_loop_packet_event = mock.NonCallableMagicMock()
+        mock_new_loop_packet_event.packet = self.packet_data
 
         with mock.patch('user.MQTTSubscribe.MQTTSubscriber') as mock_MQTTSubscribe:
             type(mock_MQTTSubscribe.return_value).queues = mock.PropertyMock(return_value=[queue])
@@ -228,9 +227,9 @@ class Testnew_loop_packet(unittest.TestCase):
             SUT = user.MQTTSubscribe.MQTTSubscribeService(self.mock_StdEngine, self.config_dict)
             SUT.end_ts = start_ts
 
-            SUT.new_loop_packet(new_loop_packet_event)
+            SUT.new_loop_packet(mock_new_loop_packet_event)
 
-            self.assertDictEqual(new_loop_packet_event.packet, self.final_packet_data)
+            self.assertDictEqual(mock_new_loop_packet_event.packet, self.final_packet_data)
 
             SUT.shutDown()
 
@@ -241,8 +240,8 @@ class Testnew_loop_packet(unittest.TestCase):
         self.setup_queue_tests(start_ts, end_period_ts)
         self.final_packet_data.update(self.target_data)
 
-        new_loop_packet_event = test_weewx_stubs.Event(test_weewx_stubs.NEW_LOOP_PACKET,
-                                                       packet=self.packet_data)
+        mock_new_loop_packet_event = mock.MagicMock()
+        mock_new_loop_packet_event.packet = self.packet_data
 
         with mock.patch('user.MQTTSubscribe.MQTTSubscriber') as mock_MQTTSubscribe:
             with mock.patch('user.MQTTSubscribe.Logger'):
@@ -253,7 +252,7 @@ class Testnew_loop_packet(unittest.TestCase):
                 SUT = user.MQTTSubscribe.MQTTSubscribeService(self.mock_StdEngine, self.config_dict)
                 SUT.end_ts = end_period_ts + 10
 
-                SUT.new_loop_packet(new_loop_packet_event)
+                SUT.new_loop_packet(mock_new_loop_packet_event)
 
                 SUT.logger.error.assert_called_once()
 
@@ -319,9 +318,8 @@ class Testnew_archive_record(unittest.TestCase):
             {'name': topic}
         )
 
-        new_loop_record_event = test_weewx_stubs.Event(test_weewx_stubs.NEW_ARCHIVE_RECORD,
-                                                       record=self.record_data,
-                                                       origin='hardware')
+        mock_new_archive_record_event = mock.MagicMock()
+        mock_new_archive_record_event.record = self.record_data
 
         with mock.patch('user.MQTTSubscribe.MQTTSubscriber') as mock_manager:
             type(mock_manager.return_value).queues = mock.PropertyMock(return_value=[queue])
@@ -331,9 +329,9 @@ class Testnew_archive_record(unittest.TestCase):
             SUT = user.MQTTSubscribe.MQTTSubscribeService(self.mock_StdEngine, self.config_dict)
             SUT.end_ts = start_ts
 
-            SUT.new_archive_record(new_loop_record_event)
+            SUT.new_archive_record(mock_new_archive_record_event)
 
-            self.assertDictEqual(new_loop_record_event.record, self.final_record_data)
+            self.assertDictEqual(mock_new_archive_record_event.record, self.final_record_data)
 
         SUT.shutDown()
 
@@ -360,12 +358,13 @@ class Testnew_archive_record(unittest.TestCase):
                     'dateTime': time.time()
                 }
 
-                event = test_weewx_stubs.Event(test_weewx_stubs.NEW_ARCHIVE_RECORD, record=record)
+                mock_new_archive_record_event = mock.MagicMock()
+                mock_new_archive_record_event.record = record
 
                 updated_record = copy.deepcopy(record)
                 updated_record.update({fieldname: value})
 
-                SUT.new_archive_record(event)
+                SUT.new_archive_record(mock_new_archive_record_event)
                 SUT.cache.get_value.assert_called_once()
                 self.assertEqual(record, updated_record)
 
@@ -392,9 +391,10 @@ class Testnew_archive_record(unittest.TestCase):
                     fieldname: round(random.uniform(1, 100), 2)
                 }
 
-                event = test_weewx_stubs.Event(test_weewx_stubs.NEW_ARCHIVE_RECORD, record=record)
+                mock_new_archive_record_event = mock.MagicMock()
+                mock_new_archive_record_event.record = record
 
-                SUT.new_archive_record(event)
+                SUT.new_archive_record(mock_new_archive_record_event)
                 SUT.cache.update_value.assert_called_once()
 
 if __name__ == '__main__':

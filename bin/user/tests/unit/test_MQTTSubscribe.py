@@ -825,7 +825,7 @@ class TestCallbacks(unittest.TestCase):
 
 class Teston_connect(unittest.TestCase):
     unit_system_name = 'US'
-    unit_system = test_weewx_stubs.UNITS_CONSTANTS[unit_system_name]
+    unit_system = 1
     config_dict = {
         'host': random_string(),
         'keepalive': random.randint(1, 10),

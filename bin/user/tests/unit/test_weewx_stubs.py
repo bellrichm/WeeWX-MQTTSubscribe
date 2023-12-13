@@ -31,32 +31,6 @@ class ListOfDicts(ChainMap):
     def prepend(self, m):
         self.maps.insert(0, m)
 
-UNITS_CONSTANTS = {'US': 1}
-
-class NEW_LOOP_PACKET:
-    """Event issued when a new LOOP packet is available. The event contains
-    attribute 'packet', which is the new LOOP packet."""
-class NEW_ARCHIVE_RECORD:
-    """Event issued when a new archive record is available. The event contains
-    attribute 'record', which is the new archive record."""
-
-class Event:
-    """Represents an event."""
-    def __init__(self, event_type, **argv):
-        self.packet = None
-        self.record = None
-
-        self.event_type = event_type
-
-        for key, value in argv.items():
-            setattr(self, key, value)
-
-    def __str__(self):
-        """Return a string with a reasonable representation of the event."""
-        et = f"Event type: {self.event_type} | "
-        s = "; ".join(f"{k}: {v}" for k,v in self.__dict__.items() if k != "event_type")
-        return et + s
-
 class TimeSpan(tuple):
     """Represents a time span, exclusive on the left, inclusive on the right."""
 
