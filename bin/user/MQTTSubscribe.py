@@ -2537,9 +2537,8 @@ Run MQTTSubscribe in simulate mode. One can simulate either the driver or servic
 For more inforation see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/MQTTSubscribe-Simulator-mode
 '''
 
-
     @classmethod
-    def add_parsers(cls, parser):
+    def add_parsers(cls, parser):  # pragma: no cover
         ''' Add the parsers. '''
         cls.simulator_parser = parser.add_parser('simulate',
                                                  description=cls.description,
@@ -2804,7 +2803,7 @@ For more information see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/
 '''
 
     @classmethod
-    def add_parsers(cls, parser):
+    def add_parsers(cls, parser): # pragma: no cover
         ''' Add the parsers.'''
         subparser = parser.add_parser('configure',
                                       description=cls.description,
@@ -2990,8 +2989,7 @@ For more information see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/
         else:
             self._update_interactively()
 
-
-    def _validate(self):
+    def _validate(self): # pragma: no cover
         mqttsubscribe_configuration = MQTTSubscribeConfiguration(None)
         error_msgs = []
         warn_msgs = []
@@ -3015,12 +3013,7 @@ For more information see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/
         for key, value in settings.items():
             self.config_dict[self.section][key] = value
 
-# To Run
-# setup.py install:
-# PYTHONPATH=/home/weewx/bin python /home/weewx/bin/user/MQTTSubscribe.py
 #
-# rpm or deb package install:
-# PYTHONPATH=/usr/share/weewx python /usr/share/weewx/user/MQTTSubscribe.py
 if __name__ == '__main__': # pragma: no cover
     def main():
         """ Run it."""
