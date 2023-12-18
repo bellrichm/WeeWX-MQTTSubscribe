@@ -16,7 +16,7 @@ from user.MQTTSubscribe import MQTTSubscribeConfiguration, CONFIG_SPEC_TEXT
 
 class TestDefaultCinfiguration(unittest.TestCase):
     def test_default_configuration(self):
-        # This test ensures tgat the example config contains the expected options
+        # This test ensures that the example config contains the expected options
 
         expected_config = '''# Replace '[MQTTSubscribe]' with '[MQTTSubscribeService]' or '[MQTTSubscribeDriver]'
 # For additional information see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/Configuring#the-mqttsubscribedrivermqttsubscribesection-section

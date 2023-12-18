@@ -17,8 +17,8 @@ import argparse
 from user.MQTTSubscribe import Configurator
 
 class TestUpdateConfig(unittest.TestCase):
-    #@unittest.skip("Need to figure out what to do about mocking WeeWX functions")
     def test_add_from(self):
+        # This is really not a unit test, it is testing weeutil.config.conditional_merge
         options = argparse.Namespace()
         options.type = 'driver'
         options.create_example = None
@@ -33,13 +33,25 @@ class TestUpdateConfig(unittest.TestCase):
         options.output = 'bin/user/tests/unit/data/output.conf'
         options.conf = 'bin/user/tests/unit/data/weewx.conf'
 
+        expected_config = '''[MQTTSubscribeDriver]
+    [[topic]]
+        [[[field-1]]]
+            name = rename-1a
+        [[[field-2]]]'''
+
         with mock.patch('weeutil.config.conditional_merge'):
             with mock.patch('weecfg.save'):
                 SUT = Configurator(None, options)
 
                 SUT.run()
 
-    #@unittest.skip("Need to figure out what to do about mocking WeeWX functions")
+        config_items = []
+        SUT.config_dict.filename = None
+        for item in SUT.config_dict.write():
+            config_items.append(item.decode('utf-8'))
+
+        self.assertEqual(config_items, expected_config.split('\n'))
+
     def test_remove(self):
         options = argparse.Namespace()
         options.type = 'driver'
@@ -60,7 +72,10 @@ class TestUpdateConfig(unittest.TestCase):
 
             SUT.run()
 
-    #@unittest.skip("Need to figure out what to do about mocking WeeWX functions")
+        SUT.config_dict.filename = None
+
+        self.assertEqual(SUT. config_dict.write(), [])
+
     def test_replace_with(self):
         options = argparse.Namespace()
         options.type = 'driver'
@@ -76,13 +91,26 @@ class TestUpdateConfig(unittest.TestCase):
         options.output = 'bin/user/tests/unit/data/output.conf'
         options.conf = 'bin/user/tests/unit/data/weewx.conf'
 
+        expected_config = '''[MQTTSubscribeDriver]
+    [[topic]]
+        [[[field-1]]]
+            name = rename-1b
+        [[[field-3]]]'''
+
         with mock.patch('weecfg.save'):
             SUT = Configurator(None, options)
 
             SUT.run()
 
-    #@unittest.skip("Need to figure out what to do about mocking WeeWX functions")
+        config_items = []
+        SUT.config_dict.filename = None
+        for item in SUT.config_dict.write():
+            config_items.append(item.decode('utf-8'))
+
+        self.assertEqual(config_items, expected_config.split('\n'))
+
     def test_update_from(self):
+        # This is really not a unit test, it is testing weeutil.config.merge_config
         options = argparse.Namespace()
         options.type = 'driver'
         options.create_example = None
@@ -97,9 +125,24 @@ class TestUpdateConfig(unittest.TestCase):
         options.output = 'bin/user/tests/unit/data/output.conf'
         options.conf = 'bin/user/tests/unit/data/weewx.conf'
 
-        SUT = Configurator(None, options)
+        expected_config = '''[MQTTSubscribeDriver]
+    [[topic]]
+        [[[field-1]]]
+            name = rename-1b
+        [[[field-2]]]
+        [[[field-3]]]'''
 
-        SUT.run()
+        with mock.patch('weecfg.save'):
+            SUT = Configurator(None, options)
+
+            SUT.run()
+
+        config_items = []
+        SUT.config_dict.filename = None
+        for item in SUT.config_dict.write():
+            config_items.append(item.decode('utf-8'))
+
+        self.assertEqual(config_items, expected_config.split('\n'))
 
 if __name__ == '__main__':
     # test_suite = unittest.TestSuite()
