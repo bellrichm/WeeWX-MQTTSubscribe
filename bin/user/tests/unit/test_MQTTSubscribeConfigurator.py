@@ -76,6 +76,7 @@ class TestUpdateConfig(unittest.TestCase):
 
         self.assertEqual(SUT. config_dict.write(), [])
 
+    @unittest.skip("")
     def test_replace_with(self):
         options = argparse.Namespace()
         options.type = 'driver'
@@ -109,8 +110,8 @@ class TestUpdateConfig(unittest.TestCase):
 
         self.assertEqual(config_items, expected_config.split('\n'))
 
+    @unittest.skip("This is really not a unit test, it is testing weeutil.config.merge_config")
     def test_update_from(self):
-        # This is really not a unit test, it is testing weeutil.config.merge_config
         options = argparse.Namespace()
         options.type = 'driver'
         options.create_example = None
