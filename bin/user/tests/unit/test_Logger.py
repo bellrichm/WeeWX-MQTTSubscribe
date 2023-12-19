@@ -6,24 +6,43 @@
 
 # pylint: disable=invalid-name
 # pylint: disable=wrong-import-order
+# pylint: disable=wrong-import-position
 # pylint: disable=missing-docstring
 # pylint: disable=bad-option-value, import-outside-toplevel
 # pylint: enable=bad-option-value
 
-import importlib
 import unittest
 import mock
 
 import sys
 
+import test_weewx_stubs
 from test_weewx_stubs import random_string
+# setup stubs before importing MQTTSubscribe
+test_weewx_stubs.setup_stubs()
+
+from user.MQTTSubscribe import Logger
 
 class TestV4Logging(unittest.TestCase):
+    def setUp(self):
+        # reset stubs for every test
+        test_weewx_stubs.setup_stubs()
+
+    def tearDown(self):
+        # cleanup stubs
+        del sys.modules['weecfg']
+        del sys.modules['weeutil']
+        del sys.modules['weeutil.config']
+        del sys.modules['weeutil.weeutil']
+        del sys.modules['weeutil.logger']
+        del sys.modules['weewx']
+        del sys.modules['weewx.drivers']
+        del sys.modules['weewx.engine']
+
     def test_init_set_trace_log_level(self):
         log_level = 5
 
         with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
-            from user.MQTTSubscribe import Logger
 
             mock_logging._checkLevel.return_value = log_level # pylint: disable=protected-access
             mock_logging.getLevelName.return_value = f'Level {int(log_level)}'
@@ -55,7 +74,6 @@ class TestV4Logging(unittest.TestCase):
     @staticmethod
     def test_init_filename_set():
         with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
-            from user.MQTTSubscribe import Logger
 
             mock_logging._checkLevel.return_value = 0 # pylint: disable=protected-access
 
@@ -74,10 +92,7 @@ class TestV4Logging(unittest.TestCase):
 
     @staticmethod
     def test_init_console_set():
-        import user.MQTTSubscribe
-        importlib.reload(user.MQTTSubscribe)
         with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
-            from user.MQTTSubscribe import Logger
 
             mock_logging._checkLevel.return_value = 0 # pylint: disable=protected-access
             mode = random_string()
@@ -86,14 +101,9 @@ class TestV4Logging(unittest.TestCase):
 
             SUT._logmsg.addHandler.assert_called_once() # pylint: disable=protected-access
 
-        importlib.reload(user.MQTTSubscribe)
-
     @staticmethod
     def test_error_logged():
-        import user.MQTTSubscribe
-        importlib.reload(user.MQTTSubscribe)
         with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
-            from user.MQTTSubscribe import Logger
 
             mock_logging._checkLevel.return_value = 0 # pylint: disable=protected-access
             mode = random_string()
@@ -105,14 +115,9 @@ class TestV4Logging(unittest.TestCase):
 
             SUT._logmsg.error.assert_called_once_with(SUT.MSG_FORMAT, mode, message) # pylint: disable=protected-access
 
-        importlib.reload(user.MQTTSubscribe)
-
     @staticmethod
     def test_info_logged():
-        import user.MQTTSubscribe
-        importlib.reload(user.MQTTSubscribe)
         with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
-            from user.MQTTSubscribe import Logger
 
             mock_logging._checkLevel.return_value = 0 # pylint: disable=protected-access
             mode = random_string()
@@ -124,14 +129,9 @@ class TestV4Logging(unittest.TestCase):
 
             SUT._logmsg.info.assert_called_once_with(SUT.MSG_FORMAT, mode, message) # pylint: disable=protected-access
 
-        importlib.reload(user.MQTTSubscribe)
-
     @staticmethod
     def test_debug_logged():
-        import user.MQTTSubscribe
-        importlib.reload(user.MQTTSubscribe)
         with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
-            from user.MQTTSubscribe import Logger
 
             mock_logging._checkLevel.return_value = 0 # pylint: disable=protected-access
             mode = random_string()
@@ -143,14 +143,9 @@ class TestV4Logging(unittest.TestCase):
 
             SUT._logmsg.debug.assert_called_once_with(SUT.MSG_FORMAT, mode, message) # pylint: disable=protected-access
 
-        importlib.reload(user.MQTTSubscribe)
-
     @staticmethod
     def test_trace_logged_with_debug_set():
-        import user.MQTTSubscribe
-        importlib.reload(user.MQTTSubscribe)
         with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
-            from user.MQTTSubscribe import Logger
 
             sys.modules['weewx'].debug = 2
             mock_logging._checkLevel.return_value = 0 # pylint: disable=protected-access
@@ -163,27 +158,20 @@ class TestV4Logging(unittest.TestCase):
 
             SUT._logmsg.debug.assert_called_once_with(SUT.MSG_FORMAT, mode, message) # pylint: disable=protected-access
 
-        importlib.reload(user.MQTTSubscribe)
-
     @staticmethod
     def test_trace_logged_with_debug_not_set():
-        import user.MQTTSubscribe
-        importlib.reload(user.MQTTSubscribe)
         with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
-            from user.MQTTSubscribe import Logger
 
-            sys.modules['weewx'].debug = 0
             mock_logging._checkLevel.return_value = 0 # pylint: disable=protected-access
             mode = random_string()
             message = random_string()
 
             SUT = Logger(mode)
+            SUT.weewx_debug = 0
 
             SUT.trace(message)
 
             SUT._logmsg.log.assert_called_once_with(5, SUT.MSG_FORMAT, mode, message) # pylint: disable=protected-access
-
-        importlib.reload(user.MQTTSubscribe)
 
 if __name__ == '__main__':
     # test_suite = unittest.TestSuite()

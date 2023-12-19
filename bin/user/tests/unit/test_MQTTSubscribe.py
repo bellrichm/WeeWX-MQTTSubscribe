@@ -16,9 +16,12 @@ import configobj
 import paho.mqtt.client
 import random
 import ssl
+import sys
 
 import test_weewx_stubs
 from test_weewx_stubs import random_string
+# setup stubs before importing MQTTSubscribe
+test_weewx_stubs.setup_stubs()
 
 from user.MQTTSubscribe import MQTTSubscriber, Logger
 
@@ -28,6 +31,21 @@ class Msg:
         pass
 
 class TestInitialization(unittest.TestCase):
+    def setUp(self):
+        # reset stubs for every test
+        test_weewx_stubs.setup_stubs()
+
+    def tearDown(self):
+        # cleanup stubs
+        del sys.modules['weecfg']
+        del sys.modules['weeutil']
+        del sys.modules['weeutil.config']
+        del sys.modules['weeutil.weeutil']
+        del sys.modules['weeutil.logger']
+        del sys.modules['weewx']
+        del sys.modules['weewx.drivers']
+        del sys.modules['weewx.engine']
+
     def test_mqtt_log_set(self):
         mock_logger = mock.Mock(spec=Logger)
 
@@ -252,6 +270,21 @@ class TestInitialization(unittest.TestCase):
                     SUT.client.connect.assert_called_once_with(host, port, keepalive)
 
 class  Testtls_configuration(unittest.TestCase):
+    def setUp(self):
+        # reset stubs for every test
+        test_weewx_stubs.setup_stubs()
+
+    def tearDown(self):
+        # cleanup stubs
+        del sys.modules['weecfg']
+        del sys.modules['weeutil']
+        del sys.modules['weeutil.config']
+        del sys.modules['weeutil.weeutil']
+        del sys.modules['weeutil.logger']
+        del sys.modules['weewx']
+        del sys.modules['weewx.drivers']
+        del sys.modules['weewx.engine']
+
     @staticmethod
     def test_tls_configuration_good():
         ca_certs = random_string()
@@ -513,6 +546,21 @@ class  Testtls_configuration(unittest.TestCase):
                     self.assertEqual(error.exception.args[0], f"Invalid 'certs_required'., {certs_required}")
 
 class TestDeprecatedOptions(unittest.TestCase):
+    def setUp(self):
+        # reset stubs for every test
+        test_weewx_stubs.setup_stubs()
+
+    def tearDown(self):
+        # cleanup stubs
+        del sys.modules['weecfg']
+        del sys.modules['weeutil']
+        del sys.modules['weeutil.config']
+        del sys.modules['weeutil.weeutil']
+        del sys.modules['weeutil.logger']
+        del sys.modules['weewx']
+        del sys.modules['weewx.drivers']
+        del sys.modules['weewx.engine']
+
     def test_topic_is_deprecated(self):
         config_dict = {}
         config_dict['message_callback'] = {}
@@ -648,6 +696,21 @@ class TestDeprecatedOptions(unittest.TestCase):
                     mock_logger.info.assert_any_call("'use_topic_as_fieldname' option is no longer needed and can be removed.")
 
 class TestStart(unittest.TestCase):
+    def setUp(self):
+        # reset stubs for every test
+        test_weewx_stubs.setup_stubs()
+
+    def tearDown(self):
+        # cleanup stubs
+        del sys.modules['weecfg']
+        del sys.modules['weeutil']
+        del sys.modules['weeutil.config']
+        del sys.modules['weeutil.weeutil']
+        del sys.modules['weeutil.logger']
+        del sys.modules['weewx']
+        del sys.modules['weewx.drivers']
+        del sys.modules['weewx.engine']
+
     def set_connection_success(self, *args, **kwargs): # match signature pylint: disable=unused-argument
         self.SUT.userdata['connect'] = True
 
@@ -739,6 +802,21 @@ class TestStart(unittest.TestCase):
                         mock_time.sleep.assert_called_once()
 
 class Test_disconnect(unittest.TestCase):
+    def setUp(self):
+        # reset stubs for every test
+        test_weewx_stubs.setup_stubs()
+
+    def tearDown(self):
+        # cleanup stubs
+        del sys.modules['weecfg']
+        del sys.modules['weeutil']
+        del sys.modules['weeutil.config']
+        del sys.modules['weeutil.weeutil']
+        del sys.modules['weeutil.logger']
+        del sys.modules['weewx']
+        del sys.modules['weewx.drivers']
+        del sys.modules['weewx.engine']
+
     @staticmethod
     def test_disconnect():
         mock_logger = mock.Mock(spec=Logger)
@@ -759,6 +837,21 @@ class Test_disconnect(unittest.TestCase):
                     SUT.client.disconnect.assert_called_once()
 
 class TestCallbacks(unittest.TestCase):
+    def setUp(self):
+        # reset stubs for every test
+        test_weewx_stubs.setup_stubs()
+
+    def tearDown(self):
+        # cleanup stubs
+        del sys.modules['weecfg']
+        del sys.modules['weeutil']
+        del sys.modules['weeutil.config']
+        del sys.modules['weeutil.weeutil']
+        del sys.modules['weeutil.logger']
+        del sys.modules['weewx']
+        del sys.modules['weewx.drivers']
+        del sys.modules['weewx.engine']
+
     @staticmethod
     def test_on_disconnect():
         mock_logger = mock.Mock(spec=Logger)
@@ -834,6 +927,21 @@ class Teston_connect(unittest.TestCase):
         'password': random_string(),
         'archive_topic': None
     }
+
+    def setUp(self):
+        # reset stubs for every test
+        test_weewx_stubs.setup_stubs()
+
+    def tearDown(self):
+        # cleanup stubs
+        del sys.modules['weecfg']
+        del sys.modules['weeutil']
+        del sys.modules['weeutil.config']
+        del sys.modules['weeutil.weeutil']
+        del sys.modules['weeutil.logger']
+        del sys.modules['weewx']
+        del sys.modules['weewx.drivers']
+        del sys.modules['weewx.engine']
 
     def test_multiple_topics(self):
         topic1 = random_string()

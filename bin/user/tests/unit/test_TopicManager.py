@@ -5,6 +5,7 @@
 #
 
 # pylint: disable=wrong-import-order
+# pylint: disable=wrong-import-position
 # pylint: disable=missing-docstring
 # pylint: disable=invalid-name
 
@@ -16,14 +17,32 @@ import configobj
 import copy
 import datetime
 import random
+import sys
 import time
 
 from test_weewx_stubs import random_string
 import test_weewx_stubs
+# setup stubs before importing MQTTSubscribe
+test_weewx_stubs.setup_stubs()
 
 from user.MQTTSubscribe import TopicManager, Logger
 
 class TestInit(unittest.TestCase):
+    def setUp(self):
+        # reset stubs for every test
+        test_weewx_stubs.setup_stubs()
+
+    def tearDown(self):
+        # cleanup stubs
+        del sys.modules['weecfg']
+        del sys.modules['weeutil']
+        del sys.modules['weeutil.config']
+        del sys.modules['weeutil.weeutil']
+        del sys.modules['weeutil.logger']
+        del sys.modules['weewx']
+        del sys.modules['weewx.drivers']
+        del sys.modules['weewx.engine']
+
     def test_missing_topic(self):
         mock_logger = mock.Mock(spec=Logger)
 
@@ -95,6 +114,21 @@ class TestInit(unittest.TestCase):
         self.assertEqual(error.exception.args[0], f"For {field} invalid units, {config_dict[topic][field]['units']}.")
 
 class TestConfigureMessage(unittest.TestCase):
+    def setUp(self):
+        # reset stubs for every test
+        test_weewx_stubs.setup_stubs()
+
+    def tearDown(self):
+        # cleanup stubs
+        del sys.modules['weecfg']
+        del sys.modules['weeutil']
+        del sys.modules['weeutil.config']
+        del sys.modules['weeutil.weeutil']
+        del sys.modules['weeutil.logger']
+        del sys.modules['weewx']
+        del sys.modules['weewx.drivers']
+        del sys.modules['weewx.engine']
+
     def test_default_message_configuration(self):
         mock_logger = mock.Mock(spec=Logger)
 
@@ -243,6 +277,21 @@ class TestConfigureMessage(unittest.TestCase):
         self.assertNotIn('message', SUT.subscribed_topics[topic])
 
 class TestConfigureFields(unittest.TestCase):
+    def setUp(self):
+        # reset stubs for every test
+        test_weewx_stubs.setup_stubs()
+
+    def tearDown(self):
+        # cleanup stubs
+        del sys.modules['weecfg']
+        del sys.modules['weeutil']
+        del sys.modules['weeutil.config']
+        del sys.modules['weeutil.weeutil']
+        del sys.modules['weeutil.logger']
+        del sys.modules['weewx']
+        del sys.modules['weewx.drivers']
+        del sys.modules['weewx.engine']
+
     def test_no_field_configuration(self):
         mock_logger = mock.Mock(spec=Logger)
 
@@ -518,6 +567,21 @@ class TestQueueSizeCheck(unittest.TestCase):
     config_dict[topic] = {}
     config = configobj.ConfigObj(config_dict)
 
+    def setUp(self):
+        # reset stubs for every test
+        test_weewx_stubs.setup_stubs()
+
+    def tearDown(self):
+        # cleanup stubs
+        del sys.modules['weecfg']
+        del sys.modules['weeutil']
+        del sys.modules['weeutil.config']
+        del sys.modules['weeutil.weeutil']
+        del sys.modules['weeutil.logger']
+        del sys.modules['weewx']
+        del sys.modules['weewx.drivers']
+        del sys.modules['weewx.engine']
+
     def test_queue_max_reached(self):
         mock_logger = mock.Mock(spec=Logger)
 
@@ -569,12 +633,26 @@ class TestQueueSizeCheck(unittest.TestCase):
         self.assertEqual(mock_logger.error.call_count, orig_queue_size-max_queue+1)
         self.assertEqual(len(queue), max_queue-1)
 
-
 class TestAppendData(unittest.TestCase):
     topic = random_string()
     config_dict = {}
     config_dict[topic] = {}
     config = configobj.ConfigObj(config_dict)
+
+    def setUp(self):
+        # reset stubs for every test
+        test_weewx_stubs.setup_stubs()
+
+    def tearDown(self):
+        # cleanup stubs
+        del sys.modules['weecfg']
+        del sys.modules['weeutil']
+        del sys.modules['weeutil.config']
+        del sys.modules['weeutil.weeutil']
+        del sys.modules['weeutil.logger']
+        del sys.modules['weewx']
+        del sys.modules['weewx.drivers']
+        del sys.modules['weewx.engine']
 
     def test_append_good_data(self):
         queue_data = {
@@ -783,7 +861,6 @@ class TestAppendData(unittest.TestCase):
         self.assertIn('dateTime', data)
         self.assertEqual(adjusted_epoch, data['dateTime'])
 
-
 class TestGetQueueData(unittest.TestCase):
     topic = random_string()
     config_dict = {}
@@ -884,6 +961,21 @@ class TestGetWindQueueData(unittest.TestCase):
 
     fieldname = 'windSpeed'
 
+    def setUp(self):
+        # reset stubs for every test
+        test_weewx_stubs.setup_stubs()
+
+    def tearDown(self):
+        # cleanup stubs
+        del sys.modules['weecfg']
+        del sys.modules['weeutil']
+        del sys.modules['weeutil.config']
+        del sys.modules['weeutil.weeutil']
+        del sys.modules['weeutil.logger']
+        del sys.modules['weewx']
+        del sys.modules['weewx.drivers']
+        del sys.modules['weewx.engine']
+
     def create_queue_data(self):
         return {
             self.fieldname: random.uniform(1, 100),
@@ -962,6 +1054,21 @@ class TestAccumulatedData(unittest.TestCase):
     config_dict = {}
     config_dict[topic] = {}
     config = configobj.ConfigObj(config_dict)
+
+    def setUp(self):
+        # reset stubs for every test
+        test_weewx_stubs.setup_stubs()
+
+    def tearDown(self):
+        # cleanup stubs
+        del sys.modules['weecfg']
+        del sys.modules['weeutil']
+        del sys.modules['weeutil.config']
+        del sys.modules['weeutil.weeutil']
+        del sys.modules['weeutil.logger']
+        del sys.modules['weewx']
+        del sys.modules['weewx.drivers']
+        del sys.modules['weewx.engine']
 
     @staticmethod
     def create_queue_data():
