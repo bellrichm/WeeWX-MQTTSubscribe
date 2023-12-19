@@ -141,35 +141,36 @@ class drivers: # pylint: disable=invalid-name
     class AbstractConfEditor:
         pass
 
-sys.modules['weecfg'] = mock.MagicMock()
+def setup_stubs():
+    sys.modules['weecfg'] = mock.MagicMock()
 
-sys.modules['weeutil'] = mock.MagicMock
-sys.modules['weeutil.config'] = mock.MagicMock()
-sys.modules['weeutil'].config = mock.MagicMock()
+    sys.modules['weeutil'] = mock.MagicMock
+    sys.modules['weeutil.config'] = mock.MagicMock()
+    sys.modules['weeutil'].config = mock.MagicMock()
 
-sys.modules['weeutil'].weeutil = mock.MagicMock()
+    sys.modules['weeutil'].weeutil = mock.MagicMock()
 
-sys.modules['weeutil.weeutil'] = mock.MagicMock()
-sys.modules['weeutil.weeutil'].TimeSpan = TimeSpan
-sys.modules['weeutil'].weeutil.TimeSpan = TimeSpan
-sys.modules['weeutil'].weeutil.startOfInterval = startOfInterval
-sys.modules['weeutil.weeutil'].to_bool = to_bool
-sys.modules['weeutil.weeutil'].to_float = to_float
-sys.modules['weeutil.weeutil'].to_int = to_int
-sys.modules['weeutil.weeutil'].timestamp_to_string = timestamp_to_string
-sys.modules['weeutil.weeutil'].to_sorted_string = to_sorted_string
-sys.modules['weeutil'].weeutil.option_as_list = option_as_list
-sys.modules['weeutil.logger'] = mock.MagicMock()
+    sys.modules['weeutil.weeutil'] = mock.MagicMock()
+    sys.modules['weeutil.weeutil'].TimeSpan = TimeSpan
+    sys.modules['weeutil'].weeutil.TimeSpan = TimeSpan
+    sys.modules['weeutil'].weeutil.startOfInterval = startOfInterval
+    sys.modules['weeutil.weeutil'].to_bool = to_bool
+    sys.modules['weeutil.weeutil'].to_float = to_float
+    sys.modules['weeutil.weeutil'].to_int = to_int
+    sys.modules['weeutil.weeutil'].timestamp_to_string = timestamp_to_string
+    sys.modules['weeutil.weeutil'].to_sorted_string = to_sorted_string
+    sys.modules['weeutil'].weeutil.option_as_list = option_as_list
+    sys.modules['weeutil.logger'] = mock.MagicMock()
 
-sys.modules['weewx'] = mock.MagicMock()
-sys.modules['weewx'].drivers = drivers
-sys.modules['weewx.drivers'] = mock.MagicMock()
-sys.modules['weewx.engine'] = engine
+    sys.modules['weewx'] = mock.MagicMock()
+    sys.modules['weewx'].drivers = drivers
+    sys.modules['weewx.drivers'] = mock.MagicMock()
+    sys.modules['weewx.engine'] = engine
 
-sys.modules['weewx'].units = units
-sys.modules['weewx'].units.USUnits = ListOfDicts({})
-sys.modules['weewx'].units.conversionDict['unit_name'] = {'foobar': lambda x: x / 1}
-sys.modules['weewx'].accum = accum
-sys.modules['weewx'].WeeWxIOError = WeeWxIOError
-sys.modules['weewx'].__version__ = "unknown"
-sys.modules['weewx'].debug = 2
+    sys.modules['weewx'].units = units
+    sys.modules['weewx'].units.conversionDict['unit_name'] = {'foobar': lambda x: x / 1}
+    sys.modules['weewx'].units.USUnits = ListOfDicts({})
+    sys.modules['weewx'].accum = accum
+    sys.modules['weewx'].WeeWxIOError = WeeWxIOError
+    sys.modules['weewx'].__version__ = "unknown"
+    sys.modules['weewx'].debug = 2
