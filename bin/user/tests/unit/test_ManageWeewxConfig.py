@@ -24,16 +24,6 @@ class TestObservationConfig(unittest.TestCase):
     def tearDown(self):
         sys.modules['weewx'].units.USUnits = test_weewx_stubs.ListOfDicts({})
 
-        sys.modules['weewx'].units.MetricUnits = test_weewx_stubs.ListOfDicts({})
-
-        sys.modules['weewx'].units.MetricWXUnits = test_weewx_stubs.ListOfDicts({})
-
-        sys.modules['weewx'].units.default_unit_format_dict = {}
-
-        sys.modules['weewx'].units.default_unit_label_dict = {}
-
-        sys.modules['weewx'].units.conversionDict = {}
-        sys.modules['weewx'].units.conversionDict['unit_name'] = {'foobar': lambda x: x / 1}
 
     def test_configure_observation(self):
 
