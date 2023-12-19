@@ -14,13 +14,31 @@ import mock
 import configobj
 import copy
 import random
+import sys
 import time
 
+import test_weewx_stubs
 from test_weewx_stubs import random_string
-
+# setup stubs before importing MQTTSubscribe
+test_weewx_stubs.setup_stubs()
 import user.MQTTSubscribe
 
 class atestInitialization(unittest.TestCase):
+    def setUp(self):
+        # reset stubs for every test
+        test_weewx_stubs.setup_stubs()
+
+    def tearDown(self):
+        # cleanup stubs
+        del sys.modules['weecfg']
+        del sys.modules['weeutil']
+        del sys.modules['weeutil.config']
+        del sys.modules['weeutil.weeutil']
+        del sys.modules['weeutil.logger']
+        del sys.modules['weewx']
+        del sys.modules['weewx.drivers']
+        del sys.modules['weewx.engine']
+
     def test_invalid_binding(self):
         mock_StdEngine = mock.Mock()
 
@@ -159,6 +177,21 @@ class atestInitialization(unittest.TestCase):
 class Testnew_loop_packet(unittest.TestCase):
     mock_StdEngine = mock.Mock()
 
+    def setUp(self):
+        # reset stubs for every test
+        test_weewx_stubs.setup_stubs()
+
+    def tearDown(self):
+        # cleanup stubs
+        del sys.modules['weecfg']
+        del sys.modules['weeutil']
+        del sys.modules['weeutil.config']
+        del sys.modules['weeutil.weeutil']
+        del sys.modules['weeutil.logger']
+        del sys.modules['weewx']
+        del sys.modules['weewx.drivers']
+        del sys.modules['weewx.engine']
+
     @classmethod
     def setUpClass(cls):
         cls.queue_data = {}
@@ -259,6 +292,21 @@ class Testnew_loop_packet(unittest.TestCase):
                 SUT.shutDown()
 
 class Testnew_archive_record(unittest.TestCase):
+    def setUp(self):
+        # reset stubs for every test
+        test_weewx_stubs.setup_stubs()
+
+    def tearDown(self):
+        # cleanup stubs
+        del sys.modules['weecfg']
+        del sys.modules['weeutil']
+        del sys.modules['weeutil.config']
+        del sys.modules['weeutil.weeutil']
+        del sys.modules['weeutil.logger']
+        del sys.modules['weewx']
+        del sys.modules['weewx.drivers']
+        del sys.modules['weewx.engine']
+
     @classmethod
     def setUpClass(cls):
         cls.mock_StdEngine = mock.Mock()

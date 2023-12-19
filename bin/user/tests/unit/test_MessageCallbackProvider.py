@@ -5,6 +5,7 @@
 #
 
 # pylint: disable=wrong-import-order
+# pylint: disable=wrong-import-position
 # pylint: disable=missing-docstring
 # pylint: disable=invalid-name
 # pylint: disable=protected-access
@@ -17,10 +18,13 @@ import configobj
 import copy
 import json
 import random
+import sys
 import time
 
-import test_weewx_stubs # used to set up stubs - pylint: disable=unused-import
+import test_weewx_stubs
 from test_weewx_stubs import random_string
+# setup stubs before importing MQTTSubscribe
+test_weewx_stubs.setup_stubs()
 
 import user.MQTTSubscribe
 from user.MQTTSubscribe import TopicManager, Logger
@@ -40,6 +44,21 @@ class Msg:
         self.retain = retain
 
 class TestInitialization(unittest.TestCase):
+    def setUp(self):
+        # reset stubs for every test
+        test_weewx_stubs.setup_stubs()
+
+    def tearDown(self):
+        # cleanup stubs
+        del sys.modules['weecfg']
+        del sys.modules['weeutil']
+        del sys.modules['weeutil.config']
+        del sys.modules['weeutil.weeutil']
+        del sys.modules['weeutil.logger']
+        del sys.modules['weewx']
+        del sys.modules['weewx.drivers']
+        del sys.modules['weewx.engine']
+
     @staticmethod
     def test_message_and_message_callback_set():
         mock_logger = mock.Mock(spec=Logger)

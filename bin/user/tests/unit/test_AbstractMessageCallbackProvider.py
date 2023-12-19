@@ -16,7 +16,7 @@ import mock
 import random
 import sys
 
-import test_weewx_stubs # needed to import AbstractMessageCallbackProvider pylint: disable=unused-import
+import test_weewx_stubs
 from test_weewx_stubs import random_string
 # setup stubs before importing MQTTSubscribe
 test_weewx_stubs.setup_stubs()
