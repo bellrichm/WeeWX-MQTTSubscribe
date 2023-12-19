@@ -39,11 +39,10 @@ class TestUpdateConfig(unittest.TestCase):
             name = rename-1a
         [[[field-2]]]'''
 
-        with mock.patch('weeutil.config.conditional_merge'):
-            with mock.patch('weecfg.save'):
-                SUT = Configurator(None, options)
+        with mock.patch('weecfg.save'):
+            SUT = Configurator(None, options)
 
-                SUT.run()
+            SUT.run()
 
         config_items = []
         SUT.config_dict.filename = None
