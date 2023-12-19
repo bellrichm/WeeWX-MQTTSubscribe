@@ -37,9 +37,10 @@ class TestUpdateConfig(unittest.TestCase):
     [[topic]]
         [[[field-1]]]
             name = rename-1a
-        [[[field-2]]]'''
+        [[[field-2]]]
+        [[[field-3]]]'''
 
-        with mock.patch('weecfg.save'):
+        with mock.patch('user.MQTTSubscribe.weecfg.save'):
             SUT = Configurator(None, options)
 
             SUT.run()
