@@ -14,31 +14,11 @@ import unittest
 import mock
 
 import argparse
-import sys
-
-import test_weewx_stubs
-# setup stubs before importing MQTTSubscribe
-test_weewx_stubs.setup_stubs()
 
 from user.MQTTSubscribe import Configurator
 
 class TestUpdateConfig(unittest.TestCase):
-    def setUp(self):
-        # reset stubs for every test
-        test_weewx_stubs.setup_stubs()
-
-    def tearDown(self):
-        # cleanup stubs
-        del sys.modules['weecfg']
-        del sys.modules['weeutil']
-        del sys.modules['weeutil.config']
-        del sys.modules['weeutil.weeutil']
-        del sys.modules['weeutil.logger']
-        del sys.modules['weewx']
-        del sys.modules['weewx.drivers']
-        del sys.modules['weewx.engine']
-
-    @unittest.skip("This is really not a unit test, it is testing weeutil.config.conditional_merge")
+    #@unittest.skip("This is really not a unit test, it is testing weeutil.config.conditional_merge")
     def test_add_from(self):
         options = argparse.Namespace()
         options.type = 'driver'
@@ -47,12 +27,12 @@ class TestUpdateConfig(unittest.TestCase):
         options.print_configspec = None
         options.validate = None
         options.no_backup = True
-        options.add_from = 'bin/user/tests/unit/data/mqttsubscribe.conf'
+        options.add_from = 'bin/user/tests/integ/data/mqttsubscribe.conf'
         options.remove = None
         options.replace_with = None
         options.update_from = None
-        options.output = 'bin/user/tests/unit/data/output.conf'
-        options.conf = 'bin/user/tests/unit/data/weewx.conf'
+        options.output = 'bin/user/tests/integ/data/output.conf'
+        options.conf = 'bin/user/tests/integ/data/weewx.conf'
 
         expected_config = '''[MQTTSubscribeDriver]
     [[topic]]
@@ -85,8 +65,8 @@ class TestUpdateConfig(unittest.TestCase):
         options.remove = True
         options.replace_with = None
         options.update_from = None
-        options.output = 'bin/user/tests/unit/data/output.conf'
-        options.conf = 'bin/user/tests/unit/data/weewx.conf'
+        options.output = 'bin/user/tests/integ/data/output.conf'
+        options.conf = 'bin/user/tests/integ/data/weewx.conf'
 
         with mock.patch('weecfg.save'):
             SUT = Configurator(None, options)
@@ -97,7 +77,7 @@ class TestUpdateConfig(unittest.TestCase):
 
         self.assertEqual(SUT. config_dict.write(), [])
 
-    @unittest.skip("This tests uses weeutil.config.deep_copy")
+    #@unittest.skip("This tests uses weeutil.config.deep_copy")
     def test_replace_with(self):
         options = argparse.Namespace()
         options.type = 'driver'
@@ -108,10 +88,10 @@ class TestUpdateConfig(unittest.TestCase):
         options.no_backup = True
         options.add_from = None
         options.remove = None
-        options.replace_with = 'bin/user/tests/unit/data/mqttsubscribe.conf'
+        options.replace_with = 'bin/user/tests/integ/data/mqttsubscribe.conf'
         options.update_from = None
-        options.output = 'bin/user/tests/unit/data/output.conf'
-        options.conf = 'bin/user/tests/unit/data/weewx.conf'
+        options.output = 'bin/user/tests/integ/data/output.conf'
+        options.conf = 'bin/user/tests/integ/data/weewx.conf'
 
         expected_config = '''[MQTTSubscribeDriver]
     [[topic]]
@@ -131,7 +111,7 @@ class TestUpdateConfig(unittest.TestCase):
 
         self.assertEqual(config_items, expected_config.split('\n'))
 
-    @unittest.skip("This is really not a unit test, it is testing weeutil.config.merge_config")
+    #@unittest.skip("This is really not a unit test, it is testing weeutil.config.merge_config")
     def test_update_from(self):
         options = argparse.Namespace()
         options.type = 'driver'
@@ -143,9 +123,9 @@ class TestUpdateConfig(unittest.TestCase):
         options.add_from = None
         options.remove = None
         options.replace_with = None
-        options.update_from = 'bin/user/tests/unit/data/mqttsubscribe.conf'
-        options.output = 'bin/user/tests/unit/data/output.conf'
-        options.conf = 'bin/user/tests/unit/data/weewx.conf'
+        options.update_from = 'bin/user/tests/integ/data/mqttsubscribe.conf'
+        options.output = 'bin/user/tests/integ/data/output.conf'
+        options.conf = 'bin/user/tests/integ/data/weewx.conf'
 
         expected_config = '''[MQTTSubscribeDriver]
     [[topic]]
