@@ -8,22 +8,38 @@
 # pylint: disable=invalid-name
 # pylint: disable=protected-access
 # pylint: disable=wrong-import-order
+# pylint: disable=wrong-import-position
 
 import unittest
 import mock
 
 import argparse
-import importlib
+import sys
 
-import user.MQTTSubscribe
+import test_weewx_stubs
+# setup stubs before importing MQTTSubscribe
+test_weewx_stubs.setup_stubs()
+
 from user.MQTTSubscribe import Configurator
 
 class TestUpdateConfig(unittest.TestCase):
     def setUp(self):
-        importlib.reload(user.MQTTSubscribe)
+        # reset stubs for every test
+        test_weewx_stubs.setup_stubs()
 
+    def tearDown(self):
+        # cleanup stubs
+        del sys.modules['weecfg']
+        del sys.modules['weeutil']
+        del sys.modules['weeutil.config']
+        del sys.modules['weeutil.weeutil']
+        del sys.modules['weeutil.logger']
+        del sys.modules['weewx']
+        del sys.modules['weewx.drivers']
+        del sys.modules['weewx.engine']
+
+    @unittest.skip("This is really not a unit test, it is testing weeutil.config.conditional_merge")
     def test_add_from(self):
-        # This is really not a unit test, it is testing weeutil.config.conditional_merge
         options = argparse.Namespace()
         options.type = 'driver'
         options.create_example = None
@@ -81,7 +97,7 @@ class TestUpdateConfig(unittest.TestCase):
 
         self.assertEqual(SUT. config_dict.write(), [])
 
-    @unittest.skip("")
+    @unittest.skip("This tests uses weeutil.config.deep_copy")
     def test_replace_with(self):
         options = argparse.Namespace()
         options.type = 'driver'
