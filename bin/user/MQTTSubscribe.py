@@ -2978,6 +2978,7 @@ For more information see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/
         weecfg.save(self.config_dict, self.config_output_path, not self.no_backup)
 
     def _update(self):
+        # tested as part of the integration tests # pragma no cover
         if self.action == '--add-from':
             weeutil.config.conditional_merge(self.config_dict[self.section], self.config_input_dict)
         elif self.action == '--remove':
@@ -3006,6 +3007,7 @@ For more information see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/
             print(msg)
 
     def _update_interactively(self):
+        # pragma: no cover
         conf_editor = MQTTSubscribeDriverConfEditor()
         conf_editor.existing_options = self.config_dict.get(self.section, {})
         settings = conf_editor.prompt_for_settings()
