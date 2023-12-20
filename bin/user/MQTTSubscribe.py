@@ -2977,7 +2977,7 @@ For more information see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/
 
         weecfg.save(self.config_dict, self.config_output_path, not self.no_backup)
 
-    def _update(self): # tested as part of the integration tests # pragma no cover
+    def _update(self): # pragma no cover - tested as part of the integration test suite
         if self.action == '--add-from':
             weeutil.config.conditional_merge(self.config_dict[self.section], self.config_input_dict)
         elif self.action == '--remove':
