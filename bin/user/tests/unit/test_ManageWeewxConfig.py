@@ -10,6 +10,7 @@
 # pylint: disable=invalid-name
 
 import configobj
+import importlib
 import sys
 import types
 
@@ -26,6 +27,8 @@ class TestObservationConfig(unittest.TestCase):
     def setUp(self):
         # reset stubs for every test
         test_weewx_stubs.setup_stubs()
+        import user.MQTTSubscribe
+        importlib.reload(user.MQTTSubscribe)
 
     def tearDown(self):
         # cleanup stubs

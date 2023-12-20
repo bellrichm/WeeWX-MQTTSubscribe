@@ -13,10 +13,15 @@ import unittest
 import mock
 
 import argparse
+import importlib
 
+import user.MQTTSubscribe
 from user.MQTTSubscribe import Configurator
 
 class TestUpdateConfig(unittest.TestCase):
+    def setUp(self):
+        importlib.reload(user.MQTTSubscribe)
+
     def test_add_from(self):
         # This is really not a unit test, it is testing weeutil.config.conditional_merge
         options = argparse.Namespace()
