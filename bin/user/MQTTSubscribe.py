@@ -2972,10 +2972,10 @@ For more information see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/
         else:
             self._update()
 
-        if self.section == 'MQTTSubscribService' and self.enable is not None:
-            self.config_dict[self.section]['enable'] = self.enable
+            if self.section == 'MQTTSubscribService' and self.enable is not None:
+                self.config_dict[self.section]['enable'] = self.enable
 
-        weecfg.save(self.config_dict, self.config_output_path, not self.no_backup)
+            weecfg.save(self.config_dict, self.config_output_path, not self.no_backup)
 
     def _update(self): # this is tested as part of the integtation test suite - pragma: no cover
         if self.action == '--add-from':
