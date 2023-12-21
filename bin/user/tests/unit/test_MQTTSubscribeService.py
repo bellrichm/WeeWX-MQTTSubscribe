@@ -5,6 +5,7 @@
 #
 
 # pylint: disable=wrong-import-order
+# pylint: disable=wrong-import-position
 # pylint: disable=missing-docstring
 # pylint: disable=invalid-name
 

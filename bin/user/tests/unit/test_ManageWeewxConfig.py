@@ -21,13 +21,13 @@ import test_weewx_stubs
 # setup stubs before importing MQTTSubscribe
 test_weewx_stubs.setup_stubs()
 
+import user.MQTTSubscribe
 from user.MQTTSubscribe import ManageWeewxConfig
 
 class TestObservationConfig(unittest.TestCase):
     def setUp(self):
         # reset stubs for every test
         test_weewx_stubs.setup_stubs()
-        import user.MQTTSubscribe
         importlib.reload(user.MQTTSubscribe)
 
     def tearDown(self):
