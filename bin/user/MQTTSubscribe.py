@@ -2899,7 +2899,7 @@ For more information see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/
             self.config_output_path = os.path.abspath(options.create_example)
 
         if options.type and options.no_backup and self.action in self.no_update_actions:
-            parser.error(f"'--output' is mutually exclusive with '{self.no_update_actions}'")
+            parser.error(f"'--no-backup' is mutually exclusive with '{self.no_update_actions}'")
 
         if options.type:
             self.no_backup = options.no_backup
@@ -2977,7 +2977,7 @@ For more information see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/
 
             weecfg.save(self.config_dict, self.config_output_path, not self.no_backup)
 
-    def _update(self): # this is tested as part of the integtation test suite - pragma: no cover
+    def _update(self):
         if self.action == '--add-from':
             weeutil.config.conditional_merge(self.config_dict[self.section], self.config_input_dict)
         elif self.action == '--remove':
@@ -2989,7 +2989,7 @@ For more information see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/
         else:
             self._update_interactively()
 
-    def _validate(self): # pragma: no cover
+    def _validate(self):
         mqttsubscribe_configuration = MQTTSubscribeConfiguration(None)
         error_msgs = []
         warn_msgs = []
@@ -3005,7 +3005,7 @@ For more information see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/
         for msg in error_msgs:
             print(msg)
 
-    def _update_interactively(self): # pragma: no cover
+    def _update_interactively(self):
         conf_editor = MQTTSubscribeDriverConfEditor()
         conf_editor.existing_options = self.config_dict.get(self.section, {})
         settings = conf_editor.prompt_for_settings()
