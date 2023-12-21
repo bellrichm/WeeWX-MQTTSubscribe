@@ -13,4 +13,4 @@ coverage2.xml
 pylint.txt
 localtools/
 .scannerwork/
-bin/user/tests/unit/data/output.conf
+bin/user/tests/data/output.conf
