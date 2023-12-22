@@ -13,6 +13,9 @@
 import unittest
 import mock
 
+import contextlib
+import io
+
 import argparse
 import sys
 
@@ -21,6 +24,23 @@ import test_weewx_stubs
 test_weewx_stubs.setup_stubs()
 
 from user.MQTTSubscribe import Configurator
+
+class TestServiceArgParse(unittest.TestCase):
+    def test_missing_args(self):
+        parser = argparse.ArgumentParser()
+
+        subparsers = parser.add_subparsers(dest='command')
+
+        _ = Configurator.add_parsers(subparsers)
+
+        stderr = io.StringIO()
+        with contextlib.redirect_stderr(stderr):
+            with self.assertRaises(SystemExit) as error:
+                _ = parser.parse_args(['configure', 'service'])
+
+        self.assertEqual(error.exception.code, 2)
+        self.assertIn("configure service: error: the following arguments are required: --conf", stderr.getvalue())
+        print("done")
 
 class TestInitConfigurator(unittest.TestCase):
     def setUp(self):
@@ -37,6 +57,53 @@ class TestInitConfigurator(unittest.TestCase):
         del sys.modules['weewx']
         del sys.modules['weewx.drivers']
         del sys.modules['weewx.engine']
+
+    def test_missing_primary_option(self):
+        options = argparse.Namespace()
+        options.type = None
+        options.create_example = None
+        options.export = None
+        options.print_configspec = None
+        options.enable = None
+        options.validate = None
+        options.no_backup = True
+        options.add_from = None
+        options.remove = None
+        options.replace_with = None
+        options.update_from = None
+        options.output = None
+        options.conf = None
+
+        mock_parser = mock.Mock()
+        _ = Configurator(mock_parser, options)
+
+        mock_parser.error.assert_called_once_with("Either 'service|driver' or '--create-example' is required.")
+
+        print("done")
+
+    @unittest.skip("")
+    def test(self):
+        options = argparse.Namespace()
+        options.type = 'service'
+        options.create_example = None
+        options.export = 'bin/user/tests/data/output.conf'
+        options.print_configspec = 'bin/user/tests/data/output.conf'
+        options.enable = None
+        options.validate = None
+        options.no_backup = True
+        options.add_from = None
+        options.remove = None
+        options.replace_with = None
+        options.update_from = None
+        options.output = None
+        options.conf = None
+
+        mock_parser = mock.Mock()
+        _ = Configurator(mock_parser, options)
+
+        #mock_parser.error.assert_called_once_with("Either 'service|driver' or '--create-example' is required.")
+
+        print("done")
 
 class TestRunConfigurator(unittest.TestCase):
     '''
@@ -64,6 +131,7 @@ class TestRunConfigurator(unittest.TestCase):
         options.create_example = 'bin/user/tests/data/output.conf'
         options.export = None
         options.print_configspec = None
+        options.enable = None
         options.validate = None
         options.no_backup = True
         options.add_from = None
@@ -84,6 +152,7 @@ class TestRunConfigurator(unittest.TestCase):
         options.create_example = None
         options.export = 'bin/user/tests/data/output.conf'
         options.print_configspec = None
+        options.enable = None
         options.validate = None
         options.no_backup = None
         options.add_from = None
@@ -104,6 +173,7 @@ class TestRunConfigurator(unittest.TestCase):
         options.create_example = None
         options.export = None
         options.print_configspec = 'bin/user/tests/data/output.conf'
+        options.enable = None
         options.validate = None
         options.no_backup = None
         options.add_from = None
@@ -124,6 +194,7 @@ class TestRunConfigurator(unittest.TestCase):
         options.create_example = None
         options.export = None
         options.print_configspec = None
+        options.enable = None
         options.validate = True
         options.no_backup = None
         options.add_from = None
@@ -144,6 +215,7 @@ class TestRunConfigurator(unittest.TestCase):
         options.create_example = None
         options.export = None
         options.print_configspec = None
+        options.enable = None
         options.validate = None
         options.no_backup = True
         options.add_from = 'bin/user/tests/data/mqttsubscribe.conf'
@@ -164,6 +236,7 @@ class TestRunConfigurator(unittest.TestCase):
         options.create_example = None
         options.export = None
         options.print_configspec = None
+        options.enable = None
         options.validate = None
         options.no_backup = True
         options.add_from = None
@@ -184,6 +257,7 @@ class TestRunConfigurator(unittest.TestCase):
         options.create_example = None
         options.export = None
         options.print_configspec = None
+        options.enable = None
         options.validate = None
         options.no_backup = True
         options.add_from = None
@@ -204,6 +278,7 @@ class TestRunConfigurator(unittest.TestCase):
         options.create_example = None
         options.export = None
         options.print_configspec = None
+        options.enable = None
         options.validate = None
         options.no_backup = True
         options.add_from = None
