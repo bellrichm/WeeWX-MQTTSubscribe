@@ -26,6 +26,33 @@ test_weewx_stubs.setup_stubs()
 
 from user.MQTTSubscribe import Configurator
 
+class TestEnableArgParse(unittest.TestCase):
+    def test_driver_enable(self):
+        parser = argparse.ArgumentParser()
+
+        subparsers = parser.add_subparsers(dest='command')
+
+        _ = Configurator.add_parsers(subparsers)
+
+        stderr = io.StringIO()
+        with contextlib.redirect_stderr(stderr):
+            with self.assertRaises(SystemExit) as error:
+                _ = parser.parse_args(['configure', 'driver', '--conf', random_string(), '--enable', 'true'])
+
+        self.assertEqual(error.exception.code, 2)
+        self.assertIn("error: unrecognized arguments: --enable", stderr.getvalue())
+
+    #@unittest.skip("Not sure what to do with this test.")
+    def test_service_enable(self):
+        parser = argparse.ArgumentParser()
+
+        subparsers = parser.add_subparsers(dest='command')
+
+        _ = Configurator.add_parsers(subparsers)
+
+        _ = parser.parse_args(['configure', 'service', '--conf', random_string(), '--enable', 'true'])
+
+
 class TestConfArgParse(unittest.TestCase):
     def test_create_example_conf(self):
         parser = argparse.ArgumentParser()
