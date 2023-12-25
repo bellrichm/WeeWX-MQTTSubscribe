@@ -26,8 +26,23 @@ test_weewx_stubs.setup_stubs()
 
 from user.MQTTSubscribe import Configurator
 
-class TestServiceArgParse(unittest.TestCase):
-    def test_missing_args(self):
+class TestConfArgParse(unittest.TestCase):
+    def test_create_example_conf(self):
+        parser = argparse.ArgumentParser()
+
+        subparsers = parser.add_subparsers(dest='command')
+
+        _ = Configurator.add_parsers(subparsers)
+
+        stderr = io.StringIO()
+        with contextlib.redirect_stderr(stderr):
+            with self.assertRaises(SystemExit) as error:
+                _ = parser.parse_args(['configure', '--create-example', '--conf', 'foo'])
+
+        self.assertEqual(error.exception.code, 2)
+        self.assertIn("--create-example: expected one argument", stderr.getvalue())
+
+    def test_service_missing_conf(self):
         parser = argparse.ArgumentParser()
 
         subparsers = parser.add_subparsers(dest='command')
@@ -41,7 +56,21 @@ class TestServiceArgParse(unittest.TestCase):
 
         self.assertEqual(error.exception.code, 2)
         self.assertIn("configure service: error: the following arguments are required: --conf", stderr.getvalue())
-        print("done")
+
+    def test_driver_missing_conf(self):
+        parser = argparse.ArgumentParser()
+
+        subparsers = parser.add_subparsers(dest='command')
+
+        _ = Configurator.add_parsers(subparsers)
+
+        stderr = io.StringIO()
+        with contextlib.redirect_stderr(stderr):
+            with self.assertRaises(SystemExit) as error:
+                _ = parser.parse_args(['configure', 'driver'])
+
+        self.assertEqual(error.exception.code, 2)
+        self.assertIn("configure driver: error: the following arguments are required: --conf", stderr.getvalue())
 
 class TestMutuallyExclusiveOptions(unittest.TestCase):
     def __init__(self, args):
