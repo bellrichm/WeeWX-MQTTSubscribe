@@ -2870,11 +2870,27 @@ For more information see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/
         if (options.type and options.create_example) or (not options.type and not options.create_example):
             parser.error("Either 'service|driver' or '--create-example' is required.")
 
-        if options.type == 'MQTTSubscribe' and options.enable and len(sys.argv) > 2:
-            parser.error("'--enable' is mutually exclusive with all other options.")
+        #if options.type == 'MQTTSubscribe' and options.enable and len(sys.argv) > 2:
+        #    parser.error("'--enable' is mutually exclusive with all other options.")
 
-        if options.type and options.output and options.export:
-            parser.error("'--output' is mutually exclusive with '--create-example'")
+        if options.type and options.output:
+            if options.export:
+                parser.error("'--output' is mutually exclusive with '--export'")
+            if options.print_configspec:
+                parser.error("'--output' is mutually exclusive with '--print-configspec'")
+            if options.validate:
+                parser.error("'--output' is mutually exclusive with '--validate'")
+
+        if options.type and options.enable:
+            if options.export:
+                parser.error("'--enable' is mutually exclusive with '--export'")
+            if options.print_configspec:
+                parser.error("'--enable' is mutually exclusive with '--print-configspec'")
+            if options.validate:
+                parser.error("'--enable' is mutually exclusive with '--validate'")
+
+        if options.type and options.no_backup and options.validate:
+            parser.error("'--no-backup' is mutually exclusive with '--validate'")
 
         if options.type == 'service':
             self.section = 'MQTTSubscribeService'
@@ -2897,9 +2913,6 @@ For more information see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/
         elif options.create_example:
             self.action = '--create-example'
             self.config_output_path = os.path.abspath(options.create_example)
-
-        if options.type and options.no_backup and self.action in self.no_update_actions:
-            parser.error(f"'--no-backup' is mutually exclusive with '{self.no_update_actions}'")
 
         if options.type:
             self.no_backup = options.no_backup
@@ -2958,17 +2971,14 @@ For more information see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/
         elif self.action == '--create-example':
             mqttsubscribe_configuration = MQTTSubscribeConfiguration(None)
             default_configuration = mqttsubscribe_configuration.default_config
-            default_configuration.filename = self.config_output_path
-            default_configuration.write()
+            weecfg.save(default_configuration, self.config_output_path, not self.no_backup)
         elif self.action == '--export':
             export_dict = {}
             export_dict[self.section] = self.config_dict[self.section]
             export_config = configobj.ConfigObj(export_dict)
-            export_config.filename = self.config_output_path
-            export_config.write()
+            weecfg.save(export_config, self.config_output_path, not self.no_backup)
         elif self.action == '--print-configspec':
-            self.config_spec.filename = self.config_output_path
-            self.config_spec.write()
+            weecfg.save(self.config_spec, self.config_output_path, not self.no_backup)
         else:
             self._update()
 
