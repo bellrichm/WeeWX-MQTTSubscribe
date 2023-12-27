@@ -2801,6 +2801,33 @@ class Configurator():
 Run MQTTSubscribe in configure mode. One can configure either the driver or service. Configure mode provides utilities to make it easier to configure MQTTSubscribe.
 For more information see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/MQTTSubscribe-Configurator-Mode
 '''
+    @classmethod
+    def add_common_options(cls, parser):
+        ''' Add the comon options to the parser.'''
+        configure_group = parser.add_mutually_exclusive_group(required=False)
+        parser.add_argument("--conf",
+                            required=True,
+                            help="The WeeWX configuration file. Typically weewx.conf.")
+
+        configure_group.add_argument("--add-from",
+                            help="The configuration that will and add to (but not update existing settings) the existing configuration.")
+        configure_group.add_argument("--export",
+                            help="Export the existing configuration.")
+        configure_group.add_argument("--print-configspec",
+                            help="Write the configspec to a file.")
+        configure_group.add_argument("--remove", action="store_true", dest="remove",
+                            help="Remove the MQTTSubscribe configuration section from '--conf'.")
+        configure_group.add_argument("--replace-with",
+                            help="The configuration that will replace the existing configuration.")
+        configure_group.add_argument("--update-from",
+                            help="The configuration that will update (and add to) the existing configuration.")
+        configure_group.add_argument("--validate", action="store_true", dest="validate",
+                            help="Validate the configuration file.")
+
+        parser.add_argument("--no-backup", action="store_true", default=False,
+                            help="When updating the WeeWX configuration (--conf), do not back it up.")
+        parser.add_argument("--output",
+                            help="Instead of updating the WeeWX configuration (--conf), write it to this file")
 
     @classmethod
     def add_parsers(cls, parser): # pragma: no cover
@@ -2812,56 +2839,16 @@ For more information see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/
                             help="Create an example MQTTSubscribe configuration.")
 
         configurator_subparsers = subparser.add_subparsers(dest='type')
+
         configurator_service_parser = configurator_subparsers.add_parser('service')
-        configure_service_group = configurator_service_parser.add_mutually_exclusive_group(required=False)
-        configurator_service_parser.add_argument("--conf",
-                            required=True,
-                            help="The WeeWX configuration file. Typically weewx.conf.")
-        configure_service_group.add_argument("--add-from",
-                            help="The configuration that will and add to (but not update existing settings) the existing configuration.")
-        configure_service_group.add_argument("--export",
-                            help="Export the existing configuration.")
-        configure_service_group.add_argument("--print-configspec",
-                            help="Write the configspec to a file.")
-        configure_service_group.add_argument("--remove", action="store_true", dest="remove",
-                            help="Remove the MQTTSubscribe configuration section from '--conf'.")
-        configure_service_group.add_argument("--replace-with",
-                            help="The configuration that will replace the existing configuration.")
-        configure_service_group.add_argument("--update-from",
-                            help="The configuration that will update (and add to) the existing configuration.")
-        configure_service_group.add_argument("--validate", action="store_true", dest="validate",
-                            help="Validate the configuration file.")
+        cls.add_common_options(configurator_service_parser)
+
         # The following is only used by the service
         configurator_service_parser.add_argument("--enable", dest="enable",
                             help="Enable/Disable the service.")
-        configurator_service_parser.add_argument("--no-backup", action="store_true", default=False,
-                            help="When updating the WeeWX configuration (--conf), do not back it up.")
-        configurator_service_parser.add_argument("--output",
-                            help="Instead of updating the WeeWX configuration (--conf), write it to this file")
 
         configurator_driver_parser = configurator_subparsers.add_parser('driver')
-        configure_driver_group = configurator_driver_parser.add_mutually_exclusive_group(required=False)
-        configurator_driver_parser.add_argument("--conf",
-                            required=True,
-                            help="The WeeWX configuration file. Typicall weewx.conf.")
-        configure_driver_group.add_argument("--add-from",
-                            help="The configuration that will and add to (but not update existing settings) the existing configuration.")
-        configure_driver_group.add_argument("--export",
-                            help="Export the existing configuration.")
-        configure_driver_group.add_argument("--print-configspec",
-                            help="Write the configspec to a file.")
-        configure_driver_group.add_argument("--remove", action="store_true", dest="remove",
-                            help="Remove the MQTTSubscribe configuration section from '--conf'.")
-        configure_driver_group.add_argument("--replace-with",
-                            help="The configuration that will replace the existing configuration.")
-        configure_driver_group.add_argument("--update-from",
-                            help="The configuration that will update (and add to) the existing configuration.")
-        configure_driver_group.add_argument("--validate", action="store_true", dest="validate",
-                            help="Validate the configuration file.")
-        configure_driver_group.add_argument("--no-backup", action="store_true", default=False,
-                            help="When updating the WeeWX configuration (--conf), do not back it up.")
-        configurator_driver_parser.add_argument("--output",
-                            help="Instead of updating the WeeWX configuration (--conf), write it to this file")
+        cls.add_common_options(configurator_driver_parser)
 
         return subparser
 
