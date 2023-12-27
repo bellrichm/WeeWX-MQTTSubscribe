@@ -25,6 +25,7 @@ class TestUpdateConfig(unittest.TestCase):
         options.create_example = None
         options.export = None
         options.print_configspec = None
+        options.enable = None
         options.validate = None
         options.no_backup = True
         options.add_from = 'bin/user/tests/data/mqttsubscribe.conf'
@@ -59,6 +60,7 @@ class TestUpdateConfig(unittest.TestCase):
         options.create_example = None
         options.export = None
         options.print_configspec = None
+        options.enable = None
         options.validate = None
         options.no_backup = True
         options.add_from = None
@@ -84,6 +86,7 @@ class TestUpdateConfig(unittest.TestCase):
         options.create_example = None
         options.export = None
         options.print_configspec = None
+        options.enable = None
         options.validate = None
         options.no_backup = True
         options.add_from = None
@@ -118,6 +121,7 @@ class TestUpdateConfig(unittest.TestCase):
         options.create_example = None
         options.export = None
         options.print_configspec = None
+        options.enable = None
         options.validate = None
         options.no_backup = True
         options.add_from = None

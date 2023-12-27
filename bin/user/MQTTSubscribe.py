@@ -2879,7 +2879,7 @@ For more information see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/
             if options.validate:
                 parser.error("'--output' is mutually exclusive with '--validate'")
 
-        if options.type and options.enable:
+        if options.type and options.enable is not None:
             if options.export:
                 parser.error("'--enable' is mutually exclusive with '--export'")
             if options.print_configspec:
@@ -2954,7 +2954,7 @@ For more information see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/
             config_input = options.update_from
             self.config_output_path = os.path.abspath(options.conf)
 
-        if options.type == 'service' and options.enable:
+        if options.type == 'service' and options.enable is not None:
             self.enable = to_bool(options.enable)
 
         if options.output:
