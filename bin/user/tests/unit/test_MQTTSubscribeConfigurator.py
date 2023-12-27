@@ -109,9 +109,7 @@ class TestMutuallyExclusiveOptions(unittest.TestCase):
 
         parser = argparse.ArgumentParser()
 
-        subparsers = parser.add_subparsers(dest='command')
-
-        _ = Configurator.add_parsers(subparsers)
+        _ = Configurator.add_common_options(parser)
 
         stderr = io.StringIO()
         with contextlib.redirect_stderr(stderr):
@@ -121,154 +119,154 @@ class TestMutuallyExclusiveOptions(unittest.TestCase):
         self.assertEqual(error.exception.code, 2)
         self.assertIn(error_msg, stderr.getvalue())
 
-class TestMutuallyExclusiveServiceOptions(TestMutuallyExclusiveOptions):
+class TestMutuallyExclusiveExportOptions(TestMutuallyExclusiveOptions):
     def setUp(self):
-        self.options = ['configure', 'service', '--conf', random_string()]
+        self.options = ['--conf', random_string()]
 
     def test_export_mutually_exclusive_with_print_configspec(self):
         self.run_mutually_exclusive(
             ['--export', random_string(), '--print-configspec', random_string()],
-            "configure service: error: argument --print-configspec: not allowed with argument --export"
+            "error: argument --print-configspec: not allowed with argument --export"
         )
 
     def test_export_mutually_exclusive_with_validate(self):
         self.run_mutually_exclusive(
             ['--export', random_string(), '--validate'],
-            "configure service: error: argument --validate: not allowed with argument --export"
+            "error: argument --validate: not allowed with argument --export"
         )
 
     def test_export_mutually_exclusive_with_add_from(self):
         self.run_mutually_exclusive(
             ['--export', random_string(), '--add-from', random_string()],
-            "configure service: error: argument --add-from: not allowed with argument --export"
+            "error: argument --add-from: not allowed with argument --export"
         )
 
     def test_export_mutually_exclusive_with_remove(self):
         self.run_mutually_exclusive(
             ['--export', random_string(), '--remove'],
-            "configure service: error: argument --remove: not allowed with argument --export"
+            "error: argument --remove: not allowed with argument --export"
         )
 
     def test_export_mutually_exclusive_with_replace_with(self):
         self.run_mutually_exclusive(
             ['--export', random_string(), '--replace-with', random_string()],
-            "configure service: error: argument --replace-with: not allowed with argument --export"
+            "error: argument --replace-with: not allowed with argument --export"
         )
 
     def test_export_mutually_exclusive_with_update_from(self):
         self.run_mutually_exclusive(
             ['--export', random_string(), '--update-from', random_string()],
-            "configure service: error: argument --update-from: not allowed with argument --export"
+            "error: argument --update-from: not allowed with argument --export"
         )
 
-class TestMutuallyExclusiveServiceOptions2(TestMutuallyExclusiveOptions):
+class TestMutuallyExclusivePrintConfigSpecOptions(TestMutuallyExclusiveOptions):
     def setUp(self):
-        self.options = ['configure', 'service', '--conf', random_string()]
+        self.options = ['--conf', random_string()]
 
     def test_print_configspec_mutually_exclusive_with_validate(self):
         self.run_mutually_exclusive(
             ['--print-configspec', random_string(), '--validate'],
-            "configure service: error: argument --validate: not allowed with argument --print-configspec"
+            "error: argument --validate: not allowed with argument --print-configspec"
         )
 
     def test_print_configspec_mutually_exclusive_with_add_from(self):
         self.run_mutually_exclusive(
             ['--print-configspec', random_string(), '--add-from', random_string()],
-            "configure service: error: argument --add-from: not allowed with argument --print-configspec"
+            "error: argument --add-from: not allowed with argument --print-configspec"
         )
 
     def test_print_configspec_mutually_exclusive_with_remove(self):
         self.run_mutually_exclusive(
             ['--print-configspec', random_string(), '--remove'],
-            "configure service: error: argument --remove: not allowed with argument --print-configspec"
+            "error: argument --remove: not allowed with argument --print-configspec"
         )
 
     def test_print_configspec_mutually_exclusive_with_replace_with(self):
         self.run_mutually_exclusive(
             ['--print-configspec', random_string(), '--replace-with', random_string()],
-            "configure service: error: argument --replace-with: not allowed with argument --print-configspec"
+            "error: argument --replace-with: not allowed with argument --print-configspec"
         )
 
     def test_print_configspec_mutually_exclusive_with_update_from(self):
         self.run_mutually_exclusive(
             ['--print-configspec', random_string(), '--update-from', random_string()],
-            "configure service: error: argument --update-from: not allowed with argument --print-configspec"
+            "error: argument --update-from: not allowed with argument --print-configspec"
         )
 
-class TestMutuallyExclusiveServiceOptions3(TestMutuallyExclusiveOptions):
+class TestMutuallyExclusiveValidateOptions(TestMutuallyExclusiveOptions):
     def setUp(self):
-        self.options = ['configure', 'service', '--conf', random_string()]
+        self.options = ['--conf', random_string()]
 
     def test_validate_mutually_exclusive_with_add_from(self):
         self.run_mutually_exclusive(
             ['--validate', random_string(), '--add-from', random_string()],
-            "configure service: error: argument --add-from: not allowed with argument --validate"
+            "error: argument --add-from: not allowed with argument --validate"
         )
 
     def test_validate_mutually_exclusive_with_remove(self):
         self.run_mutually_exclusive(
             ['--validate', '--remove'],
-            "configure service: error: argument --remove: not allowed with argument --validate"
+            "error: argument --remove: not allowed with argument --validate"
         )
 
     def test_validate_mutually_exclusive_with_replace_with(self):
         self.run_mutually_exclusive(
             ['--validate', '--replace-with', random_string()],
-            "configure service: error: argument --replace-with: not allowed with argument --validate"
+            "error: argument --replace-with: not allowed with argument --validate"
         )
 
     def test_validate_mutually_exclusive_with_update_from(self):
         self.run_mutually_exclusive(
             ['--validate', '--update-from', random_string()],
-            "configure service: error: argument --update-from: not allowed with argument --validate"
+            "error: argument --update-from: not allowed with argument --validate"
         )
 
-class TestMutuallyExclusiveServiceOptions4(TestMutuallyExclusiveOptions):
+class TestMutuallyExclusiveAddFromeOptions(TestMutuallyExclusiveOptions):
     def setUp(self):
-        self.options = ['configure', 'service', '--conf', random_string()]
+        self.options = ['--conf', random_string()]
 
     def test_add_from_mutually_exclusive_with_remove(self):
         self.run_mutually_exclusive(
             ['--add-from', random_string(), '--remove'],
-            "configure service: error: argument --remove: not allowed with argument --add-from"
+            "error: argument --remove: not allowed with argument --add-from"
         )
 
     def test_add_from_mutually_exclusive_with_replace_with(self):
         self.run_mutually_exclusive(
             ['--add-from', random_string(), '--replace-with', random_string()],
-            "configure service: error: argument --replace-with: not allowed with argument --add-from"
+            "error: argument --replace-with: not allowed with argument --add-from"
         )
 
     def test_add_from_mutually_exclusive_with_update_from(self):
         self.run_mutually_exclusive(
             ['--add-from', random_string(), '--update-from', random_string()],
-            "configure service: error: argument --update-from: not allowed with argument --add-from"
+            "error: argument --update-from: not allowed with argument --add-from"
         )
 
-class TestMutuallyExclusiveServiceOptions5(TestMutuallyExclusiveOptions):
+class TestMutuallyExclusiveRemoveOptions(TestMutuallyExclusiveOptions):
     def setUp(self):
-        self.options = ['configure', 'service', '--conf', random_string()]
+        self.options = ['--conf', random_string()]
 
     def test_remove_mutually_exclusive_with_replace_with(self):
         self.run_mutually_exclusive(
             ['--remove', '--replace-with', random_string()],
-            "configure service: error: argument --replace-with: not allowed with argument --remove"
+            "error: argument --replace-with: not allowed with argument --remove"
         )
 
     def test_remove_mutually_exclusive_with_update_from(self):
         self.run_mutually_exclusive(
             ['--remove', '--update-from', random_string()],
-            "configure service: error: argument --update-from: not allowed with argument --remove"
+            "error: argument --update-from: not allowed with argument --remove"
         )
 
-class TestMutuallyExclusiveServiceOptions6(TestMutuallyExclusiveOptions):
+class TestMutuallyExclusiveReplaceWithOptions(TestMutuallyExclusiveOptions):
     def setUp(self):
-        self.options = ['configure', 'service', '--conf', random_string()]
+        self.options = ['--conf', random_string()]
 
     def test_replace_with_mutually_exclusive_with_update_from(self):
         self.run_mutually_exclusive(
             ['--replace-with', random_string(), '--update-from', random_string()],
-            "configure service: error: argument --update-from: not allowed with argument --replace-with"
+            "error: argument --update-from: not allowed with argument --replace-with"
         )
 
 class TestInitConfigurator(unittest.TestCase):
