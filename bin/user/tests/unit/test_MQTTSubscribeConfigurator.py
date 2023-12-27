@@ -308,14 +308,172 @@ class TestInitConfigurator(unittest.TestCase):
 
         mock_parser.error.assert_called_once_with("Either 'service|driver' or '--create-example' is required.")
 
-        print("done")
-
-    @unittest.skip("")
-    def test(self):
+    def test_output_mutually_exclusive_with_export(self):
         options = argparse.Namespace()
-        options.type = 'service'
+        options.type = random_string()
         options.create_example = None
         options.export = 'bin/user/tests/data/output.conf'
+        options.print_configspec = None
+        options.enable = None
+        options.validate = None
+        options.no_backup = None
+        options.add_from = None
+        options.remove = None
+        options.replace_with = None
+        options.update_from = None
+        options.output = 'bin/user/tests/data/output.conf'
+        options.conf = 'bin/user/tests/data/weewx.conf'
+
+        mock_parser = mock.Mock()
+        mock_parser.error = mock.Mock(side_effect=Exception("done"))
+        with self.assertRaises(Exception):
+            _ = Configurator(mock_parser, options)
+
+        mock_parser.error.assert_called_once_with("'--output' is mutually exclusive with '--export'")
+
+    def test_output_mutually_exclusive_with_print_configspec(self):
+        options = argparse.Namespace()
+        options.type = random_string()
+        options.create_example = None
+        options.export = None
+        options.print_configspec = 'bin/user/tests/data/output.conf'
+        options.enable = None
+        options.validate = None
+        options.no_backup = None
+        options.add_from = None
+        options.remove = None
+        options.replace_with = None
+        options.update_from = None
+        options.output = 'bin/user/tests/data/output.conf'
+        options.conf = 'bin/user/tests/data/weewx.conf'
+
+        mock_parser = mock.Mock()
+        mock_parser.error = mock.Mock(side_effect=Exception("done"))
+        with self.assertRaises(Exception):
+            _ = Configurator(mock_parser, options)
+
+        mock_parser.error.assert_called_once_with("'--output' is mutually exclusive with '--print-configspec'")
+
+    def test_output_mutually_exclusive_with_validate(self):
+        options = argparse.Namespace()
+        options.type = random_string()
+        options.create_example = None
+        options.export = None
+        options.print_configspec = None
+        options.enable = None
+        options.validate = True
+        options.no_backup = None
+        options.add_from = None
+        options.remove = None
+        options.replace_with = None
+        options.update_from = None
+        options.output = 'bin/user/tests/data/output.conf'
+        options.conf = 'bin/user/tests/data/weewx.conf'
+
+        mock_parser = mock.Mock()
+        mock_parser.error = mock.Mock(side_effect=Exception("done"))
+        with self.assertRaises(Exception):
+            _ = Configurator(mock_parser, options)
+
+        mock_parser.error.assert_called_once_with("'--output' is mutually exclusive with '--validate'")
+
+    def test_enable_mutually_exclusive_with_export(self):
+        options = argparse.Namespace()
+        options.type = random_string()
+        options.create_example = None
+        options.export = 'bin/user/tests/data/output.conf'
+        options.print_configspec = None
+        options.enable = True
+        options.validate = None
+        options.no_backup = None
+        options.add_from = None
+        options.remove = None
+        options.replace_with = None
+        options.update_from = None
+        options.output = None
+        options.conf = None
+
+        mock_parser = mock.Mock()
+        mock_parser.error = mock.Mock(side_effect=Exception("done"))
+        with self.assertRaises(Exception):
+            _ = Configurator(mock_parser, options)
+
+        mock_parser.error.assert_called_once_with("'--enable' is mutually exclusive with '--export'")
+
+    def test_enable_mutually_exclusive_with_print_configspec(self):
+        options = argparse.Namespace()
+        options.type = random_string()
+        options.create_example = None
+        options.export = None
+        options.print_configspec = 'bin/user/tests/data/output.conf'
+        options.enable = True
+        options.validate = None
+        options.no_backup = None
+        options.add_from = None
+        options.remove = None
+        options.replace_with = None
+        options.update_from = None
+        options.output = None
+        options.conf = 'bin/user/tests/data/weewx.conf'
+
+        mock_parser = mock.Mock()
+        mock_parser.error = mock.Mock(side_effect=Exception("done"))
+        with self.assertRaises(Exception):
+            _ = Configurator(mock_parser, options)
+
+        mock_parser.error.assert_called_once_with("'--enable' is mutually exclusive with '--print-configspec'")
+
+    def test_enable_mutually_exclusive_with_validate(self):
+        options = argparse.Namespace()
+        options.type = random_string()
+        options.create_example = None
+        options.export = None
+        options.print_configspec = None
+        options.enable = True
+        options.validate = True
+        options.no_backup = None
+        options.add_from = None
+        options.remove = None
+        options.replace_with = None
+        options.update_from = None
+        options.output = None
+        options.conf = 'bin/user/tests/data/weewx.conf'
+
+        mock_parser = mock.Mock()
+        mock_parser.error = mock.Mock(side_effect=Exception("done"))
+        with self.assertRaises(Exception):
+            _ = Configurator(mock_parser, options)
+
+        mock_parser.error.assert_called_once_with("'--enable' is mutually exclusive with '--validate'")
+
+    def test_no_backup_mutually_exclusive_with_export(self):
+        options = argparse.Namespace()
+        options.type = random_string()
+        options.create_example = None
+        options.export = 'bin/user/tests/data/output.conf'
+        options.print_configspec = None
+        options.enable = None
+        options.validate = None
+        options.no_backup = True
+        options.add_from = None
+        options.remove = None
+        options.replace_with = None
+        options.update_from = None
+        options.output = None
+        options.conf = 'bin/user/tests/data/weewx.conf'
+
+        mock_parser = mock.Mock()
+        mock_parser.error = mock.Mock(side_effect=Exception("done"))
+        with self.assertRaises(Exception):
+            _ = Configurator(mock_parser, options)
+
+        mock_parser.error.assert_called_once_with("'--no-backup' is mutually exclusive with '--export'")
+
+    def test_no_backup_mutually_exclusive_with_print_configspec(self):
+        options = argparse.Namespace()
+        options.type = random_string()
+        options.create_example = None
+        options.export = None
         options.print_configspec = 'bin/user/tests/data/output.conf'
         options.enable = None
         options.validate = None
@@ -328,11 +486,34 @@ class TestInitConfigurator(unittest.TestCase):
         options.conf = None
 
         mock_parser = mock.Mock()
-        _ = Configurator(mock_parser, options)
+        mock_parser.error = mock.Mock(side_effect=Exception("done"))
+        with self.assertRaises(Exception):
+            _ = Configurator(mock_parser, options)
 
-        #mock_parser.error.assert_called_once_with("Either 'service|driver' or '--create-example' is required.")
+        mock_parser.error.assert_called_once_with("'--no-backup' is mutually exclusive with '--print-configspec'")
 
-        print("done")
+    def test_no_backup_mutually_exclusive_with_validate(self):
+        options = argparse.Namespace()
+        options.type = random_string()
+        options.create_example = None
+        options.export = None
+        options.print_configspec = None
+        options.enable = None
+        options.validate = True
+        options.no_backup = True
+        options.add_from = None
+        options.remove = None
+        options.replace_with = None
+        options.update_from = None
+        options.output = None
+        options.conf = 'bin/user/tests/data/weewx.conf'
+
+        mock_parser = mock.Mock()
+        mock_parser.error = mock.Mock(side_effect=Exception("done"))
+        with self.assertRaises(Exception):
+            _ = Configurator(mock_parser, options)
+
+        mock_parser.error.assert_called_once_with("'--no-backup' is mutually exclusive with '--validate'")
 
 class TestRunConfigurator(unittest.TestCase):
     '''

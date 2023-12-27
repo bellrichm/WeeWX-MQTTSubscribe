@@ -2888,9 +2888,9 @@ For more information see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/
                 parser.error("'--enable' is mutually exclusive with '--validate'")
 
         if options.type and options.no_backup:
-            if options.validate:
+            if options.export:
                 parser.error("'--no-backup' is mutually exclusive with '--export'")
-            if options.validate:
+            if options.print_configspec:
                 parser.error("'--no-backup' is mutually exclusive with '--print-configspec'")
             if options.validate:
                 parser.error("'--no-backup' is mutually exclusive with '--validate'")
