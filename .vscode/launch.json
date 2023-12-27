@@ -142,9 +142,10 @@
                 //"--replace-with", "/home/richbell/mqttsubscribe.template.conf",
                 //"--update-from", "${workspaceFolder}/devtools/smoketest.archive.conf",
 
-                //"--conf", "/home/richbell/mqttsubscribe.template.conf",
-                "--conf", "/home/fork.weewx/weewx.debug.conf"
-                //"--output", "${workspaceFolder}/tmp/temp.conf",                
+                "--conf", "/home/richbell/mqttsubscribe.template.conf",
+                //"--conf", "/home/fork.weewx/weewx.debug.conf"
+                //"--output", "${workspaceFolder}/tmp/temp.conf",
+                "--no-backup", "false",
             ],            
             "console": "integratedTerminal"
         },        
