@@ -2592,7 +2592,7 @@ For more inforation see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/M
         simulate_driver_parser.add_argument("--log-file",
                             help="Log to specified file.")
 
-    def __init__(self, parser, options):
+    def __init__(self, parser, options): # pragma: no cover
         """ Initialize the new instance. """
         if not options.type:
             self.simulator_parser.print_help()
@@ -2629,7 +2629,7 @@ For more inforation see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/M
         self.config_dict = None
         self.logger = None
 
-    def init_configuration(self):
+    def init_configuration(self): # pragma: no cover
         """ Initialuze the configuration object. """
         config_path = os.path.abspath(self.config_file)
 
@@ -2646,7 +2646,7 @@ For more inforation see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/M
             merge_config(self.config_dict, {'MQTTSubscribeService': {'console': True}})
             merge_config(self.config_dict, {'MQTTSubscribeDriver': {'console': True}})
 
-    def init_weewx(self):
+    def init_weewx(self): # pragma: no cover
         """ Perform the necessary WeeWX initialization. """
         min_config_dict = {
             'Station': {

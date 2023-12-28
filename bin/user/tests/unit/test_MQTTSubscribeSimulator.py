@@ -100,8 +100,8 @@ class TestRunSimulator(unittest.TestCase):
         data = {}
         data['dateTime'] = 0
 
-        archive_delay = 5
-        archive_interval = 60
+        archive_delay = 15
+        archive_interval = 300
         now = time.time()
 
         current_time = int(now + 0.5)
