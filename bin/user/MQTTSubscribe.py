@@ -2465,6 +2465,10 @@ class MQTTSubscribeConfiguration():
                     else:
                         error_msgs.append(section_deprecated_options[key]['deprecated_msg'])
 
+        self._validate_sections(parent, hierarchy, section, section_configspec, section_deprecated_options, error_msgs, warn_msgs)
+
+    def _validate_sections(self, parent, hierarchy, section, section_configspec, section_deprecated_options, error_msgs, warn_msgs):
+        # pylint: disable=too-many-arguments
         for subsection in section.sections:
             if subsection == 'REPLACE_ME':
                 error_msgs.append(f"ERROR: Specify a value for: {hierarchy}{subsection}")
@@ -2853,6 +2857,7 @@ For more information see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/
         return subparser
 
     def __init__(self, parser, options):
+        # pylint: disable=too-many-branches
         self.no_update_actions = ["--create-example", "--export", "--print-configspec", "--validate"]
         if (options.type and options.create_example) or (not options.type and not options.create_example):
             parser.error("Either 'service|driver' or '--create-example' is required.")
