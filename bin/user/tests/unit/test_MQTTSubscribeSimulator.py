@@ -47,14 +47,15 @@ class TestRunSimulator(unittest.TestCase):
 
         with mock.patch('user.MQTTSubscribe.MQTTSubscribeService'):
             with mock.patch('user.MQTTSubscribe.time') as mock_time:
-                mock_time.time.return_value = now
+                with mock.patch('builtins.print'):
+                    mock_time.time.return_value = now
 
-                SUT = Simulator(None, options)
+                    SUT = Simulator(None, options)
 
-                mock_engine = mock.Mock()
-                SUT.engine = mock_engine
+                    mock_engine = mock.Mock()
+                    SUT.engine = mock_engine
 
-                SUT.simulate_service_archive()
+                    SUT.simulate_service_archive()
 
         mock_time.sleep.assert_called_once_with(sleep_amount)
         mock_engine.dispatchEvent.assert_called_once()
@@ -84,14 +85,15 @@ class TestRunSimulator(unittest.TestCase):
 
         with mock.patch('user.MQTTSubscribe.MQTTSubscribeService'):
             with mock.patch('user.MQTTSubscribe.time') as mock_time:
-                mock_time.time.return_value = now
+                with mock.patch('builtins.print'):
+                    mock_time.time.return_value = now
 
-                SUT = Simulator(None, options)
+                    SUT = Simulator(None, options)
 
-                mock_engine = mock.Mock()
-                SUT.engine = mock_engine
+                    mock_engine = mock.Mock()
+                    SUT.engine = mock_engine
 
-                SUT.simulate_service_packet()
+                    SUT.simulate_service_packet()
 
         mock_time.sleep.assert_called_once_with(sleep_amount)
         mock_engine.dispatchEvent.assert_called_once()
@@ -124,12 +126,13 @@ class TestRunSimulator(unittest.TestCase):
         SUT = Simulator(None, options)
 
         with mock.patch('user.MQTTSubscribe.time') as mock_time:
-            mock_time.time.return_value = now
+            with mock.patch('builtins.print'):
+                mock_time.time.return_value = now
 
-            mock_driver = mock.Mock()
-            mock_driver.genArchiveRecords.return_value = [data]
+                mock_driver = mock.Mock()
+                mock_driver.genArchiveRecords.return_value = [data]
 
-            SUT.simulate_driver_archive(mock_driver)
+                SUT.simulate_driver_archive(mock_driver)
 
         mock_time.sleep.assert_called_once_with(sleep_amount)
         mock_driver.genArchiveRecords.assert_called_once_with(end_period_ts)
@@ -152,10 +155,11 @@ class TestRunSimulator(unittest.TestCase):
 
         SUT = Simulator(None, options)
 
-        mock_driver = mock.Mock()
-        mock_driver.genLoopPackets.return_value = [data]
+        with mock.patch('builtins.print'):
+            mock_driver = mock.Mock()
+            mock_driver.genLoopPackets.return_value = [data]
 
-        SUT.simulate_driver_packet(mock_driver)
+            SUT.simulate_driver_packet(mock_driver)
 
         mock_driver.genLoopPackets.assert_called_once()
 
