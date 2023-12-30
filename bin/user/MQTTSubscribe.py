@@ -2442,30 +2442,27 @@ class MQTTSubscribeConfiguration():
         for key, value in section.items():
             if key in section.sections:
                 if key in section_deprecated_options and 'deprecated_msg' in section_deprecated_options[key]:
-                    if section_deprecated_options[key]['deprecated_severity'] == 'WARN':
-                        warn_msgs.append(section_deprecated_options[key]['deprecated_msg'])
-                    else:
-                        error_msgs.append(section_deprecated_options[key]['deprecated_msg'])
+                    self._log_deprecated_option(key, section_deprecated_options, error_msgs, warn_msgs)
                 continue
 
             if key not in section_configspec:
                 if key in section_deprecated_options and 'deprecated_msg' in section_deprecated_options[key]:
-                    if section_deprecated_options[key]['deprecated_severity'] == 'WARN':
-                        warn_msgs.append(section_deprecated_options[key]['deprecated_msg'])
-                    else:
-                        error_msgs.append(section_deprecated_options[key]['deprecated_msg'])
+                    self._log_deprecated_option(key, section_deprecated_options, error_msgs, warn_msgs)
                 else:
                     error_msgs.append(f"ERROR: Unknown option: {hierarchy}{key}")
             elif value == 'REPLACE_ME':
                 error_msgs.append(f"ERROR: Specify a value for: {hierarchy}{key}")
             else:
                 if key in section_deprecated_options and 'deprecated_msg' in section_deprecated_options[key]:
-                    if section_deprecated_options[key]['deprecated_severity'] == 'WARN':
-                        warn_msgs.append(section_deprecated_options[key]['deprecated_msg'])
-                    else:
-                        error_msgs.append(section_deprecated_options[key]['deprecated_msg'])
+                    self._log_deprecated_option(key, section_deprecated_options, error_msgs, warn_msgs)
 
         self._validate_sections(parent, hierarchy, section, section_configspec, section_deprecated_options, error_msgs, warn_msgs)
+
+    def _log_deprecated_option(self, option, section_deprecated_options, error_msgs, warn_msgs):
+        if section_deprecated_options[option]['deprecated_severity'] == 'WARN':
+            warn_msgs.append(section_deprecated_options[option]['deprecated_msg'])
+        else:
+            error_msgs.append(section_deprecated_options[option]['deprecated_msg'])
 
     def _validate_sections(self, parent, hierarchy, section, section_configspec, section_deprecated_options, error_msgs, warn_msgs):
         # pylint: disable=too-many-arguments
