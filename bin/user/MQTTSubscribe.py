@@ -2404,6 +2404,21 @@ class MQTTSubscribeConfiguration():
         if self.section and self.section != 'MQTTSubscribeService':
             del config_spec['MQTTSubscribe']['enable']
 
+        self._remove_options(remove_items, config_spec)
+
+        if self.section:
+            config_spec.rename('MQTTSubscribe', self.section)
+
+        config_spec.initial_comment = example_intial_comment.splitlines()
+        if not self.section:
+            config_spec.initial_comment.append("# Replace '[MQTTSubscribe]' with '[MQTTSubscribeService]' or '[MQTTSubscribeDriver]'")
+        config_spec.initial_comment.append((\
+            "# For additional information see, "
+            "https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/Configuring#the-mqttsubscribedrivermqttsubscribesection-section"))
+
+        return config_spec
+
+    def _remove_options(self, remove_items, config_spec):
         for remove_item, _ in remove_items.items():
             current_section = config_spec
             for key in remove_items[remove_item]:
@@ -2417,18 +2432,6 @@ class MQTTSubscribeConfiguration():
                 del current_section[remove_item]
             else:
                 raise ValueError(f"Trying to remove {remove_item} and it is not in the config spec.")
-
-        if self.section:
-            config_spec.rename('MQTTSubscribe', self.section)
-
-        config_spec.initial_comment = example_intial_comment.splitlines()
-        if not self.section:
-            config_spec.initial_comment.append("# Replace '[MQTTSubscribe]' with '[MQTTSubscribeService]' or '[MQTTSubscribeDriver]'")
-        config_spec.initial_comment.append((\
-            "# For additional information see, "
-            "https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/Configuring#the-mqttsubscribedrivermqttsubscribesection-section"))
-
-        return config_spec
 
     @property
     def default_stanza(self):
