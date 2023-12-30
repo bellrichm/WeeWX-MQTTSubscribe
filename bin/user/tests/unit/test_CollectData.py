@@ -1,30 +1,46 @@
 #
-#    Copyright (c) 2020-2021 Rich Bell <bellrichm@gmail.com>
+#    Copyright (c) 2020-2023 Rich Bell <bellrichm@gmail.com>
 #
 #    See the file LICENSE.txt for your full rights.
 #
 
 # pylint: disable=wrong-import-order
+# pylint: disable=wrong-import-position
 # pylint: disable=missing-docstring
 # pylint: disable=invalid-name
-
-from __future__ import with_statement
 
 import unittest
 
 import random
+import sys
 import time
 
 import mock
 
-import test_weewx_stubs # used to set up stubs - pylint: disable=unused-import
+import test_weewx_stubs
+# setup stubs before importing MQTTSubscribe
+test_weewx_stubs.setup_stubs()
 
 from user.MQTTSubscribe import CollectData
-
 
 class Test_add_data(unittest.TestCase):
     wind_fields = ['windGust', 'windGustDir', 'windDir', 'windSpeed']
     wind_field = 'windSpeed'
+
+    def setUp(self):
+        # reset stubs for every test
+        test_weewx_stubs.setup_stubs()
+
+    def tearDown(self):
+        # cleanup stubs
+        del sys.modules['weecfg']
+        del sys.modules['weeutil']
+        del sys.modules['weeutil.config']
+        del sys.modules['weeutil.weeutil']
+        del sys.modules['weeutil.logger']
+        del sys.modules['weewx']
+        del sys.modules['weewx.drivers']
+        del sys.modules['weewx.engine']
 
     def test_data_in_fields(self):
         units = 1
@@ -98,6 +114,21 @@ class Test_add_data(unittest.TestCase):
 class Test_add_dict(unittest.TestCase):
     wind_fields = ['windGust', 'windGustDir', 'windDir', 'windSpeed']
     wind_field = 'windSpeed'
+
+    def setUp(self):
+        # reset stubs for every test
+        test_weewx_stubs.setup_stubs()
+
+    def tearDown(self):
+        # cleanup stubs
+        del sys.modules['weecfg']
+        del sys.modules['weeutil']
+        del sys.modules['weeutil.config']
+        del sys.modules['weeutil.weeutil']
+        del sys.modules['weeutil.logger']
+        del sys.modules['weewx']
+        del sys.modules['weewx.drivers']
+        del sys.modules['weewx.engine']
 
     def test_data_in_fields(self):
         units = 1
@@ -178,6 +209,21 @@ class Test_get_data(unittest.TestCase):
         'usUnits': 1,
         'dateTime': int(time.time() + 0.5)
     }
+
+    def setUp(self):
+        # reset stubs for every test
+        test_weewx_stubs.setup_stubs()
+
+    def tearDown(self):
+        # cleanup stubs
+        del sys.modules['weecfg']
+        del sys.modules['weeutil']
+        del sys.modules['weeutil.config']
+        del sys.modules['weeutil.weeutil']
+        del sys.modules['weeutil.logger']
+        del sys.modules['weewx']
+        del sys.modules['weewx.drivers']
+        del sys.modules['weewx.engine']
 
     def test_get_data(self):
         with mock.patch('user.MQTTSubscribe.weewx.units.to_std_system') as mock_to_std_system:

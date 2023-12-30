@@ -1,14 +1,13 @@
 #
-#    Copyright (c) 2020-2021 Rich Bell <bellrichm@gmail.com>
+#    Copyright (c) 2020-2023 Rich Bell <bellrichm@gmail.com>
 #
 #    See the file LICENSE.txt for your full rights.
 #
 
 # pylint: disable=wrong-import-order
+# pylint: disable=wrong-import-position
 # pylint: disable=missing-docstring
 # pylint: disable=invalid-name
-
-from __future__ import with_statement
 
 import unittest
 import mock
@@ -18,14 +17,32 @@ import configobj
 import copy
 import datetime
 import random
+import sys
 import time
 
-import test_weewx_stubs
 from test_weewx_stubs import random_string
-
+import test_weewx_stubs
+# setup stubs before importing MQTTSubscribe
+test_weewx_stubs.setup_stubs()
 
 from user.MQTTSubscribe import TopicManager, Logger
+
 class TestInit(unittest.TestCase):
+    def setUp(self):
+        # reset stubs for every test
+        test_weewx_stubs.setup_stubs()
+
+    def tearDown(self):
+        # cleanup stubs
+        del sys.modules['weecfg']
+        del sys.modules['weeutil']
+        del sys.modules['weeutil.config']
+        del sys.modules['weeutil.weeutil']
+        del sys.modules['weeutil.logger']
+        del sys.modules['weewx']
+        del sys.modules['weewx.drivers']
+        del sys.modules['weewx.engine']
+
     def test_missing_topic(self):
         mock_logger = mock.Mock(spec=Logger)
 
@@ -53,7 +70,7 @@ class TestInit(unittest.TestCase):
         with self.assertRaises(ValueError) as error:
             TopicManager(None, config, mock_logger)
 
-        self.assertEqual(error.exception.args[0], "MQTTSubscribe: Unknown unit system: %s" % unit_system_name.upper())
+        self.assertEqual(error.exception.args[0], f"MQTTSubscribe: Unknown unit system: {unit_system_name.upper()}")
 
     def test_invalid_unit_system_topic(self):
         mock_logger = mock.Mock(spec=Logger)
@@ -70,7 +87,7 @@ class TestInit(unittest.TestCase):
         with self.assertRaises(ValueError) as error:
             TopicManager(None, config, mock_logger)
 
-        self.assertEqual(error.exception.args[0], "MQTTSubscribe: Unknown unit system: %s" % unit_system_name.upper())
+        self.assertEqual(error.exception.args[0], f"MQTTSubscribe: Unknown unit system: {unit_system_name.upper()}")
 
     def test_invalid_units(self):
         mock_logger = mock.Mock(spec=Logger)
@@ -94,9 +111,24 @@ class TestInit(unittest.TestCase):
         with self.assertRaises(ValueError) as error:
             TopicManager(None, config, mock_logger)
 
-        self.assertEqual(error.exception.args[0], "For %s invalid units, %s." % (field, config_dict[topic][field]['units']))
+        self.assertEqual(error.exception.args[0], f"For {field} invalid units, {config_dict[topic][field]['units']}.")
 
 class TestConfigureMessage(unittest.TestCase):
+    def setUp(self):
+        # reset stubs for every test
+        test_weewx_stubs.setup_stubs()
+
+    def tearDown(self):
+        # cleanup stubs
+        del sys.modules['weecfg']
+        del sys.modules['weeutil']
+        del sys.modules['weeutil.config']
+        del sys.modules['weeutil.weeutil']
+        del sys.modules['weeutil.logger']
+        del sys.modules['weewx']
+        del sys.modules['weewx.drivers']
+        del sys.modules['weewx.engine']
+
     def test_default_message_configuration(self):
         mock_logger = mock.Mock(spec=Logger)
 
@@ -245,6 +277,21 @@ class TestConfigureMessage(unittest.TestCase):
         self.assertNotIn('message', SUT.subscribed_topics[topic])
 
 class TestConfigureFields(unittest.TestCase):
+    def setUp(self):
+        # reset stubs for every test
+        test_weewx_stubs.setup_stubs()
+
+    def tearDown(self):
+        # cleanup stubs
+        del sys.modules['weecfg']
+        del sys.modules['weeutil']
+        del sys.modules['weeutil.config']
+        del sys.modules['weeutil.weeutil']
+        del sys.modules['weeutil.logger']
+        del sys.modules['weewx']
+        del sys.modules['weewx.drivers']
+        del sys.modules['weewx.engine']
+
     def test_no_field_configuration(self):
         mock_logger = mock.Mock(spec=Logger)
 
@@ -520,6 +567,21 @@ class TestQueueSizeCheck(unittest.TestCase):
     config_dict[topic] = {}
     config = configobj.ConfigObj(config_dict)
 
+    def setUp(self):
+        # reset stubs for every test
+        test_weewx_stubs.setup_stubs()
+
+    def tearDown(self):
+        # cleanup stubs
+        del sys.modules['weecfg']
+        del sys.modules['weeutil']
+        del sys.modules['weeutil.config']
+        del sys.modules['weeutil.weeutil']
+        del sys.modules['weeutil.logger']
+        del sys.modules['weewx']
+        del sys.modules['weewx.drivers']
+        del sys.modules['weewx.engine']
+
     def test_queue_max_reached(self):
         mock_logger = mock.Mock(spec=Logger)
 
@@ -571,12 +633,26 @@ class TestQueueSizeCheck(unittest.TestCase):
         self.assertEqual(mock_logger.error.call_count, orig_queue_size-max_queue+1)
         self.assertEqual(len(queue), max_queue-1)
 
-
 class TestAppendData(unittest.TestCase):
     topic = random_string()
     config_dict = {}
     config_dict[topic] = {}
     config = configobj.ConfigObj(config_dict)
+
+    def setUp(self):
+        # reset stubs for every test
+        test_weewx_stubs.setup_stubs()
+
+    def tearDown(self):
+        # cleanup stubs
+        del sys.modules['weecfg']
+        del sys.modules['weeutil']
+        del sys.modules['weeutil.config']
+        del sys.modules['weeutil.weeutil']
+        del sys.modules['weeutil.logger']
+        del sys.modules['weewx']
+        del sys.modules['weewx.drivers']
+        del sys.modules['weewx.engine']
 
     def test_append_good_data(self):
         queue_data = {
@@ -681,11 +757,11 @@ class TestAppendData(unittest.TestCase):
         offset_minute = random.randint(1, 59)
         offset_hour_str = str(offset_hour).rjust(2, '0')
         offset_minute_str = str(offset_minute).rjust(2, '0')
-        offset_str = "%s%s" % (offset_hour_str, offset_minute_str)
+        offset_str = f"{offset_hour_str}{offset_minute_str}"
 
         current_datetime = datetime.datetime.fromtimestamp(current_epoch).strftime(datetime_format)
 
-        queue_data['dateTime'] = "%s+%s" % (current_datetime, offset_str)
+        queue_data['dateTime'] = f"{current_datetime}+{offset_str}"
 
         adjusted_epoch = current_epoch + (offset_hour * 60 + offset_minute) * 60
 
@@ -724,11 +800,11 @@ class TestAppendData(unittest.TestCase):
         offset_minute = random.randint(1, 59)
         offset_hour_str = str(offset_hour).rjust(2, '0')
         offset_minute_str = str(offset_minute).rjust(2, '0')
-        offset_str = "%s:%s" % (offset_hour_str, offset_minute_str)
+        offset_str = f"{offset_hour_str}:{offset_minute_str}"
 
         current_datetime = datetime.datetime.fromtimestamp(current_epoch).strftime(datetime_format)
 
-        queue_data['dateTime'] = "%s -%s" % (current_datetime, offset_str)
+        queue_data['dateTime'] = f"{current_datetime} -{offset_str}"
 
         adjusted_epoch = current_epoch - (offset_hour * 60 + offset_minute) * 60
 
@@ -784,7 +860,6 @@ class TestAppendData(unittest.TestCase):
         self.assertGreaterEqual(data.items(), queue_data_subset.items())
         self.assertIn('dateTime', data)
         self.assertEqual(adjusted_epoch, data['dateTime'])
-
 
 class TestGetQueueData(unittest.TestCase):
     topic = random_string()
@@ -857,8 +932,8 @@ class TestGetQueueData(unittest.TestCase):
             SUT = TopicManager(None, self.config, mock_logger)
 
             collector_topic = ""
-            for topic in SUT.subscribed_topics:
-                if SUT.subscribed_topics[topic]['queue']['type'] == 'collector':
+            for topic, detail in SUT.subscribed_topics.items():
+                if detail['queue']['type'] == 'collector':
                     collector_topic = topic
                     break
 
@@ -868,7 +943,6 @@ class TestGetQueueData(unittest.TestCase):
                 'usUnits': 1,
                 'dateTime': time.time()
             }
-
 
             SUT.append_data(collector_topic, data, fieldname)
 
@@ -886,6 +960,21 @@ class TestGetWindQueueData(unittest.TestCase):
     config = configobj.ConfigObj(config_dict)
 
     fieldname = 'windSpeed'
+
+    def setUp(self):
+        # reset stubs for every test
+        test_weewx_stubs.setup_stubs()
+
+    def tearDown(self):
+        # cleanup stubs
+        del sys.modules['weecfg']
+        del sys.modules['weeutil']
+        del sys.modules['weeutil.config']
+        del sys.modules['weeutil.weeutil']
+        del sys.modules['weeutil.logger']
+        del sys.modules['weewx']
+        del sys.modules['weewx.drivers']
+        del sys.modules['weewx.engine']
 
     def create_queue_data(self):
         return {
@@ -966,6 +1055,21 @@ class TestAccumulatedData(unittest.TestCase):
     config_dict[topic] = {}
     config = configobj.ConfigObj(config_dict)
 
+    def setUp(self):
+        # reset stubs for every test
+        test_weewx_stubs.setup_stubs()
+
+    def tearDown(self):
+        # cleanup stubs
+        del sys.modules['weecfg']
+        del sys.modules['weeutil']
+        del sys.modules['weeutil.config']
+        del sys.modules['weeutil.weeutil']
+        del sys.modules['weeutil.logger']
+        del sys.modules['weewx']
+        del sys.modules['weewx.drivers']
+        del sys.modules['weewx.engine']
+
     @staticmethod
     def create_queue_data():
         return {
@@ -1003,7 +1107,7 @@ class TestAccumulatedData(unittest.TestCase):
 
                 accumulated_data = SUT.get_accumulated_data(SUT.subscribed_topics[self.topic]['queue'], 0, end_ts, 0)
 
-                mock_Accum.assert_called_once_with(test_weewx_stubs.weeutil.weeutil.TimeSpan(start_ts - adjust_start_time, end_ts))
+                mock_Accum.assert_called_once_with(test_weewx_stubs.TimeSpan(start_ts - adjust_start_time, end_ts))
                 self.assertDictEqual(accumulated_data, final_record_data)
 
     def test_ignore_start_set_and_adjusted(self):
@@ -1036,7 +1140,7 @@ class TestAccumulatedData(unittest.TestCase):
 
                 accumulated_data = SUT.get_accumulated_data(SUT.subscribed_topics[self.topic]['queue'], 0, end_ts, 0)
 
-                mock_Accum.assert_called_once_with(test_weewx_stubs.weeutil.weeutil.TimeSpan(start_ts - adjust_start_time, end_ts))
+                mock_Accum.assert_called_once_with(test_weewx_stubs.TimeSpan(start_ts - adjust_start_time, end_ts))
                 self.assertDictEqual(accumulated_data, final_record_data)
 
     def test_ignore_end_set(self):
@@ -1066,7 +1170,7 @@ class TestAccumulatedData(unittest.TestCase):
 
                 accumulated_data = SUT.get_accumulated_data(SUT.subscribed_topics[self.topic]['queue'], 0, 0, 0)
 
-                mock_Accum.assert_called_once_with(test_weewx_stubs.weeutil.weeutil.TimeSpan(0, end_ts))
+                mock_Accum.assert_called_once_with(test_weewx_stubs.TimeSpan(0, end_ts))
                 self.assertDictEqual(accumulated_data, final_record_data)
 
     def test_queue_element_before_start(self):
@@ -1076,7 +1180,7 @@ class TestAccumulatedData(unittest.TestCase):
         with mock.patch('user.MQTTSubscribe.weewx.accum.Accum') as mock_Accum:
             with mock.patch('user.MQTTSubscribe.weewx.units.to_std_system') as mock_to_std_system:
                 type(mock_Accum.return_value).addRecord = \
-                    mock.Mock(side_effect=test_weewx_stubs.weewx.accum.OutOfSpan("Attempt to add out-of-interval record"))
+                    mock.Mock(side_effect=test_weewx_stubs.accum.OutOfSpan("Attempt to add out-of-interval record"))
 
                 SUT = TopicManager(None, self.config, mock_logger)
                 SUT.append_data(self.topic, queue_data)

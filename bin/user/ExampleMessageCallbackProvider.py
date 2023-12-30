@@ -1,5 +1,5 @@
 #
-#    Copyright (c) 2020-2021 Rich Bell <bellrichm@gmail.com>
+#    Copyright (c) 2020-2023 Rich Bell <bellrichm@gmail.com>
 #
 #    See the file LICENSE.txt for your full rights.
 #
@@ -13,9 +13,6 @@ Configuration:
 
 """
 
-# need to be python 2 compatible pylint: disable=bad-option-value, raise-missing-from, super-with-arguments
-# pylint: enable=bad-option-value
-
 import xml.etree.ElementTree
 import user.MQTTSubscribe
 
@@ -24,8 +21,8 @@ from weeutil.weeutil import to_float # used in eval statement pylint: disable=un
 class MessageCallbackProvider(user.MQTTSubscribe.AbstractMessageCallbackProvider):
     # pylint: disable=too-few-public-methods
     """ Provide the MQTT callback. """
-    def __init__(self, config, logger, topic_manager): # need to match signature pylint: disable=unused-argument
-        super(MessageCallbackProvider, self).__init__(logger, topic_manager)
+    def __init__(self, _config, logger, topic_manager):
+        super().__init__(logger, topic_manager)
 
     def get_callback(self):
         """ Get the MQTT callback. """
@@ -46,19 +43,19 @@ class MessageCallbackProvider(user.MQTTSubscribe.AbstractMessageCallbackProvider
             fullname = saved_fullname
 
         if parent.text is None:
-            for (name, tvalue) in parent.items(): # need to match signature pylint: disable=unused-variable
-                (fieldname, value) = self._update_data(fields, conversion_func, fullname[1:], tvalue, unit_system) # pylint: disable=eval-used
+            for (_, tvalue) in parent.items():
+                (fieldname, value) = self._update_data(fullname[1:], tvalue, fields, conversion_func,  unit_system) # pylint: disable=eval-used
                 observations[fieldname] = value
         elif not parent:
-            (fieldname, value) = self._update_data(fields, conversion_func, fullname[1:], parent.text, unit_system) # pylint: disable=eval-used
+            (fieldname, value) = self._update_data(fullname[1:], parent.text, fields, conversion_func, unit_system) # pylint: disable=eval-used
             observations[fieldname] = value
 
         return observations
 
-    def _on_message(self, client, userdata, msg):  # (match callback signature) pylint: disable=unused-argument
+    def _on_message(self, _client, _userdata, msg):
         # Wrap all the processing in a try, so it doesn't crash and burn on any error
         try:
-            self.logger.debug("MessageCallbackProvider For %s received: %s" %(msg.topic, msg.payload))
+            self.logger.debug(f"MessageCallbackProvider For {msg.topic} received: {msg.payload}")
             fields = self.topic_manager.get_fields(msg.topic)
             unit_system = self.topic_manager.get_unit_system(msg.topic) # TODO - need public method
             root = xml.etree.ElementTree.fromstring(msg.payload)
@@ -68,5 +65,5 @@ class MessageCallbackProvider(user.MQTTSubscribe.AbstractMessageCallbackProvider
                 self.topic_manager.append_data(msg.topic, observations)
 
         except Exception as exception: # (want to catch all) pylint: disable=broad-except
-            self.logger.error("MessageCallbackProvider on_message_keyword failed with: %s" % exception)
-            self.logger.error("**** MessageCallbackProvider Ignoring topic=%s and payload=%s" % (msg.topic, msg.payload))
+            self.logger.error(f"MessageCallbackProvider on_message_keyword failed with: {exception}")
+            self.logger.error(f"**** MessageCallbackProvider Ignoring topic={msg.topic} and payload={msg.payload}")

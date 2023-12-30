@@ -1,12 +1,13 @@
-
+#
+#    Copyright (c) 2020-2023 Rich Bell <bellrichm@gmail.com>
+#
+#    See the file LICENSE.txt for your full rights.
+#
 
 # pylint: disable=wrong-import-order
+# pylint: disable=wrong-import-position
 # pylint: disable=missing-docstring
 # pylint: disable=invalid-name
-# need to be python 2 compatible pylint: disable=bad-option-value, super-with-arguments
-# pylint: enable=bad-option-value
-
-from __future__ import with_statement
 
 import unittest
 import mock
@@ -14,14 +15,31 @@ import mock
 import configobj
 import copy
 import random
+import sys
 import time
 
 import test_weewx_stubs
 from test_weewx_stubs import random_string
-
+# setup stubs before importing MQTTSubscribe
+test_weewx_stubs.setup_stubs()
 import user.MQTTSubscribe
 
 class atestInitialization(unittest.TestCase):
+    def setUp(self):
+        # reset stubs for every test
+        test_weewx_stubs.setup_stubs()
+
+    def tearDown(self):
+        # cleanup stubs
+        del sys.modules['weecfg']
+        del sys.modules['weeutil']
+        del sys.modules['weeutil.config']
+        del sys.modules['weeutil.weeutil']
+        del sys.modules['weeutil.logger']
+        del sys.modules['weewx']
+        del sys.modules['weewx.drivers']
+        del sys.modules['weewx.engine']
+
     def test_invalid_binding(self):
         mock_StdEngine = mock.Mock()
 
@@ -36,7 +54,7 @@ class atestInitialization(unittest.TestCase):
             with self.assertRaises(ValueError) as error:
                 user.MQTTSubscribe.MQTTSubscribeService(mock_StdEngine, config_dict)
 
-            self.assertEqual(error.exception.args[0], "MQTTSubscribeService: Unknown binding: %s" % binding)
+            self.assertEqual(error.exception.args[0], f"MQTTSubscribeService: Unknown binding: {binding}")
 
     @staticmethod
     def test_not_enable():
@@ -87,7 +105,7 @@ class atestInitialization(unittest.TestCase):
                 with self.assertRaises(ValueError) as error:
                     user.MQTTSubscribe.MQTTSubscribeService(mock_StdEngine, config_dict)
 
-            self.assertEqual(error.exception.args[0], "archive_topic, %s, is invalid when running as a service" % archive_topic)
+            self.assertEqual(error.exception.args[0], f"archive_topic, {archive_topic}, is invalid when running as a service")
 
     def test_caching_valid_archive_binding(self):
         mock_StdEngine = mock.Mock()
@@ -98,7 +116,7 @@ class atestInitialization(unittest.TestCase):
             'MQTTSubscribeService': {
                 'binding': 'archive'
             }
-        }        
+        }
 
         with mock.patch('user.MQTTSubscribe.MQTTSubscriber') as mock_MQTTSubscribe:
             with mock.patch('user.MQTTSubscribe.Logger'):
@@ -122,7 +140,7 @@ class atestInitialization(unittest.TestCase):
             'MQTTSubscribeService': {
                 'binding': 'loop'
             }
-        }        
+        }
 
         with mock.patch('user.MQTTSubscribe.MQTTSubscriber') as mock_MQTTSubscribe:
             with mock.patch('user.MQTTSubscribe.Logger'):
@@ -144,7 +162,7 @@ class atestInitialization(unittest.TestCase):
             'MQTTSubscribeService': {
                 'binding': 'loop'
             }
-        }        
+        }
 
         with mock.patch('user.MQTTSubscribe.MQTTSubscriber') as mock_MQTTSubscribe:
             with mock.patch('user.MQTTSubscribe.Logger'):
@@ -154,10 +172,26 @@ class atestInitialization(unittest.TestCase):
 
                     user.MQTTSubscribe.MQTTSubscribeService(mock_StdEngine, config_dict)
 
-                self.assertEqual(error.exception.args[0], "caching is not available with record generation of type '%s' and and binding of type 'loop'" % 'none')
+                self.assertEqual(error.exception.args[0],
+                                 "caching is not available with record generation of type 'none' and and binding of type 'loop'")
 
 class Testnew_loop_packet(unittest.TestCase):
     mock_StdEngine = mock.Mock()
+
+    def setUp(self):
+        # reset stubs for every test
+        test_weewx_stubs.setup_stubs()
+
+    def tearDown(self):
+        # cleanup stubs
+        del sys.modules['weecfg']
+        del sys.modules['weeutil']
+        del sys.modules['weeutil.config']
+        del sys.modules['weeutil.weeutil']
+        del sys.modules['weeutil.logger']
+        del sys.modules['weewx']
+        del sys.modules['weewx.drivers']
+        del sys.modules['weewx.engine']
 
     @classmethod
     def setUpClass(cls):
@@ -216,8 +250,8 @@ class Testnew_loop_packet(unittest.TestCase):
             {'name': topic}
             )
 
-        new_loop_packet_event = test_weewx_stubs.Event(test_weewx_stubs.NEW_LOOP_PACKET,
-                                                       packet=self.packet_data)
+        mock_new_loop_packet_event = mock.NonCallableMagicMock()
+        mock_new_loop_packet_event.packet = self.packet_data
 
         with mock.patch('user.MQTTSubscribe.MQTTSubscriber') as mock_MQTTSubscribe:
             type(mock_MQTTSubscribe.return_value).queues = mock.PropertyMock(return_value=[queue])
@@ -227,9 +261,9 @@ class Testnew_loop_packet(unittest.TestCase):
             SUT = user.MQTTSubscribe.MQTTSubscribeService(self.mock_StdEngine, self.config_dict)
             SUT.end_ts = start_ts
 
-            SUT.new_loop_packet(new_loop_packet_event)
+            SUT.new_loop_packet(mock_new_loop_packet_event)
 
-            self.assertDictEqual(new_loop_packet_event.packet, self.final_packet_data)
+            self.assertDictEqual(mock_new_loop_packet_event.packet, self.final_packet_data)
 
             SUT.shutDown()
 
@@ -240,8 +274,8 @@ class Testnew_loop_packet(unittest.TestCase):
         self.setup_queue_tests(start_ts, end_period_ts)
         self.final_packet_data.update(self.target_data)
 
-        new_loop_packet_event = test_weewx_stubs.Event(test_weewx_stubs.NEW_LOOP_PACKET,
-                                                       packet=self.packet_data)
+        mock_new_loop_packet_event = mock.MagicMock()
+        mock_new_loop_packet_event.packet = self.packet_data
 
         with mock.patch('user.MQTTSubscribe.MQTTSubscriber') as mock_MQTTSubscribe:
             with mock.patch('user.MQTTSubscribe.Logger'):
@@ -252,14 +286,28 @@ class Testnew_loop_packet(unittest.TestCase):
                 SUT = user.MQTTSubscribe.MQTTSubscribeService(self.mock_StdEngine, self.config_dict)
                 SUT.end_ts = end_period_ts + 10
 
-                SUT.new_loop_packet(new_loop_packet_event)
+                SUT.new_loop_packet(mock_new_loop_packet_event)
 
                 SUT.logger.error.assert_called_once()
 
                 SUT.shutDown()
 
-
 class Testnew_archive_record(unittest.TestCase):
+    def setUp(self):
+        # reset stubs for every test
+        test_weewx_stubs.setup_stubs()
+
+    def tearDown(self):
+        # cleanup stubs
+        del sys.modules['weecfg']
+        del sys.modules['weeutil']
+        del sys.modules['weeutil.config']
+        del sys.modules['weeutil.weeutil']
+        del sys.modules['weeutil.logger']
+        del sys.modules['weewx']
+        del sys.modules['weewx.drivers']
+        del sys.modules['weewx.engine']
+
     @classmethod
     def setUpClass(cls):
         cls.mock_StdEngine = mock.Mock()
@@ -319,9 +367,8 @@ class Testnew_archive_record(unittest.TestCase):
             {'name': topic}
         )
 
-        new_loop_record_event = test_weewx_stubs.Event(test_weewx_stubs.NEW_ARCHIVE_RECORD,
-                                                       record=self.record_data,
-                                                       origin='hardware')
+        mock_new_archive_record_event = mock.MagicMock()
+        mock_new_archive_record_event.record = self.record_data
 
         with mock.patch('user.MQTTSubscribe.MQTTSubscriber') as mock_manager:
             type(mock_manager.return_value).queues = mock.PropertyMock(return_value=[queue])
@@ -331,9 +378,9 @@ class Testnew_archive_record(unittest.TestCase):
             SUT = user.MQTTSubscribe.MQTTSubscribeService(self.mock_StdEngine, self.config_dict)
             SUT.end_ts = start_ts
 
-            SUT.new_archive_record(new_loop_record_event)
+            SUT.new_archive_record(mock_new_archive_record_event)
 
-            self.assertDictEqual(new_loop_record_event.record, self.final_record_data)
+            self.assertDictEqual(mock_new_archive_record_event.record, self.final_record_data)
 
         SUT.shutDown()
 
@@ -360,12 +407,13 @@ class Testnew_archive_record(unittest.TestCase):
                     'dateTime': time.time()
                 }
 
-                event = test_weewx_stubs.Event(test_weewx_stubs.NEW_ARCHIVE_RECORD, record=record)
+                mock_new_archive_record_event = mock.MagicMock()
+                mock_new_archive_record_event.record = record
 
                 updated_record = copy.deepcopy(record)
                 updated_record.update({fieldname: value})
 
-                SUT.new_archive_record(event)
+                SUT.new_archive_record(mock_new_archive_record_event)
                 SUT.cache.get_value.assert_called_once()
                 self.assertEqual(record, updated_record)
 
@@ -392,9 +440,10 @@ class Testnew_archive_record(unittest.TestCase):
                     fieldname: round(random.uniform(1, 100), 2)
                 }
 
-                event = test_weewx_stubs.Event(test_weewx_stubs.NEW_ARCHIVE_RECORD, record=record)
+                mock_new_archive_record_event = mock.MagicMock()
+                mock_new_archive_record_event.record = record
 
-                SUT.new_archive_record(event)
+                SUT.new_archive_record(mock_new_archive_record_event)
                 SUT.cache.update_value.assert_called_once()
 
 if __name__ == '__main__':

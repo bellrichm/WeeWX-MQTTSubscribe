@@ -10,6 +10,6 @@ for version in ${weewx4_python_versions[@]}; do
     ./devtools/runitests.sh weewx4 $version
 done
 
-for version in ${weewx3_python_versions[@]}; do
-    ./devtools/runitests.sh weewx3 $version
+for version in ${weewx5_python_versions[@]}; do
+    ./devtools/runitests.sh weewx5 $version
 done

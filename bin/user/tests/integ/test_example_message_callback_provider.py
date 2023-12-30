@@ -1,13 +1,11 @@
 #
-#    Copyright (c) 2020-2021 Rich Bell <bellrichm@gmail.com>
+#    Copyright (c) 2020-2023 Rich Bell <bellrichm@gmail.com>
 #
 #    See the file LICENSE.txt for your full rights.
 #
 
 # pylint: disable=missing-docstring
 # pylint: disable=invalid-name
-
-from __future__ import print_function
 
 import unittest
 
@@ -19,25 +17,25 @@ from test_service import TestService
 class TestGetDataExampleMessageCallbackProvider(TestGetData):
     #@unittest.skip("")
     def test_xml(self):
-        with open("bin/user/tests/integ/data/example_callback_provider.json") as file_pointer:
+        with open("bin/user/tests/integ/data/example_callback_provider.json", encoding="UTF-8") as file_pointer:
             self.runit('xml', file_pointer, check_results=True)
 
 class TestDriverExamoleMessageCallbackProvider(TestDriver):
     #@unittest.skip("")
     def test_xml(self):
-        with open("bin/user/tests/integ/data/example_callback_provider.json") as file_pointer:
+        with open("bin/user/tests/integ/data/example_callback_provider.json", encoding="UTF-8") as file_pointer:
             self.runit('xml', file_pointer, check_results=True)
 
 class TestAccunulatedDataExampleMessageCallbackProvider(TestAccumulatedData):
     #@unittest.skip("")
     def test_xml(self):
-        with open("bin/user/tests/integ/data/example_callback_provider.json") as file_pointer:
+        with open("bin/user/tests/integ/data/example_callback_provider.json", encoding="UTF-8") as file_pointer:
             self.runit('xml', file_pointer, check_results=True)
 
 class TestServiceExampleMessageCallbackProvider(TestService):
     #@unittest.skip("")
     def test_xml(self):
-        with open("bin/user/tests/integ/data/example_callback_provider.json") as file_pointer:
+        with open("bin/user/tests/integ/data/example_callback_provider.json", encoding="UTF-8") as file_pointer:
             self.runit('xml', file_pointer, check_results=True)
 
 if __name__ == '__main__':

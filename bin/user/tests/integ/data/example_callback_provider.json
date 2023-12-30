@@ -11,7 +11,7 @@
     "        ignore_end_time = True",
     "        adjust_start_time = 5",
     "        adjust_end_time = 5",
-    "        use_sever_datetime = True",
+    "        use_server_datetime = True",
     "        [[[weewx/#]]]",
     
     "    # Configuration for the message callback.",

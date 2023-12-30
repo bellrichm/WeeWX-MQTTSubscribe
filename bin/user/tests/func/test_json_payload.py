@@ -19,22 +19,16 @@ import configobj
 import json
 import random
 import string
-import sys
 import time
 
-# Stole from six module. Added to eliminate dependency on six when running under WeeWX 3.x
-PY2 = sys.version_info[0] == 2
-if PY2:
-    from StringIO import StringIO # (only a python 3 error) pylint: disable=import-error
-else:
-    from io import StringIO
+from io import StringIO
 
 from user.MQTTSubscribe import Logger, MessageCallbackProvider, TopicManager
 
 def random_string(length=32):
     return ''.join([random.choice(string.ascii_letters + string.digits) for n in range(length)]) # pylint: disable=unused-variable
 
-class Msg(object):
+class Msg:
     # pylint: disable=too-few-public-methods
     def __init__(self, topic, payload, qos, retain):
         self.topic = topic
@@ -70,7 +64,7 @@ class TestJSONMessage(unittest.TestCase):
         queue = topic_manager._get_queue(self.topic)
         data = queue['data'].popleft()['data']
 
-        self.assertDictEqual(data, expected_data)  
+        self.assertDictEqual(data, expected_data)
 
     def test_basic_message(self):
         payload_dict = {

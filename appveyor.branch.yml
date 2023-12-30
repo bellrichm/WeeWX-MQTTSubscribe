@@ -5,7 +5,6 @@ branches:
   except:
     - master
 
-
 # Environment variables with names that match build image can be a list of broken python versions.
 # For example Ubuntu1604="3.10 3.11"
 # These are typically set in the appveyor ui, environment tab.
@@ -15,9 +14,9 @@ branches:
 
 # branch build uses a subset of appveyor images, master uses all
 image:
-  - Ubuntu
+  #- Ubuntu
   #- Ubuntu2004
-  #- Ubuntu2204
+  - Ubuntu2204
 
 # everything below this line should be identical when comparing branch build to master build
 
@@ -34,103 +33,92 @@ environment:
   COVERALLS_REPO_TOKEN:
     secure: tyj1Sii8/fPCjipAJUxxlXO1IhvCXFIyiZE0cPuYKHGGiyKgbUq5O0xD34VUq5E/
   # common values
-  SONAR_SCANNER_VERSION: 4.2.0.1873
+  # To see list of versions https://binaries.sonarsource.com/?prefix=Distribution/sonar-scanner-cli/
+  SONAR_SCANNER_VERSION: 5.0.1.3006
   SONAR_SCANNER_OPTS: -server
   # default values
   # default to oldest supported version of python
+  PYTHON_LATEST: 3.11
   PYTHON: 3.7
+  WEEWX_OLDEST: 4.6.1
+  WEEWX_LATEST: 4.10.2
   ENABLED: true
+  RUN_FTESTS: true
+  RUN_ITESTS: true
   
   WEEWX_URL: http://www.weewx.com/downloads/released_versions/
 
   matrix:
     # Run tests against latest WeeWX and Python
+    # This run uploads test results and sonar results
     # Run first, so that completes early
-    - PYTHON: 3.9
-      WEEWX: 4.10.2
+    - PYTHON: '%PYTHON_LATEST%'
+      WEEWX: '%WEEWX_LATEST%'
       CODECOVIO_UPLOAD: true
       COVERALLS_UPLOAD: true
       SONAR_UPLOAD: true
       job_group: build  
       job_depends_on: initialize
 
+    # Start of runs against latest WeeWX release and supported versions of Python
     # Even though EOL, I'll support a bit longer
-    - PYTHON: 2.7
-      WEEWX: 4.10.2
-      CODECOVIO_UPLOAD: true
-      job_group: build  
-      job_depends_on: initialize
-
-      # Even though EOL, I'll support a bit longer
-    - PYTHON: 3.5
-      WEEWX: 4.10.2
-      job_group: build  
-      job_depends_on: initialize
-
-    # Even though EOL, I'll support a bit longer
-    - PYTHON: 3.6
-      WEEWX: 4.10.2
-      job_group: build
-      job_depends_on: initialize
 
     - PYTHON: 3.7
-      WEEWX: 4.10.2
+      WEEWX: '%WEEWX_LATEST%'
       job_group: build  
       job_depends_on: initialize
 
     - PYTHON: 3.8
-      WEEWX: 4.10.2
+      WEEWX: '%WEEWX_LATEST%'
       job_group: build  
       job_depends_on: initialize
 
     - PYTHON: 3.9
-      WEEWX: 4.10.2
+      WEEWX: '%WEEWX_LATEST%'
       job_group: build  
       job_depends_on: initialize
 
     - PYTHON: 3.10
-      WEEWX: 4.10.2
+      WEEWX: '%WEEWX_LATEST%'
       job_group: build  
       job_depends_on: initialize
 
     - PYTHON: 3.11
-      WEEWX: 4.10.2
+      WEEWX: '%WEEWX_LATEST%'
       job_group: build  
       job_depends_on: initialize
 
-    # not yet supported
+    # Need WeeWX v5
     #- PYTHON: 3.12
-      #WEEWX: 4.10.2
+      #WEEWX: '%WEEWX_LATEST%'
       #job_group: build  
       #job_depends_on: initialize
 
-    - PYTHON: 2.7
-      WEEWX: 3.9.0 
-      job_group: build
-      job_depends_on: initialize
+    # End of runs against latest WeeWX release and supported versions of Python
 
     # The earliest WeeWX version supported
-    - PYTHON: 2.7 
-      WEEWX: 3.7.1
+    # Does not support python > 3.11.x
+    - PYTHON: '%PYTHON_LATEST%'
+      WEEWX: '%WEEWX_OLDEST%'
       job_group: build
       job_depends_on: initialize
 
     # Use latest Python release against WeeWX master branch
-    - PYTHON: 3.9
+    - PYTHON: '%PYTHON_LATEST%'
       BRANCH: master
       WEEWX: '%BRANCH%'
       job_group: build  
       job_depends_on: initialize      
 
     # Use latest Python release against WeeWX development branch
-    - PYTHON: 3.9
+    - PYTHON: '%PYTHON_LATEST%'
       BRANCH: development
       WEEWX: '%BRANCH%'
       job_group: build  
       job_depends_on: initialize      
 
     # Use latest Python release against WeeWX V5 branch
-    - PYTHON: 3.9
+    - PYTHON: '%PYTHON_LATEST%'
       BRANCH: V5
       WEEWX: '%BRANCH%'
       job_group: build  
@@ -139,7 +127,7 @@ environment:
     # Build/Test against a development/pre release of WeeWX with latest Python
     # These do not always exist
     - ENABLED: false
-      PYTHON: 3.9
+      PYTHON: '%PYTHON_LATEST%'
       WEEWX: 4.9.0b1
       WEEWX_URL: http://www.weewx.com/downloads/development_versions/
       job_group: build  
@@ -152,7 +140,7 @@ environment:
       job_depends_on: build
       WEEWX_URL: http://www.weewx.com/downloads/development_versions/
 
-stack: python %PYTHON%      
+stack: python %PYTHON%
 
 for:
 - 
@@ -199,7 +187,7 @@ init:
   # This runs before the commit is even checked out
   # Therefore cannot run scripts in Github
   - sh: echo "init"
-  - sh: echo "$APPVEYOR_BUILD_WORKER_IMAGE $PYTHON"
+  - sh: echo "$APPVEYOR_BUILD_WORKER_IMAGE $PYTHON $WEEWX"
   - sh: echo "${!APPVEYOR_BUILD_WORKER_IMAGE}"
   - sh: >-
       if [[ ${!APPVEYOR_BUILD_WORKER_IMAGE} == *$PYTHON* ]]; then

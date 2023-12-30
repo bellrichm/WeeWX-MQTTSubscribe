@@ -1,16 +1,15 @@
 #
-#    Copyright (c) 2020-2022 Rich Bell <bellrichm@gmail.com>
+#    Copyright (c) 2020-2023 Rich Bell <bellrichm@gmail.com>
 #
 #    See the file LICENSE.txt for your full rights.
 #
 
 # pylint: disable=wrong-import-order
+# pylint: disable=wrong-import-position
 # pylint: disable=missing-docstring
 # pylint: disable=invalid-name
 # pylint: disable=protected-access
 # pylint: disable=eval-used
-
-from __future__ import with_statement
 
 import unittest
 import mock
@@ -22,23 +21,21 @@ import random
 import sys
 import time
 
-import six
-import test_weewx_stubs # used to set up stubs - pylint: disable=unused-import
+import test_weewx_stubs
 from test_weewx_stubs import random_string
+# setup stubs before importing MQTTSubscribe
+test_weewx_stubs.setup_stubs()
 
 import user.MQTTSubscribe
 from user.MQTTSubscribe import TopicManager, Logger
 
-# Stole from six module. Added to eliminate dependency on six when running under WeeWX 3.x
-PY2 = sys.version_info[0] == 2
-
 # todo - mock?
 def to_float(x):
-    if isinstance(x, six.string_types) and x.lower() == 'none':
+    if isinstance(x, str) and x.lower() == 'none':
         x = None
     return float(x) if x is not None else None
 
-class Msg(object):
+class Msg:
     # pylint: disable=too-few-public-methods
     def __init__(self, topic, payload, qos, retain):
         self.topic = topic
@@ -47,6 +44,21 @@ class Msg(object):
         self.retain = retain
 
 class TestInitialization(unittest.TestCase):
+    def setUp(self):
+        # reset stubs for every test
+        test_weewx_stubs.setup_stubs()
+
+    def tearDown(self):
+        # cleanup stubs
+        del sys.modules['weecfg']
+        del sys.modules['weeutil']
+        del sys.modules['weeutil.config']
+        del sys.modules['weeutil.weeutil']
+        del sys.modules['weeutil.logger']
+        del sys.modules['weewx']
+        del sys.modules['weewx.drivers']
+        del sys.modules['weewx.engine']
+
     @staticmethod
     def test_message_and_message_callback_set():
         mock_logger = mock.Mock(spec=Logger)
@@ -89,7 +101,7 @@ class TestInitialization(unittest.TestCase):
         with self.assertRaises(ValueError) as error:
             user.MQTTSubscribe.MessageCallbackProvider(None, mock_logger, mock_manager)
 
-        self.assertEqual(error.exception.args[0], "%s topic is missing '[[[[message]]]]' section" % topic)
+        self.assertEqual(error.exception.args[0], f"{topic} topic is missing '[[[[message]]]]' section")
 
     def test_message_callback_configuration_defaults_not_set(self):
         mock_logger = mock.Mock(spec=Logger)
@@ -188,7 +200,7 @@ class TestInitialization(unittest.TestCase):
         with self.assertRaises(ValueError) as error:
             user.MQTTSubscribe.MessageCallbackProvider(None, mock_logger, mock_manager)
 
-        self.assertEqual(error.exception.args[0], "Invalid type configured: %s" % message_type)
+        self.assertEqual(error.exception.args[0], f"Invalid type configured: {message_type}")
 
     def test_message_configuration_missing_type(self):
         mock_logger = mock.Mock(spec=Logger)
@@ -210,7 +222,7 @@ class TestInitialization(unittest.TestCase):
         with self.assertRaises(ValueError) as error:
             user.MQTTSubscribe.MessageCallbackProvider(None, mock_logger, mock_manager)
 
-        self.assertEqual(error.exception.args[0], "%s topic is missing '[[[[message]]]] type=' section" % topic)
+        self.assertEqual(error.exception.args[0], f"{topic} topic is missing '[[[[message]]]] type=' section")
 
 # missing message section? todo
 
@@ -260,8 +272,7 @@ class TestKeywordload(unittest.TestCase):
         SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
 
         payload = 'field=value'
-        if not PY2:
-            payload = payload.encode("utf-8")
+        payload = payload.encode("utf-8")
 
         msg = Msg(self.topic, payload, 0, 0)
 
@@ -285,8 +296,7 @@ class TestKeywordload(unittest.TestCase):
         SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
 
         payload = 'field1=1 field2=2'
-        if not PY2:
-            payload = payload.encode("utf-8")
+        payload = payload.encode("utf-8")
 
         msg = Msg(self.topic, payload, 0, 0)
 
@@ -334,8 +344,8 @@ class TestKeywordload(unittest.TestCase):
 
         payload_str = ""
         delim = ""
-        for key in payload_dict:
-            payload_str = "%s%s%s=%f" % (payload_str, delim, key, payload_dict[key])
+        for key, value in payload_dict.items():
+            payload_str = f"{payload_str}{delim}{key}={value:f}"
             delim = ","
 
         payload_str = payload_str.encode('UTF-8')
@@ -367,8 +377,8 @@ class TestKeywordload(unittest.TestCase):
 
         payload_str = ""
         delim = ""
-        for key in payload_dict:
-            payload_str = "%s%s%s=%f" % (payload_str, delim, key, payload_dict[key])
+        for key, value in payload_dict.items():
+            payload_str = f"{payload_str}{delim}{key}={value:f}"
             delim = ","
 
         payload_str = payload_str.encode('UTF-8')
@@ -400,8 +410,8 @@ class TestKeywordload(unittest.TestCase):
 
         payload_str = ""
         delim = ""
-        for key in payload_dict:
-            payload_str = "%s%s%s=%f" % (payload_str, delim, key, payload_dict[key])
+        for key, value in payload_dict.items():
+            payload_str = f"{payload_str}{delim}{key}={value:f}"
             delim = ","
 
         payload_str = payload_str.encode('UTF-8')
@@ -435,8 +445,8 @@ class TestKeywordload(unittest.TestCase):
 
         payload_str = ""
         delim = ""
-        for key in payload_dict:
-            payload_str = "%s%s%s=%f" % (payload_str, delim, key, payload_dict[key])
+        for key, value in payload_dict.items():
+            payload_str = f"{payload_str}{delim}{key}={value:f}"
             delim = ","
 
         payload_str = payload_str.encode('UTF-8')
@@ -484,8 +494,8 @@ class TestKeywordload(unittest.TestCase):
 
         payload_str = ""
         delim = ""
-        for key in payload_dict:
-            payload_str = "%s%s%s=%f" % (payload_str, delim, key, payload_dict[key])
+        for key, value in payload_dict.items():
+            payload_str = f"{payload_str}{delim}{key}={value:f}"
             delim = ","
 
         payload_str = payload_str.encode('UTF-8')
@@ -529,8 +539,8 @@ class TestKeywordload(unittest.TestCase):
 
         payload_str = ""
         delim = ""
-        for key in payload_dict:
-            payload_str = "%s%s%s=%f" % (payload_str, delim, key, payload_dict[key])
+        for key, value in payload_dict.items():
+            payload_str = f"{payload_str}{delim}{key}={value:f}"
             delim = ","
 
         payload_str = payload_str.encode('UTF-8')
@@ -590,7 +600,7 @@ class TestJsonPayload(unittest.TestCase):
 
     def test_missing_dateTime(self):
         mock_manager = mock.Mock(spec=TopicManager)
-        stub_logger = test_weewx_stubs.Logger(console=True)
+        mock_logger = mock_logger = mock.Mock(spec=Logger)
         mock_manager.get_msg_id_field.return_value = None
         mock_manager.get_ignore_msg_id_field.return_value = []
         mock_manager.get_ignore_value.return_value = False
@@ -603,15 +613,12 @@ class TestJsonPayload(unittest.TestCase):
         mock_manager.get_message_dict.return_value = {'flatten_delimiter': '_'}
         mock_manager.subscribed_topics = {}
 
-        SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), stub_logger, mock_manager)
+        SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
 
         payload_dict = dict(self.payload_dict)
         payload_dict['usUnits'] = random.randint(1, 10)
 
-        if PY2:
-            payload = json.dumps(payload_dict)
-        else:
-            payload = json.dumps(payload_dict).encode("utf-8")
+        payload = json.dumps(payload_dict).encode("utf-8")
 
         msg = Msg(self.topic, payload, 0, 0)
 
@@ -621,7 +628,7 @@ class TestJsonPayload(unittest.TestCase):
 
     def test_missing_units(self):
         mock_manager = mock.Mock(spec=TopicManager)
-        stub_logger = test_weewx_stubs.Logger(console=True)
+        mock_logger = mock_logger = mock.Mock(spec=Logger)
         mock_manager.get_msg_id_field.return_value = None
         mock_manager.get_ignore_msg_id_field.return_value = []
         mock_manager.get_ignore_value.return_value = False
@@ -634,15 +641,12 @@ class TestJsonPayload(unittest.TestCase):
         mock_manager.get_message_dict.return_value = {'flatten_delimiter': '_'}
         mock_manager.subscribed_topics = {}
 
-        SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), stub_logger, mock_manager)
+        SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
 
         payload_dict = dict(self.payload_dict)
         payload_dict['dateTime'] = time.time()
 
-        if PY2:
-            payload = json.dumps(payload_dict)
-        else:
-            payload = json.dumps(payload_dict).encode("utf-8")
+        payload = json.dumps(payload_dict).encode("utf-8")
 
         msg = Msg(self.topic, payload, 0, 0)
 
@@ -652,7 +656,7 @@ class TestJsonPayload(unittest.TestCase):
 
     def test_payload_good(self):
         mock_manager = mock.Mock(spec=TopicManager)
-        stub_logger = test_weewx_stubs.Logger(console=True)
+        mock_logger = mock_logger = mock.Mock(spec=Logger)
         mock_manager.get_msg_id_field.return_value = None
         mock_manager.get_ignore_value.return_value = True
         mock_manager.get_ignore_msg_id_field.return_value = []
@@ -667,16 +671,13 @@ class TestJsonPayload(unittest.TestCase):
         mock_manager.get_message_dict.return_value = {'flatten_delimiter': '_'}
         mock_manager.subscribed_topics = {}
 
-        SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), stub_logger, mock_manager)
+        SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
 
         payload_dict = dict(self.payload_dict)
         payload_dict['dateTime'] = time.time()
         payload_dict['usUnits'] = random.randint(1, 10)
 
-        if PY2:
-            payload = json.dumps(payload_dict)
-        else:
-            payload = json.dumps(payload_dict).encode("utf-8")
+        payload = json.dumps(payload_dict).encode("utf-8")
 
         msg = Msg(self.topic, payload, 0, 0)
 
@@ -690,7 +691,7 @@ class TestJsonPayload(unittest.TestCase):
 
     def test_msg_id_set(self):
         mock_manager = mock.Mock(spec=TopicManager)
-        stub_logger = test_weewx_stubs.Logger(console=True)
+        mock_logger = mock_logger = mock.Mock(spec=Logger)
         msg_id_field = random_string()
         mock_manager.get_msg_id_field.return_value = msg_id_field
         mock_manager.get_fields.return_value = {}
@@ -706,7 +707,7 @@ class TestJsonPayload(unittest.TestCase):
         mock_manager.subscribed_topics = {}
 
 
-        SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), stub_logger, mock_manager)
+        SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
 
         payload_dict = dict(self.payload_dict)
         payload_dict['dateTime'] = time.time()
@@ -714,16 +715,13 @@ class TestJsonPayload(unittest.TestCase):
         msg_id = random.randint(1, 10)
         payload_dict[msg_id_field] = msg_id
 
-        if PY2:
-            payload = json.dumps(payload_dict)
-        else:
-            payload = json.dumps(payload_dict).encode("utf-8")
+        payload = json.dumps(payload_dict).encode("utf-8")
 
         final_dict = {}
-        for key in payload_dict:
+        for key, value in payload_dict.items():
             #if key == msg_id_field:
             #    continue
-            final_dict[key + '_' + str(msg_id)] = payload_dict[key]
+            final_dict[key + '_' + str(msg_id)] = value
 
         msg = Msg(self.topic, payload, 0, 0)
 
@@ -737,7 +735,7 @@ class TestJsonPayload(unittest.TestCase):
 
     def test_ignore_msg_id_field_set(self):
         mock_manager = mock.Mock(spec=TopicManager)
-        stub_logger = test_weewx_stubs.Logger(console=True)
+        mock_logger = mock_logger = mock.Mock(spec=Logger)
         msg_id_field = random_string()
         mock_manager.get_msg_id_field.return_value = msg_id_field
         mock_manager.get_fields.return_value = {}
@@ -750,7 +748,7 @@ class TestJsonPayload(unittest.TestCase):
         mock_manager.get_message_dict.return_value = {'flatten_delimiter': '_'}
         mock_manager.subscribed_topics = {}
 
-        SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), stub_logger, mock_manager)
+        SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
 
         payload_dict = dict(self.payload_dict)
         payload_dict['dateTime'] = time.time()
@@ -758,10 +756,7 @@ class TestJsonPayload(unittest.TestCase):
         msg_id = random.randint(1, 10)
         payload_dict[msg_id_field] = msg_id
 
-        if PY2:
-            payload = json.dumps(payload_dict)
-        else:
-            payload = json.dumps(payload_dict).encode("utf-8")
+        payload = json.dumps(payload_dict).encode("utf-8")
 
         ignore_msg_id_field_fields = [msg_id_field]
         for key in payload_dict:
@@ -809,10 +804,7 @@ class TestJsonPayload(unittest.TestCase):
         output_dict = copy.deepcopy(payload_dict)
         payload_dict['extraTemps'] = [random.randint(1, 10), random.randint(1, 10)]
 
-        if PY2:
-            payload = json.dumps(payload_dict)
-        else:
-            payload = json.dumps(payload_dict).encode("utf-8")
+        payload = json.dumps(payload_dict).encode("utf-8")
 
         msg = Msg(self.topic, payload, 0, 0)
 
@@ -853,10 +845,7 @@ class TestJsonPayload(unittest.TestCase):
         output_dict = copy.deepcopy(payload_dict)
         payload_dict['extraTemps'] = [random.randint(1, 10), random.randint(1, 10)]
 
-        if PY2:
-            payload = json.dumps(payload_dict)
-        else:
-            payload = json.dumps(payload_dict).encode("utf-8")
+        payload = json.dumps(payload_dict).encode("utf-8")
 
         msg = Msg(self.topic, payload, 0, 0)
 
@@ -895,10 +884,7 @@ class TestJsonPayload(unittest.TestCase):
         output_dict = copy.deepcopy(payload_dict)
         payload_dict['extraTemps'] = [round(random.uniform(1, 100), 2), round(random.uniform(1, 100), 2)]
 
-        if PY2:
-            payload = json.dumps(payload_dict)
-        else:
-            payload = json.dumps(payload_dict).encode("utf-8")
+        payload = json.dumps(payload_dict).encode("utf-8")
 
         output_dict['extraTemp1'] = payload_dict['extraTemps'][0]
         output_dict['extraTemp2'] = payload_dict['extraTemps'][1]
@@ -939,10 +925,7 @@ class TestJsonPayload(unittest.TestCase):
         output_dict = copy.deepcopy(payload_dict)
         payload_dict['extraTemps'] = [round(random.uniform(1, 100), 2), round(random.uniform(1, 100), 2)]
 
-        if PY2:
-            payload = json.dumps(payload_dict)
-        else:
-            payload = json.dumps(payload_dict).encode("utf-8")
+        payload = json.dumps(payload_dict).encode("utf-8")
 
         output_dict['extraTemp1'] = payload_dict['extraTemps'][0]
         output_dict['extraTemp2'] = payload_dict['extraTemps'][1]
@@ -959,7 +942,7 @@ class TestJsonPayload(unittest.TestCase):
 
     def test_payload_nested(self):
         mock_manager = mock.Mock(spec=TopicManager)
-        stub_logger = test_weewx_stubs.Logger(console=True)
+        mock_logger = mock_logger = mock.Mock(spec=Logger)
         mock_manager.get_msg_id_field.return_value = None
         mock_manager.get_ignore_msg_id_field.return_value = []
         mock_manager.get_ignore_value.return_value = False
@@ -972,7 +955,7 @@ class TestJsonPayload(unittest.TestCase):
         mock_manager.get_message_dict.return_value = {'flatten_delimiter': '_'}
         mock_manager.subscribed_topics = {}
 
-        SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), stub_logger, mock_manager)
+        SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
 
         payload_dict = {
             'nested01': {
@@ -991,10 +974,7 @@ class TestJsonPayload(unittest.TestCase):
         flattened_payload_dict['dateTime'] = payload_dict['dateTime']
         flattened_payload_dict['usUnits'] = payload_dict['usUnits']
 
-        if PY2:
-            payload = json.dumps(payload_dict)
-        else:
-            payload = json.dumps(payload_dict).encode("utf-8")
+        payload = json.dumps(payload_dict).encode("utf-8")
 
         msg = Msg(self.topic, payload, 0, 0)
 
@@ -1004,7 +984,7 @@ class TestJsonPayload(unittest.TestCase):
 
     def test_payload_nested_rename(self):
         mock_manager = mock.Mock(spec=TopicManager)
-        stub_logger = test_weewx_stubs.Logger(console=True)
+        mock_logger = mock_logger = mock.Mock(spec=Logger)
         mock_manager.get_msg_id_field.return_value = None
         mock_manager.get_ignore_msg_id_field.return_value = []
         mock_manager.get_ignore_value.return_value = False
@@ -1022,7 +1002,7 @@ class TestJsonPayload(unittest.TestCase):
         message_handler_config_dict['fields']['nested01_inTemp'] = {}
         message_handler_config_dict['fields']['nested01_inTemp']['name'] = 'inTemp'
 
-        SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), stub_logger, mock_manager)
+        SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), mock_logger, mock_manager)
 
         payload_dict = {
             'nested01': {
@@ -1041,10 +1021,7 @@ class TestJsonPayload(unittest.TestCase):
         flattened_payload_dict['dateTime'] = payload_dict['dateTime']
         flattened_payload_dict['usUnits'] = payload_dict['usUnits']
 
-        if PY2:
-            payload = json.dumps(payload_dict)
-        else:
-            payload = json.dumps(payload_dict).encode("utf-8")
+        payload = json.dumps(payload_dict).encode("utf-8")
 
         msg = Msg(self.topic, payload, 0, 0)
 
@@ -1075,10 +1052,7 @@ class TestJsonPayload(unittest.TestCase):
         payload_dict['dateTime'] = time.time()
         payload_dict['usUnits'] = random.randint(1, 10)
 
-        if PY2:
-            payload = json.dumps(payload_dict)
-        else:
-            payload = json.dumps(payload_dict).encode("utf-8")
+        payload = json.dumps(payload_dict).encode("utf-8")
 
         msg = Msg(self.topic, payload, 0, 0)
 
@@ -1123,10 +1097,7 @@ class TestJsonPayload(unittest.TestCase):
         payload_dict['dateTime'] = time.time()
         payload_dict['usUnits'] = random.randint(1, 10)
 
-        if PY2:
-            payload = json.dumps(payload_dict)
-        else:
-            payload = json.dumps(payload_dict).encode("utf-8")
+        payload = json.dumps(payload_dict).encode("utf-8")
 
         msg = Msg(self.topic, payload, 0, 0)
 
@@ -1171,10 +1142,7 @@ class TestJsonPayload(unittest.TestCase):
         payload_dict['dateTime'] = time.time()
         payload_dict['usUnits'] = random.randint(1, 10)
 
-        if PY2:
-            payload = json.dumps(payload_dict)
-        else:
-            payload = json.dumps(payload_dict).encode("utf-8")
+        payload = json.dumps(payload_dict).encode("utf-8")
 
         msg = Msg(self.topic, payload, 0, 0)
 
@@ -1221,18 +1189,15 @@ class TestJsonPayload(unittest.TestCase):
         payload_dict['dateTime'] = time.time()
         payload_dict['usUnits'] = random.randint(1, 10)
 
-        if PY2:
-            payload = json.dumps(payload_dict)
-        else:
-            payload = json.dumps(payload_dict).encode("utf-8")
+        payload = json.dumps(payload_dict).encode("utf-8")
 
         msg = Msg(self.topic, payload, 0, 0)
 
         SUT._on_message_json(None, None, msg)
 
         mock_manager.append_data.assert_not_called()
-        SUT.logger.info.assert_called_with("MessageCallbackProvider on_message_json filtered out %s : %s with %s=%s"
-                                           % (msg.topic, msg.payload, lookup_key, filters[lookup_key]))
+        SUT.logger.info.assert_called_with(\
+            f"MessageCallbackProvider on_message_json filtered out {msg.topic} : {msg.payload} with {lookup_key}={filters[lookup_key]}")
 
 class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
     topic_end = random_string()
@@ -1269,8 +1234,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
 
         payload = ''
-        if not PY2:
-            payload = payload.encode("utf-8")
+        payload = payload.encode("utf-8")
 
         msg = Msg(self.topic, payload, 0, 0)
 
@@ -1294,8 +1258,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
 
         payload = ''
-        if not PY2:
-            payload = payload.encode("utf-8")
+        payload = payload.encode("utf-8")
 
         msg = Msg(self.topic, payload, 0, 0)
 
@@ -1341,18 +1304,12 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         mock_manager.get_message_dict.return_value = {}
         mock_manager.subscribed_topics = {}
 
-        if PY2:
-            topic = unicode(self.topic)  # (never called under python 3) pylint: disable=undefined-variable
-        else:
-            topic = self.topic
+        topic = self.topic
 
         SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
 
         payload = round(random.uniform(1, 100), 2)
-        if PY2:
-            payload_str = str(payload)
-        else:
-            payload_str = str(payload).encode('UTF-8')
+        payload_str = str(payload).encode('UTF-8')
 
         msg = Msg(topic, payload_str, 0, 0)
 
@@ -1381,10 +1338,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
 
         payload = round(random.uniform(1, 100), 2)
-        if PY2:
-            payload_str = str(payload)
-        else:
-            payload_str = str(payload).encode('UTF-8')
+        payload_str = str(payload).encode('UTF-8')
 
         msg = Msg(self.single_topic, payload_str, 0, 0)
 
@@ -1409,10 +1363,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
 
         payload = round(random.uniform(1, 100), 2)
-        if PY2:
-            payload_str = str(payload)
-        else:
-            payload_str = str(payload).encode('UTF-8')
+        payload_str = str(payload).encode('UTF-8')
 
         msg = Msg(self.multi_topic,
                   payload_str,
@@ -1440,10 +1391,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
 
         payload = round(random.uniform(1, 100), 2)
-        if PY2:
-            payload_str = str(payload)
-        else:
-            payload_str = str(payload).encode('UTF-8')
+        payload_str = str(payload).encode('UTF-8')
 
         msg = Msg(self.topic,
                   payload_str,
@@ -1472,10 +1420,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), mock_logger, mock_manager)
 
         payload = round(random.uniform(1, 100), 2)
-        if PY2:
-            payload_str = str(payload)
-        else:
-            payload_str = str(payload).encode('UTF-8')
+        payload_str = str(payload).encode('UTF-8')
 
         msg = Msg(self.single_topic, payload_str, 0, 0)
 
@@ -1511,10 +1456,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), mock_logger, mock_manager)
 
         payload = round(random.uniform(1, 100), 2)
-        if PY2:
-            payload_str = str(payload)
-        else:
-            payload_str = str(payload).encode('UTF-8')
+        payload_str = str(payload).encode('UTF-8')
 
         msg = Msg(self.single_topic, payload_str, 0, 0)
 
@@ -1542,10 +1484,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(message_handler_config_dict), mock_logger, mock_manager)
 
         payload = round(random.uniform(1, 100), 2)
-        if PY2:
-            payload_str = str(payload)
-        else:
-            payload_str = str(payload).encode('UTF-8')
+        payload_str = str(payload).encode('UTF-8')
 
         msg = Msg(self.single_topic, payload_str, 0, 0)
 
@@ -1587,8 +1526,7 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
         SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
 
         payload = random_string()
-        if not PY2:
-            payload = payload.encode("utf-8")
+        payload = payload.encode("utf-8")
 
         msg = Msg(self.topic, payload, 0, 0)
 
@@ -1612,8 +1550,7 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
         SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
 
         payload = ''
-        if not PY2:
-            payload = payload.encode("utf-8")
+        payload = payload.encode("utf-8")
         msg = Msg(self.topic, payload, 0, 0)
 
         SUT._on_message_individual(None, None, msg)
@@ -1660,10 +1597,7 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
         SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
 
         payload = round(random.uniform(1, 100), 2)
-        if PY2:
-            payload_str = str(payload)
-        else:
-            payload_str = str(payload).encode('UTF-8')
+        payload_str = str(payload).encode('UTF-8')
 
         msg = Msg(self.single_topic, payload_str, 0, 0)
 

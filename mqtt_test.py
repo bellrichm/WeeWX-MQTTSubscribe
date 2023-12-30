@@ -1,6 +1,6 @@
 #!/usr/bin/python
 #
-#    Copyright (c) 2020-2021 Rich Bell <bellrichm@gmail.com>
+#    Copyright (c) 2020-2023 Rich Bell <bellrichm@gmail.com>
 #
 #    See the file LICENSE.txt for your full rights.
 #
@@ -34,7 +34,7 @@ Command line options override any options in the file.
 """
 
 
-def on_log(client, userdata, level, msg):  # (match callback signature) pylint: disable=unused-argument
+def on_log(_client, _userdata, level, msg):
     """ MQTT logging callback. """
     log_level = {
         mqtt.MQTT_LOG_INFO: 'MQTT_LOG_INFO',
@@ -44,27 +44,27 @@ def on_log(client, userdata, level, msg):  # (match callback signature) pylint: 
         mqtt.MQTT_LOG_DEBUG: 'MQTT_LOG_DEBUG'
     }
 
-    print("%s: %s" % (log_level[level], msg))
+    print(f"{log_level[level]}: {msg}")
 
 
-def on_connect(client, userdata, flags, rc): # (match callback signature) pylint: disable=unused-argument
+def on_connect(client, userdata, _flags, rc):
     """ MQTT on connect callback. """
-    print("Connected with result code %i" % rc)
+    print(f"Connected with result code {int(rc)}")
     for topic in userdata['topics']:
         client.subscribe(topic, qos=userdata['qos'])
 
 
-def on_disconnect(client, userdata, rc):  # (match callback signature) pylint: disable=unused-argument
+def on_disconnect(_client, _userdata, rc):
     """ MQTT on disconnect callback. """
-    print("Disconnected with result code %i" % rc)
+    print(f"Disconnected with result code {int(rc)}")
 
-def on_subscribe(client, userdata, mid, granted_qos): # (match callback signature) pylint: disable=unused-argument
+def on_subscribe(_client, _userdata, mid, granted_qos):
     """ MQTT on subscribe callback. """
-    print("Subscribed to mid: %i is size %i has a QOS of %i" %(mid, len(granted_qos), granted_qos[0]))
+    print(f"Subscribed to mid: {int(mid)} is size {len(granted_qos)} has a QOS of {int(granted_qos[0])}")
 
-def on_message(client, userdata, msg):  # (match callback signature) pylint: disable=unused-argument
+def on_message(client, userdata, msg):
     """ MQTT on message callback. """
-    print('(%s) mid:%s, qos:%s, %s: %s' %(int(time.time()), msg.mid, msg.qos, msg.topic, msg.payload))
+    print(f'({int(time.time())}) mid:{msg.mid}, qos:{msg.qos}, {msg.topic}: {msg.payload}')
     if userdata.get('max_records'):
         userdata['counter'] += 1
         if userdata['counter'] >= userdata['max_records']:
@@ -126,8 +126,8 @@ def main():
         config_path = os.path.abspath(options.config_file)
         configuration = configobj.ConfigObj(config_path, file_error=True)
         config_dict = configuration.get(config_type, {})
-        print("Reading configuration file, %s."% config_path)
-        print("Using section [%s] of the configuration file."% config_type)
+        print(f"Reading configuration file, {config_path}.")
+        print(f"Using section [{config_type}] of the configuration file.")
     else:
         config_dict = {}
 
@@ -152,15 +152,15 @@ def main():
     if options.topics:
         topics = options.topics.split(',')
 
-    print("Host is %s" % host)
-    print("Port is %s" % port)
-    print("Keep alive is %s" % keepalive)
-    print("Client id is %s" % clientid)
-    print("Clean session is %s" % clean_session)
-    print("Username is %s" % username)
-    print("Password is %s" % password)
-    print("QOS is %s" % qos)
-    print("Topics are %s" % topics)
+    print(f"Host is {host}")
+    print(f"Port is {port}")
+    print(f"Keep alive is {keepalive}")
+    print(f"Client id is {clientid}")
+    print(f"Clean session is {clean_session}")
+    print(f"Username is {username}")
+    print(f"Password is {password}")
+    print(f"QOS is {qos}")
+    print(f"Topics are {topics}")
 
     if password is not None:
         print("Password is set")

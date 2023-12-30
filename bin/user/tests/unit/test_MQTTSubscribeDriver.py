@@ -1,29 +1,44 @@
 #
-#    Copyright (c) 2020-2021 Rich Bell <bellrichm@gmail.com>
+#    Copyright (c) 2020-2023 Rich Bell <bellrichm@gmail.com>
 #
 #    See the file LICENSE.txt for your full rights.
 #
 
 # pylint: disable=wrong-import-order
+# pylint: disable=wrong-import-position
 # pylint: disable=missing-docstring
 # pylint: disable=invalid-name
-# need to be python 2 compatible pylint: disable=bad-option-value, super-with-arguments
-# pylint: enable=bad-option-value
-
-from __future__ import with_statement
 
 import unittest
 import mock
 
 import random
+import sys
 import time
 
-import test_weewx_stubs # used to set up stubs - pylint: disable=unused-import
+import test_weewx_stubs
 from test_weewx_stubs import random_string
+# setup stubs before importing MQTTSubscribe
+test_weewx_stubs.setup_stubs()
 
 from user.MQTTSubscribe import MQTTSubscribeDriver
 
 class TestclosePort(unittest.TestCase):
+    def setUp(self):
+        # reset stubs for every test
+        test_weewx_stubs.setup_stubs()
+
+    def tearDown(self):
+        # cleanup stubs
+        del sys.modules['weecfg']
+        del sys.modules['weeutil']
+        del sys.modules['weeutil.config']
+        del sys.modules['weeutil.weeutil']
+        del sys.modules['weeutil.logger']
+        del sys.modules['weewx']
+        del sys.modules['weewx.drivers']
+        del sys.modules['weewx.engine']
+
     @staticmethod
     def test_close_port():
         mock_engine = mock.Mock()
@@ -38,6 +53,21 @@ class TestclosePort(unittest.TestCase):
             SUT.subscriber.disconnect.assert_called_once() # pylint: disable=no-member
 
 class TestArchiveInterval(unittest.TestCase):
+    def setUp(self):
+        # reset stubs for every test
+        test_weewx_stubs.setup_stubs()
+
+    def tearDown(self):
+        # cleanup stubs
+        del sys.modules['weecfg']
+        del sys.modules['weeutil']
+        del sys.modules['weeutil.config']
+        del sys.modules['weeutil.weeutil']
+        del sys.modules['weeutil.logger']
+        del sys.modules['weewx']
+        del sys.modules['weewx.drivers']
+        del sys.modules['weewx.engine']
+
     def test_no_archive_topic(self):
         mock_engine = mock.Mock()
         stn_dict = {}
@@ -70,6 +100,21 @@ class TestArchiveInterval(unittest.TestCase):
 
 class TestgenLoopPackets(unittest.TestCase):
     mock_StdEngine = mock.Mock()
+
+    def setUp(self):
+        # reset stubs for every test
+        test_weewx_stubs.setup_stubs()
+
+    def tearDown(self):
+        # cleanup stubs
+        del sys.modules['weecfg']
+        del sys.modules['weeutil']
+        del sys.modules['weeutil.config']
+        del sys.modules['weeutil.weeutil']
+        del sys.modules['weeutil.logger']
+        del sys.modules['weewx']
+        del sys.modules['weewx.drivers']
+        del sys.modules['weewx.engine']
 
     @classmethod
     def setUpClass(cls):
@@ -196,6 +241,21 @@ class TestgenLoopPackets(unittest.TestCase):
 class TestgenArchiveRecords(unittest.TestCase):
     mock_StdEngine = mock.Mock()
 
+    def setUp(self):
+        # reset stubs for every test
+        test_weewx_stubs.setup_stubs()
+
+    def tearDown(self):
+        # cleanup stubs
+        del sys.modules['weecfg']
+        del sys.modules['weeutil']
+        del sys.modules['weeutil.config']
+        del sys.modules['weeutil.weeutil']
+        del sys.modules['weeutil.logger']
+        del sys.modules['weewx']
+        del sys.modules['weewx.drivers']
+        del sys.modules['weewx.engine']
+
     @classmethod
     def setUpClass(cls):
         cls.queue_data = {}
@@ -265,7 +325,7 @@ class TestgenArchiveRecords(unittest.TestCase):
         config_dict = {}
         config_dict['MQTTSubscribeDriver'] = stn_dict
 
-        records = list()
+        records = []
 
         with mock.patch('user.MQTTSubscribe.MQTTSubscriber'):
             with self.assertRaises(NotImplementedError) as error:
@@ -284,7 +344,7 @@ class TestgenArchiveRecords(unittest.TestCase):
 
         with mock.patch('user.MQTTSubscribe.MQTTSubscriber') as mock_manager:
             type(mock_manager.return_value).get_data = mock.Mock(return_value=self.generator([self.queue_data, self.queue_data, None]))
-            records = list()
+            records = []
 
             SUT = MQTTSubscribeDriver(self.config_dict, mock_engine)
 

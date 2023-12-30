@@ -5,6 +5,7 @@
 #
 
 # pylint: disable=wrong-import-order
+# pylint: disable=wrong-import-position
 # pylint: disable=missing-docstring
 # pylint: disable=invalid-name
 # pylint: disable=protected-access
@@ -13,13 +14,17 @@ import unittest
 import mock
 
 import random
+import sys
 import xml.etree
 
+import test_weewx_stubs
 from test_weewx_stubs import random_ascii_letters
+# setup stubs before importing MQTTSubscribe
+test_weewx_stubs.setup_stubs()
 
 from user.ExampleMessageCallbackProvider import MessageCallbackProvider
 
-class Msg(object):
+class Msg:
     # pylint: disable=too-few-public-methods
     def __init__(self, topic, payload, qos, retain):
         self.topic = topic
@@ -28,6 +33,21 @@ class Msg(object):
         self.retain = retain
 
 class Test1(unittest.TestCase):
+    def setUp(self):
+        # reset stubs for every test
+        test_weewx_stubs.setup_stubs()
+
+    def tearDown(self):
+        # cleanup stubs
+        del sys.modules['weecfg']
+        del sys.modules['weeutil']
+        del sys.modules['weeutil.config']
+        del sys.modules['weeutil.weeutil']
+        del sys.modules['weeutil.logger']
+        del sys.modules['weewx']
+        del sys.modules['weewx.drivers']
+        del sys.modules['weewx.engine']
+
     @staticmethod
     def create_observation_dict(size):
         observation_dict = {}

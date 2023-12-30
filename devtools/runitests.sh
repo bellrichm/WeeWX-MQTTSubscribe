@@ -13,11 +13,7 @@ else
 fi
 
 if [ -z "$2" ]; then
-    if [ "$WEEWX" = "weewx3" ]; then
-        export PYENV_VERSION=$weewx3_default_python_version
-    else
-        export PYENV_VERSION=$weewx_default_python_version    
-    fi    
+    export PYENV_VERSION=$weewx_default_python_version    
 else
     export PYENV_VERSION=$2
 fi
@@ -27,3 +23,4 @@ python_version=$(pyenv which $python_command)
 echo "Running $python_version $WEEWX"
 
 PYTHONPATH=bin:../$WEEWX/bin pytest bin/user/tests/integ
+date

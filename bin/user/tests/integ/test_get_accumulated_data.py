@@ -1,5 +1,5 @@
 #
-#    Copyright (c) 2020-2021 Rich Bell <bellrichm@gmail.com>
+#    Copyright (c) 2020-2023 Rich Bell <bellrichm@gmail.com>
 #
 #    See the file LICENSE.txt for your full rights.
 #
@@ -8,8 +8,6 @@
 # pylint: disable=wrong-import-order
 # pylint: disable=too-many-locals
 # pylint: disable=too-many-statements
-
-from __future__ import print_function
 
 import json
 import time
@@ -33,7 +31,7 @@ class TestAccumulatedData(unittest.TestCase):
 
         unit_system_name = topics_dict.get('unit_system', 'US').strip().upper()
         if unit_system_name not in weewx.units.unit_constants:
-            raise ValueError("MQTTSubscribe: Unknown unit system: %s" % unit_system_name)
+            raise ValueError(f"MQTTSubscribe: Unknown unit system: {unit_system_name}")
         unit_system = weewx.units.unit_constants[unit_system_name]
 
         on_message = utils.get_callback(payload, config_dict, manager, logger)
@@ -59,7 +57,7 @@ class TestAccumulatedData(unittest.TestCase):
                         if payload in result['payloads']:
                             found = True
                             break
-                self.assertTrue(found, "No results for %s" %payload)
+                self.assertTrue(found, f"No results for {payload}")
 
                 utils.check(self, payload, records, result['records'])
             else:
@@ -71,78 +69,71 @@ class TestAccumulatedRain(TestAccumulatedData):
     def test_accumulatedrain_individual(self):
         # At WeeWX 4.6.1, the handling of 'sum' accumulators changed.
         # In prior versions if there was no data a 0 was returned. Now None isvreturned.
-        # Only two old WeeWX versions sre tested. We just won't tests against these
-        if weewx.__version__ == '3.7.1' or weewx.__version__ == '3.9.0':
-            return
-        with open("bin/user/tests/integ/data/accumulatedrain.json") as file_pointer:
+        with open("bin/user/tests/integ/data/accumulatedrain.json", encoding="UTF-8") as file_pointer:
             self.runit('individual', file_pointer)
 
     #@unittest.skip("")
     def test_accumulatedrain_json(self):
-        if weewx.__version__ == '3.7.1' or weewx.__version__ == '3.9.0':
-            return
-        with open("bin/user/tests/integ/data/accumulatedrain.json") as file_pointer:
+        with open("bin/user/tests/integ/data/accumulatedrain.json", encoding="UTF-8") as file_pointer:
             self.runit('json', file_pointer)
 
     #@unittest.skip("")
     def test_accumulatedrain_keyword(self):
-        if weewx.__version__ == '3.7.1' or weewx.__version__ == '3.9.0':
-            return
-        with open("bin/user/tests/integ/data/accumulatedrain.json") as file_pointer:
+        with open("bin/user/tests/integ/data/accumulatedrain.json", encoding="UTF-8") as file_pointer:
             self.runit('keyword', file_pointer)
 
 class TestBasic(TestAccumulatedData):
     #@unittest.skip("")
     def test_basic_individual(self):
-        with open("bin/user/tests/integ/data/basic.json") as file_pointer:
+        with open("bin/user/tests/integ/data/basic.json", encoding="UTF-8") as file_pointer:
             self.runit('individual', file_pointer)
 
     #@unittest.skip("")
     def test_basic_json(self):
-        with open("bin/user/tests/integ/data/basic.json") as file_pointer:
+        with open("bin/user/tests/integ/data/basic.json", encoding="UTF-8") as file_pointer:
             self.runit('json', file_pointer)
 
     #@unittest.skip("")
     def test_basic_keyword(self):
-        with open("bin/user/tests/integ/data/basic.json") as file_pointer:
+        with open("bin/user/tests/integ/data/basic.json", encoding="UTF-8") as file_pointer:
             self.runit('keyword', file_pointer)
 
 class TestEmpty(TestAccumulatedData):
     #@unittest.skip("")
     def test_empty_individual(self):
-        with open("bin/user/tests/integ/data/empty.json") as file_pointer:
+        with open("bin/user/tests/integ/data/empty.json", encoding="UTF-8") as file_pointer:
             self.runit('individual', file_pointer)
 
     #@unittest.skip("")
     def test_empty_json(self):
-        with open("bin/user/tests/integ/data/empty.json") as file_pointer:
+        with open("bin/user/tests/integ/data/empty.json", encoding="UTF-8") as file_pointer:
             self.runit('json', file_pointer)
 
     #@unittest.skip("")
     def test_empty_keyword(self):
-        with open("bin/user/tests/integ/data/empty.json") as file_pointer:
+        with open("bin/user/tests/integ/data/empty.json", encoding="UTF-8") as file_pointer:
             self.runit('keyword', file_pointer)
 
 class TestWindIndividualTopics(TestAccumulatedData):
     #@unittest.skip("")
     def test_wind_individual_topic(self):
-        with open("bin/user/tests/integ/data/wind-individual.json") as file_pointer:
+        with open("bin/user/tests/integ/data/wind-individual.json", encoding="UTF-8") as file_pointer:
             self.runit('individual', file_pointer)
 
 class TestWind(TestAccumulatedData):
     #@unittest.skip("")
     def test_wind_individual(self):
-        with open("bin/user/tests/integ/data/wind.json") as file_pointer:
+        with open("bin/user/tests/integ/data/wind.json", encoding="UTF-8") as file_pointer:
             self.runit('individual', file_pointer)
 
     #@unittest.skip("")
     def test_wind_json(self):
-        with open("bin/user/tests/integ/data/wind.json") as file_pointer:
+        with open("bin/user/tests/integ/data/wind.json", encoding="UTF-8") as file_pointer:
             self.runit('json', file_pointer)
 
     #@unittest.skip("")
     def test_wind_keyword(self):
-        with open("bin/user/tests/integ/data/wind.json") as file_pointer:
+        with open("bin/user/tests/integ/data/wind.json", encoding="UTF-8") as file_pointer:
             self.runit('keyword', file_pointer)
 
 if __name__ == '__main__':

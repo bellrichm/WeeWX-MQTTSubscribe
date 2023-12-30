@@ -13,24 +13,35 @@
     },
     {
         "justMyCode": true,
+        "name": "dev",
+        "type": "python",
+        "request": "launch",
+        "program": "${workspaceFolder}/bin/user/MQTTSubscribe.py",
+        "args": [
+            "simulate",
+            "driver"
+        ],            
+        "console": "integratedTerminal"
+    },    
+    {
+        "justMyCode": true,
         "name": "Debug",
         "type": "python",
         "request": "launch",
         "program": "${workspaceFolder}/bin/user/MQTTSubscribe.py",
         "args": [
-            "--type", "driver",
+            "simulate",
+            "service",
             "--binding", "loop",
-            "--interval", "2",
-            "--delay", "0",
-            "--records", "2",
-            //"--host", "localhost",
-            //"--topics", "weather/rain",
-            //"--callback", "individual",
-            //"--topics", "test-topic",
-            //"--callback", "keyword",                
-            "--verbose",
-            "--console",
-            "${workspaceFolder}/devtools/debug.loop.conf"
+            "--conf", "/home/richbell/mqttsubscribe.template.conf",
+            //"--verbose",
+            //"--console",
+            "--log-file", "${workspaceFolder}/tmp/temp.log",
+
+            //"--interval", "2",
+            //"--delay", "0",
+            //"--records", "200",
+            
         ],            
         "console": "integratedTerminal"
     },    
@@ -41,7 +52,8 @@
             "request": "launch",
             "program": "${workspaceFolder}/bin/user/MQTTSubscribe.py",
             "args": [
-                "--type", "service",
+                "simulate",
+                "service",
                 "--binding", "loop",
                 "--interval", "2",
                 "--delay", "0",
@@ -53,7 +65,7 @@
                 //"--callback", "keyword",                
                 "--verbose",
                 //"--console",
-                "${workspaceFolder}/weewx.loop.conf"
+                "${workspaceFolder}/devtools/smoketest.loop.conf"
             ],            
             "console": "integratedTerminal"
         },
@@ -63,14 +75,15 @@
             "request": "launch",
             "program": "${workspaceFolder}/bin/user/MQTTSubscribe.py",
             "args": [
-                "--type", "service",
+                "simulate",
+                "service",            
                 "--binding", "archive",
                 "--interval", "300",
                 "--delay", "5",
                 "--records", "1",
                 "--verbose",
                 //"--console",
-                "${workspaceFolder}/weewx.archive.conf"
+                "${workspaceFolder}/devtools/smoketest.archive.conf"
             ],            
             "console": "integratedTerminal"
         },
@@ -80,14 +93,15 @@
             "request": "launch",
             "program": "${workspaceFolder}/bin/user/MQTTSubscribe.py",
             "args": [
-                "--type", "driver",
+                "simulate",
+                "driver",            
                 "--binding", "loop",
                 "--interval", "2",
                 "--delay", "0",
                 "--records", "1",
                 "--verbose",
                 //"--console",
-                "${workspaceFolder}/devtools/weewx.loop.conf"
+                "${workspaceFolder}/devtools/smoketest.loop.conf"
             ],            
             "console": "integratedTerminal"
         },
@@ -97,14 +111,99 @@
             "request": "launch",
             "program": "${workspaceFolder}/bin/user/MQTTSubscribe.py",
             "args": [
-                "--type", "driver",
+                "simulate",
+                "driver",     
                 "--binding", "archive",
                 "--interval", "60",
                 "--delay", "5",
                 "--records", "1",
                 "--verbose",
                 //"--console",
-                "${workspaceFolder}/devtools/weewx.archive.conf"
+                "${workspaceFolder}/devtools/smoketest.archive.conf"
+            ],            
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Config",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/bin/user/MQTTSubscribe.py",
+            "args": [
+                "configure",
+                "driver",
+                //"service",
+
+                //"--create-example", "tmp/temp.conf",
+                //"--export", "${workspaceFolder}/tmp/temp.conf",
+                //"--enable", "false",
+                "--validate",
+
+                // "--add-from", "${workspaceFolder}/devtools/smoketest.archive.conf",
+                //"--replace-with", "/home/richbell/mqttsubscribe.template.conf",
+                //"--update-from", "${workspaceFolder}/devtools/smoketest.archive.conf",
+
+                "--conf", "/home/richbell/mqttsubscribe.template.conf",
+                //"--conf", "/home/fork.weewx/weewx.debug.conf"
+                //"--output", "${workspaceFolder}/tmp/temp.conf",
+                "--no-backup", "false",
+            ],            
+            "console": "integratedTerminal"
+        },        
+        {
+            "name": "wee_config",
+            "type": "python",
+            "request": "launch",
+
+            "program": "${workspaceFolder}/../weewx/bin/wee_config",
+            "args": [
+                "--verbosity", "3",
+                //"--install", ".",
+                "--reconfigure", "${workspaceFolder}/devtools/debug.loop.conf",
+                "--driver=user.MQTTSubscribeDriver",
+                "--output", "tmp/temp.conf",
+                //"--no-prompt",
+            ],            
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Install 5.x",
+            "type": "python",
+            "request": "launch",
+
+            "program": "${workspaceFolder}/../weewx/src/weectl.py",
+            "args": [
+                "extension", "install",
+                //"--config", "${workspaceFolder}/../weewx/src/weewx_data/weewx.conf",
+                "--verbosity", "3",
+                //"--dry-run",
+                "."
+            ],            
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Uninstall 5.x",
+            "type": "python",
+            "request": "launch",
+
+            "program": "${workspaceFolder}/../weewx/src/weectl.py",
+            "args": [
+                "extension", "uninstall",
+                "--verbosity", "3",
+                //"--dry-run",
+                "MQTTSubscribe"
+            ],            
+            "console": "integratedTerminal"
+        },                         
+        {
+            "name": "Install 4.x",
+            "type": "python",
+            "request": "launch",
+
+            "program": "${workspaceFolder}/../weewx/bin/wee_extension",
+            "args": [
+                "--verbosity", "3",
+                "--dry-run",
+                "--install", "."
             ],            
             "console": "integratedTerminal"
         },
@@ -122,7 +221,7 @@
                 "--install", "."
             ],            
             "console": "integratedTerminal"
-        },
+        },        
         {
             "name": "Install: Driver",
             "type": "python",
@@ -150,11 +249,13 @@
             },
             "program": "${workspaceFolder}/../weewx/bin/wee_config",
             "args": [
-                "--output", "/tmp/output.conf,",
+                "--output", "tmp/output.conf",
                 "--no-backup",
-                "--reconfigure"
+                "--reconfigure",
+                "${workspaceFolder}/devtools/debug.loop.conf",
+               // "${workspaceFolder}/../weewx/weewx.debug.conf",
             ],            
-            "console": "externalTerminal"
+            "console": "integratedTerminal"
         },
         {
             // Requires MQTTSubscribe.py to be in 'weewx/bin/user' directory
