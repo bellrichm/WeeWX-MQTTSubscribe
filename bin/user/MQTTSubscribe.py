@@ -2445,16 +2445,7 @@ class MQTTSubscribeConfiguration():
                     self._log_deprecated_option(key, section_deprecated_options, error_msgs, warn_msgs)
                 continue
 
-            if key not in section_configspec:
-                if key in section_deprecated_options and 'deprecated_msg' in section_deprecated_options[key]:
-                    self._log_deprecated_option(key, section_deprecated_options, error_msgs, warn_msgs)
-                else:
-                    error_msgs.append(f"ERROR: Unknown option: {hierarchy}{key}")
-            elif value == 'REPLACE_ME':
-                error_msgs.append(f"ERROR: Specify a value for: {hierarchy}{key}")
-            else:
-                if key in section_deprecated_options and 'deprecated_msg' in section_deprecated_options[key]:
-                    self._log_deprecated_option(key, section_deprecated_options, error_msgs, warn_msgs)
+            self._check_items(key, value, hierarchy, section_configspec, section_deprecated_options, error_msgs, warn_msgs)
 
         self._validate_sections(parent, hierarchy, section, section_configspec, section_deprecated_options, error_msgs, warn_msgs)
 
@@ -2463,6 +2454,18 @@ class MQTTSubscribeConfiguration():
             warn_msgs.append(section_deprecated_options[option]['deprecated_msg'])
         else:
             error_msgs.append(section_deprecated_options[option]['deprecated_msg'])
+
+    def _check_items(self, key, value, hierarchy, section_configspec, section_deprecated_options, error_msgs, warn_msgs):
+        # pylint: disable=too-many-arguments
+        if key not in section_configspec:
+            if key in section_deprecated_options and 'deprecated_msg' in section_deprecated_options[key]:
+                self._log_deprecated_option(key, section_deprecated_options, error_msgs, warn_msgs)
+            else:
+                error_msgs.append(f"ERROR: Unknown option: {hierarchy}{key}")
+        elif value == 'REPLACE_ME':
+            error_msgs.append(f"ERROR: Specify a value for: {hierarchy}{key}")
+        elif key in section_deprecated_options and 'deprecated_msg' in section_deprecated_options[key]:
+            self._log_deprecated_option(key, section_deprecated_options, error_msgs, warn_msgs)
 
     def _validate_sections(self, parent, hierarchy, section, section_configspec, section_deprecated_options, error_msgs, warn_msgs):
         # pylint: disable=too-many-arguments
