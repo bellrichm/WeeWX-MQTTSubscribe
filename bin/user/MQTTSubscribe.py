@@ -2862,30 +2862,10 @@ For more information see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/
         if (options.type and options.create_example) or (not options.type and not options.create_example):
             parser.error("Either 'service|driver' or '--create-example' is required.")
 
-
-        if options.type and options.output:
-            if options.export:
-                parser.error("'--output' is mutually exclusive with '--export'")
-            if options.print_configspec:
-                parser.error("'--output' is mutually exclusive with '--print-configspec'")
-            if options.validate:
-                parser.error("'--output' is mutually exclusive with '--validate'")
-
-        if options.type and options.enable is not None:
-            if options.export:
-                parser.error("'--enable' is mutually exclusive with '--export'")
-            if options.print_configspec:
-                parser.error("'--enable' is mutually exclusive with '--print-configspec'")
-            if options.validate:
-                parser.error("'--enable' is mutually exclusive with '--validate'")
-
-        if options.type and options.no_backup:
-            if options.export:
-                parser.error("'--no-backup' is mutually exclusive with '--export'")
-            if options.print_configspec:
-                parser.error("'--no-backup' is mutually exclusive with '--print-configspec'")
-            if options.validate:
-                parser.error("'--no-backup' is mutually exclusive with '--validate'")
+        if options.type:
+            self._check_mutually_exclusive_options(options.output, 'output', options, parser)
+            self._check_mutually_exclusive_options(options.enable, 'enable', options, parser)
+            self._check_mutually_exclusive_options(options.no_backup, 'no-backup', options, parser)
 
         if options.type == 'service':
             self.section = 'MQTTSubscribeService'
@@ -2911,6 +2891,15 @@ For more information see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/
 
         if options.type:
             self.no_backup = options.no_backup
+
+    def _check_mutually_exclusive_options(self, option, option_name, options, parser):
+        if option:
+            if options.export:
+                parser.error(f"'--{option_name}' is mutually exclusive with '--export'")
+            if options.print_configspec:
+                parser.error(f"'--{option_name}' is mutually exclusive with '--print-configspec'")
+            if options.validate:
+                parser.error(f"'--{option_name}' is mutually exclusive with '--validate'")
 
     def _setup_subcommand(self, options):
         if options.conf:
