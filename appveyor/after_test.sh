@@ -11,11 +11,13 @@ fi
 
 # do not run on pull requests
 if [ "$BUILDTYPE" != "LOCAL" ] && [ "$APPVEYOR_PULL_REQUEST_NUMBER" != "" ]; then
+  echo "Invoked due to a pul; request, exiting."
   exit 0
 fi
 
 # only upload for one build image
 if [ "$APPVEYOR_BUILD_WORKER_IMAGE" != "Ubuntu2204" ]; then
+  echo "Running in incorrect build image for uploading, exiting."
   exit 0
 fi
 
