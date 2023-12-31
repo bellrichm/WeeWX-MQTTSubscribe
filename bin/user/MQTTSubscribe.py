@@ -850,8 +850,7 @@ class TopicManager():
                                                                                           topic_defaults['use_server_datetime']))
             self.subscribed_topics[topic]['datetime_format'] = topic_dict.get('datetime_format', topic_defaults['datetime_format'])
             self.subscribed_topics[topic]['offset_format'] = topic_dict.get('offset_format', topic_defaults['offset_format'])
-            self.subscribed_topics[topic]['ignore_msg_id_field'] = callback_config_name # ToDo - investigate
-            self.subscribed_topics[topic]['ignore_msg_id_field'] = []
+            self.subscribed_topics[topic]['fields_ignoring_msg_id'] = []
             self.subscribed_topics[topic]['fields'] = {}
             self._setup_queue(archive_topic, single_queue, single_queue_obj, topic_defaults, topic, topic_dict)
 
@@ -1084,7 +1083,7 @@ class TopicManager():
         # pylint: disable=too-many-arguments, too-many-locals
         ignore_msg_id_field = topic_dict.get('ignore_msg_id_field', defaults['ignore_msg_id_field'])
         if to_bool((field_dict).get('ignore_msg_id_field', ignore_msg_id_field)):
-            self.subscribed_topics[topic]['ignore_msg_id_field'].append(fieldname)
+            self.subscribed_topics[topic]['fields_ignoring_msg_id'].append(fieldname)
 
     def _configure_cached_fields(self, field_dict):
         if 'expires_after' in field_dict:
@@ -1305,9 +1304,9 @@ class TopicManager():
         return self._get_value('ignore', topic)
 
 
-    def get_ignore_msg_id_field(self, topic):
+    def get_fields_ignoring_msg_id(self, topic):
         """ Get the ignore_msg_id_field value """
-        return self._get_value('ignore_msg_id_field', topic)
+        return self._get_value('fields_ignoring_msg_id', topic)
 
     def _get_queue(self, topic):
         return self._get_value('queue', topic)
@@ -1560,7 +1559,7 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
     def _process_json_dict(self, msg, fields, fields_ignore_default, data_flattened):
         # pylint: disable= too-many-locals
         msg_id_field = self.topic_manager.get_msg_id_field(msg.topic)
-        ignore_msg_id_field = self.topic_manager.get_ignore_msg_id_field(msg.topic)
+        fields_ignoring_msg_id = self.topic_manager.get_fields_ignoring_msg_id(msg.topic)
         unit_system = self.topic_manager.get_unit_system(msg.topic)
         filters = self.topic_manager.get_filters(msg.topic)
         fields_conversion_func = self.topic_manager.get_conversion_func(msg.topic)
@@ -1570,7 +1569,7 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
             msg_id = data_flattened[msg_id_field]
 
         for key, value in data_flattened.items():
-            if msg_id_field and key not in ignore_msg_id_field:
+            if msg_id_field and key not in fields_ignoring_msg_id:
                 lookup_key = key + "_" + str(msg_id) # todo - cleanup
             else:
                 lookup_key = key

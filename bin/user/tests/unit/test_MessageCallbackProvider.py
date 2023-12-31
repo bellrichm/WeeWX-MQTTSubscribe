@@ -241,7 +241,7 @@ class TestKeywordload(unittest.TestCase):
         mock_logger = mock.Mock(spec=Logger)
         mock_manager = mock.Mock(spec=TopicManager)
         mock_manager.get_msg_id_field.return_value = None
-        mock_manager.get_ignore_msg_id_field.return_value = []
+        mock_manager.get_fields_ignoring_msg_id.return_value = []
         mock_manager.get_message_dict.return_value = {'keyword_delimiter': ',', 'keyword_separator': '='}
         mock_manager.subscribed_topics = {}
 
@@ -259,7 +259,7 @@ class TestKeywordload(unittest.TestCase):
         mock_logger = mock.Mock(spec=Logger)
         mock_manager = mock.Mock(spec=TopicManager)
         mock_manager.get_msg_id_field.return_value = None
-        mock_manager.get_ignore_msg_id_field.return_value = []
+        mock_manager.get_fields_ignoring_msg_id.return_value = []
         mock_manager.get_ignore_value.return_value = False
         mock_manager.get_conversion_func.return_value = {
             'source': 'lambda x: to_float(x)',
@@ -283,7 +283,7 @@ class TestKeywordload(unittest.TestCase):
         mock_logger = mock.Mock(spec=Logger)
         mock_manager = mock.Mock(spec=TopicManager)
         mock_manager.get_msg_id_field.return_value = None
-        mock_manager.get_ignore_msg_id_field.return_value = []
+        mock_manager.get_fields_ignoring_msg_id.return_value = []
         mock_manager.get_ignore_value.return_value = False
         mock_manager.get_conversion_func.return_value = {
             'source': 'lambda x: to_float(x)',
@@ -307,7 +307,7 @@ class TestKeywordload(unittest.TestCase):
         mock_logger = mock.Mock(spec=Logger)
         mock_manager = mock.Mock(spec=TopicManager)
         mock_manager.get_msg_id_field.return_value = None
-        mock_manager.get_ignore_msg_id_field.return_value = []
+        mock_manager.get_fields_ignoring_msg_id.return_value = []
         mock_manager.get_ignore_value.return_value = False
         mock_manager.get_fields.return_value = {}
         mock_manager.get_message_dict.return_value = {'keyword_delimiter': ',', 'keyword_separator': '='}
@@ -327,7 +327,7 @@ class TestKeywordload(unittest.TestCase):
         mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
         mock_manager.get_msg_id_field.return_value = None
-        mock_manager.get_ignore_msg_id_field.return_value = []
+        mock_manager.get_fields_ignoring_msg_id.return_value = []
         mock_manager.get_ignore_value.return_value = False
         mock_manager.get_conversion_func.return_value = {
             'source': 'lambda x: to_float(x)',
@@ -360,7 +360,7 @@ class TestKeywordload(unittest.TestCase):
         mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
         mock_manager.get_msg_id_field.return_value = None
-        mock_manager.get_ignore_msg_id_field.return_value = []
+        mock_manager.get_fields_ignoring_msg_id.return_value = []
         mock_manager.get_ignore_value.return_value = False
         mock_manager.get_conversion_func.return_value = {
             'source': 'lambda x: to_float(x)',
@@ -392,7 +392,7 @@ class TestKeywordload(unittest.TestCase):
         mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
         mock_manager.get_msg_id_field.return_value = None
-        mock_manager.get_ignore_msg_id_field.return_value = []
+        mock_manager.get_fields_ignoring_msg_id.return_value = []
         mock_manager.get_ignore_value.return_value = False
         mock_manager.get_conversion_func.return_value = {
             'source': 'lambda x: to_float(x)',
@@ -425,7 +425,7 @@ class TestKeywordload(unittest.TestCase):
         mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
         mock_manager.get_msg_id_field.return_value = None
-        mock_manager.get_ignore_msg_id_field.return_value = []
+        mock_manager.get_fields_ignoring_msg_id.return_value = []
         mock_manager.get_message_dict.return_value = {'keyword_delimiter': ',', 'keyword_separator': '='}
         mock_manager.subscribed_topics = {}
 
@@ -460,7 +460,7 @@ class TestKeywordload(unittest.TestCase):
         mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
         mock_manager.get_msg_id_field.return_value = None
-        mock_manager.get_ignore_msg_id_field.return_value = []
+        mock_manager.get_fields_ignoring_msg_id.return_value = []
         mock_manager.get_ignore_value.return_value = False
         mock_manager.get_conversion_func.return_value = {
             'source': 'lambda x: to_float(x)',
@@ -509,7 +509,7 @@ class TestKeywordload(unittest.TestCase):
         mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
         mock_manager.get_msg_id_field.return_value = None
-        mock_manager.get_ignore_msg_id_field.return_value = []
+        mock_manager.get_fields_ignoring_msg_id.return_value = []
         mock_manager.get_ignore_value.return_value = False
         mock_manager.get_conversion_func.return_value = {
             'source': 'lambda x: to_float(x)',
@@ -565,7 +565,7 @@ class TestJsonPayload(unittest.TestCase):
         mock_logger = mock.Mock(spec=Logger)
         mock_manager = mock.Mock(spec=TopicManager)
         mock_manager.get_msg_id_field.return_value = None
-        mock_manager.get_ignore_msg_id_field.return_value = []
+        mock_manager.get_fields_ignoring_msg_id.return_value = []
         mock_manager.get_message_dict.return_value = {'flatten_delimiter': '_'}
         mock_manager.subscribed_topics = {}
 
@@ -587,7 +587,7 @@ class TestJsonPayload(unittest.TestCase):
             'compiled': eval('lambda x: to_float(x)')
             }
         mock_manager.get_msg_id_field.return_value = None
-        mock_manager.get_ignore_msg_id_field.return_value = []
+        mock_manager.get_fields_ignoring_msg_id.return_value = []
         mock_manager.get_message_dict.return_value = {'flatten_delimiter': '_'}
         mock_manager.subscribed_topics = {}
 
@@ -602,7 +602,7 @@ class TestJsonPayload(unittest.TestCase):
         mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock_logger = mock.Mock(spec=Logger)
         mock_manager.get_msg_id_field.return_value = None
-        mock_manager.get_ignore_msg_id_field.return_value = []
+        mock_manager.get_fields_ignoring_msg_id.return_value = []
         mock_manager.get_ignore_value.return_value = False
         mock_manager.get_conversion_func.return_value = {
             'source': 'lambda x: to_float(x)',
@@ -630,7 +630,7 @@ class TestJsonPayload(unittest.TestCase):
         mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock_logger = mock.Mock(spec=Logger)
         mock_manager.get_msg_id_field.return_value = None
-        mock_manager.get_ignore_msg_id_field.return_value = []
+        mock_manager.get_fields_ignoring_msg_id.return_value = []
         mock_manager.get_ignore_value.return_value = False
         mock_manager.get_conversion_func.return_value = {
             'source': 'lambda x: to_float(x)',
@@ -659,7 +659,7 @@ class TestJsonPayload(unittest.TestCase):
         mock_logger = mock_logger = mock.Mock(spec=Logger)
         mock_manager.get_msg_id_field.return_value = None
         mock_manager.get_ignore_value.return_value = True
-        mock_manager.get_ignore_msg_id_field.return_value = []
+        mock_manager.get_fields_ignoring_msg_id.return_value = []
         mock_manager.get_ignore_value.return_value = False
         mock_manager.get_conversion_func.return_value = {
             'source': 'lambda x: to_float(x)',
@@ -700,7 +700,7 @@ class TestJsonPayload(unittest.TestCase):
             'source': 'lambda x: to_float(x)',
             'compiled': eval('lambda x: to_float(x)')
             }
-        mock_manager.get_ignore_msg_id_field.return_value = []
+        mock_manager.get_fields_ignoring_msg_id.return_value = []
         mock_manager.get_filters.return_value = {}
         mock_manager.get_filters.return_value = {}
         mock_manager.get_message_dict.return_value = {'flatten_delimiter': '_'}
@@ -764,7 +764,7 @@ class TestJsonPayload(unittest.TestCase):
                 continue
             ignore_msg_id_field_fields.append(key)
 
-        mock_manager.get_ignore_msg_id_field.return_value = ignore_msg_id_field_fields
+        mock_manager.get_fields_ignoring_msg_id.return_value = ignore_msg_id_field_fields
 
         msg = Msg(self.topic, payload, 0, 0)
 
@@ -781,7 +781,7 @@ class TestJsonPayload(unittest.TestCase):
         mock_logger = mock.Mock(spec=Logger)
         mock_manager.get_msg_id_field.return_value = None
         mock_manager.get_ignore_value.return_value = True
-        mock_manager.get_ignore_msg_id_field.return_value = []
+        mock_manager.get_fields_ignoring_msg_id.return_value = []
         mock_manager.get_ignore_value.return_value = False
         mock_manager.get_conversion_func.return_value = {
             'source': 'lambda x: to_float(x)',
@@ -822,7 +822,7 @@ class TestJsonPayload(unittest.TestCase):
         mock_logger = mock.Mock(spec=Logger)
         mock_manager.get_msg_id_field.return_value = None
         mock_manager.get_ignore_value.return_value = True
-        mock_manager.get_ignore_msg_id_field.return_value = []
+        mock_manager.get_fields_ignoring_msg_id.return_value = []
         mock_manager.get_ignore_value.return_value = False
         mock_manager.get_conversion_func.return_value = {
             'source': 'lambda x: to_float(x)',
@@ -863,7 +863,7 @@ class TestJsonPayload(unittest.TestCase):
         mock_logger = mock.Mock(spec=Logger)
         mock_manager.get_msg_id_field.return_value = None
         mock_manager.get_ignore_value.return_value = True
-        mock_manager.get_ignore_msg_id_field.return_value = []
+        mock_manager.get_fields_ignoring_msg_id.return_value = []
         mock_manager.get_ignore_value.return_value = False
         mock_manager.get_conversion_func.return_value = {
             'source': 'lambda x: to_float(x)',
@@ -900,7 +900,7 @@ class TestJsonPayload(unittest.TestCase):
         mock_logger = mock.Mock(spec=Logger)
         mock_manager.get_msg_id_field.return_value = None
         mock_manager.get_ignore_value.return_value = True
-        mock_manager.get_ignore_msg_id_field.return_value = []
+        mock_manager.get_fields_ignoring_msg_id.return_value = []
         mock_manager.get_ignore_value.return_value = False
         mock_manager.get_conversion_func.return_value = {
             'source': 'lambda x: to_float(x)',
@@ -944,7 +944,7 @@ class TestJsonPayload(unittest.TestCase):
         mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock_logger = mock.Mock(spec=Logger)
         mock_manager.get_msg_id_field.return_value = None
-        mock_manager.get_ignore_msg_id_field.return_value = []
+        mock_manager.get_fields_ignoring_msg_id.return_value = []
         mock_manager.get_ignore_value.return_value = False
         mock_manager.get_conversion_func.return_value = {
             'source': 'lambda x: to_float(x)',
@@ -986,7 +986,7 @@ class TestJsonPayload(unittest.TestCase):
         mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock_logger = mock.Mock(spec=Logger)
         mock_manager.get_msg_id_field.return_value = None
-        mock_manager.get_ignore_msg_id_field.return_value = []
+        mock_manager.get_fields_ignoring_msg_id.return_value = []
         mock_manager.get_ignore_value.return_value = False
         mock_manager.get_conversion_func.return_value = {
             'source': 'lambda x: to_float(x)',
@@ -1033,7 +1033,7 @@ class TestJsonPayload(unittest.TestCase):
         mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
         mock_manager.get_msg_id_field.return_value = None
-        mock_manager.get_ignore_msg_id_field.return_value = []
+        mock_manager.get_fields_ignoring_msg_id.return_value = []
         mock_manager.get_message_dict.return_value = {'flatten_delimiter': '_'}
         mock_manager.subscribed_topics = {}
         mock_manager.get_filters.return_value = {}
@@ -1064,7 +1064,7 @@ class TestJsonPayload(unittest.TestCase):
         mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
         mock_manager.get_msg_id_field.return_value = None
-        mock_manager.get_ignore_msg_id_field.return_value = []
+        mock_manager.get_fields_ignoring_msg_id.return_value = []
         mock_manager.get_ignore_value.return_value = False
         mock_manager.get_conversion_func.return_value = {
             'source': 'lambda x: to_float(x)',
@@ -1113,7 +1113,7 @@ class TestJsonPayload(unittest.TestCase):
         mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
         mock_manager.get_msg_id_field.return_value = None
-        mock_manager.get_ignore_msg_id_field.return_value = []
+        mock_manager.get_fields_ignoring_msg_id.return_value = []
         mock_manager.get_ignore_value.return_value = False
         mock_manager.get_conversion_func.return_value = {
             'source': 'lambda x: to_float(x)',
@@ -1160,7 +1160,7 @@ class TestJsonPayload(unittest.TestCase):
         mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
         mock_manager.get_msg_id_field.return_value = None
-        mock_manager.get_ignore_msg_id_field.return_value = []
+        mock_manager.get_fields_ignoring_msg_id.return_value = []
         mock_manager.get_ignore_value.return_value = False
         mock_manager.get_conversion_func.return_value = {
             'source': 'lambda x: to_float(x)',
@@ -1221,7 +1221,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         mock_logger = mock.Mock(spec=Logger)
         mock_manager = mock.Mock(spec=TopicManager)
         mock_manager.get_msg_id_field.return_value = None
-        mock_manager.get_ignore_msg_id_field.return_value = []
+        mock_manager.get_fields_ignoring_msg_id.return_value = []
         mock_manager.get_ignore_value.return_value = False
         mock_manager.get_conversion_func.return_value = {
             'source': 'lambda x: to_float(x)',
@@ -1245,7 +1245,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         mock_logger = mock.Mock(spec=Logger)
         mock_manager = mock.Mock(spec=TopicManager)
         mock_manager.get_msg_id_field.return_value = None
-        mock_manager.get_ignore_msg_id_field.return_value = []
+        mock_manager.get_fields_ignoring_msg_id.return_value = []
         mock_manager.get_ignore_value.return_value = False
         mock_manager.get_conversion_func.return_value = {
             'source': 'lambda x: to_float(x)',
@@ -1269,7 +1269,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
         mock_manager.get_msg_id_field.return_value = None
-        mock_manager.get_ignore_msg_id_field.return_value = []
+        mock_manager.get_fields_ignoring_msg_id.return_value = []
         mock_manager.get_ignore_value.return_value = False
         mock_manager.get_conversion_func.return_value = {
             'source': 'lambda x: to_float(x)',
@@ -1293,7 +1293,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
         mock_manager.get_msg_id_field.return_value = None
-        mock_manager.get_ignore_msg_id_field.return_value = []
+        mock_manager.get_fields_ignoring_msg_id.return_value = []
         mock_manager.get_ignore_value.return_value = False
         mock_manager.get_conversion_func.return_value = {
             'source': 'lambda x: to_float(x)',
@@ -1325,7 +1325,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
         mock_manager.get_msg_id_field.return_value = None
-        mock_manager.get_ignore_msg_id_field.return_value = []
+        mock_manager.get_fields_ignoring_msg_id.return_value = []
         mock_manager.get_ignore_value.return_value = False
         mock_manager.get_conversion_func.return_value = {
             'source': 'lambda x: to_float(x)',
@@ -1349,7 +1349,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
         mock_manager.get_msg_id_field.return_value = None
-        mock_manager.get_ignore_msg_id_field.return_value = []
+        mock_manager.get_fields_ignoring_msg_id.return_value = []
         mock_manager.get_ignore_value.return_value = False
         mock_manager.get_conversion_func.return_value = {
             'source': 'lambda x: to_float(x)',
@@ -1377,7 +1377,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
         mock_manager.get_msg_id_field.return_value = None
-        mock_manager.get_ignore_msg_id_field.return_value = []
+        mock_manager.get_fields_ignoring_msg_id.return_value = []
         mock_manager.get_ignore_value.return_value = False
         mock_manager.get_conversion_func.return_value = {
             'source': 'lambda x: to_float(x)',
@@ -1405,7 +1405,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
         mock_manager.get_msg_id_field.return_value = None
-        mock_manager.get_ignore_msg_id_field.return_value = []
+        mock_manager.get_fields_ignoring_msg_id.return_value = []
         mock_manager.get_message_dict.return_value = {}
         mock_manager.subscribed_topics = {}
 
@@ -1431,7 +1431,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
         mock_manager.get_msg_id_field.return_value = None
-        mock_manager.get_ignore_msg_id_field.return_value = []
+        mock_manager.get_fields_ignoring_msg_id.return_value = []
         mock_manager.get_ignore_value.return_value = False
         mock_manager.get_conversion_func.return_value = {
             'source': 'lambda x: to_float(x)',
@@ -1467,7 +1467,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
         mock_manager.get_msg_id_field.return_value = None
-        mock_manager.get_ignore_msg_id_field.return_value = []
+        mock_manager.get_fields_ignoring_msg_id.return_value = []
         mock_manager.get_message_dict.return_value = {}
         mock_manager.subscribed_topics = {}
 
@@ -1513,7 +1513,7 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
         mock_logger = mock.Mock(spec=Logger)
         mock_manager = mock.Mock(spec=TopicManager)
         mock_manager.get_msg_id_field.return_value = None
-        mock_manager.get_ignore_msg_id_field.return_value = []
+        mock_manager.get_fields_ignoring_msg_id.return_value = []
         mock_manager.get_ignore_value.return_value = False
         mock_manager.get_conversion_func.return_value = {
             'source': 'lambda x: to_float(x)',
@@ -1537,7 +1537,7 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
         mock_logger = mock.Mock(spec=Logger)
         mock_manager = mock.Mock(spec=TopicManager)
         mock_manager.get_msg_id_field.return_value = None
-        mock_manager.get_ignore_msg_id_field.return_value = []
+        mock_manager.get_fields_ignoring_msg_id.return_value = []
         mock_manager.get_ignore_value.return_value = False
         mock_manager.get_conversion_func.return_value = {
             'source': 'lambda x: to_float(x)',
@@ -1560,7 +1560,7 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
         mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
         mock_manager.get_msg_id_field.return_value = None
-        mock_manager.get_ignore_msg_id_field.return_value = []
+        mock_manager.get_fields_ignoring_msg_id.return_value = []
         mock_manager.get_ignore_value.return_value = False
         mock_manager.get_conversion_func.return_value = {
             'source': 'lambda x: to_float(x)',
@@ -1584,7 +1584,7 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
         mock_manager = mock.Mock(spec=TopicManager)
         mock_logger = mock.Mock(spec=Logger)
         mock_manager.get_msg_id_field.return_value = None
-        mock_manager.get_ignore_msg_id_field.return_value = []
+        mock_manager.get_fields_ignoring_msg_id.return_value = []
         mock_manager.get_ignore_value.return_value = False
         mock_manager.get_conversion_func.return_value = {
             'source': 'lambda x: to_float(x)',

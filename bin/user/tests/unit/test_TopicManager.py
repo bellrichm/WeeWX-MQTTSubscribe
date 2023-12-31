@@ -338,7 +338,7 @@ class TestConfigureFields(unittest.TestCase):
         SUT = TopicManager(None, config, mock_logger)
 
         self.assertTrue(SUT.subscribed_topics[topic]['fields'][fieldname]['ignore'])
-        self.assertEqual(SUT.subscribed_topics[topic]['ignore_msg_id_field'], [fieldname])
+        self.assertEqual(SUT.subscribed_topics[topic]['fields_ignoring_msg_id'], [fieldname])
         self.assertTrue(SUT.subscribed_topics[topic]['fields'][fieldname]['contains_total'])
         self.assertEqual(SUT.subscribed_topics[topic]['fields'][fieldname]['conversion_func']['source'], 'lambda x: to_int(x)')
 
@@ -362,7 +362,7 @@ class TestConfigureFields(unittest.TestCase):
         SUT = TopicManager(None, config, mock_logger)
 
         self.assertTrue(SUT.subscribed_topics[topic]['fields'][fieldname]['ignore'])
-        self.assertEqual(SUT.subscribed_topics[topic]['ignore_msg_id_field'], [fieldname])
+        self.assertEqual(SUT.subscribed_topics[topic]['fields_ignoring_msg_id'], [fieldname])
         self.assertTrue(SUT.subscribed_topics[topic]['fields'][fieldname]['contains_total'])
         self.assertEqual(SUT.subscribed_topics[topic]['fields'][fieldname]['conversion_func']['source'], 'lambda x: to_int(x)')
 
@@ -391,7 +391,7 @@ class TestConfigureFields(unittest.TestCase):
         SUT = TopicManager(None, config, mock_logger)
 
         self.assertTrue(SUT.subscribed_topics[topic]['fields'][fieldname]['ignore'])
-        self.assertEqual(SUT.subscribed_topics[topic]['ignore_msg_id_field'], [fieldname])
+        self.assertEqual(SUT.subscribed_topics[topic]['fields_ignoring_msg_id'], [fieldname])
         self.assertTrue(SUT.subscribed_topics[topic]['fields'][fieldname]['contains_total'])
         self.assertEqual(SUT.subscribed_topics[topic]['fields'][fieldname]['conversion_func']['source'], 'lambda x: to_int(x)')
         self.assertEqual(SUT.subscribed_topics[topic]['fields'][fieldname]['name'], weewx_name)
@@ -428,7 +428,7 @@ class TestConfigureFields(unittest.TestCase):
         self.assertIn(fieldname, SUT.subscribed_topics[topic]['fields'])
 
         self.assertTrue(SUT.subscribed_topics[topic]['fields'][subfield_name]['ignore'])
-        self.assertEqual(SUT.subscribed_topics[topic]['ignore_msg_id_field'], [subfield_name])
+        self.assertEqual(SUT.subscribed_topics[topic]['fields_ignoring_msg_id'], [subfield_name])
         self.assertTrue(SUT.subscribed_topics[topic]['fields'][subfield_name]['contains_total'])
         self.assertEqual(SUT.subscribed_topics[topic]['fields'][subfield_name]['conversion_func']['source'], 'lambda x: to_int(x)')
         self.assertEqual(SUT.subscribed_topics[topic]['fields'][subfield_name]['units'], unit_name)
