@@ -4,34 +4,32 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
-    {
-        "name": "Run current test",
-        "type": "python",
-        "request": "launch",
-        "program": "${file}",
-        "console": "integratedTerminal"
-    },
-    {
-        "justMyCode": true,
-        "name": "Service: Loop",
-        "type": "python",
-        "request": "launch",
-        "program": "${workspaceFolder}/bin/user/MQTTSubscribe.py",
-        "args": [
-            "simulate",
-            "service",
-            "--binding", "loop",
-            "--interval", "2",
-            "--delay", "0",
-            "--records", "1",       
-            "--verbose",
-            //"--console",
-            "${workspaceFolder}/devtools/smoketest.loop.conf"
-        ],            
-        "console": "integratedTerminal"
-    },
         {
-            "name": "Service: Archive",
+            "name": "Run current test",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal"
+        },
+        {
+            "justMyCode": true,
+            "name": "Sim Service: Loop",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/bin/user/MQTTSubscribe.py",
+            "args": [
+                "simulate",
+                "service",
+                "--binding", "loop",
+                "--records", "1",       
+                "--verbose",
+                //"--console",
+                "--conf", "${workspaceFolder}/devtools/smoketest.loop.conf"
+            ],            
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Sim Service: Archive",
             "type": "python",
             "request": "launch",
             "program": "${workspaceFolder}/bin/user/MQTTSubscribe.py",
@@ -39,12 +37,10 @@
                 "simulate",
                 "service",            
                 "--binding", "archive",
-                "--interval", "300",
-                "--delay", "5",
                 "--records", "1",
                 "--verbose",
                 //"--console",
-                "${workspaceFolder}/devtools/smoketest.archive.conf"
+                "--conf", "${workspaceFolder}/devtools/smoketest.archive.conf"
             ],            
             "console": "integratedTerminal"
         },
@@ -107,132 +103,6 @@
             "console": "integratedTerminal"
         },        
         {
-            "name": "wee_config",
-            "type": "python",
-            "request": "launch",
-
-            "program": "${workspaceFolder}/../weewx/bin/wee_config",
-            "args": [
-                "--verbosity", "3",
-                //"--install", ".",
-                "--reconfigure", "${workspaceFolder}/devtools/debug.loop.conf",
-                "--driver=user.MQTTSubscribeDriver",
-                "--output", "tmp/temp.conf",
-                //"--no-prompt",
-            ],            
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "Install 5.x",
-            "type": "python",
-            "request": "launch",
-
-            "program": "${workspaceFolder}/../weewx/src/weectl.py",
-            "args": [
-                "extension", "install",
-                //"--config", "${workspaceFolder}/../weewx/src/weewx_data/weewx.conf",
-                "--verbosity", "3",
-                //"--dry-run",
-                "."
-            ],            
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "Uninstall 5.x",
-            "type": "python",
-            "request": "launch",
-
-            "program": "${workspaceFolder}/../weewx/src/weectl.py",
-            "args": [
-                "extension", "uninstall",
-                "--verbosity", "3",
-                //"--dry-run",
-                "MQTTSubscribe"
-            ],            
-            "console": "integratedTerminal"
-        },                         
-        {
-            "name": "Install 4.x",
-            "type": "python",
-            "request": "launch",
-
-            "program": "${workspaceFolder}/../weewx/bin/wee_extension",
-            "args": [
-                "--verbosity", "3",
-                "--dry-run",
-                "--install", "."
-            ],            
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "Install: Service",
-            "type": "python",
-            "request": "launch",
-            "env": {
-                "MQTTSubscribe_install_type": "service"
-            },
-            "program": "${workspaceFolder}/../weewx/bin/wee_extension",
-            "args": [
-                "--verbosity", "3",
-                "--dry-run",
-                "--install", "."
-            ],            
-            "console": "integratedTerminal"
-        },        
-        {
-            "name": "Install: Driver",
-            "type": "python",
-            "request": "launch",
-            "env": {
-                "MQTTSubscribe_install_type": "driver"
-            },
-            "program": "${workspaceFolder}/../weewx/bin/wee_extension",
-            "args": [
-                "--verbosity", "3",
-                "--dry-run",
-                "--install", "."
-            ],            
-            "console": "integratedTerminal"
-        },
-        {
-            // Requires MQTTSubscribe.py to be in 'weewx/bin/user' directory
-            // Because python prepends the scripts directory, 'weewx/bin' to sys.path
-            // So when weewx does an __import__('user') it uses 'weewx/bin/user'
-            "name": "MQTTSubscribeDriverConfEditor: Driver",
-            "type": "python",
-            "request": "launch",
-            "env": {
-                "MQTTSubscribe_install_type": "driver"
-            },
-            "program": "${workspaceFolder}/../weewx/bin/wee_config",
-            "args": [
-                "--output", "tmp/output.conf",
-                "--no-backup",
-                "--reconfigure",
-                "${workspaceFolder}/devtools/debug.loop.conf",
-               // "${workspaceFolder}/../weewx/weewx.debug.conf",
-            ],            
-            "console": "integratedTerminal"
-        },
-        {
-            // Requires MQTTSubscribe.py to be in 'weewx/bin/user' directory
-            // Because python prepends the scripts directory, 'weewx/bin' to sys.path
-            // So when weewx does an __import__('user') it uses 'weewx/bin/user'
-            "name": "MQTTSubscribeDriverConfEditor: Service",
-            "type": "python",
-            "request": "launch",
-            "env": {
-                "MQTTSubscribe_install_type": "service"
-            },
-            "program": "${workspaceFolder}/../weewx/bin/wee_config",
-            "args": [
-                "--output", "/tmp/output.conf,",
-                "--no-backup",
-                "--reconfigure"
-            ],            
-            "console": "externalTerminal"
-        },       
-        {
             // Requires MQTTSubscribe.py to be in 'weewx/bin/user' directory
             // Because python prepends the scripts directory, 'weewx/bin' to sys.path
             // So when weewx does an __import__('user') it uses 'weewx/bin/user'
@@ -252,7 +122,7 @@
             // Requires MQTTSubscribe.py to be in 'weewx/bin/user' directory
             // Because python prepends the scripts directory, 'weewx/bin' to sys.path
             // So when weewx does an __import__('user') it uses 'weewx/bin/user'
-            "name": "weewxd: Device",
+            "name": "weewxd: Driver",
             "type": "python",
             "request": "launch",
             "env": {
@@ -268,8 +138,8 @@
             "console": "integratedTerminal"
         },
         {
-	        // This won't work in this project.
-	        // Added for documentation purposes.
+            // This won't work in this project.
+            // Added for documentation purposes.
             "name": "weewxd: Full install",
             "type": "python",
             "request": "launch",
