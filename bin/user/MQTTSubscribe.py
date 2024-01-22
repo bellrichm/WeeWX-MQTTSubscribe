@@ -2786,14 +2786,7 @@ For more inforation see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/M
             elif self.binding == "loop":
                 self.simulate_service_packet()
         elif self.simulation_type == "driver":
-            driver = "user.MQTTSubscribe"
-            __import__(driver)
-            # This is a bit of Python wizardry. First, find the driver module
-            # in sys.modules.
-            driver_module = sys.modules[driver]
-            # Find the function 'loader' within the module:
-            loader_function = getattr(driver_module, 'loader')
-            driver = loader_function(self.config_dict, self.engine)
+            driver = MQTTSubscribeDriver(self.config_dict, self.engine)
 
             if self.binding == "archive":
                 self.simulate_driver_archive(driver)
