@@ -13,19 +13,7 @@
     },
     {
         "justMyCode": true,
-        "name": "dev",
-        "type": "python",
-        "request": "launch",
-        "program": "${workspaceFolder}/bin/user/MQTTSubscribe.py",
-        "args": [
-            "simulate",
-            "driver"
-        ],            
-        "console": "integratedTerminal"
-    },    
-    {
-        "justMyCode": true,
-        "name": "Debug",
+        "name": "Service: Loop",
         "type": "python",
         "request": "launch",
         "program": "${workspaceFolder}/bin/user/MQTTSubscribe.py",
@@ -33,42 +21,15 @@
             "simulate",
             "service",
             "--binding", "loop",
-            "--conf", "/home/richbell/mqttsubscribe.template.conf",
-            //"--verbose",
+            "--interval", "2",
+            "--delay", "0",
+            "--records", "1",       
+            "--verbose",
             //"--console",
-            "--log-file", "${workspaceFolder}/tmp/temp.log",
-
-            //"--interval", "2",
-            //"--delay", "0",
-            //"--records", "200",
-            
+            "${workspaceFolder}/devtools/smoketest.loop.conf"
         ],            
         "console": "integratedTerminal"
-    },    
-        {
-            "justMyCode": true,
-            "name": "Service: Loop",
-            "type": "python",
-            "request": "launch",
-            "program": "${workspaceFolder}/bin/user/MQTTSubscribe.py",
-            "args": [
-                "simulate",
-                "service",
-                "--binding", "loop",
-                "--interval", "2",
-                "--delay", "0",
-                "--records", "1",
-                //"--host", "localhost",
-                //"--topics", "weather/rain",
-                //"--callback", "individual",
-                //"--topics", "test-topic",
-                //"--callback", "keyword",                
-                "--verbose",
-                //"--console",
-                "${workspaceFolder}/devtools/smoketest.loop.conf"
-            ],            
-            "console": "integratedTerminal"
-        },
+    },
         {
             "name": "Service: Archive",
             "type": "python",
@@ -88,7 +49,7 @@
             "console": "integratedTerminal"
         },
         {
-            "name": "Driver: Loop",
+            "name": "Sim Driver: Loop",
             "type": "python",
             "request": "launch",
             "program": "${workspaceFolder}/bin/user/MQTTSubscribe.py",
@@ -96,17 +57,15 @@
                 "simulate",
                 "driver",            
                 "--binding", "loop",
-                "--interval", "2",
-                "--delay", "0",
                 "--records", "1",
                 "--verbose",
                 //"--console",
-                "${workspaceFolder}/devtools/smoketest.loop.conf"
+                "--conf", "${workspaceFolder}/devtools/smoketest.loop.conf"
             ],            
             "console": "integratedTerminal"
         },
         {
-            "name": "Driver: Archive",
+            "name": "Sim Driver: Archive",
             "type": "python",
             "request": "launch",
             "program": "${workspaceFolder}/bin/user/MQTTSubscribe.py",
@@ -114,12 +73,10 @@
                 "simulate",
                 "driver",     
                 "--binding", "archive",
-                "--interval", "60",
-                "--delay", "5",
                 "--records", "1",
                 "--verbose",
                 //"--console",
-                "${workspaceFolder}/devtools/smoketest.archive.conf"
+                "--conf", "${workspaceFolder}/devtools/smoketest.archive.conf"
             ],            
             "console": "integratedTerminal"
         },
