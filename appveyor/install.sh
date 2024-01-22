@@ -36,7 +36,7 @@
       git show --oneline -s | tee $BRANCH.txt
       detail=`cat $BRANCH.txt`
       appveyor AddMessage "Testing against $BRANCH " -Category Information -Details "$detail"
-    elif [ "$WEEWX" = "4.6.1"]; then
+    elif [ "$WEEWX" = "4.6.1" ]; then
       wget  $WEEWX_URL/weewx-$WEEWX.tgz
       mkdir weewx
       tar xfz weewx-$WEEWX.tgz --strip-components=1 -C weewx    
