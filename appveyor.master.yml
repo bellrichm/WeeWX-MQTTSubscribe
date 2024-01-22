@@ -39,10 +39,10 @@ environment:
   SONAR_SCANNER_OPTS: -server
   # default values
   # default to oldest supported version of python
-  PYTHON_LATEST: 3.11
+  PYTHON_LATEST: 3.12
   PYTHON: 3.7
   WEEWX_OLDEST: 4.6.1
-  WEEWX_LATEST: 4.10.2
+  WEEWX_LATEST: 5.0.0
   ENABLED: true
   RUN_FTESTS: true
   RUN_ITESTS: true
@@ -89,17 +89,16 @@ environment:
       job_group: build  
       job_depends_on: initialize
 
-    # Need WeeWX v5
-    #- PYTHON: 3.12
-      #WEEWX: '%WEEWX_LATEST%'
-      #job_group: build  
-      #job_depends_on: initialize
+    - PYTHON: 3.12
+      WEEWX: '%WEEWX_LATEST%'
+      job_group: build  
+      job_depends_on: initialize
 
     # End of runs against latest WeeWX release and supported versions of Python
 
     # The earliest WeeWX version supported
     # Does not support python > 3.11.x
-    - PYTHON: '%PYTHON_LATEST%'
+    - PYTHON: 3.11
       WEEWX: '%WEEWX_OLDEST%'
       job_group: build
       job_depends_on: initialize
@@ -114,13 +113,6 @@ environment:
     # Use latest Python release against WeeWX development branch
     - PYTHON: '%PYTHON_LATEST%'
       BRANCH: development
-      WEEWX: '%BRANCH%'
-      job_group: build  
-      job_depends_on: initialize      
-
-    # Use latest Python release against WeeWX V5 branch
-    - PYTHON: '%PYTHON_LATEST%'
-      BRANCH: V5
       WEEWX: '%BRANCH%'
       job_group: build  
       job_depends_on: initialize            
