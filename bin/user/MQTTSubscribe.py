@@ -469,8 +469,6 @@ import configobj
 import paho.mqtt.client as mqtt
 from paho.mqtt.client import connack_string
 
-import weecfg
-
 import weeutil
 import weeutil.logger
 from weeutil.weeutil import to_bool, to_float, to_int, to_sorted_string
@@ -2968,10 +2966,11 @@ For more information see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/
 
             if self.section == 'MQTTSubscribService' and self.enable is not None:
                 self.config_dict[self.section]['enable'] = self.enable
-                
+
             if os.path.exists(self.config_output_path) and not self.no_backup:
                 _ = weeutil.weeutil.move_with_timestamp(self.config_output_path)
 
+            self.config_dict.filename = self.config_output_path
             self.config_dict.write()
 
     def _update(self):

@@ -42,10 +42,9 @@ class TestUpdateConfig(unittest.TestCase):
         [[[field-2]]]
         [[[field-3]]]'''
 
-        with mock.patch('user.MQTTSubscribe.weecfg.save'):
-            SUT = Configurator(None, options)
+        SUT = Configurator(None, options)
 
-            SUT.run()
+        SUT.run()
 
         config_items = []
         SUT.config_dict.filename = None
@@ -70,10 +69,9 @@ class TestUpdateConfig(unittest.TestCase):
         options.output = 'bin/user/tests/data/output.conf'
         options.conf = 'bin/user/tests/data/weewx.conf'
 
-        with mock.patch('weecfg.save'):
-            SUT = Configurator(None, options)
+        SUT = Configurator(None, options)
 
-            SUT.run()
+        SUT.run()
 
         SUT.config_dict.filename = None
 
@@ -102,10 +100,9 @@ class TestUpdateConfig(unittest.TestCase):
             name = rename-1b
         [[[field-3]]]'''
 
-        with mock.patch('weecfg.save'):
-            SUT = Configurator(None, options)
+        SUT = Configurator(None, options)
 
-            SUT.run()
+        SUT.run()
 
         config_items = []
         SUT.config_dict.filename = None
@@ -138,10 +135,9 @@ class TestUpdateConfig(unittest.TestCase):
         [[[field-2]]]
         [[[field-3]]]'''
 
-        with mock.patch('weecfg.save'):
-            SUT = Configurator(None, options)
+        SUT = Configurator(None, options)
 
-            SUT.run()
+        SUT.run()
 
         config_items = []
         SUT.config_dict.filename = None
