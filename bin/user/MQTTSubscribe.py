@@ -2860,7 +2860,8 @@ For more information see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/
 
         if options.type:
             self._check_mutually_exclusive_options(options.output, 'output', options, parser)
-            self._check_mutually_exclusive_options(options.enable, 'enable', options, parser)
+            if options.type == 'service':
+                self._check_mutually_exclusive_options(options.enable, 'enable', options, parser)
             self._check_mutually_exclusive_options(options.no_backup, 'no-backup', options, parser)
 
         if options.type == 'service':
