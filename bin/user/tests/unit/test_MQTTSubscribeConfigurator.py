@@ -377,7 +377,7 @@ class TestInitConfigurator(unittest.TestCase):
 
     def test_enable_mutually_exclusive_with_export(self):
         options = argparse.Namespace()
-        options.type = random_string()
+        options.type = 'service'
         options.create_example = None
         options.export = 'bin/user/tests/data/output.conf'
         options.print_configspec = None
@@ -400,7 +400,7 @@ class TestInitConfigurator(unittest.TestCase):
 
     def test_enable_mutually_exclusive_with_print_configspec(self):
         options = argparse.Namespace()
-        options.type = random_string()
+        options.type = 'service'
         options.create_example = None
         options.export = None
         options.print_configspec = 'bin/user/tests/data/output.conf'
@@ -423,7 +423,7 @@ class TestInitConfigurator(unittest.TestCase):
 
     def test_enable_mutually_exclusive_with_validate(self):
         options = argparse.Namespace()
-        options.type = random_string()
+        options.type = 'service'
         options.create_example = None
         options.export = None
         options.print_configspec = None
