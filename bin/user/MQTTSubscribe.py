@@ -469,6 +469,11 @@ import configobj
 import paho.mqtt.client as mqtt
 from paho.mqtt.client import connack_string
 
+# When running 'standalone' in a package install or git 'install', need to know where thw WeeWX modules are
+bin_root = os.getenv('BIN_ROOT')
+if bin_root is not None:
+    sys.path.append(bin_root)
+
 import weeutil
 import weeutil.logger
 from weeutil.weeutil import to_bool, to_float, to_int, to_sorted_string
