@@ -88,7 +88,9 @@ RUN_MODE=service
 source ~/weewx-venv/bin/activate
 ```
 
-### For pip installs - set the file locations
+### Set the file locations
+
+#### For pip installs
 
 ```
 WEEWX_ROOT=~/weewx-data
@@ -97,7 +99,7 @@ CONFIG_FILE=$WEEWX_ROOT/weewx.conf
 WEECTL=weectl
 ```
 
-### For package installs - set the file locations
+#### For package installs
 
 ```
 WEEWX_ROOT=/etc/weewx/
@@ -107,7 +109,7 @@ CONFIG_FILE=$WEEWX_ROOT/weewx.conf
 WEECTL=weectl
 ```
 
-### For git 'installs' - set the file locations
+#### For git 'installs'
 
 ```
 WEEWX_REPO=~/weewx
@@ -124,7 +126,7 @@ WEECTL=$WEEWX_REPO/bin/weectl
 $WEECTL extension install https://github.com/bellrichm/WeeWX-MQTTSubscribe/archive/refs/tags/latest.zip
 ```
 
-**Note:** For package installs, the above command needs to be prefixed with `sudo`` (sudo $WEECTL ...)
+**Note:** For package installs, the above command needs to be prefixed with `sudo` (sudo $WEECTL ...)
 
 ### Configure MQTTSubscribe
 
@@ -166,9 +168,9 @@ Note, MQTTSubscribeDriver can also be configured and weewx.conf updated interact
 
 ```
 $WEECTL station reconfigure --driver=user.MQTTSubscribe --no-prompt
-```  
+```
 
-**Note:** For package installs, the above command needs to be prefixed with `sudo`` (sudo $WEECTL ...)
+**Note:** For package installs, the above command needs to be prefixed with `sudo` (sudo $WEECTL ...)
 
 ### Update WeeWX with MQTTSubscribe's configuration
 
@@ -182,18 +184,14 @@ $WEECTL station reconfigure --driver=user.MQTTSubscribe --no-prompt
 
 2. Restart WeeWX
 
-
 ## Updating MQTTSubscribe
 
-### pip Install: Updating MQTTSubscribe
+1. If pip or git install, [activate the environment](https://github.com/bellrichm/WeeWX-MQTTSubscribe#for-pip-and-git-installs---activate-the-environment).
+2. set file location - todo
+3. Follow the steps to [install MQTTSubscribe](https://github.com/bellrichm/WeeWX-MQTTSubscribe#install-mqttsubscribe).
+4. Restart WeeWX.
 
-1. Follow the steps to [install MQTTSubscribe in a WeeWX pip installation](https://github.com/bellrichm/WeeWX-MQTTSubscribe/tree/v3#pip-install-install-mqttsubscribe)
-2. Restart WeeWX
-
-### package Install: Updating MQTTSubscribe
-
-1. Follow the steps to [install MQTTSubscribe in a WeeWX package installation](https://github.com/bellrichm/WeeWX-MQTTSubscribe/tree/v3#package-install-install-mqttsubscribe)
-2. Restart WeeWX
+===========================================================
 
 ## Reconfiguring MQTTSubscribe
 
