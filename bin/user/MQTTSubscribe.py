@@ -2968,8 +2968,11 @@ For more information see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/
 
             if self.section == 'MQTTSubscribService' and self.enable is not None:
                 self.config_dict[self.section]['enable'] = self.enable
+                
+            if os.path.exists(self.config_output_path) and not self.no_backup:
+                _ = weeutil.weeutil.move_with_timestamp(self.config_output_path)
 
-            weecfg.save(self.config_dict, self.config_output_path, not self.no_backup)
+            self.config_dict.write()
 
     def _update(self):
         if self.action == '--add-from':
