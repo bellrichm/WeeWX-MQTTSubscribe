@@ -474,6 +474,11 @@ bin_root = os.getenv('BIN_ROOT')
 if bin_root is not None:
     sys.path.append(bin_root)
 
+# And the MQTTSubscribe module
+user_root = os.getenv('USER_ROOT')
+if user_root is not None:
+    sys.path.append(user_root)
+
 import weeutil
 import weeutil.logger
 from weeutil.weeutil import to_bool, to_float, to_int, to_sorted_string
