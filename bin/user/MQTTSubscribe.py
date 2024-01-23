@@ -469,7 +469,10 @@ import configobj
 import paho.mqtt.client as mqtt
 from paho.mqtt.client import connack_string
 
-import weecfg
+# When running 'standalone' in a package install or git 'install', need to know where thw WeeWX modules are
+bin_root = os.getenv('BIN_ROOT')
+if bin_root is not None:
+    sys.path.append(bin_root)
 
 import weeutil
 import weeutil.logger
@@ -2785,14 +2788,7 @@ For more inforation see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/M
             elif self.binding == "loop":
                 self.simulate_service_packet()
         elif self.simulation_type == "driver":
-            driver = "user.MQTTSubscribe"
-            __import__(driver)
-            # This is a bit of Python wizardry. First, find the driver module
-            # in sys.modules.
-            driver_module = sys.modules[driver]
-            # Find the function 'loader' within the module:
-            loader_function = getattr(driver_module, 'loader')
-            driver = loader_function(self.config_dict, self.engine)
+            driver = MQTTSubscribeDriver(self.config_dict, self.engine)
 
             if self.binding == "archive":
                 self.simulate_driver_archive(driver)
@@ -2866,7 +2862,8 @@ For more information see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/
 
         if options.type:
             self._check_mutually_exclusive_options(options.output, 'output', options, parser)
-            self._check_mutually_exclusive_options(options.enable, 'enable', options, parser)
+            if options.type == 'service':
+                self._check_mutually_exclusive_options(options.enable, 'enable', options, parser)
             self._check_mutually_exclusive_options(options.no_backup, 'no-backup', options, parser)
 
         if options.type == 'service':
@@ -2974,7 +2971,11 @@ For more information see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/
             if self.section == 'MQTTSubscribService' and self.enable is not None:
                 self.config_dict[self.section]['enable'] = self.enable
 
-            weecfg.save(self.config_dict, self.config_output_path, not self.no_backup)
+            if os.path.exists(self.config_output_path) and not self.no_backup:
+                _ = weeutil.weeutil.move_with_timestamp(self.config_output_path)
+
+            self.config_dict.filename = self.config_output_path
+            self.config_dict.write()
 
     def _update(self):
         if self.action == '--add-from':

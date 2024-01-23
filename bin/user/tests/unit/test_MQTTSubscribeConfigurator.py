@@ -377,7 +377,7 @@ class TestInitConfigurator(unittest.TestCase):
 
     def test_enable_mutually_exclusive_with_export(self):
         options = argparse.Namespace()
-        options.type = random_string()
+        options.type = 'service'
         options.create_example = None
         options.export = 'bin/user/tests/data/output.conf'
         options.print_configspec = None
@@ -400,7 +400,7 @@ class TestInitConfigurator(unittest.TestCase):
 
     def test_enable_mutually_exclusive_with_print_configspec(self):
         options = argparse.Namespace()
-        options.type = random_string()
+        options.type = 'service'
         options.create_example = None
         options.export = None
         options.print_configspec = 'bin/user/tests/data/output.conf'
@@ -423,7 +423,7 @@ class TestInitConfigurator(unittest.TestCase):
 
     def test_enable_mutually_exclusive_with_validate(self):
         options = argparse.Namespace()
-        options.type = random_string()
+        options.type = 'service'
         options.create_example = None
         options.export = None
         options.print_configspec = None
@@ -549,10 +549,9 @@ class TestRunConfigurator(unittest.TestCase):
         options.output = 'bin/user/tests/data/output.conf'
         options.conf = None
 
-        with mock.patch('user.MQTTSubscribe.weecfg.save'):
-            SUT = Configurator(None, options)
+        SUT = Configurator(None, options)
 
-            SUT.run()
+        SUT.run()
 
     def test_export(self):
         options = argparse.Namespace()
@@ -570,10 +569,9 @@ class TestRunConfigurator(unittest.TestCase):
         options.output = None
         options.conf = 'bin/user/tests/data/weewx.conf'
 
-        with mock.patch('user.MQTTSubscribe.weecfg.save'):
-            SUT = Configurator(None, options)
+        SUT = Configurator(None, options)
 
-            SUT.run()
+        SUT.run()
 
     def test_print_configspec(self):
         options = argparse.Namespace()
@@ -591,10 +589,9 @@ class TestRunConfigurator(unittest.TestCase):
         options.output = None
         options.conf = None
 
-        with mock.patch('user.MQTTSubscribe.weecfg.save'):
-            SUT = Configurator(None, options)
+        SUT = Configurator(None, options)
 
-            SUT.run()
+        SUT.run()
 
     def test_validate(self):
         options = argparse.Namespace()
@@ -612,10 +609,9 @@ class TestRunConfigurator(unittest.TestCase):
         options.output = None
         options.conf = 'bin/user/tests/data/weewx.conf'
 
-        with mock.patch('user.MQTTSubscribe.weecfg.save'):
-            SUT = Configurator(None, options)
+        SUT = Configurator(None, options)
 
-            SUT.run()
+        SUT.run()
 
     def test_add_from(self):
         options = argparse.Namespace()
@@ -633,10 +629,9 @@ class TestRunConfigurator(unittest.TestCase):
         options.output = 'bin/user/tests/data/output.conf'
         options.conf = 'bin/user/tests/data/weewx.conf'
 
-        with mock.patch('user.MQTTSubscribe.weecfg.save'):
-            SUT = Configurator(None, options)
+        SUT = Configurator(None, options)
 
-            SUT.run()
+        SUT.run()
 
     def test_remove(self):
         options = argparse.Namespace()
@@ -654,10 +649,9 @@ class TestRunConfigurator(unittest.TestCase):
         options.output = 'bin/user/tests/data/output.conf'
         options.conf = 'bin/user/tests/data/weewx.conf'
 
-        with mock.patch('weecfg.save'):
-            SUT = Configurator(None, options)
+        SUT = Configurator(None, options)
 
-            SUT.run()
+        SUT.run()
 
     def test_replace_with(self):
         options = argparse.Namespace()
@@ -675,10 +669,9 @@ class TestRunConfigurator(unittest.TestCase):
         options.output = 'bin/user/tests/data/output.conf'
         options.conf = 'bin/user/tests/data/weewx.conf'
 
-        with mock.patch('weecfg.save'):
-            SUT = Configurator(None, options)
+        SUT = Configurator(None, options)
 
-            SUT.run()
+        SUT.run()
 
     def test_update_from(self):
         options = argparse.Namespace()
@@ -696,10 +689,9 @@ class TestRunConfigurator(unittest.TestCase):
         options.output = 'bin/user/tests/data/output.conf'
         options.conf = 'bin/user/tests/data/weewx.conf'
 
-        with mock.patch('weecfg.save'):
-            SUT = Configurator(None, options)
+        SUT = Configurator(None, options)
 
-            SUT.run()
+        SUT.run()
 
 if __name__ == '__main__':
     # test_suite = unittest.TestSuite()
