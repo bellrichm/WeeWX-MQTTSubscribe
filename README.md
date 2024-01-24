@@ -128,6 +128,12 @@ $WEECTL extension install https://github.com/bellrichm/WeeWX-MQTTSubscribe/archi
 
 **Note:** For package installs, the above command needs to be prefixed with `sudo` (sudo $WEECTL ...)
 
+### Create an example configuration
+
+```
+python3 $USER_ROOT/MQTTSubscribe.py configure --create-example mqttsubscribe.template.conf
+```
+
 ### Configure MQTTSubscribe
 
 Note, MQTTSubscribeDriver can also be configured and weewx.conf updated interactively via
@@ -136,13 +142,7 @@ Note, MQTTSubscribeDriver can also be configured and weewx.conf updated interact
 * The options that can be configured are limited.
 * The configuration options can not be validated and tested before restarting WeeWX.
 
-1. Create an example `mqttsubscribe.template.conf`
-
-    ```
-    python3 $USER_ROOT/MQTTSubscribe.py configure --create-example mqttsubscribe.template.conf
-    ```
-
-2. Edit the `mqttsubscribe.template.conf` file
+1. Edit the `mqttsubscribe.template.conf` file
 
     For example,
 
@@ -150,7 +150,7 @@ Note, MQTTSubscribeDriver can also be configured and weewx.conf updated interact
     nano mqttsubscribe.template.conf
     ```
 
-3. Validate and test the `mqttsubscribe.template.conf` file
+2. Validate and test the `mqttsubscribe.template.conf` file
 
     ```
     python3 $USER_ROOT/MQTTSubscribe.py configure $RUN_MODE --validate --conf mqttsubscribe.template.conf
@@ -187,53 +187,23 @@ $WEECTL station reconfigure --driver=user.MQTTSubscribe --no-prompt
 ## Updating MQTTSubscribe
 
 1. If pip or git install, [activate the environment](https://github.com/bellrichm/WeeWX-MQTTSubscribe#for-pip-and-git-installs---activate-the-environment).
-2. set file location - todo
+2. [Set the file locations](https://github.com/bellrichm/WeeWX-MQTTSubscribe#set-the-file-locations) for the method used to install WeeWX.
 3. Follow the steps to [install MQTTSubscribe](https://github.com/bellrichm/WeeWX-MQTTSubscribe#install-mqttsubscribe).
 4. Restart WeeWX.
 
-===========================================================
-
 ## Reconfiguring MQTTSubscribe
 
-### pip Install: Reconfiguring MQTTSubscribe
-
-1. Export the current configuration settings.
-
-    If running as a driver,
+1. If pip or git install, [activate the environment](https://github.com/bellrichm/WeeWX-MQTTSubscribe#for-pip-and-git-installs---activate-the-environment).
+2. [Set the file locations](https://github.com/bellrichm/WeeWX-MQTTSubscribe#set-the-file-locations) for the method used to install WeeWX.
+3. Export the current configuration settings.
 
     ```
-    python3 $USER_DIR/MQTTSubscribe.py configure driver --export mqttsubscribe.template.conf --conf $CONFIG_FILE
+    python3 $USER_ROOT/MQTTSubscribe.py configure $RUN_MODE --export mqttsubscribe.template.conf --conf $CONFIG_FILE
     ```
 
-    If running as a service,
-
-    ```
-    python3 $USER_DIR/MQTTSubscribe.py configure service --export mqttsubscribe.template.conf --conf $CONFIG_FILE
-    ```
-
-2. Follow the diections to
-    * [Configure MQTTSunscribe](https://github.com/bellrichm/WeeWX-MQTTSubscribe/tree/v3#pip-install-configure-mqttsubscribe)
-    * [Update WeeWX](https://github.com/bellrichm/WeeWX-MQTTSubscribe/tree/v3#pip-install-update-weewxconf-with-mqttsubscribes-configuration)
-
-### package Install: Reconfiguring MQTTSubscribe
-
-1. Export the current configuration settings.
-
-    If running as a driver,
-
-    ```
-    PYTHONPATH=$BIN_DIR python3 $USER_DIR/MQTTSubscribe.py configure driver --export mqttsubscribe.template.conf --conf $CONF_FILE
-    ```
-
-    If running as a service,
-
-    ```
-    PYTHONPATH=$BIN_DIR python3 $USER_DIR/MQTTSubscribe.py configure service --export mqttsubscribe.template.conf --conf $CONF_FILE
-    ```
-
-2. Follow the diections to
-    * [Configure MQTTSubscribe](https://github.com/bellrichm/WeeWX-MQTTSubscribe/tree/v3#package-install-configure-mqttsubscribe)
-    * [Update WeeWX](https://github.com/bellrichm/WeeWX-MQTTSubscribe/tree/v3#package-install-update-weewxconf-with-mqttsubscribes-configuration)
+4. Follow the diections to
+    * [Configure MQTTSunscribe](https://github.com/bellrichm/WeeWX-MQTTSubscribe#configure-mqttsubscribe)
+    * [Update WeeWX](https://github.com/bellrichm/WeeWX-MQTTSubscribe#update-weewx-with-mqttsubscribes-configuration)
 
 ## Debugging
 
