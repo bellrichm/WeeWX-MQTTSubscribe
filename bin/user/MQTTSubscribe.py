@@ -2945,6 +2945,8 @@ For more information see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/
 
         if options.type == 'service' and options.enable is not None:
             self.enable = to_bool(options.enable)
+            if  self.config_output_path is None:
+                self.config_output_path = os.path.abspath(options.conf)
 
         if options.output:
             self.config_output_path = os.path.abspath(options.output)
@@ -2977,7 +2979,7 @@ For more information see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/
         else:
             self._update()
 
-            if self.section == 'MQTTSubscribService' and self.enable is not None:
+            if self.section == 'MQTTSubscribeService' and self.enable is not None:
                 self.config_dict[self.section]['enable'] = self.enable
 
             if os.path.exists(self.config_output_path) and not self.no_backup:
@@ -2995,8 +2997,9 @@ For more information see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/
             self.config_dict[self.section] = self.config_input_dict
         elif self.action == '--update-from':
             weeutil.config.merge_config(self.config_dict[self.section], self.config_input_dict)
-        else:
-            self._update_interactively()
+        # ToDo: disable until have a way to pass in --enable and not have to run interactively
+        #else:
+        #    self._update_interactively()
 
     def _validate(self):
         mqttsubscribe_configuration = MQTTSubscribeConfiguration(None)

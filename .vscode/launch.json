@@ -83,19 +83,20 @@
             "program": "${workspaceFolder}/bin/user/MQTTSubscribe.py",
             "args": [
                 "configure",
-                "driver",
-                //"service",
+                //"driver",
+                "service",
 
                 //"--create-example", "tmp/temp.conf",
                 //"--export", "${workspaceFolder}/tmp/temp.conf",
-                //"--enable", "false",
+                "--enable", "true",
                 //"--validate",
 
                 // "--add-from", "${workspaceFolder}/devtools/smoketest.archive.conf",
-                "--replace-with", "/home/richbell/mqttsubscribe.driver.conf",
+                //"--replace-with", "/home/richbell/mqttsubscribe.driver.conf",
                 //"--update-from", "${workspaceFolder}/devtools/smoketest.archive.conf",
 
-                "--conf", "/home/richbell/weewx-data/weewx.conf",
+                "--conf", "${workspaceFolder}/mqttsubscribe.example.conf",
+                //"--conf", "/home/richbell/weewx-data/weewx.conf",
                 //"--conf", "/home/fork.weewx/weewx.debug.conf"
                 //"--output", "${workspaceFolder}/tmp/temp.conf",
                 //"--no-backup",

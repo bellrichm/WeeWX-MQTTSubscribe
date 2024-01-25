@@ -172,6 +172,12 @@ $WEECTL station reconfigure --driver=user.MQTTSubscribe --no-prompt
 
 **Note:** For package installs, the above command needs to be prefixed with `sudo` (sudo $WEECTL ...)
 
+### If running as a service, enable it
+
+```
+python3 $USER_ROOT/MQTTSubscribe.py configure service --enable true --conf mqttsubscribe.template.conf
+```
+
 ### Update WeeWX with MQTTSubscribe's configuration
 
 1. Update weewx.conf
