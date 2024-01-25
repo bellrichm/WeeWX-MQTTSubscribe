@@ -123,6 +123,8 @@ class TestDefaultCinfiguration(unittest.TestCase):
             
             # The incoming field name from MQTT.
             # For additional information see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/Configuring#the-field-name-sections
+            # Use this template for any fields that need to be configured.
+            # If no fields need to be configured, remove this section.
             [[[[REPLACE_ME]]]]
                 # True if the incoming field should not be processed into WeeWX.
                 # Valid values: True, False.
@@ -139,6 +141,8 @@ class TestDefaultCinfiguration(unittest.TestCase):
                 name = REPLACE_ME
         
         # The second topic to subscribe to
+        # Use this and the above topic section as a template to configure additional topics.
+        # If no additional topics are needed, remove this section
         [[[REPLACE_ME_TOO]]]'''
 
         SUT = MQTTSubscribeConfiguration(None)
