@@ -164,7 +164,7 @@ Note, MQTTSubscribeDriver can also be configured and weewx.conf updated interact
   
   Additional information on running MQTTSubscribe in simulation mode can be found at this [wiki page](https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/MQTTSubscribe-Simulator-mode).
 
-### If running as a driver, set driver to MQTTSubcribe
+### If running as a driver, set driver to MQTTSubscribe
 
 ```
 $WEECTL station reconfigure --driver=user.MQTTSubscribe --no-prompt
