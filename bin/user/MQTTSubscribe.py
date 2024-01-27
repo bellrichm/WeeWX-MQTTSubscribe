@@ -199,6 +199,7 @@ CONFIG_SPEC_TEXT = \
         adjust_start_time = 0
 
         # The name of the MQTT on_message callback.
+        # This should only be changed if a topic named 'message' is being subscribed to.
         # Default is 'message'.
         callback_config_name = message
 
@@ -211,6 +212,7 @@ CONFIG_SPEC_TEXT = \
         # By default wind data is collected together across generation of loop packets.
         # Setting to false results in the data only being collected together within a loop packet.
         # Default is True.
+        # This is experimental and may be removed.
         collect_wind_across_loops = True
 
         # Formatting string for converting a timestamp to an epoch datetime.
@@ -246,6 +248,10 @@ CONFIG_SPEC_TEXT = \
         # Default is None.
         # Example values: -hhmm +hhmm hh:mm
         offset_format = None
+
+        # The QOS level to subscribe to.
+        # Default is 0
+        qos = 0        
 
         # With the exception of wind data, by default a queue is created for every MQTT topic.
         # When this is true, MQTTSubsribe uses a single queue for all non wind data.
@@ -309,6 +315,11 @@ CONFIG_SPEC_TEXT = \
 
             # Less common options follow
 
+            # The name of the MQTT on_message callback.
+            # This should only be changed if a topic named 'message' is being subscribed to.
+            # Default is 'message'.
+            callback_config_name = message
+
             # Specifies a field name in the mqtt message.
             # The value of the field is appended to every field name in the mqtt message.
             # This enables same formatted messages to map to different WeeWX fields.
@@ -318,10 +329,13 @@ CONFIG_SPEC_TEXT = \
 
             # The QOS level to subscribe to.
             # Default is 0
-            qos = 0            
-    
+            qos = 0
+   
+            # Even if the payload has a datetime, ignore it and use the server datetime.
+            # Default is False.
+            use_server_datetime = False
+
             # Configuration information about the MQTT message format for this topic
-            # ToDo: create wiki entry and reference it
             [[[[message]]]]
                 # The format of the MQTT payload.
                 # Currently support: individual, json, keyword.
@@ -2388,13 +2402,13 @@ class MQTTSubscribeConfiguration():
             'max_queue': ['MQTTSubscribe', 'topics'],
             'message': ['MQTTSubscribe', 'topics'],
             'offset_format': ['MQTTSubscribe', 'topics'],
+            'qos': ['MQTTSubscribe', 'topics'],
             'single_queue': ['MQTTSubscribe', 'topics'],
             'subscribe': ['MQTTSubscribe', 'topics'],
             'topic_tail_is_fieldname': ['MQTTSubscribe', 'topics'],
             'use_server_datetime': ['MQTTSubscribe', 'topics'],
             'use_topic_as_fieldname': ['MQTTSubscribe', 'topics'],
             'msg_id_field': ['MQTTSubscribe', 'topics', 'REPLACE_ME'],
-            'qos': ['MQTTSubscribe', 'topics', 'REPLACE_ME'],
             'flatten_delimiter': ['MQTTSubscribe', 'topics', 'REPLACE_ME', 'message'],
             'keyword_delimiter': ['MQTTSubscribe', 'topics', 'REPLACE_ME', 'message'],
             'keyword_separator': ['MQTTSubscribe', 'topics', 'REPLACE_ME', 'message'],
@@ -2409,6 +2423,13 @@ class MQTTSubscribeConfiguration():
             'units': ['MQTTSubscribe', 'topics', 'REPLACE_ME', 'REPLACE_ME'],
         }
 
+        # If an item to be removed is in two locations, the second location needs to be specified here
+        remove_more_items = {
+            'callback_config_name': ['MQTTSubscribe', 'topics', 'REPLACE_ME'],
+            'qos': ['MQTTSubscribe', 'topics', 'REPLACE_ME'],
+            'use_server_datetime': ['MQTTSubscribe', 'topics', 'REPLACE_ME'],
+        }
+
         if self.section and self.section != 'MQTTSubscribeDriver':
             del config_spec['MQTTSubscribe']['driver']
 
@@ -2416,6 +2437,8 @@ class MQTTSubscribeConfiguration():
             del config_spec['MQTTSubscribe']['enable']
 
         self._remove_options(remove_items, config_spec)
+        self._remove_options(remove_more_items, config_spec)
+
 
         if self.section:
             config_spec.rename('MQTTSubscribe', self.section)

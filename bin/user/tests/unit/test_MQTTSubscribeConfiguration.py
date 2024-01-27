@@ -114,7 +114,6 @@ class TestDefaultCinfiguration(unittest.TestCase):
             ignore = False
             
             # Configuration information about the MQTT message format for this topic
-            # ToDo: create wiki entry and reference it
             [[[[message]]]]
                 # The format of the MQTT payload.
                 # Currently support: individual, json, keyword.
