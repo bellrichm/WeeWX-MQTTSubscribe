@@ -32,6 +32,7 @@ class TestUpdateConfig(unittest.TestCase):
         options.remove = None
         options.replace_with = None
         options.update_from = None
+        options.top_level = None
         options.output = 'bin/user/tests/data/output.conf'
         options.conf = 'bin/user/tests/data/weewx.conf'
 
@@ -66,6 +67,7 @@ class TestUpdateConfig(unittest.TestCase):
         options.remove = True
         options.replace_with = None
         options.update_from = None
+        options.top_level = None
         options.output = 'bin/user/tests/data/output.conf'
         options.conf = 'bin/user/tests/data/weewx.conf'
 
@@ -89,6 +91,7 @@ class TestUpdateConfig(unittest.TestCase):
         options.no_backup = True
         options.add_from = None
         options.remove = None
+        options.top_level = None
         options.replace_with = 'bin/user/tests/data/mqttsubscribe.conf'
         options.update_from = None
         options.output = 'bin/user/tests/data/output.conf'
@@ -124,6 +127,7 @@ class TestUpdateConfig(unittest.TestCase):
         options.add_from = None
         options.remove = None
         options.replace_with = None
+        options.top_level = None
         options.update_from = 'bin/user/tests/data/mqttsubscribe.conf'
         options.output = 'bin/user/tests/data/output.conf'
         options.conf = 'bin/user/tests/data/weewx.conf'
