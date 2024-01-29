@@ -567,6 +567,7 @@ class TestRunConfigurator(unittest.TestCase):
         options.replace_with = None
         options.update_from = None
         options.output = None
+        options.top_level = None
         options.conf = 'bin/user/tests/data/weewx.conf'
 
         SUT = Configurator(None, options)
@@ -588,6 +589,7 @@ class TestRunConfigurator(unittest.TestCase):
         options.update_from = None
         options.output = None
         options.conf = None
+        options.top_level = None
 
         SUT = Configurator(None, options)
 
@@ -607,6 +609,7 @@ class TestRunConfigurator(unittest.TestCase):
         options.replace_with = None
         options.update_from = None
         options.output = None
+        options.top_level = None
         options.conf = 'bin/user/tests/data/weewx.conf'
 
         SUT = Configurator(None, options)
@@ -626,6 +629,7 @@ class TestRunConfigurator(unittest.TestCase):
         options.remove = None
         options.replace_with = None
         options.update_from = None
+        options.top_level = None
         options.output = 'bin/user/tests/data/output.conf'
         options.conf = 'bin/user/tests/data/weewx.conf'
 
@@ -646,6 +650,7 @@ class TestRunConfigurator(unittest.TestCase):
         options.remove = True
         options.replace_with = None
         options.update_from = None
+        options.top_level = None
         options.output = 'bin/user/tests/data/output.conf'
         options.conf = 'bin/user/tests/data/weewx.conf'
 
@@ -668,6 +673,7 @@ class TestRunConfigurator(unittest.TestCase):
         options.update_from = None
         options.output = 'bin/user/tests/data/output.conf'
         options.conf = 'bin/user/tests/data/weewx.conf'
+        options.top_level = None
 
         SUT = Configurator(None, options)
 
@@ -685,6 +691,7 @@ class TestRunConfigurator(unittest.TestCase):
         options.add_from = None
         options.remove = None
         options.replace_with = None
+        options.top_level = None
         options.update_from = 'bin/user/tests/data/mqttsubscribe.conf'
         options.output = 'bin/user/tests/data/output.conf'
         options.conf = 'bin/user/tests/data/weewx.conf'
