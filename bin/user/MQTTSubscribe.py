@@ -2858,6 +2858,8 @@ For more information see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/
         configure_group.add_argument("--validate", action="store_true", dest="validate",
                             help="Validate the configuration file.")
 
+        parser.add_argument("--top-level", action="store_true", dest="top_level",
+                            help="Use the complete input configuration as the MQTTSubscribeDriver/MQTTSubscribeService configuration section.")
         parser.add_argument("--no-backup", action="store_true", default=False,
                             help="When updating the WeeWX configuration (--conf), do not back it up.")
         parser.add_argument("--output",
@@ -2915,7 +2917,7 @@ For more information see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/
         self.enable = None
 
         if options.type:
-            self._setup_subcommand(options)
+            self._setup_subcommand(parser, options)
         elif options.create_example:
             self.action = '--create-example'
             self.config_output_path = os.path.abspath(options.create_example)
@@ -2932,7 +2934,7 @@ For more information see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/
             if options.validate:
                 parser.error(f"'--{option_name}' is mutually exclusive with '--validate'")
 
-    def _setup_subcommand(self, options):
+    def _setup_subcommand(self, parser, options):
         if options.conf:
             config_path = os.path.abspath(options.conf)
             self.config_dict = configobj.ConfigObj(config_path, encoding='utf-8', file_error=True)
@@ -2977,7 +2979,12 @@ For more information see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/
         if config_input:
             config_input_path = os.path.abspath(config_input)
             config_input_dict = configobj.ConfigObj(config_input_path, encoding='utf-8', file_error=True)
-            self.config_input_dict = weeutil.config.deep_copy(config_input_dict[self.section])
+            if options.top_level:
+                if len(config_input_dict.sections) > 1:
+                    parser.error(f"When specifying '--top-level, only one top level section is allowed. Found {config_input_dict.sections}")
+                self.config_input_dict = weeutil.config.deep_copy(config_input_dict[config_input_dict.sections[0]])
+            else:
+                self.config_input_dict = weeutil.config.deep_copy(config_input_dict[self.section])
 
     def run(self):
         # pylint: disable=too-many-branches
