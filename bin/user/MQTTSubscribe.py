@@ -552,7 +552,8 @@ class AbstractLogger():
         self.debug(f"Platform {platform.platform()}")
         self.debug(f"Locale is '{locale.setlocale(locale.LC_ALL)}'")
 
-        self.debug(config_dict)
+        # Too easy to leak sensitive information
+        #self.debug(config_dict)
         archive_dict = config_dict.get('StdArchive', {})
         record_augmentation = archive_dict.get('record_augmentation', None)
         record_generation = archive_dict.get('record_generation', None)
@@ -819,7 +820,7 @@ class TopicManager():
         self.queues = []
 
         single_queue = to_bool(config.get('single_queue', False))
-        self.logger.debug(f"TopicManager single_queue is {single_queue}")
+        self.logger.debug(f"TopicManager single_queue default is {single_queue}")
         single_queue_obj = None
         if single_queue:
             single_queue_obj = dict(
@@ -1741,20 +1742,13 @@ class MQTTSubscriber():
         if self.archive_topic and self.archive_topic not in service_dict['topics']:
             raise ValueError(f"Archive topic {self.archive_topic} must be in [[topics]]")
 
-        self._check_deprecated_options(service_dict)
+        self.logger.info(f"Archive topic is {self.archive_topic}")
 
         message_callback_provider_name = service_dict.get('message_callback_provider',
                                                           'user.MQTTSubscribe.MessageCallbackProvider')
-        self.manager = TopicManager(self.archive_topic, topics_dict, self.logger)
+        self.logger.info(f"message_callback_provider_name is {message_callback_provider_name}")
 
-        self.cached_fields = None
-        self.cached_fields = self.manager.cached_fields
-
-        weewx_config = service_dict.get('weewx')
-        if weewx_config:
-            manage_weewx_config = ManageWeewxConfig()
-            manage_weewx_config.update_unit_config(weewx_config)
-            manage_weewx_config.add_observation_to_unit_dict(weewx_config)
+        self._check_deprecated_options(service_dict)
 
         mqtt_options = {
             'clientid': service_dict.get('clientid', 'MQTTSubscribe-' + str(random.randint(1000, 9999))),
@@ -1770,7 +1764,6 @@ class MQTTSubscriber():
             'tls_dict': service_dict.get('tls'),
         }
 
-        self.logger.info(f"message_callback_provider_name is {message_callback_provider_name}")
         self.logger.info(f"clientid is {mqtt_options['clientid']}")
         self.logger.info(f"client_session is {mqtt_options['clean_session']}")
         self.logger.info(f"host is {mqtt_options['host']}")
@@ -1783,7 +1776,19 @@ class MQTTSubscriber():
             self.logger.info("password is set")
         else:
             self.logger.info("password is not set")
-        self.logger.info(f"Archive topic is {self.archive_topic}")
+
+        self.manager = TopicManager(self.archive_topic, topics_dict, self.logger)
+
+        self.cached_fields = None
+        self.cached_fields = self.manager.cached_fields
+
+        weewx_config = service_dict.get('weewx')
+        if weewx_config:
+            manage_weewx_config = ManageWeewxConfig()
+            manage_weewx_config.update_unit_config(weewx_config)
+            manage_weewx_config.add_observation_to_unit_dict(weewx_config)
+
+
 
         self._setup_mqtt(mqtt_options, message_callback_provider_name, message_callback_config)
 
