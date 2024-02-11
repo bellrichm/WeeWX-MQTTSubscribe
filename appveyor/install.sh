@@ -7,6 +7,9 @@
     if [ "$ENABLED" != "true" ]; then
       exit 0
     fi
+    
+    echo "$MQTT_VERSION"
+    MQTT_INSTALL="==1.6.1"
 
     if [ "$SONAR_UPLOAD" = "true" ]; then
       echo "Running sonar runner install"
