@@ -9,7 +9,10 @@
     fi
     
     echo "$MQTT_VERSION"
-    MQTT_INSTALL="==1.6.1"
+    if [ "$MQTT_VERSION" != "" ]; then
+      MQTT_INSTALL="=="$MQTT_VERSION"
+    fi
+    echo "$MQTT_INSTALL"
 
     if [ "$SONAR_UPLOAD" = "true" ]; then
       echo "Running sonar runner install"
