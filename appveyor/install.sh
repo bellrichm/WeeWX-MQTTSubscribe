@@ -20,7 +20,7 @@
     echo "Running pip installs"
     pip install pip --quiet --upgrade
     pip install configobj --quiet --no-python-version-warning
-    pip install paho-mqtt --quiet --no-python-version-warning
+    pip install paho-mqtt==1.6.1 --quiet --no-python-version-warning
     pip install mock --quiet --no-python-version-warning
     pip install pylint --quiet --no-python-version-warning
     pip install pytest --quiet --no-python-version-warning
