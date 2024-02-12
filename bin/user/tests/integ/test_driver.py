@@ -62,7 +62,14 @@ class TestDriver(unittest.TestCase):
             'topics': [],
             'connected_flag': False
         }
-        client = mqtt.Client(userdata=userdata)
+
+        try:
+            callback_api_version = mqtt.CallbackAPIVersion.VERSION1
+            client = mqtt.Client(callback_api_version=callback_api_version, # (only available in v2) pylint: disable=unexpected-keyword-arg
+                                  userdata=userdata)
+        except AttributeError:
+            client = mqtt.Client(userdata=userdata) # (v1 signature) pylint: disable=no-value-for-parameter
+
         client.on_connect = utils.on_connect
         client.connect(host, port, keepalive)
         client.loop_start()
@@ -81,7 +88,14 @@ class TestDriver(unittest.TestCase):
             'msg': False,
             'max_msg_wait': 1 # ToDo - configure
         }
-        client2 = mqtt.Client(userdata=userdata2)
+
+        try:
+            callback_api_version = mqtt.CallbackAPIVersion.VERSION1
+            client2 = mqtt.Client(callback_api_version=callback_api_version, # (only available in v2) pylint: disable=unexpected-keyword-arg
+                                  userdata=userdata2)
+        except AttributeError:
+            client2 = mqtt.Client(userdata=userdata2) # (v1 signature) pylint: disable=no-value-for-parameter
+
         client2.on_connect = utils.on_connect
         client2.on_message = utils.on_message
         client2.connect(host, port, keepalive)
