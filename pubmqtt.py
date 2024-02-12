@@ -104,7 +104,13 @@ def main():
     max_interval = options.max_interval
     prompt_to_send = options.prompt_to_send
 
-    client = mqtt.Client(client_id)
+    try:
+        callback_api_version = mqtt.CallbackAPIVersion.VERSION1
+        client = mqtt.Client(callback_api_version=callback_api_version, # (only available in v2) pylint: disable=unexpected-keyword-arg
+                                client_id=client_id)
+    except AttributeError:
+        client = mqtt.Client(client_id=client_id) # (v1 signature) pylint: disable=no-value-for-parameter
+
     client.on_connect = on_connect
     client.on_disconnect = on_disconnect
     client.on_publish = on_publish

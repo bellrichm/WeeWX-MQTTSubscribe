@@ -1805,7 +1805,16 @@ class MQTTSubscriber():
         self.userdata['connect'] = False
         self.userdata['connect_rc'] = None
         self.userdata['connect_flags'] = 0
-        self.client = mqtt.Client(client_id=mqtt_options['clientid'], userdata=self.userdata, clean_session=mqtt_options['clean_session'])
+        try:
+            callback_api_version = mqtt.CallbackAPIVersion.VERSION1
+            self.client = mqtt.Client(callback_api_version=callback_api_version, # (only available in v2) pylint: disable=unexpected-keyword-arg
+                                    client_id=mqtt_options['clientid'],
+                                    userdata=self.userdata,
+                                    clean_session=mqtt_options['clean_session'])
+        except AttributeError:
+            self.client = mqtt.Client(client_id=mqtt_options['clientid'], # (v1 signature) pylint: disable=no-value-for-parameter
+                                    userdata=self.userdata,
+                                    clean_session=mqtt_options['clean_session'])
 
         if mqtt_options['tls_dict'] and to_bool(mqtt_options['tls_dict'].get('enable', True)):
             self.config_tls(mqtt_options['tls_dict'])

@@ -7,6 +7,10 @@
     if [ "$ENABLED" != "true" ]; then
       exit 0
     fi
+    
+    if [ "$MQTT_VERSION" != "" ]; then
+      MQTT_INSTALL="=="$MQTT_VERSION
+    fi
 
     if [ "$SONAR_UPLOAD" = "true" ]; then
       echo "Running sonar runner install"
@@ -20,7 +24,7 @@
     echo "Running pip installs"
     pip install pip --quiet --upgrade
     pip install configobj --quiet --no-python-version-warning
-    pip install paho-mqtt --quiet --no-python-version-warning
+    pip install paho-mqtt$MQTT_INSTALL --quiet --no-python-version-warning
     pip install mock --quiet --no-python-version-warning
     pip install pylint --quiet --no-python-version-warning
     pip install pytest --quiet --no-python-version-warning
@@ -28,7 +32,6 @@
     pip install coveralls --quiet --no-python-version-warning
 
     echo "Running weewx install"
-    echo "$WEEWX"
     if [ "$WEEWX" = "$BRANCH" ]; then
       git clone https://github.com/weewx/weewx.git weewx
       cd weewx

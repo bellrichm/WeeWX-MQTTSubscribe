@@ -43,6 +43,8 @@ environment:
   PYTHON: 3.7
   WEEWX_OLDEST: 4.6.1
   WEEWX_LATEST: 5.0.0
+  # paho-mqtt 2.0.0 introduced an incompatible change, this is the old version
+  MQTT_VERSION: 1.6.1
   ENABLED: true
   RUN_FTESTS: true
   RUN_ITESTS: true
@@ -55,6 +57,7 @@ environment:
     # Run first, so that completes early
     - PYTHON: '%PYTHON_LATEST%'
       WEEWX: '%WEEWX_LATEST%'
+      MQTT_VERSION: '%MQTT_VERSION%'
       CODECOVIO_UPLOAD: true
       COVERALLS_UPLOAD: true
       SONAR_UPLOAD: true
@@ -66,31 +69,37 @@ environment:
 
     - PYTHON: 3.7
       WEEWX: '%WEEWX_LATEST%'
+      MQTT_VERSION: '%MQTT_VERSION%'      
       job_group: build  
       job_depends_on: initialize
 
     - PYTHON: 3.8
       WEEWX: '%WEEWX_LATEST%'
+      MQTT_VERSION: '%MQTT_VERSION%'      
       job_group: build  
       job_depends_on: initialize
 
     - PYTHON: 3.9
       WEEWX: '%WEEWX_LATEST%'
+      MQTT_VERSION: '%MQTT_VERSION%'      
       job_group: build  
       job_depends_on: initialize
 
     - PYTHON: 3.10
       WEEWX: '%WEEWX_LATEST%'
+      MQTT_VERSION: '%MQTT_VERSION%'      
       job_group: build  
       job_depends_on: initialize
 
     - PYTHON: 3.11
       WEEWX: '%WEEWX_LATEST%'
+      MQTT_VERSION: '%MQTT_VERSION%'      
       job_group: build  
       job_depends_on: initialize
 
     - PYTHON: 3.12
       WEEWX: '%WEEWX_LATEST%'
+      MQTT_VERSION: '%MQTT_VERSION%'      
       job_group: build  
       job_depends_on: initialize
 
@@ -100,6 +109,7 @@ environment:
     # Does not support python > 3.11.x
     - PYTHON: 3.11
       WEEWX: '%WEEWX_OLDEST%'
+      MQTT_VERSION: '%MQTT_VERSION%'      
       job_group: build
       job_depends_on: initialize
 
@@ -107,6 +117,7 @@ environment:
     - PYTHON: '%PYTHON_LATEST%'
       BRANCH: master
       WEEWX: '%BRANCH%'
+      MQTT_VERSION: '%MQTT_VERSION%'      
       job_group: build  
       job_depends_on: initialize      
 
@@ -114,6 +125,7 @@ environment:
     - PYTHON: '%PYTHON_LATEST%'
       BRANCH: development
       WEEWX: '%BRANCH%'
+      MQTT_VERSION: '%MQTT_VERSION%'      
       job_group: build  
       job_depends_on: initialize            
 
@@ -123,6 +135,14 @@ environment:
       PYTHON: '%PYTHON_LATEST%'
       WEEWX: 4.9.0b1
       WEEWX_URL: http://www.weewx.com/downloads/development_versions/
+      MQTT_VERSION: '%MQTT_VERSION%'      
+      job_group: build  
+      job_depends_on: initialize
+
+    # Run tests against latest WeeWX, Python, and latest paho-mqtt
+    - PYTHON: '%PYTHON_LATEST%'
+      WEEWX: '%WEEWX_LATEST%'
+      MQTT_VERSION: ''
       job_group: build  
       job_depends_on: initialize
 
@@ -180,7 +200,7 @@ init:
   # This runs before the commit is even checked out
   # Therefore cannot run scripts in Github
   - sh: echo "init"
-  - sh: echo "$APPVEYOR_BUILD_WORKER_IMAGE $PYTHON $WEEWX"
+  - sh: echo "$APPVEYOR_BUILD_WORKER_IMAGE $PYTHON $WEEWX $MQTT_VERSION"
   - sh: echo "${!APPVEYOR_BUILD_WORKER_IMAGE}"
   - sh: >-
       if [[ ${!APPVEYOR_BUILD_WORKER_IMAGE} == *$PYTHON* ]]; then
