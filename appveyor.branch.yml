@@ -80,7 +80,7 @@ environment:
 
     - PYTHON: 3.9
       WEEWX: '%WEEWX_LATEST%'
-      MQTT_VERSION: '%MQTT_VERSION'      
+      MQTT_VERSION: '%MQTT_VERSION%'      
       job_group: build  
       job_depends_on: initialize
 
