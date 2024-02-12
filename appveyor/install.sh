@@ -8,11 +8,9 @@
       exit 0
     fi
     
-    echo "$MQTT_VERSION"
     if [ "$MQTT_VERSION" != "" ]; then
       MQTT_INSTALL="=="$MQTT_VERSION
     fi
-    echo "$MQTT_INSTALL"
 
     if [ "$SONAR_UPLOAD" = "true" ]; then
       echo "Running sonar runner install"
@@ -34,7 +32,6 @@
     pip install coveralls --quiet --no-python-version-warning
 
     echo "Running weewx install"
-    echo "$WEEWX"
     if [ "$WEEWX" = "$BRANCH" ]; then
       git clone https://github.com/weewx/weewx.git weewx
       cd weewx
