@@ -128,8 +128,6 @@ WEECTL=$WEEWX_REPO/bin/weectl
 $WEECTL extension install https://github.com/bellrichm/WeeWX-MQTTSubscribe/archive/refs/tags/latest.zip
 ```
 
-**Note:** For package installs, the above command needs to be prefixed with `sudo` (sudo $WEECTL ...)
-
 ### Create an example configuration
 
 ```
@@ -172,8 +170,6 @@ Note, MQTTSubscribeDriver can also be configured and weewx.conf updated interact
 $WEECTL station reconfigure --driver=user.MQTTSubscribe --no-prompt
 ```
 
-**Note:** For package installs, the above command needs to be prefixed with `sudo` (sudo $WEECTL ...)
-
 ### If running as a service, enable it
 
 ```
@@ -187,8 +183,6 @@ python3 $USER_ROOT/MQTTSubscribe.py configure service --enable true --conf mqtts
     ```
     python3 $USER_ROOT/MQTTSubscribe.py configure $RUN_MODE --replace-with mqttsubscribe.template.conf --conf $CONFIG_FILE
     ```
-
-    **Note:** For package installs, the above command needs to be prefixed with `sudo -E` (sudo -E $python3 ...)
 
 2. Restart WeeWX
 
