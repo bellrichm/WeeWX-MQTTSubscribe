@@ -68,6 +68,11 @@ The notation vX.Y.Z designates the version of MQTTSubscribe being installed.
 
 ## Initial installation
 
+**Note, for package installs:**  
+If you just installed WeeWX, you may need to create a new shell/terminal or logout/login
+for the user that installed WeeWX to have permission to update WeeWX.
+For more information see [Understanding permissions](https://github.com/weewx/weewx/wiki/Understanding-permissions#the-weewx-user-and-group)
+
 ### Initialize MQTTSubscribe's runtime
 
 #### Set the mode that MQTTSubscribe will be running in
