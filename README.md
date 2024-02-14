@@ -68,7 +68,9 @@ The notation vX.Y.Z designates the version of MQTTSubscribe being installed.
 
 ## Initial installation
 
-### Set the mode that MQTTSubscribe will be running in
+### Initialize MQTTSubscribe's runtime
+
+#### Set the mode that MQTTSubscribe will be running in
 
 If running as a driver,
 
@@ -82,15 +84,15 @@ If running as a service,
 RUN_MODE=service
 ```
 
-### For pip and git installs - activate the environment
+#### For pip and git installs - activate the environment
 
 ```
 source ~/weewx-venv/bin/activate
 ```
 
-### Set the file locations
+#### Set the file locations
 
-#### For pip installs
+##### For pip installs
 
 ```
 WEEWX_ROOT=~/weewx-data
@@ -99,7 +101,7 @@ CONFIG_FILE=$WEEWX_ROOT/weewx.conf
 WEECTL=weectl
 ```
 
-#### For package installs
+##### For package installs
 
 ```
 WEEWX_ROOT=/etc/weewx/
@@ -109,7 +111,7 @@ CONFIG_FILE=$WEEWX_ROOT/weewx.conf
 WEECTL=weectl
 ```
 
-#### For git 'installs'
+##### For git 'installs'
 
 ```
 WEEWX_REPO=~/weewx
