@@ -22,8 +22,8 @@
                 "service",
                 "--binding", "loop",
                 "--records", "1",       
-                "--verbose",
-                //"--console",
+                //"--logging-level", "TRACE",
+                "--console",
                 "--conf", "${workspaceFolder}/devtools/smoketest.loop.conf"
             ],            
             "console": "integratedTerminal"
@@ -38,7 +38,7 @@
                 "service",            
                 "--binding", "archive",
                 "--records", "1",
-                "--verbose",
+                "--logging_level", "DEBUG",
                 //"--console",
                 "--conf", "${workspaceFolder}/devtools/smoketest.archive.conf"
             ],            
@@ -54,7 +54,7 @@
                 "driver",            
                 "--binding", "loop",
                 "--records", "1",
-                "--verbose",
+                "--logging_level", "DEBUG",
                 //"--console",
                 "--conf", "${workspaceFolder}/devtools/smoketest.loop.conf"
             ],            
@@ -70,7 +70,7 @@
                 "driver",     
                 "--binding", "archive",
                 "--records", "1",
-                "--verbose",
+                "--logging_level", "DEBUG",
                 //"--console",
                 "--conf", "${workspaceFolder}/devtools/smoketest.archive.conf"
             ],            
@@ -84,18 +84,19 @@
             "args": [
                 "configure",
                 //"driver",
-                "service",
+                //"service",
 
-                //"--create-example", "tmp/temp.conf",
+                "--create-example", "mqttsubscribe.example.conf",
                 //"--export", "${workspaceFolder}/tmp/temp.conf",
-                "--enable", "true",
+                //"--enable", "true",
+                //"--top-level",
                 //"--validate",
 
                 // "--add-from", "${workspaceFolder}/devtools/smoketest.archive.conf",
                 //"--replace-with", "/home/richbell/mqttsubscribe.driver.conf",
                 //"--update-from", "${workspaceFolder}/devtools/smoketest.archive.conf",
 
-                "--conf", "${workspaceFolder}/mqttsubscribe.example.conf",
+                //"--conf", "${workspaceFolder}/mqttsubscribe.example.conf",
                 //"--conf", "/home/richbell/weewx-data/weewx.conf",
                 //"--conf", "/home/fork.weewx/weewx.debug.conf"
                 //"--output", "${workspaceFolder}/tmp/temp.conf",

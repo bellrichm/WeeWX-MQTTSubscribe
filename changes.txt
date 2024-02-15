@@ -18,6 +18,7 @@ Enhancements:
 
 - MQTTSubscribe's configuration is now validated on startup.
 - Support for paho-mqtt v2.
+- Version of paho-mqtt is now logged.
 
 V2.3.0
 Fixes:

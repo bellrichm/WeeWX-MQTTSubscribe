@@ -95,11 +95,19 @@ CONFIG_SPEC_TEXT = \
 
     # In addition to default logger, log to the console
     # Default is False
+    # This is experimental and may be removed.
     console = False
 
     # The name of a file to log to.
     # The default is None.
+    # This is experimental and may be removed.
     logging_filename = None
+
+    # The logging level.
+    # Overrides 'debug'.
+    # The default is 'not set'.
+    # This is experimental and may be removed.
+    logging_level =
 
     # The maximum time in seconds that the client will wait before trying to reconnect.
     # Default is 120
@@ -582,13 +590,6 @@ class AbstractLogger():
     def error(self, msg):
         """ Log error messages. """
         raise NotImplementedError("Method 'error' not implemented")
-
-def setup_logging(logging_level, config_dict):
-    """ Setup logging for running in standalone mode."""
-    if logging_level:
-        weewx.debug = logging_level
-
-    weeutil.logger.setup('wee_MQTTSS', config_dict)
 
 class Logger(AbstractLogger):
     """ The logging class. """
@@ -2618,8 +2619,9 @@ For more inforation see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/M
         simulate_service_parser.add_argument('--records', dest='record_count', type=int,
                             help='The number of archive records to create.',
                             default=10)
-        simulate_service_parser.add_argument("--verbose", action="store_true", dest="verbose",
-                            help="Log extra output (debug=1).")
+        simulate_service_parser.add_argument("--logging-level", choices=['INFO', 'DEBUG', 'TRACE'],
+                            default='INFO',
+                            help="The logging level ('INFO', 'DEBUG', 'TRACE').")
         simulate_service_parser.add_argument("--console", action="store_true", dest="console",
                             help="Log to console in addition to syslog.")
         simulate_service_parser.add_argument("--log-file",
@@ -2642,8 +2644,9 @@ For more inforation see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/M
                             help='The number of archive records to create.',
                             default=10)
 
-        simulate_driver_parser.add_argument("--verbose", action="store_true", dest="verbose",
-                            help="Log extra output (debug=1).")
+        simulate_driver_parser.add_argument("--logging-level", choices=['INFO', 'DEBUG', 'TRACE'],
+                            default='INFO',
+                            help="The logging level ('INFO', 'DEBUG', 'TRACE').")
         simulate_driver_parser.add_argument("--console", action="store_true", dest="console",
                             help="Log to console in addition to syslog.")
         simulate_driver_parser.add_argument("--log-file",
@@ -2661,7 +2664,7 @@ For more inforation see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/M
         self.console = options.console
         self.config_file = options.conf
 
-        self.verbose = options.verbose
+        self.logging_level = options.logging_level
         self.log_file = options.log_file
 
         if self.simulation_type == 'driver' and options.binding == 'loop':
@@ -2691,10 +2694,12 @@ For more inforation see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/M
         config_path = os.path.abspath(self.config_file)
 
         self.config_dict = configobj.ConfigObj(config_path, file_error=True)
-        setup_logging(self.verbose, self.config_dict)
 
         # override the configured binding with the parameter value
         merge_config(self.config_dict, {'MQTTSubscribeService': {'binding': self.binding}})
+
+        merge_config(self.config_dict, {'MQTTSubscribeService': {'logging_level': self.logging_level}})
+        merge_config(self.config_dict, {'MQTTSubscribeDriver': {'logging_level': self.logging_level}})
 
         merge_config(self.config_dict, {'MQTTSubscribeService': {'logging_filename': self.log_file}})
         merge_config(self.config_dict, {'MQTTSubscribeDriver': {'logging_filename': self.log_file}})
