@@ -2401,6 +2401,7 @@ class MQTTSubscribeConfiguration():
             'console': ['MQTTSubscribe'],
             'keepalive': ['MQTTSubscribe'],
             'logging_filename': ['MQTTSubscribe'],
+            'logging_level': ['MQTTSubscribe'],
             'message_callback': ['MQTTSubscribe'],
             'max_delay': ['MQTTSubscribe'],
             'max_loop_interval': ['MQTTSubscribe'],
@@ -2652,6 +2653,8 @@ For more inforation see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/M
         simulate_driver_parser.add_argument("--log-file",
                             help="Log to specified file.")
 
+        return cls.simulator_parser
+
     def __init__(self, parser, options): # pragma: no cover
         """ Initialize the new instance. """
         if not options.type:
@@ -2689,11 +2692,19 @@ For more inforation see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/M
         self.config_dict = None
         self.logger = None
 
-    def init_configuration(self): # pragma: no cover
+    def init_configuration(self, parser): # pragma: no cover
         """ Initialuze the configuration object. """
         config_path = os.path.abspath(self.config_file)
 
         self.config_dict = configobj.ConfigObj(config_path, file_error=True)
+
+        if self.simulation_type == 'service':
+            section = 'MQTTSubscribeService'
+        elif self.simulation_type == 'driver':
+            section = 'MQTTSubscribeDriver'
+
+        if section not in self.config_dict.sections:
+            parser.error(f"Missing {section} section.")
 
         # override the configured binding with the parameter value
         merge_config(self.config_dict, {'MQTTSubscribeService': {'binding': self.binding}})
@@ -3093,7 +3104,7 @@ if __name__ == '__main__': # pragma: no cover
 
         if options.command == 'simulate':
             simulator = Simulator(simulator_subparser, options)
-            simulator.init_configuration()
+            simulator.init_configuration(simulator_subparser)
             simulator.init_weewx()
             simulator.run()
         elif options.command == 'configure':

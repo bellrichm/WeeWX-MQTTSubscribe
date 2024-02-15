@@ -24,7 +24,8 @@
                 "--records", "1",       
                 //"--logging-level", "TRACE",
                 "--console",
-                "--conf", "${workspaceFolder}/devtools/smoketest.loop.conf"
+                "--conf", "${workspaceFolder}/mqttsubscribe.example.conf"
+                //"--conf", "${workspaceFolder}/devtools/smoketest.loop.conf"
             ],            
             "console": "integratedTerminal"
         },
