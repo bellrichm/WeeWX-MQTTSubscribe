@@ -484,6 +484,7 @@ import traceback
 from collections import deque
 
 import configobj
+import paho
 import paho.mqtt.client as mqtt
 from paho.mqtt.client import connack_string
 
@@ -559,6 +560,7 @@ class AbstractLogger():
         record_generation = archive_dict.get('record_generation', None)
         self.debug(f"Record Augmentation is: {record_augmentation}")
         self.debug(f"Record Generation is: {record_generation}")
+        self.info(f"Using paho.mqtt {paho.mqtt.__version__}")
         self.info(f"Version is {VERSION}")
         self.info(f"Log level: {int(self.level)}")
         self.info(f"Log debug setting: {int(self.weewx_debug)}")
