@@ -41,7 +41,7 @@ class TestRunSimulator(unittest.TestCase):
         options.conf = None
 
         options.logging_level = None
-        options.log_file = None
+        options.logging_file = None
         options.units = 'US'
         options.frequency = frequency
 
@@ -79,7 +79,7 @@ class TestRunSimulator(unittest.TestCase):
         options.conf = None
 
         options.logging_level = None
-        options.log_file = None
+        options.logging_file = None
         options.units = 'US'
         options.frequency = frequency
 
@@ -118,7 +118,7 @@ class TestRunSimulator(unittest.TestCase):
         options.console = None
         options.conf = None
         options.logging_level = None
-        options.log_file = None
+        options.logging_file = None
 
         options.archive_delay = archive_delay
         options.archive_interval = archive_interval
@@ -148,7 +148,7 @@ class TestRunSimulator(unittest.TestCase):
         options.console = None
         options.conf = None
         options.logging_level = None
-        options.log_file = None
+        options.logging_file = None
 
         options.archive_delay = None
         options.archive_interval = None

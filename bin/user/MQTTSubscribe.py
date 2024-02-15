@@ -2625,7 +2625,7 @@ For more inforation see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/M
                             help="The logging level ('INFO', 'DEBUG', 'TRACE').")
         simulate_service_parser.add_argument("--console", action="store_true", dest="console",
                             help="Log to console in addition to syslog.")
-        simulate_service_parser.add_argument("--log-file",
+        simulate_service_parser.add_argument("--logging-file",
                             help="Log to specified file.")
 
         simulate_driver_parser = simulator_subparsers.add_parser('driver')
@@ -2650,7 +2650,7 @@ For more inforation see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/M
                             help="The logging level ('INFO', 'DEBUG', 'TRACE').")
         simulate_driver_parser.add_argument("--console", action="store_true", dest="console",
                             help="Log to console in addition to syslog.")
-        simulate_driver_parser.add_argument("--log-file",
+        simulate_driver_parser.add_argument("--logging-file",
                             help="Log to specified file.")
 
         return cls.simulator_parser
@@ -2668,7 +2668,7 @@ For more inforation see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/M
         self.config_file = options.conf
 
         self.logging_level = options.logging_level
-        self.log_file = options.log_file
+        self.logging_file = options.logging_file
 
         if self.simulation_type == 'driver' and options.binding == 'loop':
             if options.archive_interval:
@@ -2712,8 +2712,8 @@ For more inforation see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/M
         merge_config(self.config_dict, {'MQTTSubscribeService': {'logging_level': self.logging_level}})
         merge_config(self.config_dict, {'MQTTSubscribeDriver': {'logging_level': self.logging_level}})
 
-        merge_config(self.config_dict, {'MQTTSubscribeService': {'logging_filename': self.log_file}})
-        merge_config(self.config_dict, {'MQTTSubscribeDriver': {'logging_filename': self.log_file}})
+        merge_config(self.config_dict, {'MQTTSubscribeService': {'logging_filename': self.logging_file}})
+        merge_config(self.config_dict, {'MQTTSubscribeDriver': {'logging_filename': self.logging_file}})
 
         if self.console:
             merge_config(self.config_dict, {'MQTTSubscribeService': {'console': True}})
