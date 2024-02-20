@@ -321,6 +321,12 @@ CONFIG_SPEC_TEXT = \
             # Default is False.
             ignore = False            
 
+            # Units for MQTT payloads without unit value.
+            # Valid values: US, METRIC, METRICWX.
+            # For more information see, http://weewx.com/docs/customizing.htm#units
+            # Default is US.
+            unit_system = US
+
             # Less common options follow
 
             # The name of the MQTT on_message callback.
@@ -2427,6 +2433,7 @@ class MQTTSubscribeConfiguration():
             'use_server_datetime': ['MQTTSubscribe', 'topics'],
             'use_topic_as_fieldname': ['MQTTSubscribe', 'topics'],
             'msg_id_field': ['MQTTSubscribe', 'topics', 'REPLACE_ME'],
+            'unit_system': ['MQTTSubscribe', 'topics', 'REPLACE_ME'],
             'flatten_delimiter': ['MQTTSubscribe', 'topics', 'REPLACE_ME', 'message'],
             'keyword_delimiter': ['MQTTSubscribe', 'topics', 'REPLACE_ME', 'message'],
             'keyword_separator': ['MQTTSubscribe', 'topics', 'REPLACE_ME', 'message'],
