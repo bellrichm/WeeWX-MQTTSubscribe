@@ -2593,6 +2593,97 @@ class MQTTSubscribeConfiguration():
                         self.topic_as_field_deprecated_options,
                         error_msgs,
                         warn_msgs)
+class Parser():
+    """ Parse a MQTT message that is read from a file. """
+    description='''
+'''
+
+    class Msg:
+        # pylint: disable=too-few-public-methods
+        def __init__(self, topic, payload, qos, retain):
+            self.topic = topic
+            self.payload = payload
+            self.qos = qos
+            self.retain = retain
+
+    @classmethod
+    def add_common_options(cls, parser):
+        ''' Add the comon options to the parser.'''
+        parser.add_argument("--conf",
+                            required=True,
+                            help="The WeeWX configuration file. Typically weewx.conf.")
+        parser.add_argument("--topic",
+                            required=True,
+                            help="The topic to 'publish' the '--message-file' message.")
+        parser.add_argument("--message-file",
+                            required=True,
+                            help="The file containing the MQTT message.")
+        parser.add_argument("--top-level", action="store_true", dest="top_level",
+                            help="Use the complete input configuration as the MQTTSubscribeDriver/MQTTSubscribeService configuration section.")
+
+    @classmethod
+    def add_parsers(cls, parser): # pragma: no cover
+        ''' Add the parsers.'''
+        subparser = parser.add_parser('parse',
+                                      description=cls.description,
+                                      formatter_class=argparse.RawDescriptionHelpFormatter)
+
+        parser_subparsers = subparser.add_subparsers(dest='type')
+
+        parser_service_parser = parser_subparsers.add_parser('service')
+        cls.add_common_options(parser_service_parser)
+
+        parser_driver_parser = parser_subparsers.add_parser('driver')
+        cls.add_common_options(parser_driver_parser)
+
+        return subparser
+
+    def __init__(self, parser, options):
+        self.topic = options.topic
+        self.message_file = options.message_file
+
+        config_path = os.path.abspath(options.conf)
+        config_input_dict = configobj.ConfigObj(config_path, encoding='utf-8', file_error=True)
+
+        if options.type == 'service':
+            self.section = 'MQTTSubscribeService'
+        elif options.type == 'driver':
+            self.section = 'MQTTSubscribeDriver'
+        else:
+            self.section = None
+
+        if options.top_level:
+            if len(config_input_dict.sections) > 1:
+                parser.error(f"When specifying '--top-level, only one top level section is allowed. Found {config_input_dict.sections}")
+                self.config_dict = weeutil.config.deep_copy(config_input_dict[config_input_dict.sections[0]])
+            else:
+                self.config_dict = weeutil.config.deep_copy(config_input_dict[self.section])
+
+        topics_dict = self.config_dict.get('topics', None)
+        if topics_dict is None:
+            raise ValueError("[[topics]] is required.")
+
+        message_callback_config = self.config_dict.get('message_callback', None)
+
+        logger = Logger('Service', level='NOTSET', filename=None, console=False)
+        self.manager = TopicManager(None, topics_dict, logger)
+        self.message_callback_provider = MessageCallbackProvider(message_callback_config, logger, self.manager)
+
+    def parse(self):
+        payload = ''
+        with open(self.message_file, encoding='UTF-8') as file_object:        
+            message = file_object.readline()
+            while message:
+                payload += message
+                message = file_object.readline()
+
+        payload = payload.encode("utf-8")
+        msg = self.Msg(self.topic, payload, 0, 0)
+
+        self.message_callback_provider.on_message_multi(None, None, msg)
+        queue = self.manager._get_queue(self.topic)
+        data = self.manager.get_data(queue)
+        print(data)
 
 class Simulator():
     """ Run the service or driver. """
@@ -2813,7 +2904,6 @@ For more inforation see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/M
                 f"{to_sorted_string(new_archive_record_event.record)}")
             logger.info(packet_msg)
             print(packet_msg)
-
 
             i += 1
 
@@ -3099,17 +3189,21 @@ if __name__ == '__main__': # pragma: no cover
     def main():
         """ Run it."""
 
-        parser = argparse.ArgumentParser()
-        parser.add_argument('--version', action='version', version=f"MQTTSubscribe version is {VERSION}")
+        arg_parser = argparse.ArgumentParser()
+        arg_parser.add_argument('--version', action='version', version=f"MQTTSubscribe version is {VERSION}")
 
-        subparsers = parser.add_subparsers(dest='command')
+        subparsers = arg_parser.add_subparsers(dest='command')
 
+        parser_subparser = Parser.add_parsers(subparsers)
         simulator_subparser = Simulator.add_parsers(subparsers)
         configurator_subparser = Configurator.add_parsers(subparsers)
 
-        options = parser.parse_args()
+        options = arg_parser.parse_args()
 
-        if options.command == 'simulate':
+        if options.command == 'parse':
+            parser = Parser(parser_subparser, options)
+            parser.parse()
+        elif options.command == 'simulate':
             simulator = Simulator(simulator_subparser, options)
             simulator.init_configuration(simulator_subparser)
             simulator.init_weewx()
@@ -3118,6 +3212,6 @@ if __name__ == '__main__': # pragma: no cover
             configurator = Configurator(configurator_subparser, options)
             configurator.run()
         else:
-            parser.print_help()
+            arg_parser.print_help()
 
     main()
