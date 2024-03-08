@@ -85,23 +85,55 @@
             "args": [
                 "configure",
                 //"driver",
-                //"service",
+                "service",
 
-                "--create-example", "mqttsubscribe.example.conf",
+                //"--create-example", "mqttsubscribe.example.conf",
                 //"--export", "${workspaceFolder}/tmp/temp.conf",
                 //"--enable", "true",
                 //"--top-level",
-                //"--validate",
+                "--validate",
 
                 // "--add-from", "${workspaceFolder}/devtools/smoketest.archive.conf",
                 //"--replace-with", "/home/richbell/mqttsubscribe.driver.conf",
                 //"--update-from", "${workspaceFolder}/devtools/smoketest.archive.conf",
 
-                //"--conf", "${workspaceFolder}/mqttsubscribe.example.conf",
+                "--conf", "${workspaceFolder}/mqttsubscribe.example.conf",
                 //"--conf", "/home/richbell/weewx-data/weewx.conf",
                 //"--conf", "/home/fork.weewx/weewx.debug.conf"
                 //"--output", "${workspaceFolder}/tmp/temp.conf",
                 //"--no-backup",
+            ],            
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Parse",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/bin/user/MQTTSubscribe.py",
+            "args": [
+                "parse",
+                //"driver",
+                "service",
+                //"--console",
+                "--top-level",
+
+                "--conf", "${workspaceFolder}/tmp/complex.json.conf",
+                "--topic", "topic1",
+                "--message-file", "${workspaceFolder}/tmp/complex.json",
+                "--log-file", "${workspaceFolder}/tmp/complex.log",
+                //"--log-level", "TRACE",
+                
+            ],            
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Create Example",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/bin/user/MQTTSubscribe.py",
+            "args": [
+                "configure",
+                "--create-example", "mqttsubscribe.example.conf",
             ],            
             "console": "integratedTerminal"
         },        
