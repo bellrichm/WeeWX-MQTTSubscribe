@@ -2620,7 +2620,10 @@ class Parser():
                             help="The file containing the MQTT message.")
         parser.add_argument("--top-level", action="store_true", dest="top_level",
                             help="Use the complete input configuration as the MQTTSubscribeDriver/MQTTSubscribeService configuration section.")
-
+        parser.add_argument("--console", action="store_true", dest="console",
+                            help="Log to console in addition to syslog.")
+        parser.add_argument("--log-file",
+                            help="A file to log to.")        
     @classmethod
     def add_parsers(cls, parser): # pragma: no cover
         ''' Add the parsers.'''
