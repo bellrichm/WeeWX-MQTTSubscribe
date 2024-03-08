@@ -2658,11 +2658,30 @@ class Parser():
         if topics_dict is None:
             raise ValueError("[[topics]] is required.")
 
+        self._validate()
+
         message_callback_config = self.config_dict.get('message_callback', None)
 
         logger = Logger('Service', level=options.log_level, filename=options.log_file, console=options.console)
         self.manager = TopicManager(None, topics_dict, logger)
         self.message_callback_provider = MessageCallbackProvider(message_callback_config, logger, self.manager)
+
+    def _validate(self):
+        config_spec = configobj.ConfigObj(CONFIG_SPEC_TEXT.splitlines())
+        mqttsubscribe_configuration = MQTTSubscribeConfiguration(None)
+        error_msgs = []
+        warn_msgs = []
+        mqttsubscribe_configuration.validate(self.section,
+                        "",
+                        self.config_dict,
+                        config_spec['MQTTSubscribe'],
+                        MQTTSubscribeConfiguration.deprecated_options,
+                        error_msgs,
+                        warn_msgs)
+        for msg in warn_msgs:
+            print(msg)
+        for msg in error_msgs:
+            print(msg)
 
     def parse(self):
         ''' Parse it'''
