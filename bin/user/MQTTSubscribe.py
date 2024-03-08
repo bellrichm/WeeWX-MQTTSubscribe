@@ -2599,6 +2599,7 @@ class Parser():
 '''
 
     class Msg:
+        ''' A MQTT message.'''
         # pylint: disable=too-few-public-methods
         def __init__(self, topic, payload, qos, retain):
             self.topic = topic
@@ -2626,7 +2627,7 @@ class Parser():
                             help="A file to log to.")
         parser.add_argument("--log-level", choices=["TRACE", "DEBUG", "INFO", "ERROR"],
                             help="The logging level.",
-                            default="NOTSET")                            
+                            default="NOTSET")
     @classmethod
     def add_parsers(cls, parser): # pragma: no cover
         ''' Add the parsers.'''
@@ -2676,8 +2677,9 @@ class Parser():
         self.message_callback_provider = MessageCallbackProvider(message_callback_config, logger, self.manager)
 
     def parse(self):
+        ''' Parse it'''
         payload = ''
-        with open(self.message_file, encoding='UTF-8') as file_object:        
+        with open(self.message_file, encoding='UTF-8') as file_object:
             message = file_object.readline()
             while message:
                 payload += message
