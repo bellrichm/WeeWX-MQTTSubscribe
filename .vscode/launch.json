@@ -114,14 +114,14 @@
                 "parse",
                 //"driver",
                 "service",
-                "--console",
+                //"--console",
                 "--top-level",
 
                 "--conf", "${workspaceFolder}/tmp/complex.json.conf",
                 "--topic", "topic1",
                 "--message-file", "${workspaceFolder}/tmp/complex.json",
                 "--log-file", "${workspaceFolder}/tmp/complex.log",
-                "--log-level", "TRACE",
+                //"--log-level", "TRACE",
                 
             ],            
             "console": "integratedTerminal"

@@ -2690,7 +2690,7 @@ class Parser():
 
         self.message_callback_provider.on_message_multi(None, None, msg)
 
-        queue = self.manager._get_queue(self.topic)
+        queue = self.manager._get_queue(self.topic) # pylint: disable=protected-access
         data_queue = self.manager.get_data(queue)
         for data in data_queue:
             print(data)
