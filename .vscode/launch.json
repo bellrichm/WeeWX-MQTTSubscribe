@@ -125,7 +125,18 @@
                 
             ],            
             "console": "integratedTerminal"
-        },         
+        },
+        {
+            "name": "Create Example",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/bin/user/MQTTSubscribe.py",
+            "args": [
+                "configure",
+                "--create-example", "mqttsubscribe.example.conf",
+            ],            
+            "console": "integratedTerminal"
+        },        
         {
             // Requires MQTTSubscribe.py to be in 'weewx/bin/user' directory
             // Because python prepends the scripts directory, 'weewx/bin' to sys.path
