@@ -2623,7 +2623,10 @@ class Parser():
         parser.add_argument("--console", action="store_true", dest="console",
                             help="Log to console in addition to syslog.")
         parser.add_argument("--log-file",
-                            help="A file to log to.")        
+                            help="A file to log to.")
+        parser.add_argument("--log-level", choices=["TRACE", "DEBUG", "INFO", "ERROR"],
+                            help="The logging level.",
+                            default="NOTSET")                            
     @classmethod
     def add_parsers(cls, parser): # pragma: no cover
         ''' Add the parsers.'''
@@ -2668,7 +2671,7 @@ class Parser():
 
         message_callback_config = self.config_dict.get('message_callback', None)
 
-        logger = Logger('Service', level='NOTSET', filename=options.log_file, console=options.console)
+        logger = Logger('Service', level=options.log_level, filename=options.log_file, console=options.console)
         self.manager = TopicManager(None, topics_dict, logger)
         self.message_callback_provider = MessageCallbackProvider(message_callback_config, logger, self.manager)
 

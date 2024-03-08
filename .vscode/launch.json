@@ -121,6 +121,7 @@
                 "--topic", "topic1",
                 "--message-file", "${workspaceFolder}/tmp/complex.json",
                 "--log-file", "${workspaceFolder}/tmp/complex.log",
+                "--log-level", "TRACE",
                 
             ],            
             "console": "integratedTerminal"
