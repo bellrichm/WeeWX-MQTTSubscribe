@@ -2668,7 +2668,7 @@ class Parser():
 
         message_callback_config = self.config_dict.get('message_callback', None)
 
-        logger = Logger('Service', level='NOTSET', filename=None, console=False)
+        logger = Logger('Service', level='NOTSET', filename=options.log_file, console=options.console)
         self.manager = TopicManager(None, topics_dict, logger)
         self.message_callback_provider = MessageCallbackProvider(message_callback_config, logger, self.manager)
 
