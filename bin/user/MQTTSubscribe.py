@@ -7,22 +7,8 @@
 WeeWX driver and service that subscribes to MQTT topics and
 creates/updates loop packets/archive records.
 
-Installation:
-    1. Put this file in the bin/user directory.
-    2. Update weewx.conf [MQTTSubscribeService] as needed to configure the service.
-    OR
-    Update weewx.conf [MQTTSubscribeDriver] as needed to configure the driver.
-    3. Update weewx.conf [Accumulator] for any custom fields.
+See, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki
 
-Overview:
-    The MQTT loop_start is used to run a separate thread to manage the MQTT subscriptions.
-    The payloads are put on a queue to be processed by the driver or service.
-
-    The service binds to either the NEW_LOOP_PACKET or NEW_ARCHIVE_RECORD event.
-    On this event, it processes the queue of MQTT payloads and updates the packet or record
-
-    The driver processes the queue and generates a packet for each element currently in the queue.
-    A topic can be desinated as an 'archive topic'. Data in this topic is returned as an archive record.
 """
 
 CONFIG_SPEC_TEXT = \
