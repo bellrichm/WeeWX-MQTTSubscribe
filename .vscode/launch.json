@@ -116,7 +116,7 @@
                 "service",
                 "--top-level",
 
-                "--conf", "${workspaceFolder}/mqttsubscribe.example.conf",
+                "--conf", "${workspaceFolder}/tmp/complex.json.conf",
                 "--topic", "topic1",
                 "--message-file", "${workspaceFolder}/tmp/complex.json",
             ],            

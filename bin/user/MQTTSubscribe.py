@@ -2681,9 +2681,11 @@ class Parser():
         msg = self.Msg(self.topic, payload, 0, 0)
 
         self.message_callback_provider.on_message_multi(None, None, msg)
+
         queue = self.manager._get_queue(self.topic)
-        data = self.manager.get_data(queue)
-        print(data)
+        data_queue = self.manager.get_data(queue)
+        for data in data_queue:
+            print(data)
 
 class Simulator():
     """ Run the service or driver. """
