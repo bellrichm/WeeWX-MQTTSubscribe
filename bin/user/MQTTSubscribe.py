@@ -1498,9 +1498,7 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
             else:
                 i = 0
                 for subvalue in value:
-                    if fields[fields[new_key]['subfields'][i]].get('ignore', False):
-                        pass
-                    elif isinstance(subvalue, (dict, list)):
+                    if isinstance(subvalue, (dict, list)):
                         self._flatten(fields, fields_ignore_default, delim, prefix + fields[new_key]['subfields'][i] + '_', new_dict, subvalue)
                     else:
                         new_dict[prefix + fields[new_key]['subfields'][i]] = subvalue
