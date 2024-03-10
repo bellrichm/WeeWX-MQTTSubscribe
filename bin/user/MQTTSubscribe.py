@@ -952,10 +952,10 @@ class TopicManager():
 
     def _configure_subfields(self, topic, field, topic_dict):
         for subfield in self.subscribed_topics[topic]['fields'][field].get('subfields', []):
-            self.subscribed_topics[topic]['fields'][subfield] = \
+            self.subscribed_topics[topic]['fields'][field + '_' + subfield] = \
                 self._configure_field(self.subscribed_topics[topic]['fields'][field],
                                         topic_dict[field]['subfields'][subfield],
-                                        subfield,
+                                        field + '_' + subfield,
                                         self.subscribed_topics[topic]['fields'][field])
             if 'units' in self.subscribed_topics[topic]['fields'][field]:
                 self.subscribed_topics[topic]['fields'][subfield]['units'] = \
