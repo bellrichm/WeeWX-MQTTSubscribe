@@ -2609,9 +2609,9 @@ class Parser():
                             help="Use the complete input configuration as the MQTTSubscribeDriver/MQTTSubscribeService configuration section.")
         parser.add_argument("--console", action="store_true", dest="console",
                             help="Log to console in addition to syslog.")
-        parser.add_argument("--log-file",
+        parser.add_argument("--logging-file",
                             help="A file to log to.")
-        parser.add_argument("--log-level", choices=["TRACE", "DEBUG", "INFO", "ERROR"],
+        parser.add_argument("--logging-level", choices=["TRACE", "DEBUG", "INFO", "ERROR"],
                             help="The logging level.",
                             default="NOTSET")
     @classmethod
@@ -2660,7 +2660,7 @@ class Parser():
 
         message_callback_config = self.config_dict.get('message_callback', None)
 
-        logger = Logger('Service', level=options.log_level, filename=options.log_file, console=options.console)
+        logger = Logger('Service', level=options.logging_level, filename=options.logging_file, console=options.console)
         self.manager = TopicManager(None, topics_dict, logger)
         self.message_callback_provider = MessageCallbackProvider(message_callback_config, logger, self.manager)
 
