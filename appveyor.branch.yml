@@ -201,6 +201,7 @@ init:
   - sh: echo "init"
   - sh: echo "$APPVEYOR_BUILD_WORKER_IMAGE $PYTHON $WEEWX $MQTT_VERSION"
   - sh: echo "${!APPVEYOR_BUILD_WORKER_IMAGE}"
+  - sh: lsb_release -a
   - sh: >-
       if [[ ${!APPVEYOR_BUILD_WORKER_IMAGE} == *$PYTHON* ]]; then
         echo "$APPVEYOR_BUILD_WORKER_IMAGE with $PYTHON is broken on Appveyor."
