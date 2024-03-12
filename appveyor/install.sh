@@ -1,5 +1,5 @@
 #
-#    Copyright (c) 2020-2021 Rich Bell <bellrichm@gmail.com>
+#    Copyright (c) 2020-2024 Rich Bell <bellrichm@gmail.com>
 #
 #    See the file LICENSE.txt for your full rights.
 #
@@ -17,9 +17,6 @@
       curl --create-dirs -sSLo $HOME/.sonar/sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-$SONAR_SCANNER_VERSION-linux.zip
       unzip -qq -o $HOME/.sonar/sonar-scanner.zip -d $HOME/.sonar/
     fi
-
-    # Add path for things like pytest
-    export PATH=~/.local/bin:$PATH
 
     echo "Running mosquitto install"
     sudo apt-get -qq --assume-yes install mosquitto
