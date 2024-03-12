@@ -23,7 +23,7 @@ CONFIG_SPEC_TEXT = \
     # Default is true.
     # Only used by the service.
     enable = false
-    
+
     # Controls if validation errors raise an exception (stopping WeeWX from starting) or only logged.
     # Default is true
     stop_on_validation_errors = true
@@ -31,7 +31,7 @@ CONFIG_SPEC_TEXT = \
     # The binding, loop or archive.
     # Default is loop.
     # Only used by the service.
-    binding = loop    
+    binding = loop
 
     # The MQTT server.
     # Default is localhost.
@@ -106,11 +106,11 @@ CONFIG_SPEC_TEXT = \
     max_loop_interval= 0
 
     # Experimental option to specify different message parsers.
-    message_callback_provider = 
+    message_callback_provider =
 
     # The minimum time in seconds that the client will wait before trying to reconnect.
     # Default is 1
-    min_delay = 1    
+    min_delay = 1
 
     # When the MQTT queue has no data, the amount of time in seconds to wait
     # before checking again.
@@ -218,8 +218,8 @@ CONFIG_SPEC_TEXT = \
         # Setting the value to 'true' "opts out" and the desired topics/fields will need to set 'ignore = true'
         # Valid values: True, False.
         # Default is False.
-        ignore = False                    
-        
+        ignore = False
+
         # When the True, the MQTT data will continue to be processed even if its datetime is greater than the packet's datetime.
         # Default is False.
         # Only used by the service.
@@ -236,7 +236,7 @@ CONFIG_SPEC_TEXT = \
         # between the driver creating packets is large and the MQTT broker publishes frequently.
         # Or if subscribing to 'individual' payloads with wildcards. This results in many topic
         # in a single queue.
-        max_queue = sys.maxsize         
+        max_queue = sys.maxsize
 
         # Formatting string for converting time offset when converting a timestamp to an epoch datetime.
         # Default is None.
@@ -245,7 +245,7 @@ CONFIG_SPEC_TEXT = \
 
         # The QOS level to subscribe to.
         # Default is 0
-        qos = 0        
+        qos = 0
 
         # With the exception of wind data, by default a queue is created for every MQTT topic.
         # When this is true, MQTTSubsribe uses a single queue for all non wind data.
@@ -291,7 +291,7 @@ CONFIG_SPEC_TEXT = \
 
             # The separator between fieldname and value pairs. (field1=value1, field2=value2).
             # Default is "=".
-            keyword_separator = "="               
+            keyword_separator = "="
 
         # The first topic to subscribe to
         # For additional information see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/Configuring#the-topic-name-sections
@@ -305,7 +305,7 @@ CONFIG_SPEC_TEXT = \
             # Setting the value to 'true' "opts out" and the desired fields will need to set 'ignore = true'
             # Valid values: True, False.
             # Default is False.
-            ignore = False            
+            ignore = False
 
             # Units for MQTT payloads without unit value.
             # Valid values: US, METRIC, METRICWX.
@@ -330,7 +330,7 @@ CONFIG_SPEC_TEXT = \
             # The QOS level to subscribe to.
             # Default is 0
             qos = 0
-   
+
             # Even if the payload has a datetime, ignore it and use the server datetime.
             # Default is False.
             use_server_datetime = False
@@ -352,7 +352,7 @@ CONFIG_SPEC_TEXT = \
 
                 # The separator between fieldname and value pairs. (field1=value1, field2=value2).
                 # Default is "=".
-                keyword_separator = "="               
+                keyword_separator = "="
 
             # The incoming field name from MQTT.
             # For additional information see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/Configuring#the-field-name-sections
@@ -367,8 +367,8 @@ CONFIG_SPEC_TEXT = \
                 # True if the incoming data is cumulative.
                 # Valid values: True, False.
                 # Default is False.
-                contains_total = False      
-      
+                contains_total = False
+
                 # The WeeWX name.
                 # Default is the name from MQTT.
                 name = REPLACE_ME
@@ -385,7 +385,7 @@ CONFIG_SPEC_TEXT = \
                 # Valid values: True, False.
                 # Default is False.
                 conversion_error_to_none = False
-                
+
                 # Valid values, a Python expression that when evaluated returns a valid value.
                 # Example, conversion_func = lambda x: True if x == 'ON' else False
                 # Default is not set.
@@ -415,7 +415,7 @@ CONFIG_SPEC_TEXT = \
                 # Valid values: True, False.
                 # Default is False.
                 total_wrap_around = False
-                                
+
                 # The units of the incoming data.
                 # Useful if this field's units differ from the topic's unit_system's units.
                 # Valid values: see, http://www.weewx.com/docs/customizing.htm#units
@@ -436,7 +436,7 @@ CONFIG_SPEC_TEXT = \
 """
 
 ADDITIONAL_CONFIG_INFO = \
-"""            
+"""
     # Configure additional observations and units for WeeWX to use.
     # See, http://weewx.com/docs/customizing.htm#Creating_a_new_unit_group
     # This assumes a good knowledge of customizing WeeWX.
