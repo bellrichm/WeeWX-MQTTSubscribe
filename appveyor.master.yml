@@ -201,7 +201,7 @@ init:
   # Therefore cannot run scripts in Github
   - sh: echo "init"
   - sh: >-
-      if [ "$ENABLE_SSH" = "true" ]; then
+      if [ "$ENABLE_SSH_AT_START" = "true" ]; then
           export APPVEYOR_SSH_BLOCK=true
           curl -sflL 'https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-ssh.sh' | bash -e -
       fi;
