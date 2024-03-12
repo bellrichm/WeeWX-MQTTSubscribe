@@ -27,7 +27,7 @@
     pip install paho-mqtt$MQTT_INSTALL --quiet --no-python-version-warning
     pip install mock --quiet --no-python-version-warning
     pip install pylint --quiet --no-python-version-warning
-    pip install pytest --quiet --no-python-version-warning
+    pip install -U pytest --quiet --no-python-version-warning
     pip install pytest-cov --quiet --no-python-version-warning
     pip install coveralls --quiet --no-python-version-warning
 
