@@ -39,7 +39,7 @@
                 "service",            
                 "--binding", "archive",
                 "--records", "1",
-                "--logging_level", "DEBUG",
+                "--logging-level", "DEBUG",
                 //"--console",
                 "--conf", "${workspaceFolder}/devtools/smoketest.archive.conf"
             ],            
@@ -55,7 +55,7 @@
                 "driver",            
                 "--binding", "loop",
                 "--records", "1",
-                "--logging_level", "DEBUG",
+                "--logging-level", "DEBUG",
                 //"--console",
                 "--conf", "${workspaceFolder}/devtools/smoketest.loop.conf"
             ],            
@@ -71,7 +71,7 @@
                 "driver",     
                 "--binding", "archive",
                 "--records", "1",
-                "--logging_level", "DEBUG",
+                "--logging-level", "DEBUG",
                 //"--console",
                 "--conf", "${workspaceFolder}/devtools/smoketest.archive.conf"
             ],            
