@@ -1800,8 +1800,9 @@ class MQTTSubscriber():
 
     @classmethod
     def get_subscriber(cls, service_dict, logger):
-        return MQTTSubscriber(service_dict, logger)
-    
+        ''' Factory method to get appropriate MQTTSubscriber for paho mqtt version. '''
+        return MQTTSubscriberV1(service_dict, logger)
+
     def _setup_mqtt(self, mqtt_options, message_callback_provider_name, message_callback_config):
         self.mqtt_logger = {
             mqtt.MQTT_LOG_INFO: self.logger.info,
@@ -1821,20 +1822,12 @@ class MQTTSubscriber():
         if mqtt_options['tls_dict'] and to_bool(mqtt_options['tls_dict'].get('enable', True)):
             self.config_tls(mqtt_options['tls_dict'])
 
-        if mqtt_options['log_mqtt']:
-            self.client.on_log = self._on_log
-
         message_callback_provider_class = weeutil.weeutil.get_object(message_callback_provider_name)
         message_callback_provider = message_callback_provider_class(message_callback_config,
                                                                     self.logger,
                                                                     self.manager)
-
         self.client.on_message = message_callback_provider.get_callback()
-
-        self.client.on_subscribe = self._on_subscribe
-
-        self.client.on_connect = self._on_connect
-        self.client.on_disconnect = self._on_disconnect
+        self.set_callbacks(mqtt_options)
 
         if mqtt_options['username'] is not None and mqtt_options['password'] is not None:
             self.client.username_pw_set(mqtt_options['username'], mqtt_options['password'])
@@ -1960,6 +1953,16 @@ class MQTTSubscriber():
 
     def get_client(self, mqtt_options):
         ''' Get the MQTT client. '''
+        raise NotImplementedError("Method 'get_client' is not implemented")
+
+    def set_callbacks(self, mqtt_options):
+        ''' Get the MQTT client. '''
+        raise NotImplementedError("Method 'set_callbacks' is not implemented")
+
+class MQTTSubscriberV1(MQTTSubscriber):
+    ''' MQTTSubscriber that communicates with paho mqtt v1. '''
+
+    def get_client(self, mqtt_options):
         try:
             callback_api_version = mqtt.CallbackAPIVersion.VERSION1
             client = mqtt.Client(callback_api_version=callback_api_version, # (only available in v2) pylint: disable=unexpected-keyword-arg
@@ -1973,6 +1976,14 @@ class MQTTSubscriber():
                                  userdata=self.userdata,
                                  clean_session=mqtt_options['clean_session'])
         return client
+
+    def set_callbacks(self, mqtt_options):
+        if mqtt_options['log_mqtt']:
+            self.client.on_log = self._on_log
+
+        self.client.on_subscribe = self._on_subscribe
+        self.client.on_connect = self._on_connect
+        self.client.on_disconnect = self._on_disconnect
 
     def _on_connect(self, client, userdata, flags, rc):
         # https://pypi.org/project/paho-mqtt/#on-connect
