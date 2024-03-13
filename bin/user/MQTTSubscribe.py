@@ -1798,6 +1798,10 @@ class MQTTSubscriber():
 
         self._setup_mqtt(mqtt_options, message_callback_provider_name, message_callback_config)
 
+    @classmethod
+    def get_subscriber(cls, service_dict, logger):
+        return MQTTSubscriber(service_dict, logger)
+    
     def _setup_mqtt(self, mqtt_options, message_callback_provider_name, message_callback_config):
         self.mqtt_logger = {
             mqtt.MQTT_LOG_INFO: self.logger.info,
@@ -2031,7 +2035,7 @@ class MQTTSubscribeService(StdService):
 
         self.end_ts = 0 # prime for processing loop packet
 
-        self.subscriber = MQTTSubscriber(service_dict, self.logger)
+        self.subscriber = MQTTSubscriber.get_subscriber(service_dict, self.logger)
 
         self.logger.info(f"binding is {self.binding}")
 
@@ -2156,7 +2160,7 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice):
 
         engine.bind(weewx.NEW_ARCHIVE_RECORD, self.new_archive_record)
 
-        self.subscriber = MQTTSubscriber(stn_dict, self.logger)
+        self.subscriber = MQTTSubscriber.get_subscriber(stn_dict, self.logger)
 
         self.queue = next((q for q in self.subscriber.queues if q['name'] == self.archive_topic), None)
 
