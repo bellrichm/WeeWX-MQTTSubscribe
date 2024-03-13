@@ -655,7 +655,8 @@ class Logger(AbstractLogger):
             if self.file:
                 self.file.close()
 
-        def _open_file(self, filename):
+        @staticmethod
+        def _open_file(filename):
             if filename is not None:
                 return open(filename, 'w', encoding='UTF-8')
             return None
@@ -1461,7 +1462,8 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
 
             self._set_flatten_delimiter(topic, topic_manager)
 
-    def _set_flatten_delimiter(self, topic, topic_manager):
+    @staticmethod
+    def _set_flatten_delimiter(topic, topic_manager):
         # ToDo Investigate this and copying, maybe a merge?
         if 'flatten_delimiter' not in topic_manager.subscribed_topics[topic][topic_manager.message_config_name]:
             topic_manager.subscribed_topics[topic][topic_manager.message_config_name]['flatten_delimiter'] = '_'
@@ -1659,7 +1661,8 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
 
 class ManageWeewxConfig():
     ''' Manage the WeeWX configuration. '''
-    def _add_unit_group(self, unit_config, unit):
+    @staticmethod
+    def _add_unit_group(unit_config, unit):
         group = unit_config.get('group')
         if not group:
             raise ValueError(f"{unit} is missing a group.")
@@ -1683,12 +1686,14 @@ class ManageWeewxConfig():
         if format_config:
             weewx.units.default_unit_format_dict[unit] = format_config
 
-    def _update_label_dict(self, unit_config, unit):
+    @staticmethod
+    def _update_label_dict(unit_config, unit):
         label = unit_config.get('label')
         if label:
             weewx.units.default_unit_label_dict[unit] = label
 
-    def _update_conversion_dict(self, unit_config, unit):
+    @staticmethod
+    def _update_conversion_dict(unit_config, unit):
         conversion = unit_config.get('conversion')
         if conversion:
             for to_unit in conversion:
@@ -1709,7 +1714,8 @@ class ManageWeewxConfig():
                 self._update_label_dict(unit_config, unit)
                 self._update_conversion_dict(unit_config, unit)
 
-    def add_observation_to_unit_dict(self, weewx_config):
+    @staticmethod
+    def add_observation_to_unit_dict(weewx_config):
         ''' Add the observations to WeeWX's unit dictionart. '''
         observations = weewx_config.get('observations')
         if observations:
@@ -2467,7 +2473,8 @@ class MQTTSubscribeConfiguration():
 
         return config_spec
 
-    def _remove_options(self, remove_items, config_spec):
+    @staticmethod
+    def _remove_options(remove_items, config_spec):
         for remove_item, _ in remove_items.items():
             current_section = config_spec
             for key in remove_items[remove_item]:
@@ -2501,7 +2508,8 @@ class MQTTSubscribeConfiguration():
 
         self._validate_sections(parent, hierarchy, section, section_configspec, section_deprecated_options, error_msgs, warn_msgs)
 
-    def _log_deprecated_option(self, option, section_deprecated_options, error_msgs, warn_msgs):
+    @staticmethod
+    def _log_deprecated_option(option, section_deprecated_options, error_msgs, warn_msgs):
         if section_deprecated_options[option]['deprecated_severity'] == 'WARN':
             warn_msgs.append(section_deprecated_options[option]['deprecated_msg'])
         else:
@@ -3073,7 +3081,8 @@ For more information see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/
         if options.type:
             self.no_backup = options.no_backup
 
-    def _check_mutually_exclusive_options(self, option, option_name, options, parser):
+    @staticmethod
+    def _check_mutually_exclusive_options(option, option_name, options, parser):
         if option:
             if options.export:
                 parser.error(f"'--{option_name}' is mutually exclusive with '--export'")
