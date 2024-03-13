@@ -1783,8 +1783,6 @@ class MQTTSubscriber():
             manage_weewx_config.update_unit_config(weewx_config)
             manage_weewx_config.add_observation_to_unit_dict(weewx_config)
 
-
-
         self._setup_mqtt(mqtt_options, message_callback_provider_name, message_callback_config)
 
     def _setup_mqtt(self, mqtt_options, message_callback_provider_name, message_callback_config):
@@ -1800,16 +1798,8 @@ class MQTTSubscriber():
         self.userdata['connect'] = False
         self.userdata['connect_rc'] = None
         self.userdata['connect_flags'] = 0
-        try:
-            callback_api_version = mqtt.CallbackAPIVersion.VERSION1
-            self.client = mqtt.Client(callback_api_version=callback_api_version, # (only available in v2) pylint: disable=unexpected-keyword-arg
-                                    client_id=mqtt_options['clientid'],
-                                    userdata=self.userdata,
-                                    clean_session=mqtt_options['clean_session'])
-        except AttributeError:
-            self.client = mqtt.Client(client_id=mqtt_options['clientid'], # (v1 signature) pylint: disable=no-value-for-parameter
-                                    userdata=self.userdata,
-                                    clean_session=mqtt_options['clean_session'])
+
+        self.client = self.get_client(mqtt_options)
 
         if mqtt_options['tls_dict'] and to_bool(mqtt_options['tls_dict'].get('enable', True)):
             self.config_tls(mqtt_options['tls_dict'])
@@ -1950,6 +1940,20 @@ class MQTTSubscriber():
     def disconnect(self):
         """ shut it down """
         self.client.disconnect()
+
+    def get_client(self, mqtt_options):
+        ''' Get the MQTT client. '''
+        try:
+            callback_api_version = mqtt.CallbackAPIVersion.VERSION1
+            client = mqtt.Client(callback_api_version=callback_api_version, # (only available in v2) pylint: disable=unexpected-keyword-arg
+                                    client_id=mqtt_options['clientid'],
+                                    userdata=self.userdata,
+                                    clean_session=mqtt_options['clean_session'])
+        except AttributeError:
+            client = mqtt.Client(client_id=mqtt_options['clientid'], # (v1 signature) pylint: disable=no-value-for-parameter
+                                    userdata=self.userdata,
+                                    clean_session=mqtt_options['clean_session'])
+        return client
 
     def _on_connect(self, client, userdata, flags, rc):
         # https://pypi.org/project/paho-mqtt/#on-connect
