@@ -1751,12 +1751,18 @@ class MQTTSubscriber():
 
         self._check_deprecated_options(service_dict)
 
+        protocol_string = service_dict.get('protocol', 'MQTTv311')
+        protocol = getattr(mqtt, protocol_string, 0)
+        if protocol not in [mqtt.MQTTv31, mqtt.MQTTv311]:
+            raise ValueError(f"Invalid protocol, {protocol_string}.")
+
         mqtt_options = {
             'clientid': service_dict.get('clientid', 'MQTTSubscribe-' + str(random.randint(1000, 9999))),
             'clean_session': to_bool(service_dict.get('clean_session', True)),
             'host': service_dict.get('host', 'localhost'),
             'keepalive': to_int(service_dict.get('keepalive', 60)),
             'port': to_int(service_dict.get('port', 1883)),
+            'protocol': protocol,
             'username': service_dict.get('username', None),
             'password': service_dict.get('password', None),
             'min_delay': to_int(service_dict.get('min_delay', 1)),
@@ -1769,6 +1775,7 @@ class MQTTSubscriber():
         self.logger.info(f"client_session is {mqtt_options['clean_session']}")
         self.logger.info(f"host is {mqtt_options['host']}")
         self.logger.info(f"port is {mqtt_options['port']}")
+        self.logger.info(f"protocol is {mqtt_options['protocol']}")
         self.logger.info(f"keepalive is {mqtt_options['keepalive']}")
         self.logger.info(f"username is {mqtt_options['username']}")
         self.logger.info(f"min_delay is {mqtt_options['min_delay']}")
@@ -1952,13 +1959,15 @@ class MQTTSubscriber():
         try:
             callback_api_version = mqtt.CallbackAPIVersion.VERSION1
             client = mqtt.Client(callback_api_version=callback_api_version, # (only available in v2) pylint: disable=unexpected-keyword-arg
-                                    client_id=mqtt_options['clientid'],
-                                    userdata=self.userdata,
-                                    clean_session=mqtt_options['clean_session'])
+                                 protocol=mqtt_options['protocol'],
+                                 client_id=mqtt_options['clientid'],
+                                 userdata=self.userdata,
+                                 clean_session=mqtt_options['clean_session'])
         except AttributeError:
-            client = mqtt.Client(client_id=mqtt_options['clientid'], # (v1 signature) pylint: disable=no-value-for-parameter
-                                    userdata=self.userdata,
-                                    clean_session=mqtt_options['clean_session'])
+            client = mqtt.Client(protocol=mqtt_options['protocol'],
+                                 client_id=mqtt_options['clientid'], # (v1 signature) pylint: disable=no-value-for-parameter
+                                 userdata=self.userdata,
+                                 clean_session=mqtt_options['clean_session'])
         return client
 
     def _on_connect(self, client, userdata, flags, rc):
