@@ -1956,6 +1956,14 @@ class MQTTSubscriber():
     def _on_log(self, _client, _userdata, level, msg):
         self.mqtt_logger[level](f"MQTTSubscribe MQTT: {msg}")
 
+    def _subscribe(self, client):
+        for topic, info in self.manager.subscribed_topics.items():
+            if not info['subscribe']:
+                continue
+
+            (result, mid) = client.subscribe(topic, self.manager.get_qos(topic))
+            self.logger.info(f"Subscribing to {topic} has a mid {int(mid)} and rc {int(result)}")
+
     def get_client(self, mqtt_options):
         ''' Get the MQTT client. '''
         raise NotImplementedError("Method 'get_client' is not implemented")
@@ -2004,12 +2012,7 @@ class MQTTSubscriberV1(MQTTSubscriber):
         userdata['connect_rc'] = rc
         userdata['connect_flags'] = flags
 
-        for topic, info in self.manager.subscribed_topics.items():
-            if not info['subscribe']:
-                continue
-
-            (result, mid) = client.subscribe(topic, self.manager.get_qos(topic))
-            self.logger.info(f"Subscribing to {topic} has a mid {int(mid)} and rc {int(result)}")
+        self._subscribe(client)
 
     def _on_disconnect(self, _client, _userdata, rc):
         self.logger.info(f"Disconnected with result code {int(rc)}")

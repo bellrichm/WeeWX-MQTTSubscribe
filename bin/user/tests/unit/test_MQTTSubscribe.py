@@ -924,7 +924,6 @@ class Teston_connect(unittest.TestCase):
         del sys.modules['weewx.drivers']
         del sys.modules['weewx.engine']
 
-    @unittest.skip("ToDo: logic has been pushed down, should pull it back")
     def test_multiple_topics(self):
         global mock_client
         topic1 = random_string()
@@ -951,12 +950,9 @@ class Teston_connect(unittest.TestCase):
                 type(mock_manager.return_value).get_qos = mock.Mock(return_value=qos)
                 mock_client.subscribe.return_value = [1, 0]
 
-                SUT = MQTTSubscriber(config, mock_logger)
+                SUT = MQTTSubscriberTest(config, mock_logger)
 
-                rc = random.randint(1, 10)
-                userdata = {}
-                userdata['connect'] = False
-                #SUT._on_connect(mock_client, userdata, None, rc,)   # pylint: disable=protected-access
+                SUT._subscribe(mock_client)   # pylint: disable=protected-access
 
                 self.assertEqual(mock_client.subscribe.call_count, 2)
                 mock_client.subscribe.assert_any_call(topic1, qos)
