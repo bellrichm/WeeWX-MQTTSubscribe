@@ -875,49 +875,6 @@ class TestCallbacks(unittest.TestCase):
         del sys.modules['weewx.engine']
 
     @staticmethod
-    @unittest.skip("ToDo: logic has been pushed down, should pull it back")
-    def test_on_disconnect():
-        mock_logger = mock.Mock(spec=Logger)
-
-        config_dict = {}
-        config_dict['message_callback'] = {}
-        config_dict['topics'] = {}
-        config = configobj.ConfigObj(config_dict)
-
-        rc = random.randint(1, 10)
-
-        with mock.patch('user.MQTTSubscribe.MessageCallbackProvider'):
-            with mock.patch('user.MQTTSubscribe.TopicManager'):
-                # pylint: disable=no-member, protected-access
-                SUT = MQTTSubscriber(config, mock_logger)
-
-                SUT._on_disconnect(None, None, rc)
-
-                SUT.logger.info.assert_called_with(f"Disconnected with result code {int(rc)}")
-
-    @staticmethod
-    @unittest.skip("ToDo: logic has been pushed down, should pull it back")
-    def test_on_subscribe():
-        mock_logger = mock.Mock(spec=Logger)
-
-        config_dict = {}
-        config_dict['message_callback'] = {}
-        config_dict['topics'] = {}
-        config = configobj.ConfigObj(config_dict)
-
-        mid = random.randint(1, 10)
-        granted_qos = [random.randint(1, 10)]
-
-        with mock.patch('user.MQTTSubscribe.MessageCallbackProvider'):
-            with mock.patch('user.MQTTSubscribe.TopicManager'):
-                # pylint: disable=no-member, protected-access
-                SUT = MQTTSubscriber(config, mock_logger)
-
-                SUT._on_subscribe(None, None, mid, granted_qos)
-
-                SUT.logger.info.assert_called_with(f"Subscribed to mid: {mid} is size {len(granted_qos)} has a QOS of {granted_qos[0]}")
-
-    @staticmethod
     def test_on_log():
         global mock_client
         mock_logger = mock.Mock(spec=Logger)
