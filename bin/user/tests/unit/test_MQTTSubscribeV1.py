@@ -8,6 +8,7 @@
 # pylint: disable=wrong-import-position
 # pylint: disable=missing-docstring
 # pylint: disable=invalid-name
+# pylint: disable=global-statement
 
 import unittest
 import mock
@@ -17,6 +18,7 @@ import random
 import sys
 
 import test_weewx_stubs
+from test_weewx_stubs import random_string
 # setup stubs before importing MQTTSubscribe
 test_weewx_stubs.setup_stubs()
 
@@ -80,6 +82,73 @@ class TestCallbacks(unittest.TestCase):
                 SUT._on_subscribe(None, None, mid, granted_qos)
 
                 SUT.logger.info.assert_called_with(f"Subscribed to mid: {mid} is size {len(granted_qos)} has a QOS of {granted_qos[0]}")
+
+    @staticmethod
+    def test_on_log():
+        global mock_client
+        mock_logger = mock.Mock(spec=Logger)
+
+        config_dict = {}
+        config_dict['message_callback'] = {}
+        config_dict['topics'] = {}
+        config = configobj.ConfigObj(config_dict)
+
+        level = 1
+        msg = random_string()
+
+        with mock.patch('user.MQTTSubscribe.MessageCallbackProvider'):
+            with mock.patch('user.MQTTSubscribe.TopicManager'):
+                # pylint: disable=no-member, protected-access
+                mock_client = mock.Mock()
+                SUT = MQTTSubscriberV1(config, mock_logger)
+
+                SUT._on_log(None, None, level, msg)
+
+                SUT.logger.info.assert_called_with(f"MQTTSubscribe MQTT: {msg}")
+
+    def test_mqtt_log_set(self):
+        global mock_client
+        mock_logger = mock.Mock(spec=Logger)
+
+        config_dict = {
+            'message_callback': {},
+            'topics': {
+                random_string(): {}
+            },
+            'log': True
+        }
+
+        config = configobj.ConfigObj(config_dict)
+
+        with mock.patch('user.MQTTSubscribe.MessageCallbackProvider'):
+            with mock.patch('user.MQTTSubscribe.TopicManager'):
+                mock_client = mock.Mock()
+                # pylint: disable=protected-access
+                SUT = MQTTSubscriberV1(config, mock_logger)
+
+                self.assertEqual(SUT.client.on_log, SUT._on_log)
+
+    def test_mqtt_log_not_set(self):
+        global mock_client
+        mock_logger = mock.Mock(spec=Logger)
+
+        config_dict = {
+
+            'message_callback': {},
+            'topics': {
+                random_string(): {}
+            }
+        }
+
+        config = configobj.ConfigObj(config_dict)
+
+        with mock.patch('user.MQTTSubscribe.MessageCallbackProvider'):
+            with mock.patch('user.MQTTSubscribe.TopicManager'):
+                # pylint: disable=protected-access
+                mock_client = mock.Mock()
+                SUT = MQTTSubscriberV1(config, mock_logger)
+
+                self.assertNotEqual(SUT.client.on_log, SUT._on_log)
 
 if __name__ == '__main__':
     # test_suite = unittest.TestSuite()
