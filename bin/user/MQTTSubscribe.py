@@ -1641,7 +1641,7 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
         except Exception as exception: # (want to catch all) pylint: disable=broad-except
             self._log_exception('on_message_individual', exception, msg)
 
-    def on_message_multi(self, _client, _userdata, msg):
+    def on_message_multi(self, msg):
         ''' The on message call back.'''
         # Wrap all the processing in a try, so it doesn't crash and burn on any error
         try:
@@ -1826,7 +1826,7 @@ class MQTTSubscriber():
         message_callback_provider = message_callback_provider_class(message_callback_config,
                                                                     self.logger,
                                                                     self.manager)
-        self.client.on_message = message_callback_provider.get_callback()
+        self.callback = message_callback_provider.get_callback()
 
         self.set_callbacks(mqtt_options)
 
@@ -1990,6 +1990,7 @@ class MQTTSubscriberV1(MQTTSubscriber):
         self.client.on_subscribe = self._on_subscribe
         self.client.on_connect = self._on_connect
         self.client.on_disconnect = self._on_disconnect
+        self.client.on_message = self._on_message
 
         if mqtt_options['log_mqtt']:
             self.client.on_log = self._on_log
@@ -2021,6 +2022,9 @@ class MQTTSubscriberV1(MQTTSubscriber):
 
     def _on_log(self, _client, _userdata, level, msg):
         self.mqtt_logger[level](f"MQTTSubscribe MQTT: {msg}")
+
+    def _on_message(self, _client, _userdata, msg):
+        self.callback(msg)
 
 class MQTTSubscribeService(StdService):
     """ The MQTT subscribe service. """
@@ -2733,7 +2737,7 @@ class Parser():
         payload = payload.encode("utf-8")
         msg = self.Msg(self.topic, payload, 0, 0)
 
-        self.message_callback_provider.on_message_multi(None, None, msg)
+        self.message_callback_provider.on_message_multi(msg)
 
         queue = self.manager._get_queue(self.topic) # pylint: disable=protected-access
         data_queue = self.manager.get_data(queue)

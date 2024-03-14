@@ -1,5 +1,5 @@
 #
-#    Copyright (c) 2020-2023 Rich Bell <bellrichm@gmail.com>
+#    Copyright (c) 2020-2024 Rich Bell <bellrichm@gmail.com>
 #
 #    See the file LICENSE.txt for your full rights.
 #
@@ -63,7 +63,7 @@ def send_mqtt_msg(publisher, topic, payload, userdata, self):
 
 def send_direct_msg(publisher, topic, payload, userdata, self):
     # match function signature pylint: disable=unused-argument
-    publisher(None, None, Msg(topic, payload, 0, 0))
+    publisher(Msg(topic, payload, 0, 0))
 
 def send_msg(sender, msg_type, publisher, topic, topic_info, userdata=None, self=None):
     # pylint: disable=too-many-arguments
