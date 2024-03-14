@@ -1827,6 +1827,8 @@ class MQTTSubscriber():
                                                                     self.logger,
                                                                     self.manager)
         self.client.on_message = message_callback_provider.get_callback()
+        if mqtt_options['log_mqtt']:
+            self.client.on_log = self._on_log
         self.set_callbacks(mqtt_options)
 
         if mqtt_options['username'] is not None and mqtt_options['password'] is not None:
@@ -1951,6 +1953,9 @@ class MQTTSubscriber():
         """ shut it down """
         self.client.disconnect()
 
+    def _on_log(self, _client, _userdata, level, msg):
+        self.mqtt_logger[level](f"MQTTSubscribe MQTT: {msg}")
+
     def get_client(self, mqtt_options):
         ''' Get the MQTT client. '''
         raise NotImplementedError("Method 'get_client' is not implemented")
@@ -1978,9 +1983,6 @@ class MQTTSubscriberV1(MQTTSubscriber):
         return client
 
     def set_callbacks(self, mqtt_options):
-        if mqtt_options['log_mqtt']:
-            self.client.on_log = self._on_log
-
         self.client.on_subscribe = self._on_subscribe
         self.client.on_connect = self._on_connect
         self.client.on_disconnect = self._on_disconnect
@@ -2014,9 +2016,6 @@ class MQTTSubscriberV1(MQTTSubscriber):
 
     def _on_subscribe(self, _client, _userdata, mid, granted_qos):
         self.logger.info(f"Subscribed to mid: {int(mid)} is size {len(granted_qos)} has a QOS of {int(granted_qos[0])}")
-
-    def _on_log(self, _client, _userdata, level, msg):
-        self.mqtt_logger[level](f"MQTTSubscribe MQTT: {msg}")
 
 class MQTTSubscribeService(StdService):
     """ The MQTT subscribe service. """
