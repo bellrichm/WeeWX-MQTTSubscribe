@@ -91,7 +91,7 @@ class Test1(unittest.TestCase):
 
         SUT = MessageCallbackProvider({}, mock_logger, mock_manager)
 
-        SUT._on_message(None, None, msg)
+        SUT._on_message(msg)
 
         mock_manager.append_data.assert_called_once_with(msg.topic, observation_dict)
 
