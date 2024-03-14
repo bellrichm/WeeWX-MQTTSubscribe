@@ -252,7 +252,7 @@ class TestKeywordload(unittest.TestCase):
 
         msg = Msg(self.topic, payload, 0, 0)
 
-        SUT._on_message_keyword(None, None, msg)
+        SUT._on_message_keyword(msg)
         self.assertEqual(mock_logger.error.call_count, 3)
 
     def test_payload_bad_data(self):
@@ -276,7 +276,7 @@ class TestKeywordload(unittest.TestCase):
 
         msg = Msg(self.topic, payload, 0, 0)
 
-        SUT._on_message_keyword(None, None, msg)
+        SUT._on_message_keyword(msg)
         self.assertEqual(mock_logger.error.call_count, 3)
 
     def test_payload_missing_delimiter(self):
@@ -300,7 +300,7 @@ class TestKeywordload(unittest.TestCase):
 
         msg = Msg(self.topic, payload, 0, 0)
 
-        SUT._on_message_keyword(None, None, msg)
+        SUT._on_message_keyword(msg)
         self.assertEqual(mock_logger.error.call_count, 3)
 
     def test_payload_missing_separator(self):
@@ -320,7 +320,7 @@ class TestKeywordload(unittest.TestCase):
 
         msg = Msg(self.topic, payload, 0, 0)
 
-        SUT._on_message_keyword(None, None, msg)
+        SUT._on_message_keyword(msg)
         self.assertEqual(mock_logger.error.call_count, 3)
 
     def test_payload_missing_dateTime(self):
@@ -352,7 +352,7 @@ class TestKeywordload(unittest.TestCase):
 
         msg = Msg(self.topic, payload_str, 0, 0)
 
-        SUT._on_message_keyword(None, None, msg)
+        SUT._on_message_keyword(msg)
 
         mock_manager.append_data.assert_called_once_with(msg.topic, payload_dict)
 
@@ -385,7 +385,7 @@ class TestKeywordload(unittest.TestCase):
 
         msg = Msg(self.topic, payload_str, 0, 0)
 
-        SUT._on_message_keyword(None, None, msg)
+        SUT._on_message_keyword(msg)
         mock_manager.append_data.assert_called_once_with(msg.topic, payload_dict)
 
     def test_payload_good(self):
@@ -418,7 +418,7 @@ class TestKeywordload(unittest.TestCase):
 
         msg = Msg(self.topic, payload_str, 0, 0)
 
-        SUT._on_message_keyword(None, None, msg)
+        SUT._on_message_keyword(msg)
         mock_manager.append_data.assert_called_once_with(msg.topic, payload_dict)
 
     def test_ignore_default_true(self):
@@ -453,7 +453,7 @@ class TestKeywordload(unittest.TestCase):
 
         msg = Msg(self.topic, payload_str, 0, 0)
 
-        SUT._on_message_keyword(None, None, msg)
+        SUT._on_message_keyword(msg)
         self.assertFalse(mock_manager.append_data.called)
 
     def test_ignore_default_true_ignore_field_false(self):
@@ -502,7 +502,7 @@ class TestKeywordload(unittest.TestCase):
 
         msg = Msg(self.topic, payload_str, 0, 0)
 
-        SUT._on_message_keyword(None, None, msg)
+        SUT._on_message_keyword(msg)
         mock_manager.append_data.assert_called_once_with(msg.topic, payload_dict)
 
     def test_ignore_field_true(self):
@@ -547,7 +547,7 @@ class TestKeywordload(unittest.TestCase):
 
         msg = Msg(self.topic, payload_str, 0, 0)
 
-        SUT._on_message_keyword(None, None, msg)
+        SUT._on_message_keyword(msg)
         mock_manager.append_data.assert_called_once_with(msg.topic, payload_dict)
 
 class TestJsonPayload(unittest.TestCase):
@@ -576,7 +576,7 @@ class TestJsonPayload(unittest.TestCase):
                   0,
                   0)
 
-        SUT._on_message_json(None, None, msg)
+        SUT._on_message_json(msg)
         self.assertEqual(mock_logger.error.call_count, 3)
 
     def test_empty_payload(self):
@@ -595,7 +595,7 @@ class TestJsonPayload(unittest.TestCase):
 
         msg = Msg(self.topic, '', 0, 0)
 
-        SUT._on_message_json(None, None, msg)
+        SUT._on_message_json(msg)
         self.assertEqual(mock_logger.error.call_count, 3)
 
     def test_missing_dateTime(self):
@@ -622,7 +622,7 @@ class TestJsonPayload(unittest.TestCase):
 
         msg = Msg(self.topic, payload, 0, 0)
 
-        SUT._on_message_json(None, None, msg)
+        SUT._on_message_json(msg)
 
         mock_manager.append_data.assert_called_once_with(msg.topic, payload_dict)
 
@@ -650,7 +650,7 @@ class TestJsonPayload(unittest.TestCase):
 
         msg = Msg(self.topic, payload, 0, 0)
 
-        SUT._on_message_json(None, None, msg)
+        SUT._on_message_json(msg)
 
         mock_manager.append_data.assert_called_once_with(msg.topic, payload_dict)
 
@@ -681,7 +681,7 @@ class TestJsonPayload(unittest.TestCase):
 
         msg = Msg(self.topic, payload, 0, 0)
 
-        SUT._on_message_json(None, None, msg)
+        SUT._on_message_json(msg)
 
         mock_manager.append_data.assert_called_once_with(msg.topic, payload_dict)
         call_args_list = mock_manager.append_data.call_args_list
@@ -725,7 +725,7 @@ class TestJsonPayload(unittest.TestCase):
 
         msg = Msg(self.topic, payload, 0, 0)
 
-        SUT._on_message_json(None, None, msg)
+        SUT._on_message_json(msg)
 
         mock_manager.append_data.assert_called_once_with(msg.topic, final_dict)
         call_args_list = mock_manager.append_data.call_args_list
@@ -768,7 +768,7 @@ class TestJsonPayload(unittest.TestCase):
 
         msg = Msg(self.topic, payload, 0, 0)
 
-        SUT._on_message_json(None, None, msg)
+        SUT._on_message_json(msg)
 
         mock_manager.append_data.assert_called_once_with(msg.topic, payload_dict)
         call_args_list = mock_manager.append_data.call_args_list
@@ -808,7 +808,7 @@ class TestJsonPayload(unittest.TestCase):
 
         msg = Msg(self.topic, payload, 0, 0)
 
-        SUT._on_message_json(None, None, msg)
+        SUT._on_message_json(msg)
 
         SUT.logger.error.assert_called_once()
         mock_manager.append_data.assert_called_once_with(msg.topic, output_dict)
@@ -849,7 +849,7 @@ class TestJsonPayload(unittest.TestCase):
 
         msg = Msg(self.topic, payload, 0, 0)
 
-        SUT._on_message_json(None, None, msg)
+        SUT._on_message_json(msg)
 
         SUT.logger.error.assert_called_once()
         mock_manager.append_data.assert_called_once_with(msg.topic, output_dict)
@@ -891,7 +891,7 @@ class TestJsonPayload(unittest.TestCase):
 
         msg = Msg(self.topic, payload, 0, 0)
 
-        SUT._on_message_json(None, None, msg)
+        SUT._on_message_json(msg)
 
         self.assertEqual(mock_logger.error.call_count, 1)
 
@@ -932,7 +932,7 @@ class TestJsonPayload(unittest.TestCase):
 
         msg = Msg(self.topic, payload, 0, 0)
 
-        SUT._on_message_json(None, None, msg)
+        SUT._on_message_json(msg)
 
         mock_manager.append_data.assert_called_once_with(msg.topic, output_dict)
         call_args_list = mock_manager.append_data.call_args_list
@@ -978,7 +978,7 @@ class TestJsonPayload(unittest.TestCase):
 
         msg = Msg(self.topic, payload, 0, 0)
 
-        SUT._on_message_json(None, None, msg)
+        SUT._on_message_json(msg)
 
         mock_manager.append_data.assert_called_once_with(msg.topic, flattened_payload_dict)
 
@@ -1025,7 +1025,7 @@ class TestJsonPayload(unittest.TestCase):
 
         msg = Msg(self.topic, payload, 0, 0)
 
-        SUT._on_message_json(None, None, msg)
+        SUT._on_message_json(msg)
 
         mock_manager.append_data.assert_called_once_with(msg.topic, flattened_payload_dict)
 
@@ -1056,7 +1056,7 @@ class TestJsonPayload(unittest.TestCase):
 
         msg = Msg(self.topic, payload, 0, 0)
 
-        SUT._on_message_json(None, None, msg)
+        SUT._on_message_json(msg)
 
         self.assertFalse(mock_manager.append_data.called)
 
@@ -1101,7 +1101,7 @@ class TestJsonPayload(unittest.TestCase):
 
         msg = Msg(self.topic, payload, 0, 0)
 
-        SUT._on_message_json(None, None, msg)
+        SUT._on_message_json(msg)
 
         mock_manager.append_data.assert_called_once_with(msg.topic, payload_dict)
         call_args_list = mock_manager.append_data.call_args_list
@@ -1146,7 +1146,7 @@ class TestJsonPayload(unittest.TestCase):
 
         msg = Msg(self.topic, payload, 0, 0)
 
-        SUT._on_message_json(None, None, msg)
+        SUT._on_message_json(msg)
 
         mock_manager.append_data.assert_called_once_with(msg.topic, payload_dict)
         call_args_list = mock_manager.append_data.call_args_list
@@ -1193,7 +1193,7 @@ class TestJsonPayload(unittest.TestCase):
 
         msg = Msg(self.topic, payload, 0, 0)
 
-        SUT._on_message_json(None, None, msg)
+        SUT._on_message_json(msg)
 
         mock_manager.append_data.assert_not_called()
         SUT.logger.info.assert_called_with(\
@@ -1238,7 +1238,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
 
         msg = Msg(self.topic, payload, 0, 0)
 
-        SUT._on_message_individual(None, None, msg)
+        SUT._on_message_individual(msg)
         self.assertEqual(mock_logger.error.call_count, 3)
 
     def test_empty_payload(self):
@@ -1262,7 +1262,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
 
         msg = Msg(self.topic, payload, 0, 0)
 
-        SUT._on_message_individual(None, None, msg)
+        SUT._on_message_individual(msg)
         self.assertEqual(mock_logger.error.call_count, 3)
 
     def test_None_payload(self):
@@ -1285,7 +1285,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         payload = None
         msg = Msg(self.topic, payload, 0, 0)
 
-        SUT._on_message_individual(None, None, msg)
+        SUT._on_message_individual(msg)
 
         mock_manager.append_data.assert_called_once_with(msg.topic, {msg.topic: None}, msg.topic)
 
@@ -1313,7 +1313,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
 
         msg = Msg(topic, payload_str, 0, 0)
 
-        SUT._on_message_individual(None, None, msg)
+        SUT._on_message_individual(msg)
         mock_manager.append_data.assert_called_once_with(msg.topic, {msg.topic: payload}, msg.topic)
 
         call_args_list = mock_manager.append_data.call_args_list
@@ -1342,7 +1342,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
 
         msg = Msg(self.single_topic, payload_str, 0, 0)
 
-        SUT._on_message_individual(None, None, msg)
+        SUT._on_message_individual(msg)
         mock_manager.append_data.assert_called_once_with(msg.topic, {self.topic_end: payload}, self.topic_end)
 
     def test_multiple_topics(self):
@@ -1370,7 +1370,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
                   0,
                   0)
 
-        SUT._on_message_individual(None, None, msg)
+        SUT._on_message_individual(msg)
         mock_manager.append_data.assert_called_once_with(msg.topic, {msg.topic: payload}, msg.topic)
 
     def test_two_topics(self):
@@ -1398,7 +1398,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
                   0,
                   0)
 
-        SUT._on_message_individual(None, None, msg)
+        SUT._on_message_individual(msg)
         mock_manager.append_data.assert_called_once_with(msg.topic, {msg.topic: payload}, msg.topic)
 
     def test_ignore_default_true(self):
@@ -1424,7 +1424,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
 
         msg = Msg(self.single_topic, payload_str, 0, 0)
 
-        SUT._on_message_individual(None, None, msg)
+        SUT._on_message_individual(msg)
         self.assertFalse(mock_manager.append_data.called)
 
     def test_ignore_default_true_ignore_field_false(self):
@@ -1460,7 +1460,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
 
         msg = Msg(self.single_topic, payload_str, 0, 0)
 
-        SUT._on_message_individual(None, None, msg)
+        SUT._on_message_individual(msg)
         mock_manager.append_data.assert_called_once_with(msg.topic, {self.topic_end: payload}, self.topic_end)
 
     def test_ignore_field_true(self):
@@ -1488,7 +1488,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
 
         msg = Msg(self.single_topic, payload_str, 0, 0)
 
-        SUT._on_message_individual(None, None, msg)
+        SUT._on_message_individual(msg)
         self.assertFalse(mock_manager.append_data.called)
 
 class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
@@ -1530,7 +1530,7 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
 
         msg = Msg(self.topic, payload, 0, 0)
 
-        SUT._on_message_individual(None, None, msg)
+        SUT._on_message_individual(msg)
         self.assertEqual(mock_logger.error.call_count, 3)
 
     def test_empty_payload(self):
@@ -1553,7 +1553,7 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
         payload = payload.encode("utf-8")
         msg = Msg(self.topic, payload, 0, 0)
 
-        SUT._on_message_individual(None, None, msg)
+        SUT._on_message_individual(msg)
         self.assertEqual(mock_logger.error.call_count, 3)
 
     def test_None_payload(self):
@@ -1577,7 +1577,7 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
 
         msg = Msg(self.topic, None, 0, 0)
 
-        SUT._on_message_individual(None, None, msg)
+        SUT._on_message_individual(msg)
         mock_manager.append_data.assert_called_once_with(msg.topic, {msg.topic: None}, msg.topic)
 
     def test_single_topic(self):
@@ -1601,7 +1601,7 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
 
         msg = Msg(self.single_topic, payload_str, 0, 0)
 
-        SUT._on_message_individual(None, None, msg)
+        SUT._on_message_individual(msg)
         mock_manager.append_data.assert_called_once_with(msg.topic, {self.topic_end: payload}, self.topic_end)
 
 if __name__ == '__main__':

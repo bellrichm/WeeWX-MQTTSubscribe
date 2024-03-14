@@ -1518,7 +1518,7 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
         self.logger.error(f"**** MessageCallbackProvider Ignoring topic={msg.topic} and payload={msg.payload}")
         self.logger.error(f"**** MessageCallbackProvider {traceback.format_exc()}")
 
-    def _on_message_keyword(self, _client, _userdata, msg):
+    def _on_message_keyword(self, msg):
         # pylint: disable= too-many-locals
         # Wrap all the processing in a try, so it doesn't crash and burn on any error
         try:
@@ -1558,7 +1558,7 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
         except Exception as exception: # (want to catch all) pylint: disable=broad-except
             self._log_exception('on_message_keyword', exception, msg)
 
-    def _on_message_json(self, _client, _userdata, msg):
+    def _on_message_json(self, msg):
         # pylint: disable=too-many-branches
         # Wrap all the processing in a try, so it doesn't crash and burn on any error
         try:
@@ -1610,7 +1610,7 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
 
         return data_final
 
-    def _on_message_individual(self, _client, _userdata, msg):
+    def _on_message_individual(self, msg):
 
         # Wrap all the processing in a try, so it doesn't crash and burn on any error
         try:
@@ -1641,7 +1641,7 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
         except Exception as exception: # (want to catch all) pylint: disable=broad-except
             self._log_exception('on_message_individual', exception, msg)
 
-    def on_message_multi(self, client, userdata, msg):
+    def on_message_multi(self, _client, _userdata, msg):
         ''' The on message call back.'''
         # Wrap all the processing in a try, so it doesn't crash and burn on any error
         try:
@@ -1649,11 +1649,11 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
             message_type = message_dict['type']
             # ToDo: eliminate if/elif?
             if message_type == 'individual':
-                self._on_message_individual(client, userdata, msg)
+                self._on_message_individual(msg)
             elif message_type == 'json':
-                self._on_message_json(client, userdata, msg)
+                self._on_message_json(msg)
             elif message_type == 'keyword':
-                self._on_message_keyword(client, userdata, msg)
+                self._on_message_keyword(msg)
             else:
                 self.logger.error(f"Unknown message_type={message_type}. Skipping topic={msg.topic} and payload={msg.payload}")
         except Exception as exception: # (want to catch all) pylint: disable=broad-except
