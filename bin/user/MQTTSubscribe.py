@@ -2021,7 +2021,7 @@ class MQTTSubscriberV1(MQTTSubscriber):
 class MQTTSubscriberV2(MQTTSubscriber):
     ''' MQTTSubscriber that communicates with paho mqtt v2. '''
     def get_client(self, mqtt_options):
-        return mqtt.Client(callback_api_version=mqtt.CallbackAPIVersion.VERSION1, # (only available in v2) pylint: disable=unexpected-keyword-arg
+        return mqtt.Client(callback_api_version=mqtt.CallbackAPIVersion.VERSION2, # (only available in v2) pylint: disable=unexpected-keyword-arg
                            protocol=mqtt_options['protocol'],
                            client_id=mqtt_options['clientid'],
                            userdata=self.userdata,
@@ -2036,30 +2036,21 @@ class MQTTSubscriberV2(MQTTSubscriber):
         if mqtt_options['log_mqtt']:
             self.client.on_log = self._on_log
 
-    def _on_connect(self, client, userdata, flags, rc):
-        # https://pypi.org/project/paho-mqtt/#on-connect
-        # rc:
-        # 0: Connection successful
-        # 1: Connection refused - incorrect protocol version
-        # 2: Connection refused - invalid client identifier
-        # 3: Connection refused - server unavailable
-        # 4: Connection refused - bad username or password
-        # 5: Connection refused - not authorised
-        # 6-255: Currently unused.
-        self.logger.info(f"Connected with result code {int(rc)}")
+    def _on_connect(self, client, userdata, flags, reason_code, _properties):
+        self.logger.info(f"Connected with result code {int(reason_code.value)}")
         self.logger.info(f"Connected flags {str(flags)}")
 
         userdata['connect'] = True
-        userdata['connect_rc'] = rc
+        userdata['connect_rc'] = reason_code.value
         userdata['connect_flags'] = flags
 
         self._subscribe(client)
 
-    def _on_disconnect(self, _client, _userdata, rc):
-        self.logger.info(f"Disconnected with result code {int(rc)}")
+    def _on_disconnect(self, _client, _userdata, _flags, reason_code, _properties):
+        self.logger.info(f"Disconnected with result code {int(reason_code.value)}")
 
-    def _on_subscribe(self, _client, _userdata, mid, granted_qos):
-        self.logger.info(f"Subscribed to mid: {int(mid)} is size {len(granted_qos)} has a QOS of {int(granted_qos[0])}")
+    def _on_subscribe(self, _client, _userdata, mid, reason_codes, _properties):
+        self.logger.info(f"Subscribed to mid: {int(mid)} is size {len(reason_codes)} has a QOS of {int(reason_codes[0].value)}")
 
     def _on_log(self, _client, _userdata, level, msg):
         self.mqtt_logger[level](f"MQTTSubscribe MQTT: {msg}")

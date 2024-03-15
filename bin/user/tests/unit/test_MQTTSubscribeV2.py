@@ -54,16 +54,16 @@ class TestCallbacks(unittest.TestCase):
         config_dict['topics'] = {}
         config = configobj.ConfigObj(config_dict)
 
-        rc = random.randint(1, 10)
+        reason_code = paho.mqtt.reasoncodes.ReasonCode(paho.mqtt.packettypes.PacketTypes.CONNACK, identifier=random.randint(131, 138))
 
         with mock.patch('user.MQTTSubscribe.MessageCallbackProvider'):
             with mock.patch('user.MQTTSubscribe.TopicManager'):
                 # pylint: disable=no-member, protected-access
                 SUT = MQTTSubscriberV2(config, mock_logger)
 
-                SUT._on_disconnect(None, None, rc)
+                SUT._on_disconnect(None, None, None, reason_code, None)
 
-                SUT.logger.info.assert_called_with(f"Disconnected with result code {int(rc)}")
+                SUT.logger.info.assert_called_with(f"Disconnected with result code {int(reason_code.value)}")
 
     @staticmethod
     def test_on_subscribe():
@@ -75,16 +75,17 @@ class TestCallbacks(unittest.TestCase):
         config = configobj.ConfigObj(config_dict)
 
         mid = random.randint(1, 10)
-        granted_qos = [random.randint(1, 10)]
+        reason_code = paho.mqtt.reasoncodes.ReasonCode(paho.mqtt.packettypes.PacketTypes.CONNACK, identifier=random.randint(131, 138))
+        reason_codes = [reason_code]
 
         with mock.patch('user.MQTTSubscribe.MessageCallbackProvider'):
             with mock.patch('user.MQTTSubscribe.TopicManager'):
                 # pylint: disable=no-member, protected-access
                 SUT = MQTTSubscriberV2(config, mock_logger)
 
-                SUT._on_subscribe(None, None, mid, granted_qos)
+                SUT._on_subscribe(None, None, mid, reason_codes, None)
 
-                SUT.logger.info.assert_called_with(f"Subscribed to mid: {mid} is size {len(granted_qos)} has a QOS of {granted_qos[0]}")
+                SUT.logger.info.assert_called_with(f"Subscribed to mid: {mid} is size {len(reason_codes)} has a QOS of {reason_codes[0].value}")
 
     @staticmethod
     def test_on_log():
