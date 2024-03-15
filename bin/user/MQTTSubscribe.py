@@ -1980,7 +1980,7 @@ class MQTTSubscriberV1(MQTTSubscriber):
         protocol = getattr(mqtt, protocol_string, 0)
         if protocol not in [mqtt.MQTTv31, mqtt.MQTTv311]:
             raise ValueError(f"Invalid protocol, {protocol_string}.")
-        
+
         super().__init__(service_dict, logger)
 
     def get_client(self, mqtt_options):
@@ -2036,7 +2036,7 @@ class MQTTSubscriberV2(MQTTSubscriber):
         protocol = getattr(mqtt, protocol_string, 0)
         if protocol not in [mqtt.MQTTv31, mqtt.MQTTv311]:
             raise ValueError(f"Invalid protocol, {protocol_string}.")
-                
+
         super().__init__(service_dict, logger)
 
     def get_client(self, mqtt_options):
@@ -2483,6 +2483,7 @@ class MQTTSubscribeConfiguration():
             'clientid': ['MQTTSubscribe'],
             'console': ['MQTTSubscribe'],
             'keepalive': ['MQTTSubscribe'],
+            'protocol': ['MQTTSubscribe'],
             'logging_filename': ['MQTTSubscribe'],
             'logging_level': ['MQTTSubscribe'],
             'message_callback': ['MQTTSubscribe'],
