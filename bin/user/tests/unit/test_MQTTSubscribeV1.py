@@ -17,6 +17,8 @@ import configobj
 import random
 import sys
 
+import paho
+
 import test_weewx_stubs
 from test_weewx_stubs import random_string
 # setup stubs before importing MQTTSubscribe
@@ -26,6 +28,7 @@ from user.MQTTSubscribe import MQTTSubscriberV1, Logger
 
 mock_client = None
 
+@unittest.skipIf(hasattr(paho.mqtt.client, 'CallbackAPIVersion'), "paho-mqtt is NOT v1, skipping tests.")
 class TestCallbacks(unittest.TestCase):
     def setUp(self):
         # reset stubs for every test

@@ -1802,7 +1802,7 @@ class MQTTSubscriber():
         ''' Factory method to get appropriate MQTTSubscriber for paho mqtt version. '''
         if hasattr(mqtt, 'CallbackAPIVersion'):
             return MQTTSubscriberV2(service_dict, logger)
-        
+
         return MQTTSubscriberV1(service_dict, logger)
 
     def _setup_mqtt(self, mqtt_options, message_callback_provider_name, message_callback_config):
