@@ -53,6 +53,11 @@ CONFIG_SPEC_TEXT = \
     # Default is 1883.
     port = 1883
 
+    # The protocol to use
+    # Valid values: MQTTv31, MQTTv311
+    # Default is MQTTv311,
+    protocol = MQTTv311
+
     # username for broker authentication.
     # Default is None.
     username = None
@@ -1752,8 +1757,6 @@ class MQTTSubscriber():
 
         protocol_string = service_dict.get('protocol', 'MQTTv311')
         protocol = getattr(mqtt, protocol_string, 0)
-        if protocol not in [mqtt.MQTTv31, mqtt.MQTTv311]:
-            raise ValueError(f"Invalid protocol, {protocol_string}.")
 
         mqtt_options = {
             'clientid': service_dict.get('clientid', 'MQTTSubscribe-' + str(random.randint(1000, 9999))),
@@ -1972,6 +1975,14 @@ class MQTTSubscriber():
 
 class MQTTSubscriberV1(MQTTSubscriber):
     ''' MQTTSubscriber that communicates with paho mqtt v1. '''
+    def __init__(self, service_dict, logger):
+        protocol_string = service_dict.get('protocol', 'MQTTv311')
+        protocol = getattr(mqtt, protocol_string, 0)
+        if protocol not in [mqtt.MQTTv31, mqtt.MQTTv311]:
+            raise ValueError(f"Invalid protocol, {protocol_string}.")
+        
+        super().__init__(service_dict, logger)
+
     def get_client(self, mqtt_options):
         return mqtt.Client(protocol=mqtt_options['protocol'], # (v1 signature) pylint: disable=no-value-for-parameter
                            client_id=mqtt_options['clientid'],
@@ -2020,8 +2031,16 @@ class MQTTSubscriberV1(MQTTSubscriber):
 
 class MQTTSubscriberV2(MQTTSubscriber):
     ''' MQTTSubscriber that communicates with paho mqtt v2. '''
+    def __init__(self, service_dict, logger):
+        protocol_string = service_dict.get('protocol', 'MQTTv311')
+        protocol = getattr(mqtt, protocol_string, 0)
+        if protocol not in [mqtt.MQTTv31, mqtt.MQTTv311]:
+            raise ValueError(f"Invalid protocol, {protocol_string}.")
+                
+        super().__init__(service_dict, logger)
+
     def get_client(self, mqtt_options):
-        return mqtt.Client(callback_api_version=mqtt.CallbackAPIVersion.VERSION2, # (only available in v2) pylint: disable=unexpected-keyword-arg
+        return mqtt.Client(callback_api_version=mqtt.CallbackAPIVersion.VERSION2, # (only available in v2) pylint: disable=unexpected-keyword-arg, no-member
                            protocol=mqtt_options['protocol'],
                            client_id=mqtt_options['clientid'],
                            userdata=self.userdata,
