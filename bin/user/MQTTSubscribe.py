@@ -1326,7 +1326,6 @@ class TopicManager():
         """ Get the ignore value """
         return self._get_value('ignore', topic)
 
-
     def get_fields_ignoring_msg_id(self, topic):
         """ Get the ignore_msg_id_field value """
         return self._get_value('fields_ignoring_msg_id', topic)
@@ -1801,6 +1800,9 @@ class MQTTSubscriber():
     @classmethod
     def get_subscriber(cls, service_dict, logger):
         ''' Factory method to get appropriate MQTTSubscriber for paho mqtt version. '''
+        if hasattr(mqtt, 'CallbackAPIVersion'):
+            return MQTTSubscriberV2(service_dict, logger)
+        
         return MQTTSubscriberV1(service_dict, logger)
 
     def _setup_mqtt(self, mqtt_options, message_callback_provider_name, message_callback_config):
@@ -1970,21 +1972,60 @@ class MQTTSubscriber():
 
 class MQTTSubscriberV1(MQTTSubscriber):
     ''' MQTTSubscriber that communicates with paho mqtt v1. '''
-
     def get_client(self, mqtt_options):
-        try:
-            callback_api_version = mqtt.CallbackAPIVersion.VERSION1
-            client = mqtt.Client(callback_api_version=callback_api_version, # (only available in v2) pylint: disable=unexpected-keyword-arg
-                                 protocol=mqtt_options['protocol'],
-                                 client_id=mqtt_options['clientid'],
-                                 userdata=self.userdata,
-                                 clean_session=mqtt_options['clean_session'])
-        except AttributeError:
-            client = mqtt.Client(protocol=mqtt_options['protocol'],
-                                 client_id=mqtt_options['clientid'], # (v1 signature) pylint: disable=no-value-for-parameter
-                                 userdata=self.userdata,
-                                 clean_session=mqtt_options['clean_session'])
-        return client
+        return mqtt.Client(protocol=mqtt_options['protocol'], # (v1 signature) pylint: disable=no-value-for-parameter
+                           client_id=mqtt_options['clientid'],
+                           userdata=self.userdata,
+                           clean_session=mqtt_options['clean_session'])
+
+    def set_callbacks(self, mqtt_options):
+        self.client.on_subscribe = self._on_subscribe
+        self.client.on_connect = self._on_connect
+        self.client.on_disconnect = self._on_disconnect
+        self.client.on_message = self._on_message
+
+        if mqtt_options['log_mqtt']:
+            self.client.on_log = self._on_log
+
+    def _on_connect(self, client, userdata, flags, rc):
+        # https://pypi.org/project/paho-mqtt/#on-connect
+        # rc:
+        # 0: Connection successful
+        # 1: Connection refused - incorrect protocol version
+        # 2: Connection refused - invalid client identifier
+        # 3: Connection refused - server unavailable
+        # 4: Connection refused - bad username or password
+        # 5: Connection refused - not authorised
+        # 6-255: Currently unused.
+        self.logger.info(f"Connected with result code {int(rc)}")
+        self.logger.info(f"Connected flags {str(flags)}")
+
+        userdata['connect'] = True
+        userdata['connect_rc'] = rc
+        userdata['connect_flags'] = flags
+
+        self._subscribe(client)
+
+    def _on_disconnect(self, _client, _userdata, rc):
+        self.logger.info(f"Disconnected with result code {int(rc)}")
+
+    def _on_subscribe(self, _client, _userdata, mid, granted_qos):
+        self.logger.info(f"Subscribed to mid: {int(mid)} is size {len(granted_qos)} has a QOS of {int(granted_qos[0])}")
+
+    def _on_log(self, _client, _userdata, level, msg):
+        self.mqtt_logger[level](f"MQTTSubscribe MQTT: {msg}")
+
+    def _on_message(self, _client, _userdata, msg):
+        self.callback(msg)
+
+class MQTTSubscriberV2(MQTTSubscriber):
+    ''' MQTTSubscriber that communicates with paho mqtt v2. '''
+    def get_client(self, mqtt_options):
+        return mqtt.Client(callback_api_version=mqtt.CallbackAPIVersion.VERSION1, # (only available in v2) pylint: disable=unexpected-keyword-arg
+                           protocol=mqtt_options['protocol'],
+                           client_id=mqtt_options['clientid'],
+                           userdata=self.userdata,
+                           clean_session=mqtt_options['clean_session'])
 
     def set_callbacks(self, mqtt_options):
         self.client.on_subscribe = self._on_subscribe
@@ -2412,7 +2453,6 @@ class MQTTSubscribeConfiguration():
                                                                 .get('REPLACE_ME', {})\
                                                                 .get('REPLACE_ME', {}))
 
-
     @property
     def default_config(self):
         """ The default configuration. """
@@ -2425,7 +2465,6 @@ class MQTTSubscribeConfiguration():
 '''
 
         config_spec = configobj.ConfigObj(CONFIG_SPEC_TEXT.splitlines())
-
 
         remove_items = {
             'archive_interval': ['MQTTSubscribe'],
@@ -2491,7 +2530,6 @@ class MQTTSubscribeConfiguration():
 
         self._remove_options(remove_items, config_spec)
         self._remove_options(remove_more_items, config_spec)
-
 
         if self.section:
             config_spec.rename('MQTTSubscribe', self.section)
