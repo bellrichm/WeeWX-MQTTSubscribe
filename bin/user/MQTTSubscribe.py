@@ -1772,7 +1772,7 @@ class MQTTSubscriber():
             try:
                 clean_start = getattr(mqtt, clean_start_string)
             except AttributeError:
-                raise ValueError(f"'{clean_start_string}' is an invalid option for 'clean_start' option.")
+                raise ValueError(f"'{clean_start_string}' is an invalid option for 'clean_start' option.") from None
 
         mqtt_options = {
             'clientid': service_dict.get('clientid', 'MQTTSubscribe-' + str(random.randint(1000, 9999))),
