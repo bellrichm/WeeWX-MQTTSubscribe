@@ -24,7 +24,7 @@ from test_weewx_stubs import random_string
 # setup stubs before importing MQTTSubscribe
 test_weewx_stubs.setup_stubs()
 
-from user.MQTTSubscribe import MQTTSubscriberV2, Logger
+from user.MQTTSubscribe import MQTTSubscriberV2MQTT3, Logger
 
 mock_client = None
 
@@ -59,7 +59,7 @@ class TestCallbacks(unittest.TestCase):
         with mock.patch('user.MQTTSubscribe.MessageCallbackProvider'):
             with mock.patch('user.MQTTSubscribe.TopicManager'):
                 # pylint: disable=no-member, protected-access
-                SUT = MQTTSubscriberV2(config, mock_logger)
+                SUT = MQTTSubscriberV2MQTT3(config, mock_logger)
 
                 SUT._on_disconnect(None, None, None, reason_code, None)
 
@@ -81,7 +81,7 @@ class TestCallbacks(unittest.TestCase):
         with mock.patch('user.MQTTSubscribe.MessageCallbackProvider'):
             with mock.patch('user.MQTTSubscribe.TopicManager'):
                 # pylint: disable=no-member, protected-access
-                SUT = MQTTSubscriberV2(config, mock_logger)
+                SUT = MQTTSubscriberV2MQTT3(config, mock_logger)
 
                 SUT._on_subscribe(None, None, mid, reason_codes, None)
 
@@ -104,7 +104,7 @@ class TestCallbacks(unittest.TestCase):
             with mock.patch('user.MQTTSubscribe.TopicManager'):
                 # pylint: disable=no-member, protected-access
                 mock_client = mock.Mock()
-                SUT = MQTTSubscriberV2(config, mock_logger)
+                SUT = MQTTSubscriberV2MQTT3(config, mock_logger)
 
                 SUT._on_log(None, None, level, msg)
 
@@ -128,7 +128,7 @@ class TestCallbacks(unittest.TestCase):
             with mock.patch('user.MQTTSubscribe.TopicManager'):
                 mock_client = mock.Mock()
                 # pylint: disable=protected-access
-                SUT = MQTTSubscriberV2(config, mock_logger)
+                SUT = MQTTSubscriberV2MQTT3(config, mock_logger)
 
                 self.assertEqual(SUT.client.on_log, SUT._on_log)
 
@@ -150,7 +150,7 @@ class TestCallbacks(unittest.TestCase):
             with mock.patch('user.MQTTSubscribe.TopicManager'):
                 # pylint: disable=protected-access
                 mock_client = mock.Mock()
-                SUT = MQTTSubscriberV2(config, mock_logger)
+                SUT = MQTTSubscriberV2MQTT3(config, mock_logger)
 
                 self.assertNotEqual(SUT.client.on_log, SUT._on_log)
 

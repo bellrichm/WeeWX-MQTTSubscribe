@@ -1804,7 +1804,7 @@ class MQTTSubscriber():
     def get_subscriber(cls, service_dict, logger):
         ''' Factory method to get appropriate MQTTSubscriber for paho mqtt version. '''
         if hasattr(mqtt, 'CallbackAPIVersion'):
-            return MQTTSubscriberV2(service_dict, logger)
+            return MQTTSubscriberV2MQTT3(service_dict, logger)
 
         return MQTTSubscriberV1(service_dict, logger)
 
@@ -2036,7 +2036,7 @@ class MQTTSubscriberV1(MQTTSubscriber):
     def _on_message(self, _client, _userdata, msg):
         self.callback(msg)
 
-class MQTTSubscriberV2(MQTTSubscriber):
+class MQTTSubscriberV2MQTT3(MQTTSubscriber):
     ''' MQTTSubscriber that communicates with paho mqtt v2. '''
     def __init__(self, service_dict, logger):
         protocol_string = service_dict.get('protocol', 'MQTTv311')
