@@ -1,5 +1,5 @@
 #
-#    Copyright (c) 2020-2023 Rich Bell <bellrichm@gmail.com>
+#    Copyright (c) 2020-2024 Rich Bell <bellrichm@gmail.com>
 #
 #    See the file LICENSE.txt for your full rights.
 #
@@ -69,10 +69,11 @@ class TestService(unittest.TestCase):
             callback_api_version = mqtt.CallbackAPIVersion.VERSION1
             client = mqtt.Client(callback_api_version=callback_api_version, # (only available in v2) pylint: disable=unexpected-keyword-arg
                                   userdata=userdata)
+            client.on_connect = utils.on_connect_v1
         except AttributeError:
             client = mqtt.Client(userdata=userdata) # (v1 signature) pylint: disable=no-value-for-parameter
+            client.on_connect = utils.on_connect_v1
 
-        client.on_connect = utils.on_connect
         client.connect(host, port, keepalive)
         client.loop_start()
 
@@ -95,10 +96,11 @@ class TestService(unittest.TestCase):
             callback_api_version = mqtt.CallbackAPIVersion.VERSION1
             client2 = mqtt.Client(callback_api_version=callback_api_version, # (only available in v2) pylint: disable=unexpected-keyword-arg
                                   userdata=userdata2)
+            client2.on_connect = utils.on_connect_v1
         except AttributeError:
             client2 = mqtt.Client(userdata=userdata2) # (v1 signature) pylint: disable=no-value-for-parameter
+            client2.on_connect = utils.on_connect_v1
 
-        client2.on_connect = utils.on_connect
         client2.on_message = utils.on_message
         client2.connect(host, port, keepalive)
         client2.loop_start()

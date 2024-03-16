@@ -28,7 +28,7 @@ def byteify(data, ignore_dicts=False):
     # if it's anything else, return it in its original form
     return data
 
-def on_connect(client, userdata, flags, rc): # (match callback signature) pylint: disable=unused-argument
+def on_connect_v1(client, userdata, _flags, _rc):
     # https://pypi.org/project/paho-mqtt/#on-connect
     # rc:
     # 0: Connection successful
