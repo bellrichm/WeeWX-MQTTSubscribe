@@ -42,6 +42,11 @@ def on_connect_v1(client, userdata, _flags, _rc):
         (result, mid) = client.subscribe(topic) # (match callback signature) pylint: disable=unused-variable
     userdata['connected_flag'] = True
 
+def on_connect_v2(client, userdata, _flags, _reason_code, _properties):
+    for topic in userdata['topics']:
+        (result, mid) = client.subscribe(topic) # (match callback signature) pylint: disable=unused-variable
+    userdata['connected_flag'] = True
+
 def on_message(client, userdata, msg): # (match callback signature) pylint: disable=unused-argument
     userdata['msg'] = True
     #print(msg.topic)

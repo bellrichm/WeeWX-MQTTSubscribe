@@ -66,10 +66,10 @@ class TestService(unittest.TestCase):
         }
 
         try:
-            callback_api_version = mqtt.CallbackAPIVersion.VERSION1
+            callback_api_version = mqtt.CallbackAPIVersion.VERSION2
             client = mqtt.Client(callback_api_version=callback_api_version, # (only available in v2) pylint: disable=unexpected-keyword-arg
                                   userdata=userdata)
-            client.on_connect = utils.on_connect_v1
+            client.on_connect = utils.on_connect_v2
         except AttributeError:
             client = mqtt.Client(userdata=userdata) # (v1 signature) pylint: disable=no-value-for-parameter
             client.on_connect = utils.on_connect_v1
@@ -93,10 +93,10 @@ class TestService(unittest.TestCase):
         }
 
         try:
-            callback_api_version = mqtt.CallbackAPIVersion.VERSION1
+            callback_api_version = mqtt.CallbackAPIVersion.VERSION2
             client2 = mqtt.Client(callback_api_version=callback_api_version, # (only available in v2) pylint: disable=unexpected-keyword-arg
                                   userdata=userdata2)
-            client2.on_connect = utils.on_connect_v1
+            client2.on_connect = utils.on_connect_v2
         except AttributeError:
             client2 = mqtt.Client(userdata=userdata2) # (v1 signature) pylint: disable=no-value-for-parameter
             client2.on_connect = utils.on_connect_v1
