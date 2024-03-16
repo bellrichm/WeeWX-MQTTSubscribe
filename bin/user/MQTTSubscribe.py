@@ -1841,7 +1841,7 @@ class MQTTSubscriber():
         self.client.reconnect_delay_set(min_delay=mqtt_options['min_delay'], max_delay=mqtt_options['max_delay'])
 
         try:
-            self.client.connect(mqtt_options['host'], mqtt_options['port'], mqtt_options['keepalive'])
+            self.connect(mqtt_options)
         except Exception as exception: # (want to catch all) pylint: disable=broad-except
             self.logger.error(f"Failed to connect to {mqtt_options['host']} at {int(mqtt_options['port'])}. '{exception}'")
             raise weewx.WeeWxIOError(exception)
@@ -1970,8 +1970,12 @@ class MQTTSubscriber():
         raise NotImplementedError("Method 'get_client' is not implemented")
 
     def set_callbacks(self, mqtt_options):
-        ''' Get the MQTT client. '''
+        ''' Setup the MQTT callbacks. '''
         raise NotImplementedError("Method 'set_callbacks' is not implemented")
+
+    def connect(self, mqtt_options):
+        ''' Connect to the MQTT server. '''
+        raise NotImplementedError("Method 'connect' is not implemented")
 
 class MQTTSubscriberV1(MQTTSubscriber):
     ''' MQTTSubscriber that communicates with paho mqtt v1. '''
@@ -1997,6 +2001,9 @@ class MQTTSubscriberV1(MQTTSubscriber):
 
         if mqtt_options['log_mqtt']:
             self.client.on_log = self._on_log
+
+    def connect(self, mqtt_options):
+        self.client.connect(mqtt_options['host'], mqtt_options['port'], mqtt_options['keepalive'])
 
     def _on_connect(self, client, userdata, flags, rc):
         # https://pypi.org/project/paho-mqtt/#on-connect
@@ -2054,6 +2061,9 @@ class MQTTSubscriberV2(MQTTSubscriber):
 
         if mqtt_options['log_mqtt']:
             self.client.on_log = self._on_log
+
+    def connect(self, mqtt_options):
+        self.client.connect(mqtt_options['host'], mqtt_options['port'], mqtt_options['keepalive'])
 
     def _on_connect(self, client, userdata, flags, reason_code, _properties):
         self.logger.info(f"Connected with result code {int(reason_code.value)}")

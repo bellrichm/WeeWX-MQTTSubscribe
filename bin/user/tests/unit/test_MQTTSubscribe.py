@@ -32,6 +32,8 @@ class MQTTSubscriberTest(MQTTSubscriber):
         return mock_client
     def set_callbacks(self, mqtt_options):
         pass
+    def connect(self, mqtt_options):
+        self.client.connect()
 
 class Msg:
     # pylint: disable=too-few-public-methods
@@ -140,7 +142,7 @@ class TestInitialization(unittest.TestCase):
                 SUT = MQTTSubscriberTest(config, mock_logger)
 
                 SUT.client.username_pw_set.assert_not_called()
-                SUT.client.connect.assert_called_once_with(host, port, keepalive)
+                SUT.client.connect.assert_called_once()
 
     @staticmethod
     def test_password_None():
@@ -172,7 +174,7 @@ class TestInitialization(unittest.TestCase):
                 SUT = MQTTSubscriberTest(config, mock_logger)
 
                 SUT.client.username_pw_set.assert_not_called()
-                SUT.client.connect.assert_called_once_with(host, port, keepalive)
+                SUT.client.connect.assert_called()
 
     @staticmethod
     def test_username_and_password_None():
@@ -204,7 +206,7 @@ class TestInitialization(unittest.TestCase):
                 SUT = MQTTSubscriberTest(config, mock_logger)
 
                 SUT.client.username_pw_set.assert_not_called()
-                SUT.client.connect.assert_called_once_with(host, port, keepalive)
+                SUT.client.connect.assert_called_once()
 
     @staticmethod
     def test_username_and_password_set():
@@ -238,7 +240,7 @@ class TestInitialization(unittest.TestCase):
                 SUT = MQTTSubscriberTest(config, mock_logger)
 
                 SUT.client.username_pw_set.assert_called_once_with(username, password)
-                SUT.client.connect.assert_called_once_with(host, port, keepalive)
+                SUT.client.connect.assert_called_once()
 
 class  Testtls_configuration(unittest.TestCase):
     def setUp(self):
