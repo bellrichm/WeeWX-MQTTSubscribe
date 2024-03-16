@@ -1804,7 +1804,12 @@ class MQTTSubscriber():
     def get_subscriber(cls, service_dict, logger):
         ''' Factory method to get appropriate MQTTSubscriber for paho mqtt version. '''
         if hasattr(mqtt, 'CallbackAPIVersion'):
-            return MQTTSubscriberV2MQTT3(service_dict, logger)
+            protocol_string = service_dict.get('protocol', 'MQTTv311')
+            protocol = getattr(mqtt, protocol_string, 0)
+            if protocol in [mqtt.MQTTv31, mqtt.MQTTv311]:
+                return MQTTSubscriberV2MQTT3(service_dict, logger)
+
+            return MQTTSubscriberV2(service_dict, logger)
 
         return MQTTSubscriberV1(service_dict, logger)
 
@@ -2038,20 +2043,54 @@ class MQTTSubscriberV1(MQTTSubscriber):
 
 class MQTTSubscriberV2MQTT3(MQTTSubscriber):
     ''' MQTTSubscriber that communicates with paho mqtt v2. '''
-    def __init__(self, service_dict, logger):
-        protocol_string = service_dict.get('protocol', 'MQTTv311')
-        protocol = getattr(mqtt, protocol_string, 0)
-        if protocol not in [mqtt.MQTTv31, mqtt.MQTTv311]:
-            raise ValueError(f"Invalid protocol, {protocol_string}.")
-
-        super().__init__(service_dict, logger)
-
     def get_client(self, mqtt_options):
         return mqtt.Client(callback_api_version=mqtt.CallbackAPIVersion.VERSION2, # (only available in v2) pylint: disable=unexpected-keyword-arg, no-member
                            protocol=mqtt_options['protocol'],
                            client_id=mqtt_options['clientid'],
                            userdata=self.userdata,
                            clean_session=mqtt_options['clean_session'])
+
+    def set_callbacks(self, mqtt_options):
+        self.client.on_subscribe = self._on_subscribe
+        self.client.on_connect = self._on_connect
+        self.client.on_disconnect = self._on_disconnect
+        self.client.on_message = self._on_message
+
+        if mqtt_options['log_mqtt']:
+            self.client.on_log = self._on_log
+
+    def connect(self, mqtt_options):
+        self.client.connect(mqtt_options['host'], mqtt_options['port'], mqtt_options['keepalive'])
+
+    def _on_connect(self, client, userdata, flags, reason_code, _properties):
+        self.logger.info(f"Connected with result code {int(reason_code.value)}")
+        self.logger.info(f"Connected flags {str(flags)}")
+
+        userdata['connect'] = True
+        userdata['connect_rc'] = reason_code.value
+        userdata['connect_flags'] = flags
+
+        self._subscribe(client)
+
+    def _on_disconnect(self, _client, _userdata, _flags, reason_code, _properties):
+        self.logger.info(f"Disconnected with result code {int(reason_code.value)}")
+
+    def _on_subscribe(self, _client, _userdata, mid, reason_codes, _properties):
+        self.logger.info(f"Subscribed to mid: {int(mid)} is size {len(reason_codes)} has a QOS of {int(reason_codes[0].value)}")
+
+    def _on_log(self, _client, _userdata, level, msg):
+        self.mqtt_logger[level](f"MQTTSubscribe MQTT: {msg}")
+
+    def _on_message(self, _client, _userdata, msg):
+        self.callback(msg)
+
+class MQTTSubscriberV2(MQTTSubscriber):
+    ''' MQTTSubscriber that communicates with paho mqtt v2. '''
+    def get_client(self, mqtt_options):
+        return mqtt.Client(callback_api_version=mqtt.CallbackAPIVersion.VERSION2, # (only available in v2) pylint: disable=unexpected-keyword-arg, no-member
+                           protocol=mqtt_options['protocol'],
+                           client_id=mqtt_options['clientid'],
+                           userdata=self.userdata)
 
     def set_callbacks(self, mqtt_options):
         self.client.on_subscribe = self._on_subscribe
