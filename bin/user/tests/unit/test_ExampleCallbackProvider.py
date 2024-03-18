@@ -1,5 +1,5 @@
 #
-#    Copyright (c) 2020-2023 Rich Bell <bellrichm@gmail.com>
+#    Copyright (c) 2020-2024 Rich Bell <bellrichm@gmail.com>
 #
 #    See the file LICENSE.txt for your full rights.
 #
@@ -91,7 +91,7 @@ class Test1(unittest.TestCase):
 
         SUT = MessageCallbackProvider({}, mock_logger, mock_manager)
 
-        SUT._on_message(None, None, msg)
+        SUT._on_message(msg)
 
         mock_manager.append_data.assert_called_once_with(msg.topic, observation_dict)
 

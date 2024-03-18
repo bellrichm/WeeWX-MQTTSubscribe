@@ -1,5 +1,5 @@
 #
-#    Copyright (c) 2023 Rich Bell <bellrichm@gmail.com>
+#    Copyright (c) 2023-2024 Rich Bell <bellrichm@gmail.com>
 #
 #    See the file LICENSE.txt for your full rights.
 #
@@ -59,7 +59,7 @@ class TestJSONMessage(unittest.TestCase):
         payload = json.dumps(payload_dict).encode("utf-8")
 
         msg = Msg(self.topic, payload, 0, 0)
-        message_callback._on_message_json(None, None, msg)
+        message_callback._on_message_json(msg)
 
         queue = topic_manager._get_queue(self.topic)
         data = queue['data'].popleft()['data']

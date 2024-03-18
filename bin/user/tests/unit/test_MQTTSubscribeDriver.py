@@ -1,5 +1,5 @@
 #
-#    Copyright (c) 2020-2023 Rich Bell <bellrichm@gmail.com>
+#    Copyright (c) 2020-2024 Rich Bell <bellrichm@gmail.com>
 #
 #    See the file LICENSE.txt for your full rights.
 #
@@ -155,8 +155,10 @@ class TestgenLoopPackets(unittest.TestCase):
             {'name': topic}
             )
 
-        with mock.patch('user.MQTTSubscribe.MQTTSubscriber') as mock_manager:
+        with mock.patch('user.MQTTSubscribe.MQTTSubscriber') as mock_manager_class:
             with mock.patch('user.MQTTSubscribe.time') as mock_time:
+                mock_manager = mock.Mock()
+                mock_manager_class.get_subscriber = mock_manager
                 type(mock_manager.return_value).queues = mock.PropertyMock(return_value=[queue])
                 type(mock_manager.return_value).get_data = mock.Mock(side_effect=[self.empty_generator(), self.generator([self.queue_data])])
 
@@ -175,8 +177,10 @@ class TestgenLoopPackets(unittest.TestCase):
             {'name': topic}
             )
 
-        with mock.patch('user.MQTTSubscribe.MQTTSubscriber') as mock_manager:
+        with mock.patch('user.MQTTSubscribe.MQTTSubscriber') as mock_manager_class:
             with mock.patch('user.MQTTSubscribe.time') as mock_time:
+                mock_manager = mock.Mock()
+                mock_manager_class.get_subscriber = mock_manager
                 type(mock_manager.return_value).queues = mock.PropertyMock(return_value=[queue])
                 type(mock_manager.return_value).get_data = mock.Mock(side_effect=[self.generator([None]), self.generator([self.queue_data])])
 
@@ -225,8 +229,10 @@ class TestgenLoopPackets(unittest.TestCase):
             {'name': topic}
         )
 
-        with mock.patch('user.MQTTSubscribe.MQTTSubscriber') as mock_manager:
+        with mock.patch('user.MQTTSubscribe.MQTTSubscriber') as mock_manager_class:
             with mock.patch('user.MQTTSubscribe.time') as mock_time:
+                mock_manager = mock.Mock()
+                mock_manager_class.get_subscriber = mock_manager
                 type(mock_manager.return_value).queues = mock.PropertyMock(return_value=[queue])
                 type(mock_manager.return_value).get_data = mock.Mock(return_value=self.generator([self.queue_data]))
 
@@ -341,8 +347,14 @@ class TestgenArchiveRecords(unittest.TestCase):
         archive_topic = 'archive'
         self.setup_archive_queue_tests(archive_topic)
         queue_list = [self.queue_data, self.queue_data]
+        queue = dict(
+            {'name': archive_topic}
+        )
 
-        with mock.patch('user.MQTTSubscribe.MQTTSubscriber') as mock_manager:
+        with mock.patch('user.MQTTSubscribe.MQTTSubscriber') as mock_manager_class:
+            mock_manager = mock.Mock()
+            mock_manager_class.get_subscriber = mock_manager
+            type(mock_manager.return_value).queues = mock.PropertyMock(return_value=[queue])
             type(mock_manager.return_value).get_data = mock.Mock(return_value=self.generator([self.queue_data, self.queue_data, None]))
             records = []
 

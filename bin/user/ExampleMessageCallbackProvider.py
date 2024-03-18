@@ -1,5 +1,5 @@
 #
-#    Copyright (c) 2020-2023 Rich Bell <bellrichm@gmail.com>
+#    Copyright (c) 2020-2024 Rich Bell <bellrichm@gmail.com>
 #
 #    See the file LICENSE.txt for your full rights.
 #
@@ -52,7 +52,7 @@ class MessageCallbackProvider(user.MQTTSubscribe.AbstractMessageCallbackProvider
 
         return observations
 
-    def _on_message(self, _client, _userdata, msg):
+    def _on_message(self, msg):
         # Wrap all the processing in a try, so it doesn't crash and burn on any error
         try:
             self.logger.debug(f"MessageCallbackProvider For {msg.topic} received: {msg.payload}")
