@@ -219,7 +219,7 @@ python3 $USER_ROOT/MQTTSubscribe.py configure service --enable true --conf mqtts
     * [Configure MQTTSunscribe](https://github.com/bellrichm/WeeWX-MQTTSubscribe#configure-mqttsubscribe)
     * [Validate and test the configuration](https://github.com/bellrichm/WeeWX-MQTTSubscribe?tab=readme-ov-file#Validate-and-test-the-configuration)
 4. Stop WeeWX
-5. [Update WeeWX](https://github.com/bellrichm/WeeWX-MQTTSubscribe#update-weewx-with-mqttsubscribes-configuration)
+5. [Update WeeWX](https://github.com/bellrichm/WeeWX-MQTTSubscribe?tab=readme-ov-file#update-weewxconf)
 6. Restart WeeWX
 
 ## Debugging
