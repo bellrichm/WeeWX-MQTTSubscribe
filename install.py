@@ -22,6 +22,10 @@ MQTTSUBSCRIBE_CONFIG = """
     # Only used by the driver.
     driver = user.MQTTSubscribe
 
+    # Controls if validation errors raise an exception (stopping WeeWX from starting) or only logged.
+    # Default is false
+    stop_on_validation_errors = true    
+
 [MQTTSubscribeService]
     # This section is for the MQTTSubscribe service.
 
@@ -30,6 +34,10 @@ MQTTSUBSCRIBE_CONFIG = """
     # Only used by the service.
     enable = false
 
+    # Controls if validation errors raise an exception (stopping WeeWX from starting) or only logged.
+    # Default is false
+    stop_on_validation_errors = true
+    
 """
 
 

@@ -25,7 +25,7 @@ CONFIG_SPEC_TEXT = \
     enable = false
 
     # Controls if validation errors raise an exception (stopping WeeWX from starting) or only logged.
-    # Default is true
+    # Default is false
     stop_on_validation_errors = true
 
     # The binding, loop or archive.
@@ -1885,7 +1885,7 @@ class MQTTSubscriber():
         for msg in warn_msgs:
             self.logger.info(msg)
         if len(error_msgs) > 0:
-            if not to_bool(service_dict.get('stop_on_validation_errors', True)):
+            if not to_bool(service_dict.get('stop_on_validation_errors', False)):
                 for msg in error_msgs:
                     self.logger.info(msg)
             else:
