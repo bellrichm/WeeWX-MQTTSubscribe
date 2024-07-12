@@ -545,6 +545,7 @@ class TestDeprecatedOptions(unittest.TestCase):
 
     def test_topic_is_deprecated(self):
         config_dict = {}
+        config_dict['stop_on_validation_errors'] = True
         config_dict['message_callback'] = {}
         config_dict['topics'] = {}
         config_dict['topic'] = random_string()
@@ -561,6 +562,7 @@ class TestDeprecatedOptions(unittest.TestCase):
 
     def test_overlap_is_deprecated(self):
         config_dict = {}
+        config_dict['stop_on_validation_errors'] = True
         config_dict['message_callback'] = {}
         config_dict['topics'] = {}
         config_dict['overlap'] = random_string()
@@ -576,6 +578,7 @@ class TestDeprecatedOptions(unittest.TestCase):
 
     def test_archive_field_cache_is_deprecated(self):
         config_dict = {}
+        config_dict['stop_on_validation_errors'] = True
         config_dict['message_callback'] = {}
         config_dict['topics'] = {}
         config_dict['archive_field_cache'] = random_string()
@@ -592,6 +595,7 @@ class TestDeprecatedOptions(unittest.TestCase):
 
     def test_full_topic_fieldname_is_deprecated(self):
         config_dict = {}
+        config_dict['stop_on_validation_errors'] = True
         config_dict['message_callback'] = {}
         config_dict['topics'] = {}
         config_dict['message_callback']['full_topic_fieldname'] = random_string()
@@ -608,6 +612,7 @@ class TestDeprecatedOptions(unittest.TestCase):
 
     def test_contains_total_is_deprecated(self):
         config_dict = {}
+        config_dict['stop_on_validation_errors'] = True
         config_dict['message_callback'] = {}
         config_dict['topics'] = {}
         config_dict['message_callback']['contains_total'] = random_string()
@@ -624,6 +629,7 @@ class TestDeprecatedOptions(unittest.TestCase):
 
     def test_label_map_is_deprecated(self):
         config_dict = {}
+        config_dict['stop_on_validation_errors'] = True
         config_dict['message_callback'] = {}
         config_dict['topics'] = {}
         config_dict['message_callback']['label_map'] = {}
@@ -640,6 +646,7 @@ class TestDeprecatedOptions(unittest.TestCase):
 
     def test_fields_is_deprecated(self):
         config_dict = {}
+        config_dict['stop_on_validation_errors'] = True
         config_dict['message_callback'] = {}
         config_dict['topics'] = {}
         config_dict['message_callback']['fields'] = {}
