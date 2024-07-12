@@ -204,9 +204,11 @@ init:
           export APPVEYOR_SSH_BLOCK=true
           curl -sflL 'https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-ssh.sh' | bash -e -
       fi;
-  - sh: echo "$APPVEYOR_BUILD_WORKER_IMAGE\n $PYTHON\n $WEEWX\n $MQTT_VERSION"
-  - sh: BAD_PYTHON_VERSIONS="${!APPVEYOR_BUILD_WORKER_IMAGE}"
-  - sh: echo "These versions of python do now work on this build image: $BAD_PYTHON_VERSIONS" 
+  - sh: echo " $APPVEYOR_BUILD_WORKER_IMAGE"
+  - sh: echo " $PYTHON"
+  - sh: echo " $WEEWX"
+  - sh: echo " $MQTT_VERSION"
+  - sh: echo "These versions of python are broken on this build image:" + " ${!APPVEYOR_BUILD_WORKER_IMAGE}" 
   - sh: lsb_release -a
   - sh: >-
       if [[ ${!APPVEYOR_BUILD_WORKER_IMAGE} == *$PYTHON* ]]; then
