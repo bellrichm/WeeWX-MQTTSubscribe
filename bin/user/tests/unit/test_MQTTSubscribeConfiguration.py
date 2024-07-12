@@ -31,7 +31,7 @@ class TestDefaultCinfiguration(unittest.TestCase):
     enable = false
     
     # Controls if validation errors raise an exception (stopping WeeWX from starting) or only logged.
-    # Default is true
+    # Default is false
     stop_on_validation_errors = true
     
     # The binding, loop or archive.
