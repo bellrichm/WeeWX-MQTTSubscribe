@@ -41,7 +41,7 @@ environment:
   PYTHON_LATEST: 3.12
   PYTHON: 3.7
   WEEWX_OLDEST: 4.6.1
-  WEEWX_LATEST: 5.0.0
+  WEEWX_LATEST: 5.1.0
   # paho-mqtt 2.0.0 introduced an incompatible change, this is the old version
   MQTT_VERSION: 1.6.1
   ENABLED: true
