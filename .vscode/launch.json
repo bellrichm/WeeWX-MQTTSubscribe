@@ -57,7 +57,8 @@
                 "--records", "1",
                 "--logging-level", "DEBUG",
                 //"--console",
-                "--conf", "${workspaceFolder}/devtools/smoketest.loop.conf"
+                //"--conf", "${workspaceFolder}/devtools/smoketest.loop.conf"
+                "--conf", "${workspaceFolder}/tmp/debug.conf"
             ],            
             "console": "integratedTerminal"
         },
@@ -84,8 +85,8 @@
             "program": "${workspaceFolder}/bin/user/MQTTSubscribe.py",
             "args": [
                 "configure",
-                //"driver",
-                "service",
+                "driver",
+                //"service",
 
                 //"--create-example", "mqttsubscribe.example.conf",
                 //"--export", "${workspaceFolder}/tmp/temp.conf",
@@ -97,7 +98,8 @@
                 //"--replace-with", "/home/richbell/mqttsubscribe.driver.conf",
                 //"--update-from", "${workspaceFolder}/devtools/smoketest.archive.conf",
 
-                "--conf", "${workspaceFolder}/mqttsubscribe.example.conf",
+                //"--conf", "${workspaceFolder}/mqttsubscribe.example.conf",
+                "--conf", "${workspaceFolder}/tmp/debug.conf",
                 //"--conf", "/home/richbell/weewx-data/weewx.conf",
                 //"--conf", "/home/fork.weewx/weewx.debug.conf"
                 //"--output", "${workspaceFolder}/tmp/temp.conf",
@@ -163,10 +165,12 @@
             "env": {
                 "LANG": "en_GB.UTF-8"
             },
-            "program": "${workspaceFolder}/../weewx/bin/weewxd",
+            //"program": "${workspaceFolder}/../weewx/bin/weewxd",
+            "program": "${workspaceFolder}/../weewx/src/weewxd.py",
             "args": [
                 //"weewx.device.conf"
-                "../weewx/weewx.conf"
+                //"../weewx/weewx.conf"
+                "tmp/weewx.conf"
             ],            
             // Work around for timeout
             //"console": "externalTerminal"
