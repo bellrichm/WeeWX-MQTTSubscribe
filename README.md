@@ -129,8 +129,18 @@ WEECTL=$WEEWX_REPO/bin/weectl
 
 ### Install MQTTSubscribe
 
+#### Set the desired MQTTSubscribe version
+
+For example, if the desired version is 2.3.1.
+
 ```
-$WEECTL extension install https://github.com/bellrichm/WeeWX-MQTTSubscribe/archive/refs/tags/latest.zip
+MQTTSUBSCRIBE_VERSION=2.3.1
+```
+
+Perform the installation
+
+```
+$WEECTL extension install https://github.com/bellrichm/WeeWX-MQTTSubscribe/archive/refs/tags/v${MQTTSUBSCRIBE_VERSION}.zip
 ```
 
 ### Create an example configuration
