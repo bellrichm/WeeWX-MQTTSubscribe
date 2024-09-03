@@ -102,7 +102,7 @@ environment:
       job_group: build  
       job_depends_on: initialize
 
-    - PYTHON: 3.13.0b3
+    - PYTHON: 3.13
       WEEWX: '%WEEWX_LATEST%'
       MQTT_VERSION: '%MQTT_VERSION%'      
       job_group: build  
