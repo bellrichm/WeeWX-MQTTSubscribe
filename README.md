@@ -137,7 +137,7 @@ For example, if the desired version is 2.3.1.
 MQTTSUBSCRIBE_VERSION=2.3.1
 ```
 
-Perform the installation
+#### Perform the installation
 
 ```
 $WEECTL extension install https://github.com/bellrichm/WeeWX-MQTTSubscribe/archive/refs/tags/v${MQTTSUBSCRIBE_VERSION}.zip
