@@ -102,6 +102,12 @@ environment:
       job_group: build  
       job_depends_on: initialize
 
+    - PYTHON: 3.13.0b3
+      WEEWX: '%WEEWX_LATEST%'
+      MQTT_VERSION: '%MQTT_VERSION%'      
+      job_group: build  
+      job_depends_on: initialize
+
     # End of runs against latest WeeWX release and supported versions of Python
 
     # The earliest WeeWX version supported
@@ -152,7 +158,7 @@ environment:
       job_depends_on: build
       WEEWX_URL: http://www.weewx.com/downloads/development_versions/
 
-stack: python %PYTHON%      
+stack: python %PYTHON%
 
 for:
 - 
