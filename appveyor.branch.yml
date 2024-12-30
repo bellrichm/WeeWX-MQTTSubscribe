@@ -71,49 +71,49 @@ environment:
       MQTT_VERSION: '%MQTT_VERSION%'      
       job_group: build  
       job_depends_on: initialize
-      #enable: false
+      #ENABLE: false
 
     - PYTHON: 3.8
       WEEWX: '%WEEWX_LATEST%'
       MQTT_VERSION: '%MQTT_VERSION%'      
       job_group: build  
       job_depends_on: initialize
-      #enable: false
+      #ENABLE: false
 
     - PYTHON: 3.9
       WEEWX: '%WEEWX_LATEST%'
       MQTT_VERSION: '%MQTT_VERSION%'      
       job_group: build  
       job_depends_on: initialize
-      #enable: false
+      #ENABLE: false
 
     - PYTHON: 3.10
       WEEWX: '%WEEWX_LATEST%'
       MQTT_VERSION: '%MQTT_VERSION%'      
       job_group: build  
       job_depends_on: initialize
-      #enable: false
+      #ENABLE: false
 
     - PYTHON: 3.11
       WEEWX: '%WEEWX_LATEST%'
       MQTT_VERSION: '%MQTT_VERSION%'      
       job_group: build  
       job_depends_on: initialize
-      #enable: false
+      #ENABLE: false
 
     - PYTHON: 3.12
       WEEWX: '%WEEWX_LATEST%'
       MQTT_VERSION: '%MQTT_VERSION%'      
       job_group: build  
       job_depends_on: initialize
-      #enable: false
+      #ENABLE: false
 
     - PYTHON: 3.13
       WEEWX: '%WEEWX_LATEST%'
       MQTT_VERSION: '%MQTT_VERSION%'      
       job_group: build  
       job_depends_on: initialize
-      #enable: false
+      #ENABLE: false
 
     # End of runs against latest WeeWX release and supported versions of Python
 
@@ -124,7 +124,7 @@ environment:
       MQTT_VERSION: '%MQTT_VERSION%'      
       job_group: build
       job_depends_on: initialize
-      #enable: false
+      #ENABLE: false
 
     # Use latest Python release against WeeWX master branch
     - PYTHON: '%PYTHON_LATEST%'
@@ -133,7 +133,7 @@ environment:
       MQTT_VERSION: '%MQTT_VERSION%'      
       job_group: build  
       job_depends_on: initialize      
-      #enable: false
+      #ENABLE: false
 
     # Use latest Python release against WeeWX development branch
     - PYTHON: '%PYTHON_LATEST%'
@@ -142,7 +142,7 @@ environment:
       MQTT_VERSION: '%MQTT_VERSION%'      
       job_group: build  
       job_depends_on: initialize            
-      #enable: false
+      #ENABLE: false
 
     # Build/Test against a development/pre release of WeeWX with latest Python
     # These do not always exist
@@ -218,7 +218,7 @@ init:
   - sh: >-
       if [ "$ENABLE_SSH_AT_START" == "true" ] && [ "$STOP_WITH_BUILD_IMAGE" = "$APPVEYOR_BUILD_WORKER_IMAGE" ] && [ "$STOP_WITH_PYTHON_VERSION" = "$PYTHON" ] ; then
           export APPVEYOR_SSH_BLOCK=true
-          curl -sflL 'https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-ssh.sh' | bash -e -
+          curl -sflL 'https://raw.githubusercontent.com/appveyor/ci/master/scripts/ENABLE-ssh.sh' | bash -e -
       fi;
   - sh: echo "Build Image:" "$APPVEYOR_BUILD_WORKER_IMAGE"
   - sh: echo "Python Version:" "$PYTHON"
