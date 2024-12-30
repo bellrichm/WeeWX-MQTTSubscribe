@@ -125,7 +125,7 @@ environment:
       MQTT_VERSION: '%MQTT_VERSION%'      
       job_group: build
       job_depends_on: initialize
-      #ENABLED: false
+      ENABLED: false
 
     # Use latest Python release against WeeWX master branch
     - PYTHON: '%PYTHON_LATEST%'
@@ -134,7 +134,7 @@ environment:
       MQTT_VERSION: '%MQTT_VERSION%'      
       job_group: build  
       job_depends_on: initialize      
-      #ENABLED: false
+      ENABLED: false
 
     # Use latest Python release against WeeWX development branch
     - PYTHON: '%PYTHON_LATEST%'
@@ -143,7 +143,7 @@ environment:
       MQTT_VERSION: '%MQTT_VERSION%'      
       job_group: build  
       job_depends_on: initialize            
-      #ENABLED: false
+      ENABLED: false
 
     # Build/Test against a development/pre release of WeeWX with latest Python
     # These do not always exist
@@ -161,6 +161,7 @@ environment:
       MQTT_VERSION: ''
       job_group: build  
       job_depends_on: initialize
+      ENABLED: false
 
     - job_name: initialize
       WEEWX_URL: http://www.weewx.com/downloads/development_versions/

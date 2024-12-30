@@ -161,6 +161,7 @@ environment:
       MQTT_VERSION: ''
       job_group: build  
       job_depends_on: initialize
+      #ENABLED: false
 
     - job_name: initialize
       WEEWX_URL: http://www.weewx.com/downloads/development_versions/
