@@ -21,7 +21,8 @@
     echo "Running mosquitto install"
     sudo apt-get -qq --assume-yes install mosquitto
 
-    PIP_OPTIONS='--quiet'
+    PIP_OPTIONS=''
+    #PIP_OPTIONS='--quiet'
     echo "Running pip installs"
     pip install pip $PIP_OPTIONS --upgrade
     pip install configobj $PIP_OPTIONS --no-python-version-warning
