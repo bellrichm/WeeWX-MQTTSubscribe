@@ -3,8 +3,8 @@ V3.0.0
 - python 3.7 or higher is now required.
 - WeeWX 4.6.1 or higher is now required.
 - On startup, the MQTTSubscribe configuration is validated.
-  Configuration errors will stop MQTTSubscribe from loading.
-  To 'ignore' the error and allow MQTTSubscribe to load, set 'stop_on_validation_errors = false'.
+  By default, configuration errors will be logged. (Note, in prior versions some of these were silently ignored.)
+  To 'fail' when there is an error and not start WeeWX, set 'stop_on_validation_errors = true'.
 - For more information see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/Upgrade-Guide#upgrading-to-v3-from-v2
   
 Enhancements:
