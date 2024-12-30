@@ -62,6 +62,7 @@ environment:
       SONAR_UPLOAD: true
       job_group: build  
       job_depends_on: initialize
+      ENABLED: false
 
     # Start of runs against latest WeeWX release and supported versions of Python
     # Even though EOL, I'll support a bit longer
