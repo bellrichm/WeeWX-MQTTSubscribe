@@ -21,16 +21,17 @@
     echo "Running mosquitto install"
     sudo apt-get -qq --assume-yes install mosquitto
 
+    PIP_OPTIONS='--quiet'
     echo "Running pip installs"
-    pip install pip --quiet --upgrade
-    pip install configobj --quiet --no-python-version-warning
-    pip install paho-mqtt$MQTT_INSTALL --quiet --no-python-version-warning
-    pip install mock --quiet --no-python-version-warning
-    pip install pylint --quiet --no-python-version-warning
-    pip install pytest --quiet --no-python-version-warning
-    pip install coverage --quiet --no-python-version-warning
-    pip install pytest-cov --quiet --no-python-version-warning
-    pip install coveralls --quiet --no-python-version-warning
+    pip install pip $PIP_OPTIONS --upgrade
+    pip install configobj $PIP_OPTIONS --no-python-version-warning
+    pip install paho-mqtt$MQTT_INSTALL $PIP_OPTIONS --no-python-version-warning
+    pip install mock $PIP_OPTIONS --no-python-version-warning
+    pip install pylint $PIP_OPTIONS --no-python-version-warning
+    pip install pytest $PIP_OPTIONS --no-python-version-warning
+    pip install coverage $PIP_OPTIONS --no-python-version-warning
+    pip install pytest-cov $PIP_OPTIONS --no-python-version-warning
+    pip install coveralls $PIP_OPTIONS --no-python-version-warning
     pip list
 
     echo "Running weewx install"
