@@ -216,6 +216,7 @@ init:
   - sh: echo "MQTT Version:" "$MQTT_VERSION"
   - sh: echo "These versions of python are broken on this build image:" "${!APPVEYOR_BUILD_WORKER_IMAGE}" 
   - sh: lsb_release -a
+  - sh: python -V
   - sh: >-
       if [[ ${!APPVEYOR_BUILD_WORKER_IMAGE} == *$PYTHON* ]]; then
         echo "$APPVEYOR_BUILD_WORKER_IMAGE with $PYTHON is broken on Appveyor."

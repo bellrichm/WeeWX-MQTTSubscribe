@@ -30,6 +30,7 @@
     pip install pytest --quiet --no-python-version-warning
     pip install pytest-cov --quiet --no-python-version-warning
     pip install coveralls --quiet --no-python-version-warning
+    pip list
 
     echo "Running weewx install"
     if [ "$WEEWX" = "$BRANCH" ]; then
