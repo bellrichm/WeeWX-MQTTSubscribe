@@ -34,9 +34,9 @@
     pip install coveralls $PIP_OPTIONS --no-python-version-warning
     # Coveralls is installing an 'old' version of coverage. Trying to make sure latest is installed.
     pip install coverage $PIP_OPTIONS --upgrade --no-python-version-warning
-    pip list
-
-   apt list --installed
+    
+    #pip list
+    #apt list --installed
 
     echo "Running weewx install"
     if [ "$WEEWX" = "$BRANCH" ]; then
