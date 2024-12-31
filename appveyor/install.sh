@@ -36,7 +36,7 @@
     pip install coverage $PIP_OPTIONS --upgrade --no-python-version-warning
     pip list
 
-   apt list --install
+   apt list --installed
 
     echo "Running weewx install"
     if [ "$WEEWX" = "$BRANCH" ]; then
