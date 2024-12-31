@@ -220,7 +220,7 @@ init:
   - sh: >-
       if [ "$ENABLE_SSH_AT_START" == "true" ] && [ "$STOP_WITH_BUILD_IMAGE" = "$APPVEYOR_BUILD_WORKER_IMAGE" ] && [ "$STOP_WITH_PYTHON_VERSION" = "$PYTHON" ] ; then
           export APPVEYOR_SSH_BLOCK=true
-          curl -sflL 'https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable.sh' | bash -e -
+          curl -sflL 'https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-ssh.sh' | bash -e -
       fi;
   - sh: echo "Build Image:" "$APPVEYOR_BUILD_WORKER_IMAGE"
   - sh: echo "Python Version:" "$PYTHON"
