@@ -30,9 +30,9 @@
     pip install mock $PIP_OPTIONS --no-python-version-warning
     pip install pylint $PIP_OPTIONS --no-python-version-warning
     pip install pytest $PIP_OPTIONS --no-python-version-warning
-    pip install coverage $PIP_OPTIONS --no-python-version-warning
     pip install pytest-cov $PIP_OPTIONS --no-python-version-warning
     pip install coveralls $PIP_OPTIONS --no-python-version-warning
+    pip install coverage $PIP_OPTIONS --no-python-version-warning
     pip list
 
     echo "Running weewx install"
