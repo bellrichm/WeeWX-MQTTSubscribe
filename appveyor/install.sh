@@ -35,6 +35,8 @@
     pip install coverage $PIP_OPTIONS --no-python-version-warning
     pip list
 
+   apt list --install
+
     echo "Running weewx install"
     if [ "$WEEWX" = "$BRANCH" ]; then
       git clone https://github.com/weewx/weewx.git weewx
