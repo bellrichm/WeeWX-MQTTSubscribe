@@ -49,6 +49,7 @@
             "name": "Sim Driver: Loop",
             "type": "debugpy",
             "request": "launch",
+            "justMyCode": false,
             "program": "${workspaceFolder}/bin/user/MQTTSubscribe.py",
             "args": [
                 "simulate",
@@ -116,15 +117,15 @@
                 "parse",
                 //"driver",
                 "service",
-                //"--console",
                 "--top-level",
 
-                "--conf", "${workspaceFolder}/tmp/complex.json.conf",
-                "--topic", "topic1",
-                "--message-file", "${workspaceFolder}/tmp/complex.json",
-                "--log-file", "${workspaceFolder}/tmp/complex.log",
-                "--log-level", "INFO",
-                
+                "--logging-level", "INFO",
+                "--logging-file", "log.txt",
+                "--console",
+
+                "--topic", "S2100",
+                "--conf", "~/Downloads/bob/weewx.conf",
+                "--message-file", "~/Downloads/bob/2100_data.txt",
             ],            
             "console": "integratedTerminal"
         },
