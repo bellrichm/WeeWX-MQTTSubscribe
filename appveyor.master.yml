@@ -221,7 +221,6 @@ init:
 
   - sh: >-
       echo "Build Image:" "$APPVEYOR_REPO_TAG_NAME";
-      APPVEYOR_SKIP_FINALIZE_ON_EXIT=true;
       exit 0;
 
   # These tags are 'derived'. They are created when a release vX.Y.Z is created.
