@@ -224,7 +224,7 @@ init:
       # Therefore there is no reason to run tests against them.
       if [[ $APPVEYOR_REPO_TAG_NAME == 'latest' || $APPVEYOR_REPO_TAG_NAME =~ ^v[0123456789]+$ ]]; then 
           echo "Skipping runing tests for tag: $APPVEYOR_REPO_TAG_NAME"
-          exit 0
+          appveyor exit
       fi;
   - sh: >-
       if [ "$ENABLE_SSH_AT_START" == "true" ] && [ "$STOP_WITH_BUILD_IMAGE" = "$APPVEYOR_BUILD_WORKER_IMAGE" ] && [ "$STOP_WITH_PYTHON_VERSION" = "$PYTHON" ] ; then
