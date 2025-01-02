@@ -219,10 +219,6 @@ init:
   - sh: echo "init"
   - sh: echo ""
 
-  - sh: >-
-      echo "Build Image:" "$APPVEYOR_REPO_TAG_NAME";
-      exit 0;
-
   # These tags are 'derived'. They are created when a release vX.Y.Z is created.
   # Therefore there is no reason to run the build process against them.
   - sh: >-
