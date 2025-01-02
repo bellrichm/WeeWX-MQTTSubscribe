@@ -220,8 +220,8 @@ init:
   - sh: echo ""
 
   - sh: >-
-      echo "Build Image:" "$APPVEYOR_REPO_TAG_NAME"
-      APPVEYOR_SKIP_FINALIZE_ON_EXIT=true
+      echo "Build Image:" "$APPVEYOR_REPO_TAG_NAME";
+      APPVEYOR_SKIP_FINALIZE_ON_EXIT=true;
       appveyor exit;
 
   # These tags are 'derived'. They are created when a release vX.Y.Z is created.
