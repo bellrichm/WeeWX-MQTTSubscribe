@@ -222,7 +222,7 @@ init:
   - sh: >-
       echo "Build Image:" "$APPVEYOR_REPO_TAG_NAME";
       APPVEYOR_SKIP_FINALIZE_ON_EXIT=true;
-      appveyor exit;
+      exit 0;
 
   # These tags are 'derived'. They are created when a release vX.Y.Z is created.
   # Therefore there is no reason to run the build process against them.
@@ -230,7 +230,7 @@ init:
       if [[ $APPVEYOR_REPO_TAG_NAME == 'latest' || $APPVEYOR_REPO_TAG_NAME =~ ^v[0123456789]+$ ]] ; then 
           echo "Skipping runing tests for tag: $APPVEYOR_REPO_TAG_NAME"
           APPVEYOR_SKIP_FINALIZE_ON_EXIT=true
-          appveyor exit;
+          exit 0;
       fi;
 
   - sh: >-
