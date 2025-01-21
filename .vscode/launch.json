@@ -139,7 +139,24 @@
                 "--create-example", "mqttsubscribe.example.conf",
             ],            
             "console": "integratedTerminal"
-        },        
+        },
+        {
+            "name": "Install",
+            "type": "debugpy",
+            "request": "launch",
+            "justMyCode": false,
+            "program": "${workspaceFolder}/../weewx/src/weectl.py",
+            "args": [
+                "extension",
+                "install",
+                "${workspaceFolder}",
+                "--verbosity=3",
+                "--dry-run",
+                "--yes",
+                "--config", "${workspaceFolder}/tmp/install.conf",
+            ],            
+            "console": "integratedTerminal"
+        },
         {
             // Requires MQTTSubscribe.py to be in 'weewx/bin/user' directory
             // Because python prepends the scripts directory, 'weewx/bin' to sys.path
