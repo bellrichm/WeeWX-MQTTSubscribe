@@ -255,7 +255,7 @@ init:
       fi;
 
       if [[ ${!APPVEYOR_BUILD_WORKER_IMAGE} == *$PYTHON* ]]; then
-        msg="$APPVEYOR_BUILD_WORKER_IMAGE with $PYTHON is broken on Appveyor.";
+        msg="$APPVEYOR_BUILD_WORKER_IMAGE with $PYTHON is broken on Appveyor image ${APPVEYOR_BUILD_WORKER_IMAGE}.";
         echo "$msg";
         appveyor AddMessage "$msg" -Category Information -Details "$detail";
         exit 0;
