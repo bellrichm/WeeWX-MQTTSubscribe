@@ -238,9 +238,9 @@ init:
       NEWLINE=$'\n';
       detail="";
       detail="$detail Build Image: $APPVEYOR_BUILD_WORKER_IMAGE $NEWLINE";
-      echo "Python Version: $PYTHON";
-      echo "WeeWX Version: $WEEWX";
-      echo "MQTT Version: $MQTT_VERSION";
+      detail="$detail Python Version: $PYTHON $NEWLINE";
+      detail="$detail WeeWX Version: $WEEWX $NEWLINE";
+      detail="$detail MQTT Version: $MQTT_VERSION $NEWLINE";
       detail="$detail These versions of python are broken on this build image: ${!APPVEYOR_BUILD_WORKER_IMAGE} $NEWLINE";
 
       lsb_output=`lsb_release -a`;
@@ -257,6 +257,7 @@ init:
       if [[ ${!APPVEYOR_BUILD_WORKER_IMAGE} == *$PYTHON* ]]; then
         msg="$APPVEYOR_BUILD_WORKER_IMAGE with $PYTHON is broken on Appveyor.";
         echo "msg";
+        appveyor AddMessage "$msg" -Category Information -Details "$detail";
         exit 0;
       fi;
 
