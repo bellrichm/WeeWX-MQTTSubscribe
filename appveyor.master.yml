@@ -237,7 +237,7 @@ init:
   - sh: >-
       NEWLINE=$'\n';
       detail="$NEWLINE";
-      detail="$detail}Build Image: $APPVEYOR_BUILD_WORKER_IMAGE $NEWLINE";
+      detail="${detail}Build Image: $APPVEYOR_BUILD_WORKER_IMAGE $NEWLINE";
       detail="${detail}Python Version: $PYTHON $NEWLINE";
       detail="${detail}WeeWX Version: $WEEWX $NEWLINE";
       detail="${detail}MQTT Version: $MQTT_VERSION $NEWLINE";
