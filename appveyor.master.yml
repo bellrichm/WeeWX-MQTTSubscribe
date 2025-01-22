@@ -239,9 +239,9 @@ init:
       echo "Python Version:" "$PYTHON";
       echo "WeeWX Version:" "$WEEWX";
       echo "MQTT Version:" "$MQTT_VERSION";
-      detail="These versions of python are broken on this build image:" "${!APPVEYOR_BUILD_WORKER_IMAGE}\n"; 
-      detail=$detail + `lsb_release -a`;
-      echo $detail;
+      detail="These versions of python are broken on this build image:" "${!APPVEYOR_BUILD_WORKER_IMAGE}"; 
+      detail="$detail" `lsb_release -a`;
+      echo "$detail";
 
       if [ "$ENABLED" != "true" ]; then
         appveyor AddMessage "Test suite is not enabled, exiting." -Category Information -Details "$detail"
