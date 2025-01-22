@@ -1516,6 +1516,8 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
                     else:
                         new_dict[prefix + fields[new_key]['subfields'][i]] = subvalue
                     i += 1
+        elif new_key not in fields and fields_ignore_default:
+            pass
         else:
             #if not fields.get(lookup_key, {}).get('ignore', fields_ignore_default):
             self.logger.error(f"Skipping {new_key} because data is an array and has no configured subfields. Array={value}")
