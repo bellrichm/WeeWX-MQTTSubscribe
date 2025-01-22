@@ -240,7 +240,8 @@ init:
       echo "WeeWX Version:" "$WEEWX";
       echo "MQTT Version:" "$MQTT_VERSION";
       detail="These versions of python are broken on this build image:" "${!APPVEYOR_BUILD_WORKER_IMAGE}"; 
-      detail="$detail" `lsb_release -a`;
+      lsb_release -a >lsb_output.txt
+      detail="$detail" `cat lsb_output.txt`;
       echo "$detail";
 
       if [ "$ENABLED" != "true" ]; then
