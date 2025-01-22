@@ -235,8 +235,9 @@ init:
       fi;
   
   - sh: >-
+      NEWLINE=$'\n';
       detail="";
-      detail="$detail Build Image: $APPVEYOR_BUILD_WORKER_IMAGE \n";
+      detail="$detail Build Image: $APPVEYOR_BUILD_WORKER_IMAGE $NEWLINE";
       echo "Python Version:" "$PYTHON";
       echo "WeeWX Version:" "$WEEWX";
       echo "MQTT Version:" "$MQTT_VERSION";
