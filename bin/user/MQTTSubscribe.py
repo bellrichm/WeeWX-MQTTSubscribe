@@ -1602,6 +1602,7 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
         fields_conversion_func = self.topic_manager.get_conversion_func(msg.topic)
 
         data_final = {}
+        msg_id = ''
         if msg_id_field:
             msg_id = data_flattened[msg_id_field]
 
