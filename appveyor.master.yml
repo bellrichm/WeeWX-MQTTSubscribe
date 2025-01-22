@@ -243,15 +243,15 @@ init:
       detail=detail + `lsb_release -a`
       echo $detail
 
-    if [ "$ENABLED" != "true" ]; then
-      appveyor AddMessage "Test suite is not enabled, exiting." -Category Information -Details "$detail"
-      exit 0
-    fi;
+      if [ "$ENABLED" != "true" ]; then
+        appveyor AddMessage "Test suite is not enabled, exiting." -Category Information -Details "$detail"
+        exit 0
+      fi;
 
-    if [[ ${!APPVEYOR_BUILD_WORKER_IMAGE} == *$PYTHON* ]]; then
-      echo "$APPVEYOR_BUILD_WORKER_IMAGE with $PYTHON is broken on Appveyor."
-      exit 0
-    fi;
+      if [[ ${!APPVEYOR_BUILD_WORKER_IMAGE} == *$PYTHON* ]]; then
+        echo "$APPVEYOR_BUILD_WORKER_IMAGE with $PYTHON is broken on Appveyor."
+        exit 0
+      fi;
 
 install:
   - sh: echo "install"
