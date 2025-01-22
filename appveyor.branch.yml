@@ -234,16 +234,31 @@ init:
           curl -sflL 'https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-ssh.sh' | bash -e -
       fi;
   
-  - sh: echo "Build Image:" "$APPVEYOR_BUILD_WORKER_IMAGE"
-  - sh: echo "Python Version:" "$PYTHON"
-  - sh: echo "WeeWX Version:" "$WEEWX"
-  - sh: echo "MQTT Version:" "$MQTT_VERSION"
-  - sh: echo "These versions of python are broken on this build image:" "${!APPVEYOR_BUILD_WORKER_IMAGE}" 
-  - sh: lsb_release -a
   - sh: >-
+      NEWLINE=$'\n';
+      detail="$NEWLINE";
+      detail="${detail}Build Image: $APPVEYOR_BUILD_WORKER_IMAGE $NEWLINE";
+      detail="${detail}Python Version: $PYTHON $NEWLINE";
+      detail="${detail}WeeWX Version: $WEEWX $NEWLINE";
+      detail="${detail}MQTT Version: $MQTT_VERSION $NEWLINE";
+      detail="${detail}These versions of python are broken on this build image: ${!APPVEYOR_BUILD_WORKER_IMAGE} $NEWLINE";
+
+      lsb_output=`lsb_release -a`;
+      detail="${detail}$lsb_output";
+      echo "$detail";
+
+      if [ "$ENABLED" != "true" ]; then
+        msg="Test suite is not enabled, exiting.";
+        echo "$msg";
+        appveyor AddMessage "$msg" -Category Information -Details "$detail";
+        exit 0;
+      fi;
+
       if [[ ${!APPVEYOR_BUILD_WORKER_IMAGE} == *$PYTHON* ]]; then
-        echo "$APPVEYOR_BUILD_WORKER_IMAGE with $PYTHON is broken on Appveyor."
-        exit 0
+        msg="$APPVEYOR_BUILD_WORKER_IMAGE with $PYTHON is broken on Appveyor image ${APPVEYOR_BUILD_WORKER_IMAGE}.";
+        echo "$msg";
+        appveyor AddMessage "$msg" -Category Information -Details "$detail";
+        exit 0;
       fi;
 
 install:
