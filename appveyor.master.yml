@@ -246,7 +246,7 @@ init:
     if [ "$ENABLED" != "true" ]; then
       appveyor AddMessage "Test suite is not enabled, exiting." -Category Information -Details "$detail"
       exit 0
-    fi
+    fi;
 
     if [[ ${!APPVEYOR_BUILD_WORKER_IMAGE} == *$PYTHON* ]]; then
       echo "$APPVEYOR_BUILD_WORKER_IMAGE with $PYTHON is broken on Appveyor."
