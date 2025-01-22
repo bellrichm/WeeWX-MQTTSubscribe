@@ -239,9 +239,11 @@ init:
       echo "Python Version:" "$PYTHON";
       echo "WeeWX Version:" "$WEEWX";
       echo "MQTT Version:" "$MQTT_VERSION";
-      detail="These versions of python are broken on this build image: ${!APPVEYOR_BUILD_WORKER_IMAGE}"; 
+      detail="These versions of python are broken on this build image: ${!APPVEYOR_BUILD_WORKER_IMAGE}";
+      echo "$detail"
       #lsb_release -a >/tmp/lsb_output.txt;
       lsb_output=`lsb_release -a`;
+      echo "$lsb_output"
       detail="$detail $lsb_output";
       echo "foo $detail";
 
