@@ -242,8 +242,8 @@ init:
       detail="These versions of python are broken on this build image: ${!APPVEYOR_BUILD_WORKER_IMAGE}"; 
       #lsb_release -a >/tmp/lsb_output.txt;
       lsb_output=`lsb_release -a`;
-      ##detail="$detail $lsb_output";
-      echo "$detail";
+      detail="$detail $lsb_output";
+      echo "foo $detail";
 
       if [ "$ENABLED" != "true" ]; then
         appveyor AddMessage "Test suite is not enabled, exiting." -Category Information -Details "$detail"
