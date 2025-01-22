@@ -236,7 +236,7 @@ init:
   
   - sh: >-
       detail="";
-      detail="$detail Build Image:" "$APPVEYOR_BUILD_WORKER_IMAGE\n";
+      detail="$detail Build Image: $APPVEYOR_BUILD_WORKER_IMAGE \n";
       echo "Python Version:" "$PYTHON";
       echo "WeeWX Version:" "$WEEWX";
       echo "MQTT Version:" "$MQTT_VERSION";
@@ -254,8 +254,9 @@ init:
       fi;
 
       if [[ ${!APPVEYOR_BUILD_WORKER_IMAGE} == *$PYTHON* ]]; then
-        echo "$APPVEYOR_BUILD_WORKER_IMAGE with $PYTHON is broken on Appveyor."
-        exit 0
+        msg="$APPVEYOR_BUILD_WORKER_IMAGE with $PYTHON is broken on Appveyor.";
+        echo "msg";
+        exit 0;
       fi;
 
 install:
