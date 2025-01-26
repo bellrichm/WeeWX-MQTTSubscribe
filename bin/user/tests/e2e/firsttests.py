@@ -39,7 +39,7 @@ WEEWX_ROOT = tmp
     station_type = Simulator
 
 [Simulator]
-    driver = weewx.drivers.simulator
+    driver = user.tests.e2e.simulator
 
 [StdReport]
 
