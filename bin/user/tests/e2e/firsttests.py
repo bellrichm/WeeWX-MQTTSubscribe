@@ -78,6 +78,9 @@ WEEWX_ROOT = tmp
         [[[message]]]
             type = individual
         [[[{random_string()}]]]
+            ignore_start_time = True # at least while developing 
+            ignore_end_time = True # at least while developing
+            adjust_start_time = 1 # at least while developing
 
 """
 
