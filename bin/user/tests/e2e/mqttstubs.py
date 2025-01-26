@@ -11,8 +11,6 @@ import paho
 import paho.mqtt
 import paho.mqtt.client
 
-import random
-
 class Msg:
     '''
     A helper class to create an MQTT message.
@@ -32,7 +30,6 @@ class ClientStub:
     '''
     # pylint: disable=missing-function-docstring
     # pylint: disable=unused-argument
-    on_message = None
 
     def __init__(self,
                  callback_api_version=None,
@@ -68,8 +65,6 @@ class ClientStub:
         print("Connected")
 
         # ToDo: temporarily try calling the message callback, this will need to be moved
-        print(self.on_message)
-        payload = "0.0".encode('UTF-8')
         msg = Msg(self.topic, "0.0".encode('UTF-8'), 0, 0)
         self.on_message(self, self.userdata, msg)
 
