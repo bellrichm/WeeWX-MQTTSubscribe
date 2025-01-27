@@ -97,7 +97,7 @@ class test_all(unittest.TestCase):
 
         SUT.run()
 
-        SUT.shutDown()
+        #SUT.shutDown()
 
 if __name__ == '__main__':
     test_suite = unittest.TestSuite()
