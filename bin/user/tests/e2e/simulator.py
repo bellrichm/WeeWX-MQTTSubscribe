@@ -11,6 +11,8 @@ For more information on what could be done see, https://groups.google.com/g/weew
 import weewx.drivers.simulator
 import weewx.engine
 
+from weeutil.weeutil import to_int
+
 DRIVER_NAME = 'Simulator'
 
 def loader(config_dict, engine):
@@ -30,9 +32,7 @@ class Simulator(weewx.drivers.simulator.Simulator, weewx.engine.StdService):
 
         self.engine = engine
 
-        self.max_archive_records = stn_dict.get('max_archive_records', 2)
-        self.max_archive_records = stn_dict.get('max_archive_records', 1)
-        self.max_archive_records = stn_dict.get('max_archive_records', 0)
+        self.max_archive_records = to_int(stn_dict.get('max_archive_records', 1))
 
         self.count_archive_records = 0
         self.count_loop_packets = 0
