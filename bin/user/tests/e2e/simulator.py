@@ -5,7 +5,7 @@
 #
 ''' 
 Simulator to be used when testing WeeWX/MQTTSubscribe
-For more information on what could be done see, 
+For more information on what could be done see, https://groups.google.com/g/weewx-user/c/pLnIps7dIZU/m/KtlAdSgWCAAJ
 '''
 
 import weewx.drivers.simulator
@@ -29,12 +29,21 @@ class Simulator(weewx.drivers.simulator.Simulator, weewx.engine.StdService):
         weewx.engine.StdService.__init__(self, engine, config_dict)
 
         self.engine = engine
-        self.max_archive_records = stn_dict.get('max_archive_records', 2)
-        self.max_archive_records = stn_dict.get('max_archive_records', 0)
-        self.count_archive_records = 0
 
+        self.max_archive_records = stn_dict.get('max_archive_records', 2)
+        self.max_archive_records = stn_dict.get('max_archive_records', 1)
+        self.max_archive_records = stn_dict.get('max_archive_records', 0)
+
+        self.count_archive_records = 0
+        self.count_loop_packets = 0
+
+        self.bind(weewx.NEW_LOOP_PACKET, self.new_loop_packet)
         self.bind(weewx.NEW_ARCHIVE_RECORD, self.new_archive_record)
         self.bind(weewx.END_ARCHIVE_PERIOD, self.end_archive_period)
+
+    def new_loop_packet(self, _event):
+        ''' Handle the new loop packet event. '''
+        self.count_loop_packets +=1
 
     def new_archive_record(self, event):
         ''' Handle the new archive record event.'''
