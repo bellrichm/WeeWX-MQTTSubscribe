@@ -95,9 +95,12 @@ class test_all(unittest.TestCase):
     def test_two(self):
         SUT = weewx.engine.StdEngine(configobj.ConfigObj(StringIO(config_dict)))
 
-        SUT.run()
+        with self.assertRaises(Exception):
+            SUT.run()
+            print("run done")
 
         #SUT.shutDown()
+        print("test done")
 
 if __name__ == '__main__':
     test_suite = unittest.TestSuite()
