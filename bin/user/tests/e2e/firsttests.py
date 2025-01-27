@@ -81,6 +81,9 @@ WEEWX_ROOT = tmp
             ignore_start_time = True # at least while developing 
             ignore_end_time = True # at least while developing
             adjust_start_time = 1 # at least while developing
+            [[[[outTemp]]]]
+                name = outTemp
+                expires_after = 0
 
 """
 
@@ -93,14 +96,27 @@ class test_all(unittest.TestCase):
         SUT.shutDown()
 
     def test_two(self):
-        SUT = weewx.engine.StdEngine(configobj.ConfigObj(StringIO(config_dict)))
+        with mock.patch('user.MQTTSubscribe.RecordCache') as mc:
+            max_archive_records = 1
+            config = configobj.ConfigObj(StringIO(config_dict))
+            config['Simulator']['max_archive_records'] = max_archive_records
 
-        with self.assertRaises(Exception):
-            SUT.run()
-            print("run done")
+            topic_count = len(config['MQTTSubscribeService']['topics'].sections)
 
-        #SUT.shutDown()
-        print("test done")
+            SUT = weewx.engine.StdEngine(config)
+            mc_instance = mc.return_value
+
+            with self.assertRaises(Exception):
+                SUT.run()
+
+            mc_instance.remove_value.assert_called()
+            # The removal of the field from the cache will be called for each queue(topic)
+            self.assertEqual(mc_instance.remove_value.call_count, SUT.console.count_loop_packets * topic_count)
+
+            mc_instance.update_value.assert_called()
+            self.assertEqual(mc_instance.update_value.call_count, max_archive_records)
+
+            mc_instance.get_value.assert_not_called()
 
 if __name__ == '__main__':
     test_suite = unittest.TestSuite()
