@@ -70,7 +70,7 @@ WEEWX_ROOT = tmp
         xtype_services = weewx.wxxtypes.StdWXXTypes, weewx.wxxtypes.StdPressureCooker, weewx.wxxtypes.StdRainRater, weewx.wxxtypes.StdDelta
         archive_services = weewx.engine.StdArchive
         restful_services = weewx.restx.StdStationRegistry, weewx.restx.StdWunderground, weewx.restx.StdPWSweather, weewx.restx.StdCWOP, weewx.restx.StdWOW, weewx.restx.StdAWEKAS
-        report_services = weewx.engine.StdPrint, weewx.engine.StdReport        
+        report_services = weewx.engine.StdReport        
 
 [MQTTSubscribeService]
     [[topics]]
