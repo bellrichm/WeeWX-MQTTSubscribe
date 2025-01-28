@@ -11,7 +11,8 @@ For more information on what could be done see, https://groups.google.com/g/weew
 import weewx.drivers.simulator
 import weewx.engine
 
-from weeutil.weeutil import to_int
+import weeutil
+from weeutil.weeutil import to_int, to_list, to_sorted_string
 
 DRIVER_NAME = 'Simulator'
 
@@ -33,6 +34,7 @@ class Simulator(weewx.drivers.simulator.Simulator, weewx.engine.StdService):
         self.engine = engine
 
         self.max_archive_records = to_int(stn_dict.get('max_archive_records', 1))
+        self.remove_fields_from_archive_record = to_list(stn_dict.get('remove_fields_from_archive_record', []))
 
         self.count_archive_records = 0
         self.count_loop_packets = 0
@@ -47,7 +49,13 @@ class Simulator(weewx.drivers.simulator.Simulator, weewx.engine.StdService):
 
     def new_archive_record(self, event):
         ''' Handle the new archive record event.'''
-        print(event.record)
+        for field in self.remove_fields_from_archive_record:
+            if field in event.record:
+                del event.record[field]
+
+        print("REC:   ",
+              weeutil.weeutil.timestamp_to_string(event.record['dateTime']),
+              to_sorted_string(event.record))
 
     def end_archive_period(self, _event):
         ''' Handle the end of the archive period. '''
