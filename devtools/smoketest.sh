@@ -7,7 +7,7 @@
 source ./devtools/python_versions.sh
 
 if [ -z "$1" ]; then
-    WEEWX=weewx4
+    WEEWX=weewx5
 else
     WEEWX=$1
 fi
@@ -25,11 +25,11 @@ echo "Running $python_version $WEEWX"
 # todo - get running as a driver to work 
 
 echo "Running as service bound to loop"
-PYTHONPATH=bin:../$WEEWX/bin python bin/user/MQTTSubscribe.py devtools/smoketest.loop.conf --type service --binding loop --records 3 --interval 2 --delay 0 --logging_level DEBUG
+PYTHONPATH=bin:../$WEEWX/src:../$WEEWX/bin python bin/user/MQTTSubscribe.py simulate service --conf devtools/smoketest.loop.conf --binding loop --records 3 --logging-level DEBUG
 echo "Running as driver bound to loop"
-PYTHONPATH=bin:../$WEEWX/bin python bin/user/MQTTSubscribe.py devtools/smoketest.loop.conf --type driver --binding loop --records 3 --interval 2 --delay 0 --logging_level DEBUG
+PYTHONPATH=bin:../$WEEWX/src:../$WEEWX/bin python bin/user/MQTTSubscribe.py simulate driver --conf devtools/smoketest.loop.conf --binding loop --records 3 --archive-delay 0 --logging-level DEBUG
 
 echo "Running as service bound to archive"
-PYTHONPATH=bin:../$WEEWX/bin python bin/user/MQTTSubscribe.py devtools/smoketest.archive.conf --type service --binding archive --records 3 --interval 60 --delay 5 --logging_level DEBUG
+PYTHONPATH=bin:../$WEEWX/src:../$WEEWX/bin python bin/user/MQTTSubscribe.py simulate service --conf devtools/smoketest.archive.conf --binding archive --records 3 --logging-level DEBUG
 echo "Running as driver bound to archive"
-PYTHONPATH=bin:../$WEEWX/bin python bin/user/MQTTSubscribe.py devtools/smoketest.archive.conf --type driver --binding archive --records 3 --interval 60 --delay 5 --logging_level DEBUG
+PYTHONPATH=bin:../$WEEWX/src:../$WEEWX/bin python bin/user/MQTTSubscribe.py simulate driver --conf devtools/smoketest.archive.conf --binding archive --records 3 --archive-interval 60 --archive-delay 5 --logging-level DEBUG
