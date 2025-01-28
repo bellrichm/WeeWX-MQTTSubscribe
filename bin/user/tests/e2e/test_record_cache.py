@@ -88,8 +88,8 @@ WEEWX_ROOT = tmp
 
 """
 
-class test_all(unittest.TestCase):
-    def test_one(self):
+class test_record_cache(unittest.TestCase):
+    def test_observation_not_in_archive_record(self):
         with mock.patch('user.MQTTSubscribe.RecordCache') as mock_cache:
             max_archive_records = 1
             config = configobj.ConfigObj(StringIO(config_dict))
@@ -115,7 +115,7 @@ class test_all(unittest.TestCase):
             mock_cache_instance.get_value.assert_called()
             self.assertEqual(mock_cache_instance.get_value.call_count, max_archive_records)
 
-    def test_two(self):
+    def test_observation_in_archive_record(self):
         with mock.patch('user.MQTTSubscribe.RecordCache') as mock_cache:
             max_archive_records = 1
             config = configobj.ConfigObj(StringIO(config_dict))
@@ -140,8 +140,8 @@ class test_all(unittest.TestCase):
 
 if __name__ == '__main__':
     test_suite = unittest.TestSuite()
-    test_suite.addTest(test_all('test_one'))
-    test_suite.addTest(test_all('test_two'))
+    test_suite.addTest(test_record_cache('test_observation_not_in_archive_record'))
+    test_suite.addTest(test_record_cache('test_observation_in_archive_record'))
     unittest.TextTestRunner().run(test_suite)
 
     #unittest.main(exit=False)
