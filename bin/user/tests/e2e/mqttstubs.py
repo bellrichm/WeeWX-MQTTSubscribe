@@ -60,8 +60,15 @@ class ClientStub:
     def loop_start(self):
         print("In loop_start")
 
-        reason_code = paho.mqtt.reasoncodes.ReasonCode(paho.mqtt.packettypes.PacketTypes.CONNACK, identifier=0)
-        self.on_connect(self, self.userdata, 0, reason_code, 0)
+        if hasattr(mqtt, 'CallbackAPIVersion'):
+            # paho mqtt v2: on_connect(client, userdata, flags, reason_code, properties):
+
+            reason_code = paho.mqtt.reasoncodes.ReasonCode(paho.mqtt.packettypes.PacketTypes.CONNACK, identifier=0)
+            self.on_connect(self, self.userdata, 0, reason_code, 0)
+        else:
+            # paho mqtt v1: on_connect(client, userdata, flags, rc):
+            self.on_connect(self, self.userdata, 0, 0)
+
         print("Connected")
 
         # ToDo: temporarily try calling the message callback, this will need to be moved
