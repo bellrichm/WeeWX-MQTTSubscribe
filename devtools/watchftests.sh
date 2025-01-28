@@ -8,7 +8,7 @@
 source ./devtools/python_versions.sh
 
 if [ -z "$1" ]; then
-    WEEWX=weewx4
+    WEEWX=weewx5
 else
     WEEWX=$1
 fi
