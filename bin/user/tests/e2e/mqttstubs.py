@@ -60,7 +60,7 @@ class ClientStub:
     def loop_start(self):
         print("In loop_start")
 
-        if hasattr(mqtt, 'CallbackAPIVersion'):
+        if hasattr(paho.mqtt.client, 'CallbackAPIVersion'):
             # paho mqtt v2: on_connect(client, userdata, flags, reason_code, properties):
 
             reason_code = paho.mqtt.reasoncodes.ReasonCode(paho.mqtt.packettypes.PacketTypes.CONNACK, identifier=0)
