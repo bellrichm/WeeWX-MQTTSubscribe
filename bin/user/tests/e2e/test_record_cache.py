@@ -43,6 +43,8 @@ WEEWX_ROOT = tmp
 [StdReport]
 
 [StdArchive]
+    archive_interval = 60
+    archive_delay = 1
 
 [DataBindings] 
     [[wx_binding]]
