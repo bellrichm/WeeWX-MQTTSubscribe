@@ -2215,14 +2215,14 @@ class MQTTSubscribeService(StdService):
                 target_data = self.subscriber.get_accumulated_data(queue,
                                                                    start_ts, self.end_ts, event.packet['usUnits'])
                 self.logger.trace(f"Queue {queue['name']} has data: {target_data}")
-                if self.subscriber.cached_fields:
-                    for field in self.subscriber.cached_fields:
-                        if field in event.packet:
-                            self.cache.remove_value(field)
                 event.packet.update(target_data)
                 self.logger.trace(
                     f"Packet after update is: {weeutil.weeutil.timestamp_to_string(event.packet['dateTime'])} {to_sorted_string(event.packet)}")
-
+                
+            if self.subscriber.cached_fields:
+                for field in self.subscriber.cached_fields:
+                    if field in event.packet:
+                        self.cache.remove_value(field)
             self.logger.debug(
                 f"data-> final packet is {weeutil.weeutil.timestamp_to_string(event.packet['dateTime'])}: {to_sorted_string(event.packet)}")
 

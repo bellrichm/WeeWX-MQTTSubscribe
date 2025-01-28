@@ -96,8 +96,6 @@ class test_record_cache(unittest.TestCase):
             config['Simulator']['max_archive_records'] = max_archive_records
             config['MQTTSubscribeService']['topics'][random_string()] = {}
 
-            topic_count = len(config['MQTTSubscribeService']['topics'].sections)
-
             SUT = weewx.engine.StdEngine(config)
             mock_cache_instance = mock_cache.return_value
 
@@ -106,8 +104,7 @@ class test_record_cache(unittest.TestCase):
                 print("exception")
 
             mock_cache_instance.remove_value.assert_called()
-            # The removal of the field from the cache will be called for each queue(topic)
-            self.assertEqual(mock_cache_instance.remove_value.call_count, SUT.console.count_loop_packets * topic_count)
+            self.assertEqual(mock_cache_instance.remove_value.call_count, SUT.console.count_loop_packets)
 
     def test_observation_not_in_archive_record(self):
         with mock.patch('user.MQTTSubscribe.RecordCache') as mock_cache:
@@ -115,8 +112,6 @@ class test_record_cache(unittest.TestCase):
             config = configobj.ConfigObj(StringIO(config_dict))
             config['Simulator']['max_archive_records'] = max_archive_records
             config['Simulator']['remove_fields_from_archive_record'] = 'outTemp'
-
-            topic_count = len(config['MQTTSubscribeService']['topics'].sections)
 
             SUT = weewx.engine.StdEngine(config)
             mock_cache_instance = mock_cache.return_value
@@ -127,8 +122,7 @@ class test_record_cache(unittest.TestCase):
                 print("exception")
 
             mock_cache_instance.remove_value.assert_called()
-            # The removal of the field from the cache will be called for each queue(topic)
-            self.assertEqual(mock_cache_instance.remove_value.call_count, SUT.console.count_loop_packets * topic_count)
+            self.assertEqual(mock_cache_instance.remove_value.call_count, SUT.console.count_loop_packets)
 
             mock_cache_instance.update_value.assert_not_called()
 
@@ -141,8 +135,6 @@ class test_record_cache(unittest.TestCase):
             config = configobj.ConfigObj(StringIO(config_dict))
             config['Simulator']['max_archive_records'] = max_archive_records
 
-            topic_count = len(config['MQTTSubscribeService']['topics'].sections)
-
             SUT = weewx.engine.StdEngine(config)
             mock_cache_instance = mock_cache.return_value
 
@@ -150,8 +142,7 @@ class test_record_cache(unittest.TestCase):
                 SUT.run()
 
             mock_cache_instance.remove_value.assert_called()
-            # The removal of the field from the cache will be called for each queue(topic)
-            self.assertEqual(mock_cache_instance.remove_value.call_count, SUT.console.count_loop_packets * topic_count)
+            self.assertEqual(mock_cache_instance.remove_value.call_count, SUT.console.count_loop_packets)
 
             mock_cache_instance.update_value.assert_called()
             self.assertEqual(mock_cache_instance.update_value.call_count, max_archive_records)
