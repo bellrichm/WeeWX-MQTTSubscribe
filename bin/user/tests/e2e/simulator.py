@@ -41,7 +41,14 @@ class Simulator(weewx.drivers.simulator.Simulator, weewx.engine.StdService):
 
         self.bind(weewx.NEW_LOOP_PACKET, self.new_loop_packet)
         self.bind(weewx.NEW_ARCHIVE_RECORD, self.new_archive_record)
-        self.bind(weewx.END_ARCHIVE_PERIOD, self.end_archive_period)
+        self.bind(weewx.PRE_LOOP, self.pre_loop)
+
+    def pre_loop(self, _event):
+        ''' Handle the pre_loop event. '''
+        self.count_archive_records +=1
+        if self.count_archive_records > self.max_archive_records:
+            #self.engine.shutDown()
+            raise Exception("Max archive records has been achieved.")
 
     def new_loop_packet(self, _event):
         ''' Handle the new loop packet event. '''
@@ -56,10 +63,3 @@ class Simulator(weewx.drivers.simulator.Simulator, weewx.engine.StdService):
         print("REC:   ",
               weeutil.weeutil.timestamp_to_string(event.record['dateTime']),
               to_sorted_string(event.record))
-
-    def end_archive_period(self, _event):
-        ''' Handle the end of the archive period. '''
-        self.count_archive_records +=1
-        if self.count_archive_records > self.max_archive_records:
-            #self.engine.shutDown()
-            raise Exception("Max archive records has been achieved.")
