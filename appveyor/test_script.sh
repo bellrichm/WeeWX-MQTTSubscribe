@@ -55,6 +55,21 @@ if [ "$RUN_FTESTS" = "true" ]; then
   fi
 fi
 
+if [ "$RUN_ETESTS" = "true" ]; then
+  PYTHONPATH=bin:$PPATH pytest ./bin/user/tests/e2e --junitxml=results4.xml --verbosity=1 --log-level=ERROR
+  rc=$?
+
+  if [ "$BUILDTYPE" != "LOCAL" ]; then
+    find "$APPVEYOR_BUILD_FOLDER" -type f -name 'results4.xml' -print0 | xargs -0 -I '{}' curl -F 'file=@{}' "https://ci.appveyor.com/api/testresults/junit/$APPVEYOR_JOB_ID"
+  fi
+
+  # ToDo - option to not exit on error - for debugging
+  if [ $rc -ne 0 ]; then
+    echo "$rc"
+    exit $rc
+  fi
+fi
+
 if [ "$RUN_ITESTS" = "true" ]; then
   if [ "$BUILDTYPE" = "LOCAL" ]; then
     HTML_OPTIONS=" --cov-report html:cover2 "

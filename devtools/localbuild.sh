@@ -46,6 +46,7 @@ export ENABLED="true"
 
 export RUN_FTESTS="false"
 export RUN_ITESTS="false"
+export RUN_ETESTS="false"
 
 # set api keys
 # this is separate to help ensure it is not accidentally checked in
