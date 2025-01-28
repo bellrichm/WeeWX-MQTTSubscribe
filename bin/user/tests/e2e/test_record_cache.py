@@ -142,7 +142,6 @@ if __name__ == '__main__':
     test_suite = unittest.TestSuite()
     test_suite.addTest(test_record_cache('test_observation_not_in_archive_record'))
     test_suite.addTest(test_record_cache('test_observation_in_archive_record'))
-    unittest.TextTestRunner().run(test_suite)
+    #unittest.TextTestRunner().run(test_suite)
 
-    #unittest.main(exit=False)
-    print("done")
+    unittest.main(exit=False)
