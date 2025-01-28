@@ -24,4 +24,8 @@ fi
 
 ./devtools/runitests.sh $WEEWX $PYENV_VERSION
 
+./devtools/runftests.sh $WEEWX $PYENV_VERSION
+
+./devtools/runetests.sh $WEEWX $PYENV_VERSION
+
 echo "Completed $python_version $WEEWX"
