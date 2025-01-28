@@ -7,7 +7,7 @@ source ./devtools/python_versions.sh
 
 # Note, the value for $WEEWX can be relative. For example ../weewx-source/weewx-3.7.1
 if [ -z "$1" ]; then
-    WEEWX=weewx4
+    WEEWX=weewx5
 else
     WEEWX=$1
 fi
@@ -22,5 +22,5 @@ python_command='python'$PYENV_VERSION
 python_version=$(pyenv which $python_command)
 echo "Running $python_version $WEEWX"
 
-PYTHONPATH=bin:../$WEEWX/bin pytest bin/user/tests/e2e
+PYTHONPATH=bin:../$WEEWX/src:../$WEEWX/bin pytest bin/user/tests/e2e
 date
