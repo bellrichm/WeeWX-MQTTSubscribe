@@ -42,13 +42,23 @@ class Simulator(weewx.drivers.simulator.Simulator, weewx.engine.StdService):
         self.bind(weewx.NEW_LOOP_PACKET, self.new_loop_packet)
         self.bind(weewx.NEW_ARCHIVE_RECORD, self.new_archive_record)
         self.bind(weewx.PRE_LOOP, self.pre_loop)
+        self.bind(weewx.POST_LOOP, self.post_loop)
+
+    def end_simulation(self):
+        ''' End this simulation. '''
+        #self.engine.shutDown()
+        raise Exception("Max archive records has been achieved.")
 
     def pre_loop(self, _event):
         ''' Handle the pre_loop event. '''
         self.count_archive_records +=1
-        if self.count_archive_records > self.max_archive_records:
-            #self.engine.shutDown()
-            raise Exception("Max archive records has been achieved.")
+        if self.count_archive_records > self.max_archive_records and self.max_archive_records != 0:
+            self.end_simulation()
+
+    def post_loop(self, _event):
+        ''' Handle the pre_loop event. '''
+        if self.max_archive_records == 0:
+            self.end_simulation()
 
     def new_loop_packet(self, _event):
         ''' Handle the new loop packet event. '''
