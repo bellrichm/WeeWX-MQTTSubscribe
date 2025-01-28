@@ -139,7 +139,7 @@ class test_all(unittest.TestCase):
 if __name__ == '__main__':
     test_suite = unittest.TestSuite()
     test_suite.addTest(test_all('test_one'))
-    #test_suite.addTest(test_all('test_two'))
+    test_suite.addTest(test_all('test_two'))
     unittest.TextTestRunner().run(test_suite)
 
     #unittest.main(exit=False)
