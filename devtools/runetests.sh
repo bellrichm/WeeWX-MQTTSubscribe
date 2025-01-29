@@ -1,5 +1,5 @@
 #! /bin/bash
-#    Copyright (c) 2023-2025 Rich Bell <bellrichm@gmail.com>
+#    Copyright (c) 2025 Rich Bell <bellrichm@gmail.com>
 #
 #    See the file LICENSE.txt for your full rights.
 #
@@ -22,5 +22,5 @@ python_command='python'$PYENV_VERSION
 python_version=$(pyenv which $python_command)
 echo "Running $python_version $WEEWX"
 
-PYTHONPATH=bin:../$WEEWX/src:../$WEEWX/bin pytest bin/user/tests/unit
+PYTHONPATH=bin:../$WEEWX/src:../$WEEWX/bin pytest bin/user/tests/e2e
 date

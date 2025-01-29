@@ -1,5 +1,5 @@
 #
-#    Copyright (c) 2020-2023 Rich Bell <bellrichm@gmail.com>
+#    Copyright (c) 2020-2025 Rich Bell <bellrichm@gmail.com>
 #
 #    See the file LICENSE.txt for your full rights.
 #
@@ -46,6 +46,21 @@ if [ "$RUN_FTESTS" = "true" ]; then
 
   if [ "$BUILDTYPE" != "LOCAL" ]; then
     find "$APPVEYOR_BUILD_FOLDER" -type f -name 'results3.xml' -print0 | xargs -0 -I '{}' curl -F 'file=@{}' "https://ci.appveyor.com/api/testresults/junit/$APPVEYOR_JOB_ID"
+  fi
+
+  # ToDo - option to not exit on error - for debugging
+  if [ $rc -ne 0 ]; then
+    echo "$rc"
+    exit $rc
+  fi
+fi
+
+if [ "$RUN_ETESTS" = "true" ]; then
+  PYTHONPATH=bin:$PPATH pytest ./bin/user/tests/e2e --junitxml=results4.xml --verbosity=1 --log-level=ERROR
+  rc=$?
+
+  if [ "$BUILDTYPE" != "LOCAL" ]; then
+    find "$APPVEYOR_BUILD_FOLDER" -type f -name 'results4.xml' -print0 | xargs -0 -I '{}' curl -F 'file=@{}' "https://ci.appveyor.com/api/testresults/junit/$APPVEYOR_JOB_ID"
   fi
 
   # ToDo - option to not exit on error - for debugging

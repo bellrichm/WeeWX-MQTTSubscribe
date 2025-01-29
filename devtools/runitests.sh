@@ -1,5 +1,5 @@
 #! /bin/bash
-#    Copyright (c) 2023 Rich Bell <bellrichm@gmail.com>
+#    Copyright (c) 2023-2025 Rich Bell <bellrichm@gmail.com>
 #
 #    See the file LICENSE.txt for your full rights.
 #
@@ -7,7 +7,7 @@ source ./devtools/python_versions.sh
 
 # Note, the value for $WEEWX can be relative. For example ../weewx-source/weewx-3.7.1
 if [ -z "$1" ]; then
-    WEEWX=weewx4
+    WEEWX=weewx5
 else
     WEEWX=$1
 fi
@@ -22,5 +22,5 @@ python_command='python'$PYENV_VERSION
 python_version=$(pyenv which $python_command)
 echo "Running $python_version $WEEWX"
 
-PYTHONPATH=bin:../$WEEWX/bin pytest bin/user/tests/integ
+PYTHONPATH=bin:../$WEEWX/src:../$WEEWX/bin pytest bin/user/tests/integ
 date

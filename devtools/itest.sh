@@ -1,6 +1,6 @@
 #! /bin/bash
 #
-#    Copyright (c) 2020-2023 Rich Bell <bellrichm@gmail.com>
+#    Copyright (c) 2020-2025 Rich Bell <bellrichm@gmail.com>
 #
 #    See the file LICENSE.txt for your full rights.
 #
@@ -25,5 +25,5 @@ fi
 export PYENV_VERSION=$PY_VERSION
 export WEEWX=$WEEWX_VERSION
 echo "Running python $PY_VERSION $WEEWX_VERSION"
-PYTHONPATH=bin:../$WEEWX_VERSION/bin pytest bin/user/tests/integ/$TEST
+PYTHONPATH=bin:../$WEEWX/src:../$WEEWX/bin pytest bin/user/tests/integ/$TEST
 
