@@ -1,5 +1,14 @@
 {
     "python.linting.pycodestyleEnabled": false,
     "python.envFile": "${workspaceFolder}/.env",
-    "python.linting.enabled": true
+    "python.linting.enabled": true,
+    "sqltools.sessionFilesFolder": "sql",
+    "sqltools.connections": [
+        {
+            "name": "develop.weewx-data/weewx.sdb",
+            "driver": "SQLite",
+            "database": "/home/richbell/weewx_dev/weewx-data/develop.weewx-data/archive-local/weewx.sdb",
+            "connectionTimeout": 15
+        },
+    ],
 }
