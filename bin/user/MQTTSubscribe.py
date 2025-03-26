@@ -2259,6 +2259,7 @@ class MQTTSubscribeService(StdService):
     # If this is important, bind to the loop packet.
     def new_archive_record(self, event):
         """ Handle the new archive record event. """
+        self.logger.info(f"RECORDCACHEx")
         self.logger.info(f"RECORDCACHEx: {to_sorted_string(event.record)}")
         self.logger.debug(
             f"data-> incoming record is {weeutil.weeutil.timestamp_to_string(event.record['dateTime'])}: {to_sorted_string(event.record)}")
