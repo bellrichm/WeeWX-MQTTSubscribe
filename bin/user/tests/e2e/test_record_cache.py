@@ -103,8 +103,8 @@ class test_record_cache(unittest.TestCase):
                 SUT.run()
                 print("exception")
 
-            mock_cache_instance.remove_value.assert_called()
-            self.assertEqual(mock_cache_instance.remove_value.call_count, SUT.console.count_loop_packets)
+            mock_cache_instance.invalidate_value.assert_called()
+            self.assertEqual(mock_cache_instance.invalidate_value.call_count, SUT.console.count_loop_packets)
 
     def test_observation_not_in_archive_record(self):
         with mock.patch('user.MQTTSubscribe.RecordCache') as mock_cache:
@@ -121,8 +121,8 @@ class test_record_cache(unittest.TestCase):
                 SUT.run()
                 print("exception")
 
-            mock_cache_instance.remove_value.assert_called()
-            self.assertEqual(mock_cache_instance.remove_value.call_count, SUT.console.count_loop_packets)
+            mock_cache_instance.invalidate_value.assert_called()
+            self.assertEqual(mock_cache_instance.invalidate_value.call_count, SUT.console.count_loop_packets)
 
             mock_cache_instance.update_value.assert_not_called()
 
@@ -141,8 +141,8 @@ class test_record_cache(unittest.TestCase):
             with self.assertRaises(Exception):
                 SUT.run()
 
-            mock_cache_instance.remove_value.assert_called()
-            self.assertEqual(mock_cache_instance.remove_value.call_count, SUT.console.count_loop_packets)
+            mock_cache_instance.invalidate_value.assert_called()
+            self.assertEqual(mock_cache_instance.invalidate_value.call_count, SUT.console.count_loop_packets)
 
             mock_cache_instance.update_value.assert_called()
             self.assertEqual(mock_cache_instance.update_value.call_count, max_archive_records)

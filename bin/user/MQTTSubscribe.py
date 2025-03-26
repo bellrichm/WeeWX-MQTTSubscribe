@@ -706,10 +706,21 @@ class RecordCache():
         self.unit_system = None
         self.cached_values = {}
 
+    def dump_key(self, key):
+        """ Dump the data for the input key. """
+        return self.cached_values[key] if key in self.cached_values else None
+
+    def is_valid(self, key, timestamp, expires_after):
+        """ Check is the key is still not valid (has not expired and  not been marked invalid). """
+        valid = None
+        if key in self.cached_values:
+            valid = (expires_after is None or timestamp - self.cached_values[key]['timestamp'] < expires_after) and \
+                self.cached_values[key]['invalidated'] > timestamp
+        return valid
+
     def get_value(self, key, timestamp, expires_after):
         """ Get the cached value. """
-        if key in self.cached_values and \
-            (expires_after is None or timestamp - self.cached_values[key]['timestamp'] < expires_after):
+        if self.is_valid(key, timestamp, expires_after):
             return self.cached_values[key]['value']
 
         return None
@@ -723,14 +734,27 @@ class RecordCache():
         self.cached_values[key] = {}
         self.cached_values[key]['value'] = value
         self.cached_values[key]['timestamp'] = timestamp
+        self.cached_values[key]['invalidated'] = float('inf')
 
-    def update_timestamp(self, key, timestamp):
-        """ Update the ts. """
-        if key in self.cached_values:
-            self.cached_values[key]['timestamp'] = timestamp
+    def invalidate_value(self, key, timestamp):
+        """ The cached value for key will not be valid at timestamp and all future times.
+            Note: This method was added due to the order WeeWX fires and handles certain events.
+                  For additional inforamtion see, https://groups.google.com/g/weewx-development/c/1cJBMAX3Wsg
+                  Add also, https://github.com/bellrichm/WeeWX-MQTTSubscribe/issues/178
+        """
+        if key in self.cached_values and timestamp < self.cached_values[key]['invalidated']:
+            self.cached_values[key]['invalidated'] = timestamp
+
+    #def update_timestamp(self, key, timestamp):
+    #    """ Update the ts. """
+    #    if key in self.cached_values:
+    #        self.cached_values[key]['timestamp'] = timestamp
 
     def remove_value(self, key):
-        """ Remove a cached value. """
+        """ Remove a cached value.
+            If a key/value is no longer valid, use invalidate_value with current timestamp.
+            Do not use this method to remove invalidated cached key/values.
+        """
         if key in self.cached_values:
             del self.cached_values[key]
 
@@ -2218,11 +2242,15 @@ class MQTTSubscribeService(StdService):
                 event.packet.update(target_data)
                 self.logger.trace(
                     f"Packet after update is: {weeutil.weeutil.timestamp_to_string(event.packet['dateTime'])} {to_sorted_string(event.packet)}")
-                
+
             if self.subscriber.cached_fields:
                 for field in self.subscriber.cached_fields:
                     if field in event.packet:
-                        self.cache.remove_value(field)
+                        self.logger.info("  \nRECORDCACHExy")
+                        self.logger.info(f"  RECORDCACHExy invalidate_value {event.packet[field]} {field} {event.packet['dateTime']}")
+                        self.logger.info(f"    RECORDCACHExy before {self.cache.dump_key(field)}")
+                        self.cache.invalidate_value(field, event.packet['dateTime'])
+                        self.logger.info(f"    RECORDCACHExy after {self.cache.dump_key(field)}")
             self.logger.debug(
                 f"data-> final packet is {weeutil.weeutil.timestamp_to_string(event.packet['dateTime'])}: {to_sorted_string(event.packet)}")
 
@@ -2231,6 +2259,7 @@ class MQTTSubscribeService(StdService):
     # If this is important, bind to the loop packet.
     def new_archive_record(self, event):
         """ Handle the new archive record event. """
+        self.logger.info(f"RECORDCACHEx: {to_sorted_string(event.record)}")
         self.logger.debug(
             f"data-> incoming record is {weeutil.weeutil.timestamp_to_string(event.record['dateTime'])}: {to_sorted_string(event.record)}")
         if self.binding == 'archive':
@@ -2250,23 +2279,33 @@ class MQTTSubscribeService(StdService):
         if self.subscriber.cached_fields:
             target_data = {}
             for field in self.subscriber.cached_fields:
+                timestamp = event.record['dateTime']
                 if field in event.record:
-                    timestamp = time.time()
                     self.logger.trace(
                         (f"Update cache {event.record[field]} "
                         f"to {field} with units of {int(event.record['usUnits'])} and timestamp of {int(timestamp)}"))
+                    self.logger.info(f"  RECORDCACHEx update_value {event.record[field]} {field} {timestamp}")
+                    self.logger.info(f"    RECORDCACHEx before {self.cache.dump_key(field)}")
                     self.cache.update_value(field,
                                             event.record[field],
                                             event.record['usUnits'],
                                             timestamp)
+                    self.logger.info(f"    RECORDCACHEx after {self.cache.dump_key(field)}")
                 else:
+                    is_valid = self.cache.is_valid(field,
+                                                    timestamp,
+                                                    self.subscriber.cached_fields[field]['expires_after'])
+                    self.logger.info(f"  RECORDCACHEx is_valid {is_valid} {field} {timestamp}")
+                    self.logger.info(f"  RECORDCACHEx get_value {field} {timestamp}")
                     target_data[field] = self.cache.get_value(field,
-                                                            time.time(),
+                                                            timestamp,
                                                             self.subscriber.cached_fields[field]['expires_after'])
+                    self.logger.info(f"    RECORDCACHEx get_value returned {target_data[field]}")
                     self.logger.trace(f"target_data after cache lookup is: {to_sorted_string(target_data)}")
 
             event.record.update(target_data)
 
+        self.logger.info(f"RECORDCACHEx: {to_sorted_string(event.record)}")
         self.logger.debug(
             f"data-> final record is {weeutil.weeutil.timestamp_to_string(event.record['dateTime'])}: {to_sorted_string(event.record)}")
 
