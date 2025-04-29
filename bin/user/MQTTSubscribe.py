@@ -874,6 +874,8 @@ class TopicManager():
 
         self.logger.debug(f"TopicManager self.subscribed_topics is {json.dumps(self.subscribed_topics, default=str)}")
         self.logger.debug(f"TopicManager self.cached_fields is {self.cached_fields}")
+        self.logger.info(f"RECORDCACHE-X self.cached_fields is: {self.cached_fields}")
+
 
     def _configure_topics(self, config, archive_topic, single_queue, single_queue_obj, default_message_dict, topic_defaults, field_defaults):
         # pylint: disable=too-many-arguments, too-many-locals
@@ -2246,11 +2248,11 @@ class MQTTSubscribeService(StdService):
             if self.subscriber.cached_fields:
                 for field in self.subscriber.cached_fields:
                     if field in event.packet:
-                        #self.logger.info("  \nRECORDCACHExy")
-                        #self.logger.info(f"  RECORDCACHExy invalidate_value {event.packet[field]} {field} {event.packet['dateTime']}")
-                        #self.logger.info(f"    RECORDCACHExy before {self.cache.dump_key(field)}")
+                        self.logger.info("\nRECORDCACHE-p")
+                        self.logger.info(f"  RECORDCACHE-p field: {field} value: {event.packet[field]} dateTime: {event.packet['dateTime']}")
+                        self.logger.info(f"    RECORDCACHE-p cache dump before invalidate_value: {self.cache.dump_key(field)}")
                         self.cache.invalidate_value(field, event.packet['dateTime'])
-                        #self.logger.info(f"    RECORDCACHExy after {self.cache.dump_key(field)}")
+                        self.logger.info(f"    RECORDCACHE-p cache dump after invalidate_value: {self.cache.dump_key(field)}")
             self.logger.debug(
                 f"data-> final packet is {weeutil.weeutil.timestamp_to_string(event.packet['dateTime'])}: {to_sorted_string(event.packet)}")
 
@@ -2259,8 +2261,8 @@ class MQTTSubscribeService(StdService):
     # If this is important, bind to the loop packet.
     def new_archive_record(self, event):
         """ Handle the new archive record event. """
-        #self.logger.info("RECORDCACHEx")
-        #self.logger.info(f"RECORDCACHEx: {to_sorted_string(event.record)}")
+        self.logger.info("\nRECORDCACHE-a")
+        self.logger.info(f"  RECORDCACHE-a input record: {to_sorted_string(event.record)}")
         self.logger.debug(
             f"data-> incoming record is {weeutil.weeutil.timestamp_to_string(event.record['dateTime'])}: {to_sorted_string(event.record)}")
         if self.binding == 'archive':
@@ -2285,28 +2287,27 @@ class MQTTSubscribeService(StdService):
                     self.logger.trace(
                         (f"Update cache {event.record[field]} "
                         f"to {field} with units of {int(event.record['usUnits'])} and timestamp of {int(timestamp)}"))
-                    #self.logger.info(f"  RECORDCACHEx update_value {event.record[field]} {field} {timestamp}")
-                    #self.logger.info(f"    RECORDCACHEx before {self.cache.dump_key(field)}")
+                    self.logger.info(f"    RECORDCACHE-a cache dump before update_value: {self.cache.dump_key(field)}")
                     self.cache.update_value(field,
                                             event.record[field],
                                             event.record['usUnits'],
                                             timestamp)
-                    #self.logger.info(f"    RECORDCACHEx after {self.cache.dump_key(field)}")
+                    self.logger.info(f"    RECORDCACHE-a cache dump after update_value: {self.cache.dump_key(field)}")
                 else:
-                    #is_valid = self.cache.is_valid(field,
-                    #                                timestamp,
-                    #                                self.subscriber.cached_fields[field]['expires_after'])
-                    #self.logger.info(f"  RECORDCACHEx is_valid {is_valid} {field} {timestamp}")
-                    #self.logger.info(f"  RECORDCACHEx get_value {field} {timestamp}")
+                    is_valid = self.cache.is_valid(field,
+                                                    timestamp,
+                                                    self.subscriber.cached_fields[field]['expires_after'])
+                    self.logger.info(f"    RECORDCACHE-a cache dump before get_value: {self.cache.dump_key(field)}")
+                    self.logger.info(f"    RECORDCACHE-a field: {field} timestamp: {timestamp} is_valid: {is_valid}")
                     target_data[field] = self.cache.get_value(field,
                                                             timestamp,
                                                             self.subscriber.cached_fields[field]['expires_after'])
-                    #self.logger.info(f"    RECORDCACHEx get_value returned {target_data[field]}")
+                    self.logger.info(f"    RECORDCACHE-a get_value returned value: {target_data[field]}")
                     self.logger.trace(f"target_data after cache lookup is: {to_sorted_string(target_data)}")
 
             event.record.update(target_data)
 
-        #self.logger.info(f"RECORDCACHEx: {to_sorted_string(event.record)}")
+        self.logger.info(f"  RECORDCACHE-a: final record: {to_sorted_string(event.record)}")
         self.logger.debug(
             f"data-> final record is {weeutil.weeutil.timestamp_to_string(event.record['dateTime'])}: {to_sorted_string(event.record)}")
 
@@ -2855,8 +2856,8 @@ class Parser():
             if len(config_input_dict.sections) > 1:
                 parser.error(f"When specifying '--top-level, only one top level section is allowed. Found {config_input_dict.sections}")
                 self.config_dict = weeutil.config.deep_copy(config_input_dict[config_input_dict.sections[0]])
-            else:
-                self.config_dict = weeutil.config.deep_copy(config_input_dict[self.section])
+        else:
+            self.config_dict = weeutil.config.deep_copy(config_input_dict[self.section])
 
         topics_dict = self.config_dict.get('topics', None)
         if topics_dict is None:
