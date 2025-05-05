@@ -18,8 +18,10 @@
       unzip -qq -o $HOME/.sonar/sonar-scanner.zip -d $HOME/.sonar/
     fi
 
-    echo "Running mosquitto install"
+    echo "Updating apt"
     sudo apt-get -qq update
+
+    echo "Running mosquitto install"
     sudo apt-get -qq --assume-yes install mosquitto
 
     PIP_OPTIONS=''
