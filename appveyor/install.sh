@@ -19,8 +19,8 @@
     fi
 
     echo "Running mosquitto install"
-    sudo apt-get update
-    sudo apt-get --assume-yes install mosquitto
+    sudo apt-get -qq update
+    sudo apt-get -qq --assume-yes install mosquitto
 
     PIP_OPTIONS=''
     PIP_OPTIONS='--quiet'
