@@ -1,0 +1,86 @@
+##############################################################################
+# This is an example of the configuration to use when publishing directl from an Ecowitt GW3000 or GW2000 using the new Ecowitt weather services MQTT protocol
+# Weather services MQTT protocol is expected to be added to more Ecowitt gateway and console devices in the future
+
+[MQTTSubscribeDriver]
+    driver = user.MQTTSubscribe
+    # your MQTT server/broker address
+    host = <replace.me>
+    port = 1883
+    keepalive = 60
+    username = None
+    password = None
+    binding = loop
+    
+    [[topics]]
+        unit_system = US
+        # your topic path example ecowitt/1C6920E3A8F3, unique to each gateway device
+        [[[<replace.me>]]]   
+           subscribe = True
+           ignore = False
+            [[[[message]]]]
+                type = keyword
+                keyword_delimiter = "&"
+            # map MQTT field to WeeWX database field    
+            [[[[PASSKEY]]]]
+                ignore = True
+            [[[[stationtype]]]]
+                ignore = True
+            [[[[runtime]]]]
+                ignore = True
+            [[[[dns_err_cnt]]]]
+                ignore = True
+            [[[[cdnflg]]]]
+                ignore = True
+            [[[[dateutc]]]]
+                ignore = True
+            [[[[freq]]]]
+                ignore = True
+            [[[[model]]]]
+                ignore = True
+            [[[[baromrelin]]]]
+                name = barometer
+            [[[[baromabsin]]]]
+                name = pressure
+            [[[[dailyrainin]]]]
+                name = dayRain
+            [[[[eventrainin]]]]
+                name = stormRain
+            [[[[hourlyrainin]]]]
+                name = hourRain
+            [[[[humidityin]]]]
+                name = inHumidity
+            [[[[humidity]]]]
+                name = outHumidity
+            [[[[last24hrainin]]]]
+                name = 24Rain
+            [[[[lightning]]]]
+                name = lightning_dist
+            [[[[lightning_num]]]]
+                name = lightning_strike_count
+            [[[[lightning_time]]]]
+                name = lightning_last_det_time
+            [[[[monthlyrainin]]]]
+                name = monthRain
+            [[[[rainratein]]]]
+                name = rainRate
+            [[[[solarradiation]]]]
+               name = radiation
+            [[[[tempf]]]]
+               name = outTemp
+            [[[[tempinf]]]]
+               name = inTemp
+            [[[[uv]]]]
+                name = UV
+            [[[[weeklyrainin]]]]
+                name = weekRain
+            [[[[winddir]]]]
+                name = windDir
+            [[[[windgustmph]]]]
+                name = windGust
+            [[[[windspeedmph]]]]
+               name = windSpeed
+            [[[[yearlyrainin]]]]
+                name = yearRain
+
+##############################################################################
