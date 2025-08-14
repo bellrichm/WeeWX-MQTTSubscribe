@@ -1,5 +1,5 @@
 #
-#    Copyright (c) 2020-2023 Rich Bell <bellrichm@gmail.com>
+#    Copyright (c) 2020-2025 Rich Bell <bellrichm@gmail.com>
 #
 #    See the file LICENSE.txt for your full rights.
 #
@@ -46,6 +46,7 @@ export ENABLED="true"
 
 export RUN_FTESTS="false"
 export RUN_ITESTS="false"
+export RUN_ETESTS="false"
 
 # set api keys
 # this is separate to help ensure it is not accidentally checked in

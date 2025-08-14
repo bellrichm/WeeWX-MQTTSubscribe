@@ -1,5 +1,5 @@
 #
-#    Copyright (c) 2020-2024 Rich Bell <bellrichm@gmail.com>
+#    Copyright (c) 2020-2025 Rich Bell <bellrichm@gmail.com>
 #
 #    See the file LICENSE.txt for your full rights.
 #
@@ -521,7 +521,7 @@ import weewx.drivers
 from weewx.engine import StdEngine, StdService
 # pylint: enable=wrong-import-position
 
-VERSION = '3.0.1-rc01'
+VERSION = '3.1.0-rc02'
 DRIVER_NAME = 'MQTTSubscribeDriver'
 DRIVER_VERSION = VERSION
 
@@ -2185,8 +2185,6 @@ class MQTTSubscribeService(StdService):
         self.subscriber.start()
 
         self.cache = RecordCache()
-        archive_dict = config_dict.get('StdArchive', {})
-        record_generation = archive_dict.get('record_generation', "none").lower()
 
         if self.binding not in ('loop', 'archive'):
             raise ValueError(f"MQTTSubscribeService: Unknown binding: {self.binding}")
@@ -2195,9 +2193,6 @@ class MQTTSubscribeService(StdService):
 
         if self.binding == 'loop':
             self.bind(weewx.NEW_LOOP_PACKET, self.new_loop_packet)
-
-        if self.subscriber.cached_fields and record_generation != 'software' and self.binding == 'loop':
-            raise ValueError(f"caching is not available with record generation of type '{record_generation}' and and binding of type 'loop'")
 
     def shutDown(self): # need to override parent - pylint: disable=invalid-name
         """Run when an engine shutdown is requested."""
@@ -2223,7 +2218,11 @@ class MQTTSubscribeService(StdService):
                 event.packet.update(target_data)
                 self.logger.trace(
                     f"Packet after update is: {weeutil.weeutil.timestamp_to_string(event.packet['dateTime'])} {to_sorted_string(event.packet)}")
-
+                
+            if self.subscriber.cached_fields:
+                for field in self.subscriber.cached_fields:
+                    if field in event.packet:
+                        self.cache.remove_value(field)
             self.logger.debug(
                 f"data-> final packet is {weeutil.weeutil.timestamp_to_string(event.packet['dateTime'])}: {to_sorted_string(event.packet)}")
 

@@ -47,6 +47,7 @@ environment:
   ENABLED: true
   RUN_FTESTS: true
   RUN_ITESTS: true
+  RUN_ETESTS: true
   
   WEEWX_URL: http://www.weewx.com/downloads/released_versions/
 
