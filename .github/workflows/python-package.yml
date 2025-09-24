@@ -11,7 +11,7 @@ jobs:
     uses: weewx-extensions/development_tools/.github/workflows/analyze-test.yml@development
     with:
       module-name: 'MQTTSubscribe'
-      PIP_LIST: 'foo'
+      pip-list: 'foo'
       #coveralls-upload: false
       codecov-upload: false
       sonar-scan: false
