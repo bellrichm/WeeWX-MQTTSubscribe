@@ -12,6 +12,7 @@ jobs:
     with:
       module-name: 'MQTTSubscribe'
       pip-list: 'paho-mqtt'
+      package-list: 'mosquitto'
       #coveralls-upload: false
       codecov-upload: false
       sonar-scan: false
