@@ -8,7 +8,7 @@ on:
 
 jobs:
   analyze-test:
-    uses: weewx-extensions/development_tools/.github/workflows/analyze-test.yml@v1.0.0
+    uses: weewx-extensions/development_tools/.github/workflows/analyze-test.yml@development
     with:
       module-name: 'MQTTSubscribe'
       #coveralls-upload: false
