@@ -1,0 +1,19 @@
+name: Python package
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  analyze-test:
+    uses: weewx-extensions/development_tools/.github/workflows/analyze-test.yml@v1.0.0
+    with:
+      module-name: 'MQTTSubscribe'
+      #coveralls-upload: false
+      codecov-upload: false
+      sonar-scan: false
+    secrets:
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
