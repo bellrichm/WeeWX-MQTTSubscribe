@@ -1,0 +1,23 @@
+name: Analyze and test
+
+on:
+  push:
+    branches-ignore: [ "master" ]
+
+jobs:
+  analyze-test:
+    uses: weewx-extensions/development_tools/.github/workflows/analyze-test.yml@v2.0.0
+    with:
+      module-name: 'mqttpublish'
+      python-version: '3.13'
+      weewx-version: '5.1.0'
+      latest-python-version: '3.13'
+      latest-weewx-version: '5.1.0'
+      pip-list: 'paho-mqtt'
+      package-list: 'mosquitto'
+      coveralls-upload: false
+      codecov-upload: false
+      sonar-scan: false
+    secrets:
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
