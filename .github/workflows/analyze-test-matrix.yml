@@ -1,8 +1,8 @@
-name: Analyze and test matrix of versions
+name: Matrix analyze and test
 
 on:
   push:
-    branches: [ "master" ]
+    #branches: [ "master" ]
   workflow_dispatch:
 
 jobs:
