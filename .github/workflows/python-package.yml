@@ -8,7 +8,7 @@ on:
 
 jobs:
   analyze-test:
-    uses: weewx-extensions/development_tools/.github/workflows/analyze-test.yml@development
+    uses: weewx-extensions/development_tools/.github/workflows/full-analyze-test.yml@v2
     with:
       module-name: 'MQTTSubscribe'
       pip-list: 'paho-mqtt'
