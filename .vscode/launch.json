@@ -6,7 +6,7 @@
     "configurations": [
         {
             "name": "Run current test",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal"
@@ -120,12 +120,12 @@
                 "--top-level",
 
                 "--logging-level", "INFO",
-                "--logging-file", "log.txt",
+                "--logging-file", "tmp/log.txt",
                 "--console",
 
-                "--topic", "S2100",
-                "--conf", "~/Downloads/bob/weewx.conf",
-                "--message-file", "~/Downloads/bob/2100_data.txt",
+                "--topic", "rtl_433/devices/Acurite-Atlas/C/950",
+                "--conf", "tmp/236.conf",
+                "--message-file", "tmp/236_json.txt",
             ],            
             "console": "integratedTerminal"
         },
