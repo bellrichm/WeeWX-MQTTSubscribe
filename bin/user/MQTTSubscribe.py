@@ -521,7 +521,7 @@ import weewx.drivers
 from weewx.engine import StdEngine, StdService
 # pylint: enable=wrong-import-position
 
-VERSION = '3.1.0-rc02'
+VERSION = '3.1.0-rc04'
 DRIVER_NAME = 'MQTTSubscribeDriver'
 DRIVER_VERSION = VERSION
 
@@ -706,10 +706,21 @@ class RecordCache():
         self.unit_system = None
         self.cached_values = {}
 
+    def dump_key(self, key):
+        """ Dump the data for the input key. """
+        return self.cached_values[key] if key in self.cached_values else None
+
+    def is_valid(self, key, timestamp, expires_after):
+        """ Check is the key is still not valid (has not expired and  not been marked invalid). """
+        valid = None
+        if key in self.cached_values:
+            valid = (expires_after is None or timestamp - self.cached_values[key]['timestamp'] < expires_after) and \
+                self.cached_values[key]['invalidated'] > timestamp
+        return valid
+
     def get_value(self, key, timestamp, expires_after):
         """ Get the cached value. """
-        if key in self.cached_values and \
-            (expires_after is None or timestamp - self.cached_values[key]['timestamp'] < expires_after):
+        if self.is_valid(key, timestamp, expires_after):
             return self.cached_values[key]['value']
 
         return None
@@ -723,14 +734,27 @@ class RecordCache():
         self.cached_values[key] = {}
         self.cached_values[key]['value'] = value
         self.cached_values[key]['timestamp'] = timestamp
+        self.cached_values[key]['invalidated'] = float('inf')
 
-    def update_timestamp(self, key, timestamp):
-        """ Update the ts. """
-        if key in self.cached_values:
-            self.cached_values[key]['timestamp'] = timestamp
+    def invalidate_value(self, key, timestamp):
+        """ The cached value for key will not be valid at timestamp and all future times.
+            Note: This method was added due to the order WeeWX fires and handles certain events.
+                  For additional inforamtion see, https://groups.google.com/g/weewx-development/c/1cJBMAX3Wsg
+                  Add also, https://github.com/bellrichm/WeeWX-MQTTSubscribe/issues/178
+        """
+        if key in self.cached_values and timestamp < self.cached_values[key]['invalidated']:
+            self.cached_values[key]['invalidated'] = timestamp
+
+    #def update_timestamp(self, key, timestamp):
+    #    """ Update the ts. """
+    #    if key in self.cached_values:
+    #        self.cached_values[key]['timestamp'] = timestamp
 
     def remove_value(self, key):
-        """ Remove a cached value. """
+        """ Remove a cached value.
+            If a key/value is no longer valid, use invalidate_value with current timestamp.
+            Do not use this method to remove invalidated cached key/values.
+        """
         if key in self.cached_values:
             del self.cached_values[key]
 
@@ -2222,7 +2246,10 @@ class MQTTSubscribeService(StdService):
             if self.subscriber.cached_fields:
                 for field in self.subscriber.cached_fields:
                     if field in event.packet:
-                        self.cache.remove_value(field)
+                        self.logger.debug(f"field: {field} value: {event.packet[field]} dateTime: {event.packet['dateTime']}")
+                        self.logger.debug(f"cache dump before invalidate_value: {self.cache.dump_key(field)}")
+                        self.cache.invalidate_value(field, event.packet['dateTime'])
+                        self.logger.debug(f"cache dump after invalidate_value: {self.cache.dump_key(field)}")
             self.logger.debug(
                 f"data-> final packet is {weeutil.weeutil.timestamp_to_string(event.packet['dateTime'])}: {to_sorted_string(event.packet)}")
 
@@ -2250,19 +2277,27 @@ class MQTTSubscribeService(StdService):
         if self.subscriber.cached_fields:
             target_data = {}
             for field in self.subscriber.cached_fields:
+                timestamp = event.record['dateTime']
                 if field in event.record:
-                    timestamp = time.time()
                     self.logger.trace(
                         (f"Update cache {event.record[field]} "
                         f"to {field} with units of {int(event.record['usUnits'])} and timestamp of {int(timestamp)}"))
+                    self.logger.trace(f"cache dump before update_value: {self.cache.dump_key(field)}")
                     self.cache.update_value(field,
                                             event.record[field],
                                             event.record['usUnits'],
                                             timestamp)
+                    self.logger.trace(f"cache dump after update_value: {self.cache.dump_key(field)}")
                 else:
+                    is_valid = self.cache.is_valid(field,
+                                                    timestamp,
+                                                    self.subscriber.cached_fields[field]['expires_after'])
+                    self.logger.trace(f"cache dump before get_value: {self.cache.dump_key(field)}")
+                    self.logger.trace(f"field: {field} timestamp: {timestamp} is_valid: {is_valid}")
                     target_data[field] = self.cache.get_value(field,
-                                                            time.time(),
+                                                            timestamp,
                                                             self.subscriber.cached_fields[field]['expires_after'])
+                    self.logger.trace(f"get_value returned value: {target_data[field]}")
                     self.logger.trace(f"target_data after cache lookup is: {to_sorted_string(target_data)}")
 
             event.record.update(target_data)
@@ -2847,7 +2882,7 @@ class Parser():
         for msg in error_msgs:
             print(msg)
 
-    def parse(self):
+    def parse_single(self):
         ''' Parse it'''
         payload = ''
         with open(self.message_file, encoding='UTF-8') as file_object:
@@ -2865,6 +2900,24 @@ class Parser():
         data_queue = self.manager.get_data(queue)
         for data in data_queue:
             print(data)
+
+    def parse(self):
+        ''' Parse it'''
+        payload = ''
+        with open(self.message_file, encoding='UTF-8') as file_object:
+            message = file_object.readline()
+            while message:
+                payload = message.encode("utf-8")
+                msg = self.Msg(self.topic, payload, 0, 0)
+
+                self.message_callback_provider.on_message_multi(msg)
+
+                queue = self.manager._get_queue(self.topic) # pylint: disable=protected-access
+                data_queue = self.manager.get_data(queue)
+                for data in data_queue:
+                    print(data)
+
+                message = file_object.readline()
 
 class Simulator():
     """ Run the service or driver. """

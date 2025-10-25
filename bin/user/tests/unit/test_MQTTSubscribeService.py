@@ -307,7 +307,7 @@ class Testnew_loop_packet(unittest.TestCase):
 
                 SUT.new_loop_packet(mock_new_loop_packet_event)
 
-                SUT.cache.remove_value.assert_called_once_with("outTemp")
+                SUT.cache.invalidate_value.assert_called_once_with("outTemp", packet['dateTime'])
 
                 SUT.shutDown()
 
