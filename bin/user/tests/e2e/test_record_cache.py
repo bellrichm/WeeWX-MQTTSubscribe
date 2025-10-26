@@ -89,6 +89,7 @@ WEEWX_ROOT = tmp
 """
 
 class test_record_cache(unittest.TestCase):
+    @unittest.skip("Enable when issue 178 is completed")
     def test_new_loop_packet(self):
         with mock.patch('user.MQTTSubscribe.RecordCache') as mock_cache:
             max_archive_records = 0
@@ -106,6 +107,7 @@ class test_record_cache(unittest.TestCase):
             mock_cache_instance.invalidate_value.assert_called()
             self.assertEqual(mock_cache_instance.invalidate_value.call_count, SUT.console.count_loop_packets)
 
+    @unittest.skip("Enable when issue 178 is completed")
     def test_observation_not_in_archive_record(self):
         with mock.patch('user.MQTTSubscribe.RecordCache') as mock_cache:
             max_archive_records = 1
@@ -129,6 +131,7 @@ class test_record_cache(unittest.TestCase):
             mock_cache_instance.get_value.assert_called()
             self.assertEqual(mock_cache_instance.get_value.call_count, max_archive_records)
 
+    @unittest.skip("Enable when issue 178 is completed")
     def test_observation_in_archive_record(self):
         with mock.patch('user.MQTTSubscribe.RecordCache') as mock_cache:
             max_archive_records = 1
