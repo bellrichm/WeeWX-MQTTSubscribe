@@ -273,6 +273,7 @@ class Testnew_loop_packet(unittest.TestCase):
 
                 SUT.shutDown()
 
+    @unittest.skip("Enable when issue 178 is completed")
     def test_cache_updated(self):
         topic = random_string()
         current_time = int(time.time() + 0.5)

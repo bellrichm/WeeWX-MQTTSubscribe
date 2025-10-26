@@ -2210,6 +2210,10 @@ class MQTTSubscribeService(StdService):
 
         self.cache = RecordCache()
 
+        # ToDo: Remove when issue 178 is complete
+        archive_dict = config_dict.get('StdArchive', {})
+        record_generation = archive_dict.get('record_generation', "none").lower()
+
         if self.binding not in ('loop', 'archive'):
             raise ValueError(f"MQTTSubscribeService: Unknown binding: {self.binding}")
 
@@ -2217,6 +2221,10 @@ class MQTTSubscribeService(StdService):
 
         if self.binding == 'loop':
             self.bind(weewx.NEW_LOOP_PACKET, self.new_loop_packet)
+
+        # ToDo: Remove when issue 178 is complete
+        if self.subscriber.cached_fields and record_generation != 'software' and self.binding == 'loop':
+            raise ValueError(f"caching is not available with record generation of type '{record_generation}' and and binding of type 'loop'")
 
     def shutDown(self): # need to override parent - pylint: disable=invalid-name
         """Run when an engine shutdown is requested."""
