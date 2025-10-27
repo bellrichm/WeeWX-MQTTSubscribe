@@ -1,13 +1,13 @@
 #! /bin/bash
 #
-#    Copyright (c) 2020-2023 Rich Bell <bellrichm@gmail.com>
+#    Copyright (c) 2020-2025 Rich Bell <bellrichm@gmail.com>
 #
 #    See the file LICENSE.txt for your full rights.
 #
 source ./devtools/python_versions.sh
 
 if [ -z "$1" ]; then
-    WEEWX=weewx4
+    WEEWX=weewx5
 else
     WEEWX=$1
 fi
@@ -24,9 +24,9 @@ python_command='python'$PYENV_VERSION
 python_version=$(pyenv which $python_command)
 echo "Running $python_version $WEEWX"
 
-PYTHONPATH=bin:../$WEEWX/bin python -m pylint ./*.py
-PYTHONPATH=bin:../$WEEWX/bin python -m pylint ./bin/user
-PYTHONPATH=bin:../$WEEWX/bin python -m pylint ./bin/user/tests/unit/*.py -d duplicate-code
-PYTHONPATH=bin:../$WEEWX/bin python -m pylint ./bin/user/tests/func/*.py -d duplicate-code
-PYTHONPATH=bin:../$WEEWX/bin python -m pylint ./bin/user/tests/integ/*.py -d duplicate-code
+PYTHONPATH=bin:../$WEEWX/src:../$WEEWX/bin python -m pylint ./*.py
+PYTHONPATH=bin:../$WEEWX/src:../$WEEWX/bin python -m pylint ./bin/user
+PYTHONPATH=bin:../$WEEWX/src:../$WEEWX/bin python -m pylint ./bin/user/tests/unit/*.py -d duplicate-code
+PYTHONPATH=bin:../$WEEWX/src:../$WEEWX/bin python -m pylint ./bin/user/tests/func/*.py -d duplicate-code
+PYTHONPATH=bin:../$WEEWX/src:../$WEEWX/bin python -m pylint ./bin/user/tests/integ/*.py -d duplicate-code
 date

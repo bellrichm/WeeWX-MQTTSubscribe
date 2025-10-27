@@ -1,7 +1,7 @@
 
 #! /bin/bash
 #
-#    Copyright (c) 2023-2025 Rich Bell <bellrichm@gmail.com>
+#    Copyright (c) 2025 Rich Bell <bellrichm@gmail.com>
 #
 #    See the file LICENSE.txt for your full rights.
 #
@@ -21,7 +21,7 @@ fi
 
 ./devtools/runftests.sh $WEEWX $PY_VERSION
 
-while inotifywait -e modify devtools/watchftests.sh devtools/runftests.sh bin/user/MQTTSubscribe.py bin/user/tests/func
+while inotifywait -e modify devtools/watchetests.sh devtools/runetests.sh bin/user/MQTTSubscribe.py bin/user/tests/e2e
 do
-    ./devtools/runftests.sh $WEEWX $PY_VERSION
+    ./devtools/runetests.sh $WEEWX $PY_VERSION
 done

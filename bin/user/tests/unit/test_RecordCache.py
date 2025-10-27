@@ -109,7 +109,7 @@ class Test_get_value(unittest.TestCase):
         value = round(random.uniform(1, 100), 2)
         SUT.update_value(key, value, unit_system, time.time())
 
-        cached_value = SUT.get_value(key, None, None)
+        cached_value = SUT.get_value(key, time.time(), None)
         self.assertEqual(cached_value, value)
 
     def test_get_data_is_not_expired(self):
@@ -134,6 +134,7 @@ class Test_get_value(unittest.TestCase):
         cached_value = SUT.get_value(key, timestamp + 1, 0)
         self.assertIsNone(cached_value)
 
+@unittest.skip("Looking at removing the update_timestamp method on the RecordCache class.")
 class Test_update_timestamp(unittest.TestCase):
     def setUp(self):
         # reset stubs for every test

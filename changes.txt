@@ -1,3 +1,14 @@
+V3.1.0
+Enhancements:
+- Caching now supported when binding to loop packets and generation of archive records is set to hardware (#178).
+
+Fixes:
+- Subfields now inherit the 'ignore' setting (#219)
+
+Build Improvements
+- Builds optimized to not run on 'derived' tags, such as 'latest'.
+- Improved logging when running the build.
+
 V3.0.0
 *** IMPORTANT ***
 - python 3.7 or higher is now required.

@@ -1,5 +1,5 @@
 #
-#    Copyright (c) 2020-2024 Rich Bell <bellrichm@gmail.com>
+#    Copyright (c) 2020-2025 Rich Bell <bellrichm@gmail.com>
 #
 #    See the file LICENSE.txt for your full rights.
 #
@@ -152,29 +152,6 @@ class atestInitialization(unittest.TestCase):
                 except ValueError:
                     self.fail("ValueError exception raised.")
 
-
-    def test_caching_not_valid(self):
-        mock_StdEngine = mock.Mock()
-
-        fieldname = random_string()
-
-        config_dict = {
-            'MQTTSubscribeService': {
-                'binding': 'loop'
-            }
-        }
-
-        with mock.patch('user.MQTTSubscribe.MQTTSubscriber') as mock_MQTTSubscribe:
-            with mock.patch('user.MQTTSubscribe.Logger'):
-                with self.assertRaises(ValueError) as error:
-                    type(mock_MQTTSubscribe.return_value).cached_fields = \
-                        mock.PropertyMock(return_value={fieldname:{'expires_after':random.randint(1, 10)}})
-
-                    user.MQTTSubscribe.MQTTSubscribeService(mock_StdEngine, config_dict)
-
-                self.assertEqual(error.exception.args[0],
-                                 "caching is not available with record generation of type 'none' and and binding of type 'loop'")
-
 class Testnew_loop_packet(unittest.TestCase):
     mock_StdEngine = mock.Mock()
 
@@ -293,6 +270,45 @@ class Testnew_loop_packet(unittest.TestCase):
                 SUT.new_loop_packet(mock_new_loop_packet_event)
 
                 SUT.logger.error.assert_called_once()
+
+                SUT.shutDown()
+
+    @unittest.skip("Enable when issue 178 is completed")
+    def test_cache_updated(self):
+        topic = random_string()
+        current_time = int(time.time() + 0.5)
+        end_period_ts = (int(current_time / 300) + 1) * 300
+        start_ts = end_period_ts - 300
+        self.setup_queue_tests(start_ts, end_period_ts)
+        self.final_packet_data.update(self.target_data)
+        queue = dict(
+            {'name': topic}
+            )
+
+        packet = {
+            'outTemp': random.uniform(1, 100),
+            'usUnits': 1,
+            'interval': 5,
+            'dateTime': end_period_ts
+        }
+
+        mock_new_loop_packet_event = mock.NonCallableMagicMock()
+        mock_new_loop_packet_event.packet = packet
+
+        with mock.patch('user.MQTTSubscribe.MQTTSubscriber') as mock_MQTTSubscribe_class:
+            with mock.patch('user.MQTTSubscribe.RecordCache'):
+                mock_MQTTSubscribe = mock.Mock()
+                mock_MQTTSubscribe_class.get_subscriber = mock_MQTTSubscribe
+                type(mock_MQTTSubscribe.return_value).queues = mock.PropertyMock(return_value=[queue])
+                type(mock_MQTTSubscribe.return_value).get_accumulated_data = mock.Mock(return_value=self.target_data)
+                type(mock_MQTTSubscribe.return_value).cached_fields = mock.PropertyMock(return_value={'outTemp': {}})
+
+                SUT = user.MQTTSubscribe.MQTTSubscribeService(self.mock_StdEngine, self.config_dict)
+                SUT.end_ts = start_ts
+
+                SUT.new_loop_packet(mock_new_loop_packet_event)
+
+                SUT.cache.invalidate_value.assert_called_once_with("outTemp", packet['dateTime'])
 
                 SUT.shutDown()
 
@@ -457,4 +473,8 @@ class Testnew_archive_record(unittest.TestCase):
                 SUT.cache.update_value.assert_called_once()
 
 if __name__ == '__main__':
+    #test_suite = unittest.TestSuite()
+    #test_suite.addTest(Testnew_loop_packet('test_cache_updated'))
+    #unittest.TextTestRunner().run(test_suite)
+
     unittest.main(exit=False)
