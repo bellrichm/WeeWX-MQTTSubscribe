@@ -2254,10 +2254,10 @@ class MQTTSubscribeService(StdService):
             if self.subscriber.cached_fields:
                 for field in self.subscriber.cached_fields:
                     if field in event.packet:
-                        self.logger.debug(f"field: {field} value: {event.packet[field]} dateTime: {event.packet['dateTime']}")
-                        self.logger.debug(f"cache dump before invalidate_value: {self.cache.dump_key(field)}")
+                        self.logger.trace(f"field: {field} value: {event.packet[field]} dateTime: {event.packet['dateTime']}")
+                        self.logger.trace(f"cache dump before invalidate_value: {self.cache.dump_key(field)}")
                         self.cache.invalidate_value(field, event.packet['dateTime'])
-                        self.logger.debug(f"cache dump after invalidate_value: {self.cache.dump_key(field)}")
+                        self.logger.trace(f"cache dump after invalidate_value: {self.cache.dump_key(field)}")
             self.logger.debug(
                 f"data-> final packet is {weeutil.weeutil.timestamp_to_string(event.packet['dateTime'])}: {to_sorted_string(event.packet)}")
 
@@ -2289,7 +2289,7 @@ class MQTTSubscribeService(StdService):
                 if field in event.record:
                     self.logger.trace(
                         (f"Update cache {event.record[field]} "
-                        f"to {field} with units of {int(event.record['usUnits'])} and timestamp of {int(timestamp)}"))
+                         f"to {field} with units of {int(event.record['usUnits'])} and timestamp of {int(timestamp)}"))
                     self.logger.trace(f"cache dump before update_value: {self.cache.dump_key(field)}")
                     self.cache.update_value(field,
                                             event.record[field],
@@ -2298,13 +2298,13 @@ class MQTTSubscribeService(StdService):
                     self.logger.trace(f"cache dump after update_value: {self.cache.dump_key(field)}")
                 else:
                     is_valid = self.cache.is_valid(field,
-                                                    timestamp,
-                                                    self.subscriber.cached_fields[field]['expires_after'])
+                                                   timestamp,
+                                                   self.subscriber.cached_fields[field]['expires_after'])
                     self.logger.trace(f"cache dump before get_value: {self.cache.dump_key(field)}")
                     self.logger.trace(f"field: {field} timestamp: {timestamp} is_valid: {is_valid}")
                     target_data[field] = self.cache.get_value(field,
-                                                            timestamp,
-                                                            self.subscriber.cached_fields[field]['expires_after'])
+                                                              timestamp,
+                                                              self.subscriber.cached_fields[field]['expires_after'])
                     self.logger.trace(f"get_value returned value: {target_data[field]}")
                     self.logger.trace(f"target_data after cache lookup is: {to_sorted_string(target_data)}")
 
