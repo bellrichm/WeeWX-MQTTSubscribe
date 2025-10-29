@@ -1,13 +1,13 @@
 #! /bin/bash
 #
-#    Copyright (c) 2020-2023 Rich Bell <bellrichm@gmail.com>
+#    Copyright (c) 2020-2025 Rich Bell <bellrichm@gmail.com>
 #
 #    See the file LICENSE.txt for your full rights.
 #
 source ./devtools/python_versions.sh
 
 if [ -z "$1" ]; then
-    WEEWX=weewx4
+    WEEWX=weewx5
 else
     WEEWX=$1
 fi
