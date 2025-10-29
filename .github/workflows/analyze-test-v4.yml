@@ -7,6 +7,10 @@ on:
 
 env:
     weewx-version:         '4.6.1'
+    # old versions of weewx had six in the code base
+    # last version of python that worked is 3.11
+    # could try deleting six from weewx after install....
+    # see, https://groups.google.com/g/weewx-user/c/PLYefyx2Pnw
     python-version:        '3.11'
 
 jobs:
