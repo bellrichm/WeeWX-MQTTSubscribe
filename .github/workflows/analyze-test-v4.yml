@@ -1,0 +1,66 @@
+name: Analyze and test WeeWX V4
+
+on:
+  push:
+    #branches: [ "master" ]
+    branches-ignore: [ "master" ]
+
+env:
+    weewx-version:         '5.0.0' # ToDo: Change to V4...
+    python-version:        '3.13'
+
+jobs:
+  analyze-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python ${{ env.python-version }}
+      uses: actions/setup-python@v3
+      with:
+        python-version: ${{ env.python-version }}
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install coverage coveralls configobj flake8 mock pytest pytest-cov pytest-html
+
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+        python -m pip install paho.mqtt
+
+        sudo apt-get update
+
+        sudo apt-get -qq --assume-yes install mosquitto
+
+    - name: Install WeeWX (${{ env.weewx-version }})
+      run: |
+        python -m pip install weewx==${{ env.weewx-version }}
+  
+    - name: Lint with flake8
+      run: |
+        # stop the build if there are Python syntax errors or undefined names
+        flake8 --tee --output-file=results/flake8.txt bin/user --exclude tests --count --select=E9,F63,F7,F82 --show-source --statistics
+        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+        flake8 --tee --output-file=results/flake8.txt bin/user --exclude tests --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+    
+    - name: Unit tests
+      run: |
+        export PYTHONPATH=bin:$PYTHONPATH
+        pytest bin/user/tests/unit --html=results/unittests.html --self-contained-html
+    
+    - name: Function tests
+      run: |
+        export PYTHONPATH=bin:$PYTHONPATH
+        pytest bin/user/tests/func --html=results/functests.html --self-contained-html
+
+    - name: Integration tests
+      run: |
+        export PYTHONPATH=bin:$PYTHONPATH
+        pytest bin/user/tests/integ --html=results/integtests.html --self-contained-html
+
+    - name: Archive test-results
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-${{ env.python-version }}-${{ env.weewx-version }}
+        path: results
