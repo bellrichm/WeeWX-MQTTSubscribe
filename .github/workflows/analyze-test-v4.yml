@@ -53,12 +53,12 @@ jobs:
     
     - name: Function tests
       run: |
-        export PYTHONPATH=bin:$PYTHONPATH
+        export PYTHONPATH=bin:weewx/bin:$PYTHONPATH
         pytest bin/user/tests/func --html=results/functests.html --self-contained-html
 
     - name: Integration tests
       run: |
-        export PYTHONPATH=bin:$PYTHONPATH
+        export PYTHONPATH=bin:weewx/bin:$PYTHONPATH
         pytest bin/user/tests/integ --html=results/integtests.html --self-contained-html
 
     - name: Archive test-results
