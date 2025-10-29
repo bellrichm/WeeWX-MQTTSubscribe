@@ -6,15 +6,9 @@ on:
 
 jobs:
   analyze-test:
-    uses: weewx-extensions/development_tools/.github/workflows/analyze-test.yml@v3.0.0
+    uses: weewx-extensions/development_tools/.github/workflows/analyze-test.yml@v3.1.0
     with:
       module-name: 'MQTTSubscribe'
-      os-version: 'ubuntu-22.04'
-      python-version: '3.13'
-      weewx-version: '5.1.0'
-      latest-os-version: 'ubuntu-24.04'
-      latest-python-version: '3.13'
-      latest-weewx-version: '5.1.0'
       pip-list: 'paho-mqtt'
       package-list: 'mosquitto'
     secrets:
