@@ -14,4 +14,5 @@ pylint.txt
 localtools/
 .scannerwork/
 bin/user/tests/data/output.conf
+act-artifacts/
 sql/

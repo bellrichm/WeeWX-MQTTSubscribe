@@ -1,0 +1,17 @@
+name: Matrix analyze and test
+
+on:
+  push:
+    branches: [ "master" ]
+  workflow_dispatch:
+
+jobs:
+  analyze-test:
+    uses: weewx-extensions/development_tools/.github/workflows/full-analyze-test.yml@v3.1.0
+    with:
+      module-name: 'MQTTSubscribe'
+      pip-list: 'paho-mqtt'
+      package-list: 'mosquitto'
+    secrets:
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
