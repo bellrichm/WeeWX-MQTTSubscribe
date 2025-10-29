@@ -2,8 +2,8 @@ name: Analyze and test WeeWX V4
 
 on:
   push:
-    #branches: [ "master" ]
-    branches-ignore: [ "master" ]
+    branches: [ "master" ]
+    #branches-ignore: [ "master" ]
 
 env:
     weewx-version:         '4.6.1'
