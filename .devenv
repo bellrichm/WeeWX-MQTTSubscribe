@@ -1,4 +1,4 @@
-export WEEWX_MODULE_NAME=mqttpublish
+export WEEWX_MODULE_NAME=MQTTSubscribe
 
 export WEEWX_PYENV_VERSION='3.10'
 
