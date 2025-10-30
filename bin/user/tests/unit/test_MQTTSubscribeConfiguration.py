@@ -108,7 +108,7 @@ class TestDefaultCinfiguration(unittest.TestCase):
             subscribe = True
             
             # Sets the default value for all fields in this topic.
-            # Setting the value to 'true' "opts out" and the desired fields will need to set 'ignore = true'
+            # Setting the value to 'true' "opts out" and the desired fields will need to set 'ignore = false'
             # Valid values: True, False.
             # Default is False.
             ignore = False
