@@ -1,0 +1,7 @@
+export WEEWX_MODULE_NAME=mqttpublish
+
+export WEEWX_PYENV_VERSION='3.10'
+
+export WEEWX_TOOL_PATH=~/weewx_dev/weewx-extensions/development_tools/tools
+export WEEWX_PYTHONPATH=bin:../weewx/src
+PATH=$WEEWX_TOOL_PATH:$PATH
