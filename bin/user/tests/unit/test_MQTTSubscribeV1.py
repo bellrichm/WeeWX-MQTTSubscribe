@@ -1,14 +1,8 @@
 #
-#    Copyright (c) 2024 Rich Bell <bellrichm@gmail.com>
+#    Copyright (c) 2024-2025 Rich Bell <bellrichm@gmail.com>
 #
 #    See the file LICENSE.txt for your full rights.
 #
-
-# pylint: disable=wrong-import-order
-# pylint: disable=wrong-import-position
-# pylint: disable=missing-docstring
-# pylint: disable=invalid-name
-# pylint: disable=global-statement
 
 import unittest
 import mock
@@ -58,12 +52,12 @@ class TestCallbacks(unittest.TestCase):
 
         with mock.patch('user.MQTTSubscribe.MessageCallbackProvider'):
             with mock.patch('user.MQTTSubscribe.TopicManager'):
-                # pylint: disable=no-member, protected-access
-                SUT = MQTTSubscriberV1(config, mock_logger)
+                with mock.patch('user.MQTTSubscribe.mqtt.Client'):
+                    SUT = MQTTSubscriberV1(config, mock_logger)
 
-                SUT._on_disconnect(None, None, rc)
+                    SUT._on_disconnect(None, None, rc)
 
-                SUT.logger.info.assert_called_with(f"Disconnected with result code {int(rc)}")
+                S   UT.logger.info.assert_called_with(f"Disconnected with result code {int(rc)}")
 
     @staticmethod
     def test_on_subscribe():
@@ -79,16 +73,15 @@ class TestCallbacks(unittest.TestCase):
 
         with mock.patch('user.MQTTSubscribe.MessageCallbackProvider'):
             with mock.patch('user.MQTTSubscribe.TopicManager'):
-                # pylint: disable=no-member, protected-access
-                SUT = MQTTSubscriberV1(config, mock_logger)
+                with mock.patch('user.MQTTSubscribe.mqtt.Client'):
+                    SUT = MQTTSubscriberV1(config, mock_logger)
 
-                SUT._on_subscribe(None, None, mid, granted_qos)
+                    SUT._on_subscribe(None, None, mid, granted_qos)
 
-                SUT.logger.info.assert_called_with(f"Subscribed to mid: {mid} is size {len(granted_qos)} has a QOS of {granted_qos[0]}")
+                    SUT.logger.info.assert_called_with(f"Subscribed to mid: {mid} is size {len(granted_qos)} has a QOS of {granted_qos[0]}")
 
     @staticmethod
     def test_on_log():
-        global mock_client
         mock_logger = mock.Mock(spec=Logger)
 
         config_dict = {}
@@ -101,16 +94,14 @@ class TestCallbacks(unittest.TestCase):
 
         with mock.patch('user.MQTTSubscribe.MessageCallbackProvider'):
             with mock.patch('user.MQTTSubscribe.TopicManager'):
-                # pylint: disable=no-member, protected-access
-                mock_client = mock.Mock()
-                SUT = MQTTSubscriberV1(config, mock_logger)
+                with mock.patch('user.MQTTSubscribe.mqtt.Client'):
+                    SUT = MQTTSubscriberV1(config, mock_logger)
 
-                SUT._on_log(None, None, level, msg)
+                    SUT._on_log(None, None, level, msg)
 
-                SUT.logger.info.assert_called_with(f"MQTTSubscribe MQTT: {msg}")
+                    SUT.logger.info.assert_called_with(f"MQTTSubscribe MQTT: {msg}")
 
     def test_mqtt_log_set(self):
-        global mock_client
         mock_logger = mock.Mock(spec=Logger)
 
         config_dict = {
@@ -125,14 +116,12 @@ class TestCallbacks(unittest.TestCase):
 
         with mock.patch('user.MQTTSubscribe.MessageCallbackProvider'):
             with mock.patch('user.MQTTSubscribe.TopicManager'):
-                mock_client = mock.Mock()
-                # pylint: disable=protected-access
-                SUT = MQTTSubscriberV1(config, mock_logger)
+                with mock.patch('user.MQTTSubscribe.mqtt.Client'):
+                    SUT = MQTTSubscriberV1(config, mock_logger)
 
-                self.assertEqual(SUT.client.on_log, SUT._on_log)
+                    self.assertEqual(SUT.client.on_log, SUT._on_log)
 
     def test_mqtt_log_not_set(self):
-        global mock_client
         mock_logger = mock.Mock(spec=Logger)
 
         config_dict = {
@@ -147,11 +136,10 @@ class TestCallbacks(unittest.TestCase):
 
         with mock.patch('user.MQTTSubscribe.MessageCallbackProvider'):
             with mock.patch('user.MQTTSubscribe.TopicManager'):
-                # pylint: disable=protected-access
-                mock_client = mock.Mock()
-                SUT = MQTTSubscriberV1(config, mock_logger)
+                with mock.patch('user.MQTTSubscribe.mqtt.Client'):
+                    SUT = MQTTSubscriberV1(config, mock_logger)
 
-                self.assertNotEqual(SUT.client.on_log, SUT._on_log)
+                s   elf.assertNotEqual(SUT.client.on_log, SUT._on_log)
 
 if __name__ == '__main__':
     # test_suite = unittest.TestSuite()
