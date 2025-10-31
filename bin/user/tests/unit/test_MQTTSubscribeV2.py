@@ -54,7 +54,8 @@ class TestCallbacks(unittest.TestCase):
         config_dict['topics'] = {}
         config = configobj.ConfigObj(config_dict)
 
-        reason_code = paho.mqtt.reasoncodes.ReasonCode(paho.mqtt.packettypes.PacketTypes.CONNACK, identifier=random.randint(131, 138)) # (only available in v2) pylint: disable=no-member
+        reason_code = paho.mqtt.reasoncodes.ReasonCode(paho.mqtt.packettypes.PacketTypes.CONNACK,
+                                                       identifier=random.randint(131, 138))
 
         with mock.patch('user.MQTTSubscribe.MessageCallbackProvider'):
             with mock.patch('user.MQTTSubscribe.TopicManager'):
@@ -75,7 +76,8 @@ class TestCallbacks(unittest.TestCase):
         config = configobj.ConfigObj(config_dict)
 
         mid = random.randint(1, 10)
-        reason_code = paho.mqtt.reasoncodes.ReasonCode(paho.mqtt.packettypes.PacketTypes.CONNACK, identifier=random.randint(131, 138)) # (only available in v2) pylint: disable=no-member
+        reason_code = paho.mqtt.reasoncodes.ReasonCode(paho.mqtt.packettypes.PacketTypes.CONNACK,
+                                                       identifier=random.randint(131, 138))
         reason_codes = [reason_code]
 
         with mock.patch('user.MQTTSubscribe.MessageCallbackProvider'):
