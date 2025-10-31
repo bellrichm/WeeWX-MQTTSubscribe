@@ -4,15 +4,6 @@
 #    See the file LICENSE.txt for your full rights.
 #
 
-# pylint: disable=wrong-import-order
-# pylint: disable=wrong-import-position
-# pylint: disable=missing-docstring
-# pylint: disable=invalid-name
-
-# Set up the stubs for paho mqtt
-# These need to done very early. Definitely before importing MQTTSubscribe
-import mqttstubs # pylint: disable=unused-import
-
 import unittest
 import mock
 
@@ -24,10 +15,9 @@ from io import StringIO
 import weewx.engine
 
 def random_string(length=32):
-    return ''.join([random.choice(string.ascii_letters + string.digits) for n in range(length)]) # pylint: disable=unused-variable
+    return ''.join([random.choice(string.ascii_letters + string.digits) for n in range(length)])
 
-config_dict = \
-f"""
+config_dict = f"""
 
 WEEWX_ROOT = tmp
 
@@ -46,13 +36,13 @@ WEEWX_ROOT = tmp
     archive_interval = 60
     archive_delay = 1
 
-[DataBindings] 
+[DataBindings]
     [[wx_binding]]
         database = archive_sqlite
         table_name = archive
         manager = weewx.manager.DaySummaryManager
         schema = schemas.wview_extended.schema
-        
+
 [Databases]
     [[archive_sqlite]]
         database_name = :memory:
@@ -72,21 +62,21 @@ WEEWX_ROOT = tmp
         xtype_services = weewx.wxxtypes.StdWXXTypes, weewx.wxxtypes.StdPressureCooker, weewx.wxxtypes.StdRainRater, weewx.wxxtypes.StdDelta
         archive_services = weewx.engine.StdArchive
         restful_services = weewx.restx.StdStationRegistry, weewx.restx.StdWunderground, weewx.restx.StdPWSweather, weewx.restx.StdCWOP, weewx.restx.StdWOW, weewx.restx.StdAWEKAS
-        report_services = weewx.engine.StdReport        
+        report_services = weewx.engine.StdReport
 
 [MQTTSubscribeService]
     [[topics]]
         [[[message]]]
             type = individual
         [[[{random_string()}]]]
-            ignore_start_time = True # at least while developing 
+            ignore_start_time = True # at least while developing
             ignore_end_time = True # at least while developing
             adjust_start_time = 1 # at least while developing
             [[[[outTemp]]]]
                 name = outTemp
                 expires_after = 0
 
-"""
+""" # noqa
 
 @unittest.skip("Enable when issue 178 is completed.")
 class test_record_cache(unittest.TestCase):
@@ -152,8 +142,8 @@ class test_record_cache(unittest.TestCase):
 
 if __name__ == '__main__':
     test_suite = unittest.TestSuite()
-    #test_suite.addTest(test_record_cache('test_observation_not_in_archive_record'))
-    #test_suite.addTest(test_record_cache('test_observation_in_archive_record'))
-    #unittest.TextTestRunner().run(test_suite)
+    # test_suite.addTest(test_record_cache('test_observation_not_in_archive_record'))
+    # test_suite.addTest(test_record_cache('test_observation_in_archive_record'))
+    # unittest.TextTestRunner().run(test_suite)
 
     unittest.main(exit=False)

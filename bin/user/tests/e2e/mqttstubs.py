@@ -15,7 +15,6 @@ class Msg:
     '''
     A helper class to create an MQTT message.
     '''
-    # pylint: disable=too-few-public-methods
     def __init__(self, topic, payload, qos, retain):
         self.topic = topic
         self.payload = payload
@@ -28,13 +27,11 @@ class ClientStub:
     Used to test WeeWX/MQTTSubscribe without needeing mqtt.
     Methods below are the ones used by MQTTSubscribe.
     '''
-    # pylint: disable=missing-function-docstring
-    # pylint: disable=unused-argument
 
     def __init__(self,
                  callback_api_version=None,
                  protocol=None,
-                 client_id = None,
+                 client_id=None,
                  userdata=None,
                  clean_session=None):
 

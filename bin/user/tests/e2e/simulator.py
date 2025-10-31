@@ -3,7 +3,7 @@
 #
 #    See the file LICENSE.txt for your full rights.
 #
-''' 
+'''
 Simulator to be used when testing WeeWX/MQTTSubscribe
 For more information on what could be done see, https://groups.google.com/g/weewx-user/c/pLnIps7dIZU/m/KtlAdSgWCAAJ
 '''
@@ -23,7 +23,6 @@ def loader(config_dict, engine):
 
 class Simulator(weewx.drivers.simulator.Simulator, weewx.engine.StdService):
     ''' A simulator driver to be used when testing WeeWX/MQTTSubscribe.'''
-    # (methods not used) pylint: disable=abstract-method
     def __init__(self, engine, config_dict):
         start_ts, resume_ts = weewx.drivers.simulator.extract_starts(config_dict, DRIVER_NAME)
         stn_dict = config_dict[DRIVER_NAME]
@@ -46,12 +45,12 @@ class Simulator(weewx.drivers.simulator.Simulator, weewx.engine.StdService):
 
     def end_simulation(self):
         ''' End this simulation. '''
-        #self.engine.shutDown()
+        # self.engine.shutDown()
         raise Exception("Max archive records has been achieved.")
 
     def pre_loop(self, _event):
         ''' Handle the pre_loop event. '''
-        self.count_archive_records +=1
+        self.count_archive_records += 1
         if self.count_archive_records > self.max_archive_records and self.max_archive_records != 0:
             self.end_simulation()
 
@@ -62,7 +61,7 @@ class Simulator(weewx.drivers.simulator.Simulator, weewx.engine.StdService):
 
     def new_loop_packet(self, _event):
         ''' Handle the new loop packet event. '''
-        self.count_loop_packets +=1
+        self.count_loop_packets += 1
 
     def new_archive_record(self, event):
         ''' Handle the new archive record event.'''
