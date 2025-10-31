@@ -57,7 +57,7 @@ class TestCallbacks(unittest.TestCase):
 
                     SUT._on_disconnect(None, None, rc)
 
-                S   UT.logger.info.assert_called_with(f"Disconnected with result code {int(rc)}")
+                    SUT.logger.info.assert_called_with(f"Disconnected with result code {int(rc)}")
 
     @staticmethod
     def test_on_subscribe():
