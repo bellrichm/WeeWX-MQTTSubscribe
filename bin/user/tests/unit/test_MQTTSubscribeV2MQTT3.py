@@ -123,7 +123,7 @@ class TestCallbacks(unittest.TestCase):
 
                     SUT = MQTTSubscriberV2MQTT3(config, mock_logger)
 
-                s   elf.assertEqual(SUT.client.on_log, SUT._on_log)
+                    self.assertEqual(SUT.client.on_log, SUT._on_log)
 
     def test_mqtt_log_not_set(self):
         mock_logger = mock.Mock(spec=Logger)
