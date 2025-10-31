@@ -114,9 +114,10 @@ class TestCallbacks(unittest.TestCase):
 
         with mock.patch('user.MQTTSubscribe.MessageCallbackProvider'):
             with mock.patch('user.MQTTSubscribe.TopicManager'):
-                SUT = MQTTSubscriberV2(config, mock_logger)
+                with mock.patch('user.MQTTSubscribe.mqtt.Client'):
+                    SUT = MQTTSubscriberV2(config, mock_logger)
 
-                self.assertEqual(SUT.client.on_log, SUT._on_log)
+                    self.assertEqual(SUT.client.on_log, SUT._on_log)
 
     def test_mqtt_log_not_set(self):
         mock_logger = mock.Mock(spec=Logger)
