@@ -564,7 +564,7 @@ class AbstractLogger():
         self.debug(f"Locale is '{locale.setlocale(locale.LC_ALL)}'")
 
         # Too easy to leak sensitive information
-        #self.debug(config_dict)
+        # self.debug(config_dict)
         archive_dict = config_dict.get('StdArchive', {})
         record_augmentation = archive_dict.get('record_augmentation', None)
         record_generation = archive_dict.get('record_generation', None)
@@ -743,7 +743,7 @@ class RecordCache():
         if key in self.cached_values and timestamp < self.cached_values[key]['invalidated']:
             self.cached_values[key]['invalidated'] = timestamp
 
-    #def update_timestamp(self, key, timestamp):
+    # def update_timestamp(self, key, timestamp):
     #    """ Update the ts. """
     #    if key in self.cached_values:
     #        self.cached_values[key]['timestamp'] = timestamp
@@ -1541,7 +1541,7 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
         elif new_key not in fields and fields_ignore_default:
             pass
         else:
-            #if not fields.get(lookup_key, {}).get('ignore', fields_ignore_default):
+            # if not fields.get(lookup_key, {}).get('ignore', fields_ignore_default):
             self.logger.error(f"Skipping {new_key} because data is an array and has no configured subfields. Array={value}")
 
     def _log_message(self, msg):
@@ -3404,7 +3404,7 @@ For more information see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/
         elif self.action == '--update-from':
             weeutil.config.merge_config(self.config_dict[self.section], self.config_input_dict)
         # ToDo: disable until have a way to pass in --enable and not have to run interactively
-        #else:
+        # else:
         #    self._update_interactively()
 
     def _validate(self):
