@@ -33,9 +33,9 @@ jobs:
 
         python -m pip install paho.mqtt
 
-        sudo apt-get update
+        #sudo apt-get update
 
-        sudo apt-get -qq --assume-yes install mosquitto
+        #sudo apt-get -qq --assume-yes install mosquitto
 
     - name: Install WeeWX (${{ env.weewx-version }})
       run: |
