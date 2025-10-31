@@ -1,17 +1,12 @@
 #
-#    Copyright (c) 2023-2024 Rich Bell <bellrichm@gmail.com>
+#    Copyright (c) 2023-2025 Rich Bell <bellrichm@gmail.com>
 #
 #    See the file LICENSE.txt for your full rights.
 #
 '''
-This is a set of 'function' tests. 
+This is a set of 'function' tests.
 These test that the MQTTSubscribe configuration is correct for the payload.
 '''
-
-# pylint: disable=wrong-import-order
-# pylint: disable=missing-docstring
-# pylint: disable=invalid-name
-# pylint: disable=protected-access
 
 import unittest
 
@@ -26,10 +21,9 @@ from io import StringIO
 from user.MQTTSubscribe import Logger, MessageCallbackProvider, TopicManager
 
 def random_string(length=32):
-    return ''.join([random.choice(string.ascii_letters + string.digits) for n in range(length)]) # pylint: disable=unused-variable
+    return ''.join([random.choice(string.ascii_letters + string.digits) for n in range(length)])
 
 class Msg:
-    # pylint: disable=too-few-public-methods
     def __init__(self, topic, payload, qos, retain):
         self.topic = topic
         self.payload = payload
@@ -49,6 +43,7 @@ class TestJSONMessage(unittest.TestCase):
             [[[[message]]]]
                 type = json
 '''
+
     def run_test(self, payload_dict, expected_data):
         config = configobj.ConfigObj(StringIO(self.config_str % self.topic))
 
@@ -129,7 +124,7 @@ class TestJSONMessage(unittest.TestCase):
         payload_dict = {
             'dateTime': time.time(),
             'usUnits': random.randint(1, 10),
-            'temps': [round(random.uniform(10, 100), 2),  round(random.uniform(1, 100), 2),]
+            'temps': [round(random.uniform(10, 100), 2), round(random.uniform(1, 100), 2),]
         }
 
         expected_data = {
@@ -149,7 +144,7 @@ class TestJSONMessage(unittest.TestCase):
             [[[[temp_temp1]]]]
                 name = temp1
             [[[[temp_temp2]]]]
-                name = temp2                              
+                name = temp2
 '''
 
         payload_dict = {
@@ -185,15 +180,15 @@ class TestJSONMessage(unittest.TestCase):
             [[[[inTemps]]]]
                 [[[[[subfields]]]]]
                     [[[[[[inTemp1]]]]]]
-                    [[[[[[inTemp2]]]]]]          
+                    [[[[[[inTemp2]]]]]]
 '''
 
         payload_dict = {
             'dateTime': time.time(),
             'usUnits': random.randint(1, 10),
             'sensors': [
-              [round(random.uniform(10, 100), 2),  round(random.uniform(1, 100), 2),],
-              [round(random.uniform(10, 100), 2),  round(random.uniform(1, 100), 2),],
+                [round(random.uniform(10, 100), 2), round(random.uniform(1, 100), 2),],
+                [round(random.uniform(10, 100), 2), round(random.uniform(1, 100), 2),],
             ]
         }
 
