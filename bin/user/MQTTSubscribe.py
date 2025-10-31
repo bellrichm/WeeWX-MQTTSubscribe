@@ -11,8 +11,7 @@ See, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki
 
 """
 
-CONFIG_SPEC_TEXT = \
-"""
+CONFIG_SPEC_TEXT = """ \
 # [MQTTSubscribeService] or [MQTTSubscribeDriver]
 [MQTTSubscribe]
     # The driver to use.
@@ -83,7 +82,7 @@ CONFIG_SPEC_TEXT = \
     # Valid values are, true, false, MQTT_CLEAN_START_FIRST_ONLY
     # Default is MQTT_CLEAN_START_FIRST_ONLY
     # Only valid for MQTT V5
-    clean_start = MQTT_CLEAN_START_FIRST_ONLY    
+    clean_start = MQTT_CLEAN_START_FIRST_ONLY
 
     # The clientid to connect with.
     # Service default is MQTTSubscribeService-xxxx.
@@ -438,7 +437,7 @@ CONFIG_SPEC_TEXT = \
                 [[[[[subfields]]]]]
                     foo = foo # This is here to make ConfigObj formatting work
                     # Each subfield can be configured like a field in the json.
-					[[[[[[REPLACE_ME]]]]]]
+                    [[[[[[REPLACE_ME]]]]]]
                         name = REPLACE_ME
 
         # The second topic to subscribe to
@@ -447,8 +446,7 @@ CONFIG_SPEC_TEXT = \
         [[[REPLACE_ME_TOO]]]
 """
 
-ADDITIONAL_CONFIG_INFO = \
-"""
+ADDITIONAL_CONFIG_INFO = """ \
     # Configure additional observations and units for WeeWX to use.
     # See, http://weewx.com/docs/customizing.htm#Creating_a_new_unit_group
     # This assumes a good knowledge of customizing WeeWX.
@@ -528,8 +526,8 @@ DRIVER_VERSION = VERSION
 def gettid():
     """Get TID as displayed by htop.
        This is architecture dependent."""
-    import ctypes # pylint: disable=import-outside-toplevel
-    from ctypes.util import find_library # pylint: disable=import-outside-toplevel
+    import ctypes  # pylint: disable=import-outside-toplevel
+    from ctypes.util import find_library  # pylint: disable=import-outside-toplevel
     libc = ctypes.CDLL(find_library('c'))
     for cmd in (186, 224, 178):
         tid = ctypes.CDLL(libc).syscall(cmd)
@@ -864,7 +862,7 @@ class TopicManager():
                  'adjust_end_time': topic_defaults['adjust_end_time'],
                  'max_size': topic_defaults['max_queue'],
                  'data': deque()
-                }
+                 }
             )
             self.queues.append(single_queue_obj)
 
@@ -928,7 +926,7 @@ class TopicManager():
                 message_dict.merge(temp_message_dict)
             self.subscribed_topics[topic][self.message_config_name] = message_dict
 
-            if len(topic_dict.sections) > 1 or (len(topic_dict.sections) == 1  and message_type is None):
+            if len(topic_dict.sections) > 1 or (len(topic_dict.sections) == 1 and message_type is None):
                 self. _configure_topic_fields(field_defaults, callback_config_name, topic, topic_dict)
             else:
                 self._configure_topic_as_field(field_defaults, topic, topic_dict)
@@ -938,14 +936,14 @@ class TopicManager():
         if not single_queue or topic == archive_topic:
             queue = dict(
                 {'name': topic,
-                    'type': 'normal',
-                    'ignore_start_time': to_bool(topic_dict.get('ignore_start_time', topic_defaults['ignore_start_time'])),
-                    'ignore_end_time': to_bool(topic_dict.get('ignore_end_time', topic_defaults['ignore_end_time'])),
-                    'adjust_start_time': to_float(topic_dict.get('adjust_start_time', topic_defaults['adjust_start_time'])),
-                    'adjust_end_time': to_float(topic_dict.get('adjust_end_time', topic_defaults['adjust_end_time'])),
-                    'max_size': topic_dict.get('max_queue', topic_defaults['max_queue']),
-                    'data': deque()
-                }
+                 'type': 'normal',
+                 'ignore_start_time': to_bool(topic_dict.get('ignore_start_time', topic_defaults['ignore_start_time'])),
+                 'ignore_end_time': to_bool(topic_dict.get('ignore_end_time', topic_defaults['ignore_end_time'])),
+                 'adjust_start_time': to_float(topic_dict.get('adjust_start_time', topic_defaults['adjust_start_time'])),
+                 'adjust_end_time': to_float(topic_dict.get('adjust_end_time', topic_defaults['adjust_end_time'])),
+                 'max_size': topic_dict.get('max_queue', topic_defaults['max_queue']),
+                 'data': deque()
+                 }
             )
             self.queues.append(queue)
             self.subscribed_topics[topic]['queue'] = queue
@@ -991,16 +989,16 @@ class TopicManager():
         for subfield in self.subscribed_topics[topic]['fields'][field].get('subfields', []):
             self.subscribed_topics[topic]['fields'][subfield] = \
                 self._configure_field(self.subscribed_topics[topic]['fields'][field],
-                                        topic_dict[field]['subfields'][subfield],
-                                        subfield,
-                                        self.subscribed_topics[topic]['fields'][field])
+                                      topic_dict[field]['subfields'][subfield],
+                                      subfield,
+                                      self.subscribed_topics[topic]['fields'][field])
             if 'units' in self.subscribed_topics[topic]['fields'][field]:
                 self.subscribed_topics[topic]['fields'][subfield]['units'] = \
                     self.subscribed_topics[topic]['fields'][field]['units']
             self._configure_ignore_fields(topic_dict,
-                                            topic_dict[field],
-                                            topic, subfield,
-                                            self.subscribed_topics[topic]['fields'][field])
+                                          topic_dict[field],
+                                          topic, subfield,
+                                          self.subscribed_topics[topic]['fields'][field])
 
     def _configure_topic_as_field(self, field_defaults, topic, topic_dict):
         # See if any field options are directly under the topic.
@@ -1043,7 +1041,7 @@ class TopicManager():
              'adjust_end_time': topic_defaults['adjust_end_time'],
              'max_size': topic_defaults['max_queue'],
              'data': self.collected_queue
-            }
+             }
         )
         self.subscribed_topics[topic]['queue'] = queue
         self.queues.append(queue)
@@ -1108,7 +1106,7 @@ class TopicManager():
         conversion_func = field_dict.get('conversion_func', None)
         conversion_type = field_dict.get('conversion_type', conversion_type)
         field['conversion_func'] = {}
-        field['conversion_type'] = conversion_type # todo - hack so that a field configuration can be used as a default for its subfields
+        field['conversion_type'] = conversion_type  # todo - hack so that a field configuration can be used as a default for its subfields
         if conversion_func:
             field['conversion_func']['source'] = conversion_func
         elif conversion_type == 'bool':
@@ -1119,7 +1117,7 @@ class TopicManager():
             field['conversion_func']['source'] = 'lambda x: to_int(x)'
         else:
             field['conversion_func']['source'] = 'lambda x: x'
-        field['conversion_func']['compiled'] = eval(field['conversion_func']['source']) # pylint: disable=eval-used
+        field['conversion_func']['compiled'] = eval(field['conversion_func']['source'])  # pylint: disable=eval-used
         field['conversion_error_to_none'] = (field_dict).get('conversion_error_to_none', conversion_error_to_none)
         if 'units' in field_dict:
             if field_dict['units'] in weewx.units.conversionDict and field['name'] in weewx.units.obs_group_dict:
@@ -1180,7 +1178,7 @@ class TopicManager():
             self._queue_size_check(queue, queue['max_size'])
             self.logger.trace(
                 (f"TopicManager Added to queue {topic} {self._lookup_topic(topic)} {weeutil.weeutil.timestamp_to_string(data['dateTime'])}: "
-                f"{to_sorted_string(data)}"))
+                 f"{to_sorted_string(data)}"))
             queue['data'].append(payload,)
 
     def peek_datetime(self, queue):
@@ -1234,7 +1232,7 @@ class TopicManager():
                 self.logger.debug(f"TopicManager data-> outgoing collected {queue_name}: {to_sorted_string(data)}")
                 yield data
 
-    def _process_queue(self,end_ts, collector, observation_collector, queue):
+    def _process_queue(self, end_ts, collector, observation_collector, queue):
         queue_name = queue['name']
         data_queue = queue['data']
         queue_type = queue['type']
@@ -1248,7 +1246,7 @@ class TopicManager():
                 fieldname = payload['fieldname']
                 self.logger.trace(
                     (f"TopicManager processing wind data {fieldname} {weeutil.weeutil.timestamp_to_string(payload['data']['dateTime'])}: "
-                    f"{to_sorted_string(payload)}."))
+                     f"{to_sorted_string(payload)}."))
                 data = collector.add_data(fieldname, payload['data'])
             elif self.collect_observations:
                 data = observation_collector.add_dict(payload['data'])
@@ -1291,7 +1289,7 @@ class TopicManager():
             try:
                 self.logger.trace(
                     (f"TopicManager input to accumulate {queue_name} {weeutil.weeutil.timestamp_to_string(data['dateTime'])}: "
-                    f"{to_sorted_string(data)}"))
+                     f"{to_sorted_string(data)}"))
                 accumulator.addRecord(data)
             except weewx.accum.OutOfSpan:
                 self.logger.info(
@@ -1302,11 +1300,11 @@ class TopicManager():
             aggregate_data = accumulator.getRecord()
             self.logger.trace(
                 (f"TopicManager prior to conversion is {queue_name} {weeutil.weeutil.timestamp_to_string(aggregate_data['dateTime'])}: "
-                f"{to_sorted_string(aggregate_data)}"))
+                 f"{to_sorted_string(aggregate_data)}"))
             target_data = weewx.units.to_std_system(aggregate_data, units)
             self.logger.trace(
                 (f"TopicManager after conversion is {queue_name} {weeutil.weeutil.timestamp_to_string(target_data['dateTime'])}: "
-                f"{to_sorted_string(target_data)}"))
+                 f"{to_sorted_string(target_data)}"))
         else:
             self.logger.trace("TopicManager accumulator was empty")
 
@@ -1388,14 +1386,14 @@ class TopicManager():
         self.logger.trace(
             f"TopicManager datetime conversion datetime_input:{datetime_input} datetime_format:{datetime_format} offset_format:{offset_format}")
         if offset_format:
-            offset_start = len(datetime_input)-len(offset_format)
-            offset = re.sub(r"\D", "", datetime_input[offset_start:]) #remove everything but the numbers from the UTC offset
-            sign = datetime_input[offset_start-1:offset_start] # offset plus or minus
+            offset_start = len(datetime_input) - len(offset_format)
+            offset = re.sub(r"\D", "", datetime_input[offset_start:])  # remove everything but the numbers from the UTC offset
+            sign = datetime_input[offset_start - 1:offset_start]  # offset plus or minus
             offset_delta = datetime.timedelta(hours=int(offset[:2]), minutes=int(offset[2:]))
             if sign == '-':
                 offset_delta = -offset_delta
 
-            datetime_string = datetime_input[:offset_start-1].strip()
+            datetime_string = datetime_input[:offset_start - 1].strip()
 
             self.logger.trace(f"TopicManager datetime conversion offset:{offset} sign:{sign}")
 
@@ -1408,7 +1406,7 @@ class TopicManager():
 
         return epoch
 
-class AbstractMessageCallbackProvider(): # pylint: disable=too-few-public-methods
+class AbstractMessageCallbackProvider():  # pylint: disable=too-few-public-methods
     """ The abstract MessageCallbackProvider. """
     def __init__(self, logger, topic_manager):
         self.logger = logger
@@ -1424,7 +1422,7 @@ class AbstractMessageCallbackProvider(): # pylint: disable=too-few-public-method
         value = self._convert_value(fields, default_field_conversion_func, orig_name, orig_value)
         fieldname = fields.get(orig_name, {}).get('name', orig_name)
 
-        if orig_name in fields and 'units' in fields[orig_name]: # TODO - simplify, if possible
+        if orig_name in fields and 'units' in fields[orig_name]:  # TODO - simplify, if possible
             (to_units, _) = weewx.units.getStandardUnitType(unit_system, fieldname)
             (value, _, _) = weewx.units.convert((value, fields[orig_name]['units'], None), to_units)
 
@@ -1439,7 +1437,7 @@ class AbstractMessageCallbackProvider(): # pylint: disable=too-few-public-method
     def _calc_increment(self, observation, current_total, previous_total, wrap_around):
         self.logger.trace(
             (f"MessageCallbackProvider _calc_increment calculating increment for {observation} with current: "
-            f"{current_total:f} and previous {previous_total is None and 'None' or str(previous_total)} values."))
+             f"{current_total:f} and previous {previous_total is None and 'None' or str(previous_total)} values."))
 
         if current_total is not None and previous_total is not None:
             if current_total >= previous_total:
@@ -1448,13 +1446,13 @@ class AbstractMessageCallbackProvider(): # pylint: disable=too-few-public-method
             if wrap_around and current_total < previous_total:
                 self.logger.trace(
                     (f"MessageCallbackProvider _calc_increment wrap around detected for {observation} with current: "
-                    f"{current_total:f} and previous {previous_total:f} values."))
+                     f"{current_total:f} and previous {previous_total:f} values."))
 
                 return current_total
 
             self.logger.trace(
                 (f"MessageCallbackProvider _calc_increment skipping calculating increment for {observation} with current: "
-                f"{current_total:f} and previous {previous_total:f} values."))
+                 f"{current_total:f} and previous {previous_total:f} values."))
 
         return None
 
@@ -1469,7 +1467,7 @@ class AbstractMessageCallbackProvider(): # pylint: disable=too-few-public-method
                 return None
             raise ConversionError(
                 f"Failed converting field {field} with value {value} using '{conversion_func['source']}' with reason {exception}.")\
-                    from exception
+                from exception
 
 class MessageCallbackProvider(AbstractMessageCallbackProvider):
     """ Provide the MQTT callback. """
@@ -1592,7 +1590,7 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
                 self.logger.error(
                     f"MessageCallbackProvider on_message_keyword failed to find data in: topic={msg.topic} and payload={msg.payload}")
 
-        except Exception as exception: # (want to catch all) pylint: disable=broad-except
+        except Exception as exception:  # (want to catch all) pylint: disable=broad-except
             self._log_exception('on_message_keyword', exception, msg)
 
     def _on_message_json(self, msg):
@@ -1614,7 +1612,7 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
             if data_final:
                 self.topic_manager.append_data(msg.topic, data_final)
 
-        except Exception as exception: # (want to catch all) pylint: disable=broad-except
+        except Exception as exception:  # (want to catch all) pylint: disable=broad-except
             self._log_exception('on_message_json', exception, msg)
 
     def _process_json_dict(self, msg, fields, fields_ignore_default, data_flattened):
@@ -1632,13 +1630,13 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
 
         for key, value in data_flattened.items():
             if msg_id_field and key not in fields_ignoring_msg_id:
-                lookup_key = key + "_" + str(msg_id) # todo - cleanup
+                lookup_key = key + "_" + str(msg_id)  # todo - cleanup
             else:
                 lookup_key = key
             if lookup_key in filters and value in filters[lookup_key]:
                 self.logger.info(
                     (f"MessageCallbackProvider on_message_json filtered out {msg.topic} : "
-                    f"{msg.payload} with {lookup_key}={filters[lookup_key]}"))
+                     f"{msg.payload} with {lookup_key}={filters[lookup_key]}"))
                 return None
             if not fields.get(lookup_key, {}).get('ignore', fields_ignore_default):
                 (fieldname, value) = self._update_data(lookup_key, value, fields, fields_conversion_func, unit_system)
@@ -1676,7 +1674,7 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
             else:
                 self.logger.trace(f"MessageCallbackProvider on_message_individual ignoring field: {key}")
 
-        except Exception as exception: # (want to catch all) pylint: disable=broad-except
+        except Exception as exception:  # (want to catch all) pylint: disable=broad-except
             self._log_exception('on_message_individual', exception, msg)
 
     def on_message_multi(self, msg):
@@ -1694,7 +1692,7 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
                 self._on_message_keyword(msg)
             else:
                 self.logger.error(f"Unknown message_type={message_type}. Skipping topic={msg.topic} and payload={msg.payload}")
-        except Exception as exception: # (want to catch all) pylint: disable=broad-except
+        except Exception as exception:  # (want to catch all) pylint: disable=broad-except
             self._log_exception('on_message_multi', exception, msg)
 
 class ManageWeewxConfig():
@@ -1738,7 +1736,7 @@ class ManageWeewxConfig():
                 if unit not in weewx.units.conversionDict:
                     weewx.units.conversionDict[unit] = {}
 
-                weewx.units.conversionDict[unit][to_unit] = eval(conversion[to_unit]) # pylint: disable=eval-used
+                weewx.units.conversionDict[unit][to_unit] = eval(conversion[to_unit])  # pylint: disable=eval-used
 
     def update_unit_config(self, weewx_config):
         ''' Update the unit sections of the WeeWX configuration.'''
@@ -1892,7 +1890,7 @@ class MQTTSubscriber():
 
         try:
             self.connect(mqtt_options)
-        except Exception as exception: # (want to catch all) pylint: disable=broad-except
+        except Exception as exception:  # (want to catch all) pylint: disable=broad-except
             self.logger.error(f"Failed to connect to {mqtt_options['host']} at {int(mqtt_options['port'])}. '{exception}'")
             raise weewx.WeeWxIOError(exception)
 
@@ -1902,12 +1900,12 @@ class MQTTSubscriber():
         error_msgs = []
         warn_msgs = []
         mqttsubscribe_configuration.validate("MQTTSubscribe",
-                        "",
-                        service_dict,
-                        self.config_spec['MQTTSubscribe'],
-                        MQTTSubscribeConfiguration.deprecated_options,
-                        error_msgs,
-                        warn_msgs)
+                                             "",
+                                             service_dict,
+                                             self.config_spec['MQTTSubscribe'],
+                                             MQTTSubscribeConfiguration.deprecated_options,
+                                             error_msgs,
+                                             warn_msgs)
 
         for msg in warn_msgs:
             self.logger.info(msg)
@@ -1921,7 +1919,7 @@ class MQTTSubscriber():
     @property
     def queues(self):
         """ The queues of observations. """
-        return self.manager.queues # pragma: no cover
+        return self.manager.queues  # pragma: no cover
 
     def config_tls(self, tls_dict):
         """ Configure TLS."""
@@ -1981,11 +1979,11 @@ class MQTTSubscriber():
 
     def get_data(self, queue, end_ts=sys.maxsize):
         """ Get data off the queue of MQTT data. """
-        return self.manager.get_data(queue, end_ts) # pragma: no cover
+        return self.manager.get_data(queue, end_ts)  # pragma: no cover
 
     def get_accumulated_data(self, queue, start_ts, end_ts, units):
         """ Get the MQTT data after being accumulated. """
-        return self.manager.get_accumulated_data(queue, start_ts, end_ts, units) # pragma: no cover
+        return self.manager.get_accumulated_data(queue, start_ts, end_ts, units)  # pragma: no cover
 
     def start(self):
         """ start subscribing to the topics """
@@ -1999,7 +1997,7 @@ class MQTTSubscriber():
         if self.userdata['connect_rc'] > 0:
             raise weewx.WeeWxIOError(
                 (f"Unable to connect. Return code is {int(self.userdata['connect_rc'])}, '{connack_string(self.userdata['connect_rc'])}', "
-                f"flags are {self.userdata['connect_flags']}."))
+                 f"flags are {self.userdata['connect_flags']}."))
 
         self.logger.info("MQTT initialization complete.")
 
@@ -2038,7 +2036,7 @@ class MQTTSubscriberV1(MQTTSubscriber):
         super().__init__(service_dict, logger)
 
     def get_client(self, mqtt_options):
-        return mqtt.Client(protocol=mqtt_options['protocol'], # (v1 signature) pylint: disable=no-value-for-parameter
+        return mqtt.Client(protocol=mqtt_options['protocol'],  # (v1 signature) pylint: disable=no-value-for-parameter
                            client_id=mqtt_options['clientid'],
                            userdata=self.userdata,
                            clean_session=mqtt_options['clean_session'])
@@ -2089,7 +2087,7 @@ class MQTTSubscriberV1(MQTTSubscriber):
 class MQTTSubscriberV2MQTT3(MQTTSubscriber):
     ''' MQTTSubscriber that communicates with paho mqtt v2. '''
     def get_client(self, mqtt_options):
-        return mqtt.Client(callback_api_version=mqtt.CallbackAPIVersion.VERSION2, # (only available in v2) pylint: disable=unexpected-keyword-arg, no-member
+        return mqtt.Client(callback_api_version=mqtt.CallbackAPIVersion.VERSION2,  # (only available in v2)
                            protocol=mqtt_options['protocol'],
                            client_id=mqtt_options['clientid'],
                            userdata=self.userdata,
@@ -2132,7 +2130,7 @@ class MQTTSubscriberV2MQTT3(MQTTSubscriber):
 class MQTTSubscriberV2(MQTTSubscriber):
     ''' MQTTSubscriber that communicates with paho mqtt v2. '''
     def get_client(self, mqtt_options):
-        return mqtt.Client(callback_api_version=mqtt.CallbackAPIVersion.VERSION2, # (only available in v2) pylint: disable=unexpected-keyword-arg, no-member
+        return mqtt.Client(callback_api_version=mqtt.CallbackAPIVersion.VERSION2,  # (only available in v2)
                            protocol=mqtt_options['protocol'],
                            client_id=mqtt_options['clientid'],
                            userdata=self.userdata)
@@ -2200,7 +2198,7 @@ class MQTTSubscribeService(StdService):
         if 'archive_topic' in service_dict:
             raise ValueError(f"archive_topic, {service_dict['archive_topic']}, is invalid when running as a service")
 
-        self.end_ts = 0 # prime for processing loop packet
+        self.end_ts = 0  # prime for processing loop packet
 
         self.subscriber = MQTTSubscriber.get_subscriber(service_dict, self.logger)
 
@@ -2226,7 +2224,7 @@ class MQTTSubscribeService(StdService):
         if self.subscriber.cached_fields and record_generation != 'software' and self.binding == 'loop':
             raise ValueError(f"caching is not available with record generation of type '{record_generation}' and and binding of type 'loop'")
 
-    def shutDown(self): # need to override parent - pylint: disable=invalid-name
+    def shutDown(self):  # need to override parent - pylint: disable=invalid-name
         """Run when an engine shutdown is requested."""
         if self.subscriber:
             self.subscriber.disconnect()
@@ -2240,17 +2238,17 @@ class MQTTSubscribeService(StdService):
             start_ts = self.end_ts
             self.end_ts = event.packet['dateTime']
 
-            for queue in self.subscriber.queues: # topics might not be cached.. therefore use subscribed?
+            for queue in self.subscriber.queues:  # topics might not be cached.. therefore use subscribed?
                 self.logger.trace(
                     (f"Packet prior to update is: "
-                    f"{weeutil.weeutil.timestamp_to_string(event.packet['dateTime'])} {to_sorted_string(event.packet)}"))
+                     f"{weeutil.weeutil.timestamp_to_string(event.packet['dateTime'])} {to_sorted_string(event.packet)}"))
                 target_data = self.subscriber.get_accumulated_data(queue,
                                                                    start_ts, self.end_ts, event.packet['usUnits'])
                 self.logger.trace(f"Queue {queue['name']} has data: {target_data}")
                 event.packet.update(target_data)
                 self.logger.trace(
                     f"Packet after update is: {weeutil.weeutil.timestamp_to_string(event.packet['dateTime'])} {to_sorted_string(event.packet)}")
-                
+
             if self.subscriber.cached_fields:
                 for field in self.subscriber.cached_fields:
                     if field in event.packet:
@@ -2275,7 +2273,7 @@ class MQTTSubscribeService(StdService):
             for queue in self.subscriber.queues:
                 self.logger.trace(
                     (f"Record prior to update is: "
-                    f"{weeutil.weeutil.timestamp_to_string(event.record['dateTime'])} {to_sorted_string(event.record)}"))
+                     f"{weeutil.weeutil.timestamp_to_string(event.record['dateTime'])} {to_sorted_string(event.record)}"))
                 target_data = self.subscriber.get_accumulated_data(queue, start_ts, end_ts, event.record['usUnits'])
                 self.logger.trace(f"Queue {queue['name']} has data: {target_data}")
                 event.record.update(target_data)
@@ -2315,11 +2313,11 @@ class MQTTSubscribeService(StdService):
 
 def loader(config_dict, engine):
     """ Load and return the driver. """
-    return MQTTSubscribeDriver(config_dict, engine) # pragma: no cover
+    return MQTTSubscribeDriver(config_dict, engine)  # pragma: no cover
 
 def confeditor_loader():
     """ Load and return the configuration editor. """
-    return MQTTSubscribeDriverConfEditor() # pragma: no cover
+    return MQTTSubscribeDriverConfEditor()  # pragma: no cover
 
 class MQTTSubscribeDriver(weewx.drivers.AbstractDevice):
     # (methods not used) pylint: disable=abstract-method
@@ -2355,7 +2353,7 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice):
     @property
     def hardware_name(self):
         """ The name of the hardware driver. """
-        return "MQTTSubscribeDriver" # pragma: no cover
+        return "MQTTSubscribeDriver"  # pragma: no cover
 
     @property
     def archive_interval(self):
@@ -2366,7 +2364,7 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice):
 
         return self._archive_interval
 
-    def closePort(self): # need to override parent - pylint: disable=invalid-name
+    def closePort(self):  # need to override parent - pylint: disable=invalid-name
         """ Called to perform any close/cleanup before termination. """
         self.subscriber.disconnect()
 
@@ -2375,7 +2373,7 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice):
         self.logger.debug(
             f"data-> final record is {weeutil.weeutil.timestamp_to_string(event.record['dateTime'])}: {to_sorted_string(event.record)}")
 
-    def genLoopPackets(self): # need to override parent - pylint: disable=invalid-name
+    def genLoopPackets(self):  # need to override parent - pylint: disable=invalid-name
         """ Called to generate loop packets. """
         while True:
             packet_count = 0
@@ -2399,14 +2397,14 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice):
                     if archive_start < self.prev_archive_start:
                         self.logger.error(
                             (f"Ignoring record because {archive_start} archival start "
-                            f"is before previous archive start {self.prev_archive_start}: "
-                            f"{to_sorted_string(data)}"))
+                             f"is before previous archive start {self.prev_archive_start}: "
+                             f"{to_sorted_string(data)}"))
                     else:
                         self.last_loop_packet_ts = data['dateTime']
                         self.prev_archive_start = archive_start
                         self.logger.debug(
                             (f"data-> final loop packet is {queue['name']} {weeutil.weeutil.timestamp_to_string(data['dateTime'])}: "
-                            f"{to_sorted_string(data)}"))
+                             f"{to_sorted_string(data)}"))
                         yield data
 
     def _handle_empty_queue(self):
@@ -2418,7 +2416,7 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice):
                 if self.last_loop_packet_ts < self.start_loop_period_ts:
                     data = {}
                     data['dateTime'] = self.start_loop_period_ts
-                    data['MQTTSubscribe'] = None # WeeWX accumulator requires at least one observation
+                    data['MQTTSubscribe'] = None  # WeeWX accumulator requires at least one observation
                     data['usUnits'] = 1
                     self.last_loop_packet_ts = data['dateTime']
                     self.logger.trace(
@@ -2430,7 +2428,7 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice):
         time.sleep(self.wait_before_retry)
         return None
 
-    def genArchiveRecords(self, lastgood_ts): # need to override parent - pylint: disable=invalid-name
+    def genArchiveRecords(self, lastgood_ts):  # need to override parent - pylint: disable=invalid-name
         """ Called to generate the archive records. """
         if not self.archive_topic:
             self.logger.debug("No archive topic configured.")
@@ -2440,13 +2438,13 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice):
             if data:
                 self.logger.debug(
                     (f"data-> final archive record is {self.archive_topic} {weeutil.weeutil.timestamp_to_string(data['dateTime'])}: "
-                    f"{to_sorted_string(data)}"))
-                if lastgood_ts is None  or data['dateTime'] > lastgood_ts:
+                     f"{to_sorted_string(data)}"))
+                if lastgood_ts is None or data['dateTime'] > lastgood_ts:
                     yield data
             else:
                 break
 
-class MQTTSubscribeDriverConfEditor(weewx.drivers.AbstractConfEditor): # pragma: no cover
+class MQTTSubscribeDriverConfEditor(weewx.drivers.AbstractConfEditor):  # pragma: no cover
     """ Methods for producing and updating configuration stanzas for use in configuration file. """
     def __init__(self):
         self.mqttsubscribe_configuration = MQTTSubscribeConfiguration('MQTTSubscribeDriver')
@@ -2525,7 +2523,7 @@ class MQTTSubscribeConfiguration():
             # Deprecated in 2.1.0
             'deprecated_severity': 'WARN',
             'deprecated_msg': "\n".join(["Deprecated: '[[mesage_callback]]' is replaced with '[[topics]][[[message]]]'",
-                               "See, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/Configuring#the-topics-section"]),
+                                         "See, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/Configuring#the-topics-section"]),
             'contains_total': {
                 # Removed in 2.0.0
                 'deprecated_severity': 'ERROR',
@@ -2566,17 +2564,17 @@ class MQTTSubscribeConfiguration():
         del self.topic_as_field_config_spec['REPLACE_ME']
         self.topic_as_field_config_spec.merge(self.config_spec['MQTTSubscribe']['topics']['REPLACE_ME']["REPLACE_ME"])
 
-        self.topic_as_field_deprecated_options = configobj.ConfigObj(MQTTSubscribeConfiguration.deprecated_options\
-                                                                .get('MQTTSubscribe', {})\
-                                                                .get('topics', {})\
-                                                                .get('REPLACE_ME', {}))
+        self.topic_as_field_deprecated_options = configobj.ConfigObj(MQTTSubscribeConfiguration.deprecated_options
+                                                                     .get('MQTTSubscribe', {})
+                                                                     .get('topics', {})
+                                                                     .get('REPLACE_ME', {}))
         if 'REPLACE_ME' in self.topic_as_field_deprecated_options:
             del self.topic_as_field_deprecated_options['REPLACE_ME']
-        self.topic_as_field_deprecated_options.merge(MQTTSubscribeConfiguration.deprecated_options\
-                                                                .get('MQTTSubscribe', {})\
-                                                                .get('topics', {})\
-                                                                .get('REPLACE_ME', {})\
-                                                                .get('REPLACE_ME', {}))
+        self.topic_as_field_deprecated_options.merge(MQTTSubscribeConfiguration.deprecated_options
+                                                     .get('MQTTSubscribe', {})
+                                                     .get('topics', {})
+                                                     .get('REPLACE_ME', {})
+                                                     .get('REPLACE_ME', {}))
 
     @property
     def default_config(self):
@@ -2664,7 +2662,7 @@ class MQTTSubscribeConfiguration():
         config_spec.initial_comment = example_intial_comment.splitlines()
         if not self.section:
             config_spec.initial_comment.append("# Replace '[MQTTSubscribe]' with '[MQTTSubscribeService]' or '[MQTTSubscribeDriver]'")
-        config_spec.initial_comment.append((\
+        config_spec.initial_comment.append((
             "# For additional information see, "
             "https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/Configuring#the-mqttsubscribedrivermqttsubscribesection-section"))
 
@@ -2731,66 +2729,66 @@ class MQTTSubscribeConfiguration():
                 error_msgs.append(f"ERROR: Specify a value for: {hierarchy}{subsection}")
             elif parent == 'topics' and subsection != 'message':
                 self._validate_topics_section(subsection,
-                                               hierarchy,
-                                               section[subsection],
-                                               section_configspec["REPLACE_ME"],
-                                               section_deprecated_options.get("REPLACE_ME", {}),
-                                               error_msgs, warn_msgs)
+                                              hierarchy,
+                                              section[subsection],
+                                              section_configspec["REPLACE_ME"],
+                                              section_deprecated_options.get("REPLACE_ME", {}),
+                                              error_msgs, warn_msgs)
             elif subsection not in section_configspec.sections and parent == 'subfields':
                 self.validate(subsection,
-                               hierarchy,
-                               section[subsection],
-                               self.config_spec['MQTTSubscribe']['topics']['REPLACE_ME']["REPLACE_ME"],
-                               section_deprecated_options.get('MQTTSubscribe', {})\
-                                                         .get('topics', {})\
-                                                         .get('REPLACE_ME', {})\
-                                                         .get('REPLACE_ME', {}),
-                                error_msgs,
-                                warn_msgs
-                               )
+                              hierarchy,
+                              section[subsection],
+                              self.config_spec['MQTTSubscribe']['topics']['REPLACE_ME']["REPLACE_ME"],
+                              section_deprecated_options.get('MQTTSubscribe', {})
+                                                        .get('topics', {})
+                                                        .get('REPLACE_ME', {})
+                                                        .get('REPLACE_ME', {}),
+                              error_msgs,
+                              warn_msgs
+                              )
             elif subsection not in section_configspec.sections:
                 if "REPLACE_ME" in section_configspec.sections:
                     self.validate(subsection,
-                                   hierarchy,
-                                   section[subsection],
-                                   section_configspec["REPLACE_ME"],
-                                   section_deprecated_options.get("REPLACE_ME", {}),
-                                   error_msgs,
-                                   warn_msgs)
+                                  hierarchy,
+                                  section[subsection],
+                                  section_configspec["REPLACE_ME"],
+                                  section_deprecated_options.get("REPLACE_ME", {}),
+                                  error_msgs,
+                                  warn_msgs)
                 elif subsection not in section_deprecated_options:
                     error_msgs.append(f"ERROR: Unknown option: {hierarchy}{subsection}")
             else:
                 self.validate(subsection,
-                               hierarchy,
-                               section[subsection],
-                               section_configspec[subsection],
-                               section_deprecated_options.get(subsection, {}),
-                               error_msgs,
-                               warn_msgs)
+                              hierarchy,
+                              section[subsection],
+                              section_configspec[subsection],
+                              section_deprecated_options.get(subsection, {}),
+                              error_msgs,
+                              warn_msgs)
 
     def _validate_topics_section(self, parent, hierarchy, section, section_configspec, section_deprecated_options, error_msgs, warn_msgs):
         # pylint: disable=too-many-arguments
         # Some fields are configured
         if (len(section.sections) > 1) or (len(section.sections) == 1 and 'message' not in section.sections):
             self.validate(parent,
-                        hierarchy,
-                        section,
-                        section_configspec,
-                        section_deprecated_options,
-                        error_msgs,
-                        warn_msgs)
+                          hierarchy,
+                          section,
+                          section_configspec,
+                          section_deprecated_options,
+                          error_msgs,
+                          warn_msgs)
         # No fields configured, so the topic might be configured as a field.
         else:
             self.validate(parent,
-                        hierarchy,
-                        section,
-                        self.topic_as_field_config_spec,
-                        self.topic_as_field_deprecated_options,
-                        error_msgs,
-                        warn_msgs)
+                          hierarchy,
+                          section,
+                          self.topic_as_field_config_spec,
+                          self.topic_as_field_deprecated_options,
+                          error_msgs,
+                          warn_msgs)
 class Parser():
     """ Parse a MQTT message that is read from a file. """
-    description='''
+    description = '''
 '''
 
     class Msg:
@@ -2823,8 +2821,9 @@ class Parser():
         parser.add_argument("--logging-level", choices=["TRACE", "DEBUG", "INFO", "ERROR"],
                             help="The logging level.",
                             default="NOTSET")
+
     @classmethod
-    def add_parsers(cls, parser): # pragma: no cover
+    def add_parsers(cls, parser):  # pragma: no cover
         ''' Add the parsers.'''
         subparser = parser.add_parser('parse',
                                       description=cls.description,
@@ -2879,12 +2878,12 @@ class Parser():
         error_msgs = []
         warn_msgs = []
         mqttsubscribe_configuration.validate(self.section,
-                        "",
-                        self.config_dict,
-                        config_spec['MQTTSubscribe'],
-                        MQTTSubscribeConfiguration.deprecated_options,
-                        error_msgs,
-                        warn_msgs)
+                                             "",
+                                             self.config_dict,
+                                             config_spec['MQTTSubscribe'],
+                                             MQTTSubscribeConfiguration.deprecated_options,
+                                             error_msgs,
+                                             warn_msgs)
         for msg in warn_msgs:
             print(msg)
         for msg in error_msgs:
@@ -2904,7 +2903,7 @@ class Parser():
 
         self.message_callback_provider.on_message_multi(msg)
 
-        queue = self.manager._get_queue(self.topic) # pylint: disable=protected-access
+        queue = self.manager._get_queue(self.topic)  # pylint: disable=protected-access
         data_queue = self.manager.get_data(queue)
         for data in data_queue:
             print(data)
@@ -2920,7 +2919,7 @@ class Parser():
 
                 self.message_callback_provider.on_message_multi(msg)
 
-                queue = self.manager._get_queue(self.topic) # pylint: disable=protected-access
+                queue = self.manager._get_queue(self.topic)  # pylint: disable=protected-access
                 data_queue = self.manager.get_data(queue)
                 for data in data_queue:
                     print(data)
@@ -2931,8 +2930,10 @@ class Simulator():
     """ Run the service or driver. """
     # pylint: disable=too-many-instance-attributes
 
-    description='''
-Run MQTTSubscribe in simulate mode. One can simulate either the driver or service. Simulate mode allows one to test and/or debug MQTTSubscribe without interfering with a running WeeWX instance.
+    description = '''
+Run MQTTSubscribe in simulate mode.
+One can simulate either the driver or service.
+Simulate mode allows one to test and/or debug MQTTSubscribe without interfering with a running WeeWX instance.
 For more inforation see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/MQTTSubscribe-Simulator-mode
 '''
 
@@ -2946,56 +2947,56 @@ For more inforation see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/M
 
         simulate_service_parser = simulator_subparsers.add_parser('service')
         simulate_service_parser.add_argument("--binding", choices=["archive", "loop"],
-                            help="The type of binding.",
-                            default="loop")
+                                             help="The type of binding.",
+                                             default="loop")
         simulate_service_parser.add_argument("--conf",
-                            required=True,
-                            help="The WeeWX configuration file. Typically weewx.conf.")
+                                             required=True,
+                                             help="The WeeWX configuration file. Typically weewx.conf.")
         simulate_service_parser.add_argument("--units", choices=["US", "METRIC", "METRICWX"],
-                            help="The default units if not in MQTT payload.",
-                            default="US")
+                                             help="The default units if not in MQTT payload.",
+                                             default="US")
         simulate_service_parser.add_argument('--frequency', type=int,
-                            help='The frequency that the simulated loop packets/archive records arrive',
-                            default=10)
+                                             help='The frequency that the simulated loop packets/archive records arrive',
+                                             default=10)
         simulate_service_parser.add_argument('--records', dest='record_count', type=int,
-                            help='The number of archive records to create.',
-                            default=10)
+                                             help='The number of archive records to create.',
+                                             default=10)
         simulate_service_parser.add_argument("--logging-level", choices=['INFO', 'DEBUG', 'TRACE'],
-                            default='INFO',
-                            help="The logging level ('INFO', 'DEBUG', 'TRACE').")
+                                             default='INFO',
+                                             help="The logging level ('INFO', 'DEBUG', 'TRACE').")
         simulate_service_parser.add_argument("--console", action="store_true", dest="console",
-                            help="Log to console in addition to syslog.")
+                                             help="Log to console in addition to syslog.")
         simulate_service_parser.add_argument("--logging-file",
-                            help="Log to specified file.")
+                                             help="Log to specified file.")
 
         simulate_driver_parser = simulator_subparsers.add_parser('driver')
         simulate_driver_parser.add_argument("--binding", choices=["archive", "loop"],
-                            help="The type of binding.",
-                            default="loop")
+                                            help="The type of binding.",
+                                            default="loop")
         simulate_driver_parser.add_argument("--conf",
-                            required=True,
-                            help="The WeeWX configuration file. Typicall weewx.conf.")
+                                            required=True,
+                                            help="The WeeWX configuration file. Typicall weewx.conf.")
 
         simulate_driver_parser.add_argument('--archive-interval', type=int,
-                            help='The simulated archive interval in seconds.')
+                                            help='The simulated archive interval in seconds.')
         simulate_driver_parser.add_argument('--archive-delay', type=int,
-                            help='The simulated archive delay in seconds.')
+                                            help='The simulated archive delay in seconds.')
 
         simulate_driver_parser.add_argument('--records', dest='record_count', type=int,
-                            help='The number of archive records to create.',
-                            default=10)
+                                            help='The number of archive records to create.',
+                                            default=10)
 
         simulate_driver_parser.add_argument("--logging-level", choices=['INFO', 'DEBUG', 'TRACE'],
-                            default='INFO',
-                            help="The logging level ('INFO', 'DEBUG', 'TRACE').")
+                                            default='INFO',
+                                            help="The logging level ('INFO', 'DEBUG', 'TRACE').")
         simulate_driver_parser.add_argument("--console", action="store_true", dest="console",
-                            help="Log to console in addition to syslog.")
+                                            help="Log to console in addition to syslog.")
         simulate_driver_parser.add_argument("--logging-file",
-                            help="Log to specified file.")
+                                            help="Log to specified file.")
 
         return cls.simulator_parser
 
-    def __init__(self, parser, options): # pragma: no cover
+    def __init__(self, parser, options):  # pragma: no cover
         """ Initialize the new instance. """
         if not options.type:
             self.simulator_parser.print_help()
@@ -3032,7 +3033,7 @@ For more inforation see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/M
         self.config_dict = None
         self.logger = None
 
-    def init_configuration(self, parser): # pragma: no cover
+    def init_configuration(self, parser):  # pragma: no cover
         """ Initialuze the configuration object. """
         config_path = os.path.abspath(self.config_file)
 
@@ -3059,7 +3060,7 @@ For more inforation see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/M
             merge_config(self.config_dict, {'MQTTSubscribeService': {'console': True}})
             merge_config(self.config_dict, {'MQTTSubscribeDriver': {'console': True}})
 
-    def init_weewx(self): # pragma: no cover
+    def init_weewx(self):  # pragma: no cover
         """ Perform the necessary WeeWX initialization. """
         min_config_dict = {
             'Station': {
@@ -3094,8 +3095,8 @@ For more inforation see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/M
 
             for record in driver.genArchiveRecords(end_period_ts):
                 record_msg =\
-                      (f"Record {i+1} of {self.record_count} is: "
-                      f"{weeutil.weeutil.timestamp_to_string(record['dateTime'])} {to_sorted_string(record)}")
+                    (f"Record {i+1} of {self.record_count} is: "
+                     f"{weeutil.weeutil.timestamp_to_string(record['dateTime'])} {to_sorted_string(record)}")
                 logger.info(record_msg)
                 print(record_msg)
 
@@ -3108,9 +3109,9 @@ For more inforation see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/M
         logger = driver.logger
         i = 0
         for packet in driver.genLoopPackets():
-            record_msg =\
-                  (f"Packet {i+1} of {self.record_count} is: "
-                  f"{weeutil.weeutil.timestamp_to_string(packet['dateTime'])} {to_sorted_string(packet)}")
+            record_msg = \
+                (f"Packet {i+1} of {self.record_count} is: "
+                 f"{weeutil.weeutil.timestamp_to_string(packet['dateTime'])} {to_sorted_string(packet)}")
             logger.info(record_msg)
             print(record_msg)
             i += 1
@@ -3125,7 +3126,7 @@ For more inforation see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/M
         i = 0
         while i < self.record_count:
             current_time = int(time.time() + 0.5)
-            end_period_ts = (int(current_time /self.frequency) + 1) * self.frequency
+            end_period_ts = (int(current_time / self.frequency) + 1) * self.frequency
             sleep_amount = end_period_ts - current_time
 
             print(f"Sleeping {int(sleep_amount)} seconds")
@@ -3137,13 +3138,13 @@ For more inforation see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/M
 
             data['interval'] = self.frequency / 60
             new_archive_record_event = weewx.Event(weewx.NEW_ARCHIVE_RECORD,
-                                                    record=data,
-                                                    origin='hardware')
+                                                   record=data,
+                                                   origin='hardware')
             self.engine.dispatchEvent(new_archive_record_event)
             packet_msg = \
                 (f"Archive Record {i+1} of {self.record_count} is: "
-                f"{weeutil.weeutil.timestamp_to_string(new_archive_record_event.record['dateTime'])} "
-                f"{to_sorted_string(new_archive_record_event.record)}")
+                 f"{weeutil.weeutil.timestamp_to_string(new_archive_record_event.record['dateTime'])} "
+                 f"{to_sorted_string(new_archive_record_event.record)}")
             logger.info(packet_msg)
             print(packet_msg)
 
@@ -3159,7 +3160,7 @@ For more inforation see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/M
         i = 0
         while i < self.record_count:
             current_time = int(time.time() + 0.5)
-            end_period_ts = (int(current_time /self.frequency) + 1) * self.frequency
+            end_period_ts = (int(current_time / self.frequency) + 1) * self.frequency
             sleep_amount = end_period_ts - current_time
 
             print(f"Sleeping {int(sleep_amount)} seconds")
@@ -3202,10 +3203,12 @@ class Configurator():
     ''' Configure the service or driver.'''
     # pylint: disable=too-many-instance-attributes
 
-    description='''
-Run MQTTSubscribe in configure mode. One can configure either the driver or service. Configure mode provides utilities to make it easier to configure MQTTSubscribe.
+    description = '''
+Run MQTTSubscribe in configure mode. One can configure either the driver or service.
+Configure mode provides utilities to make it easier to configure MQTTSubscribe.
 For more information see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/MQTTSubscribe-Configurator-Mode
 '''
+
     @classmethod
     def add_common_options(cls, parser):
         ''' Add the comon options to the parser.'''
@@ -3215,19 +3218,19 @@ For more information see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/
                             help="The WeeWX configuration file. Typically weewx.conf.")
 
         configure_group.add_argument("--add-from",
-                            help="The configuration that will and add to (but not update existing settings) the existing configuration.")
+                                     help="The configuration that will add to (but not update existing settings) the existing configuration.")
         configure_group.add_argument("--export",
-                            help="Export the existing configuration.")
+                                     help="Export the existing configuration.")
         configure_group.add_argument("--print-configspec",
-                            help="Write the configspec to a file.")
+                                     help="Write the configspec to a file.")
         configure_group.add_argument("--remove", action="store_true", dest="remove",
-                            help="Remove the MQTTSubscribe configuration section from '--conf'.")
+                                     help="Remove the MQTTSubscribe configuration section from '--conf'.")
         configure_group.add_argument("--replace-with",
-                            help="The configuration that will replace the existing configuration.")
+                                     help="The configuration that will replace the existing configuration.")
         configure_group.add_argument("--update-from",
-                            help="The configuration that will update (and add to) the existing configuration.")
+                                     help="The configuration that will update (and add to) the existing configuration.")
         configure_group.add_argument("--validate", action="store_true", dest="validate",
-                            help="Validate the configuration file.")
+                                     help="Validate the configuration file.")
 
         parser.add_argument("--top-level", action="store_true", dest="top_level",
                             help="Use the complete input configuration as the MQTTSubscribeDriver/MQTTSubscribeService configuration section.")
@@ -3237,13 +3240,13 @@ For more information see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/
                             help="Instead of updating the WeeWX configuration (--conf), write it to this file")
 
     @classmethod
-    def add_parsers(cls, parser): # pragma: no cover
+    def add_parsers(cls, parser):  # pragma: no cover
         ''' Add the parsers.'''
         subparser = parser.add_parser('configure',
                                       description=cls.description,
                                       formatter_class=argparse.RawDescriptionHelpFormatter)
         subparser.add_argument("--create-example",
-                            help="Create an example MQTTSubscribe configuration.")
+                               help="Create an example MQTTSubscribe configuration.")
 
         configurator_subparsers = subparser.add_subparsers(dest='type')
 
@@ -3251,8 +3254,9 @@ For more information see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/
         cls.add_common_options(configurator_service_parser)
 
         # The following is only used by the service
-        configurator_service_parser.add_argument("--enable", dest="enable",
-                            help="Enable/Disable the service.")
+        configurator_service_parser.add_argument("--enable",
+                                                 dest="enable",
+                                                 help="Enable/Disable the service.")
 
         configurator_driver_parser = configurator_subparsers.add_parser('driver')
         cls.add_common_options(configurator_driver_parser)
@@ -3342,7 +3346,7 @@ For more information see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/
 
         if options.type == 'service' and options.enable is not None:
             self.enable = to_bool(options.enable)
-            if  self.config_output_path is None:
+            if self.config_output_path is None:
                 self.config_output_path = os.path.abspath(options.conf)
 
         if options.output:
@@ -3408,12 +3412,12 @@ For more information see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/
         error_msgs = []
         warn_msgs = []
         mqttsubscribe_configuration.validate(self.section,
-                        "",
-                        self.config_input_dict,
-                        self.config_spec['MQTTSubscribe'],
-                        MQTTSubscribeConfiguration.deprecated_options,
-                        error_msgs,
-                        warn_msgs)
+                                             "",
+                                             self.config_input_dict,
+                                             self.config_spec['MQTTSubscribe'],
+                                             MQTTSubscribeConfiguration.deprecated_options,
+                                             error_msgs,
+                                             warn_msgs)
         for msg in warn_msgs:
             print(msg)
         for msg in error_msgs:
@@ -3428,7 +3432,7 @@ For more information see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/
             self.config_dict[self.section][key] = value
 
 #
-if __name__ == '__main__': # pragma: no cover
+if __name__ == '__main__':  # pragma: no cover
     def main():
         """ Run it."""
 
