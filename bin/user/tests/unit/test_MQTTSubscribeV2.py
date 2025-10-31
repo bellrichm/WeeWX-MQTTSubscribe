@@ -51,11 +51,12 @@ class TestCallbacks(unittest.TestCase):
 
         with mock.patch('user.MQTTSubscribe.MessageCallbackProvider'):
             with mock.patch('user.MQTTSubscribe.TopicManager'):
-                SUT = MQTTSubscriberV2(config, mock_logger)
+                with mock.patch('user.MQTTSubscribe.mqtt.Client'):
+                    SUT = MQTTSubscriberV2(config, mock_logger)
 
-                SUT._on_disconnect(None, None, None, reason_code, None)
+                    SUT._on_disconnect(None, None, None, reason_code, None)
 
-                SUT.logger.info.assert_called_with(f"Disconnected with result code {int(reason_code.value)}")
+                    SUT.logger.info.assert_called_with(f"Disconnected with result code {int(reason_code.value)}")
 
     @staticmethod
     def test_on_subscribe():
