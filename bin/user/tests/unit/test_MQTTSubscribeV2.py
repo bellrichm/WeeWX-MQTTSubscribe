@@ -73,11 +73,12 @@ class TestCallbacks(unittest.TestCase):
 
         with mock.patch('user.MQTTSubscribe.MessageCallbackProvider'):
             with mock.patch('user.MQTTSubscribe.TopicManager'):
-                SUT = MQTTSubscriberV2(config, mock_logger)
+                with mock.patch('user.MQTTSubscribe.mqtt.Client'):
+                    SUT = MQTTSubscriberV2(config, mock_logger)
 
-                SUT._on_subscribe(None, None, mid, reason_codes, None)
+                S   UT._on_subscribe(None, None, mid, reason_codes, None)
 
-                SUT.logger.info.assert_called_with(f"Subscribed to mid: {mid} is size {len(reason_codes)} has a QOS of {reason_codes[0].value}")
+                S   UT.logger.info.assert_called_with(f"Subscribed to mid: {mid} is size {len(reason_codes)} has a QOS of {reason_codes[0].value}")
 
     @staticmethod
     def test_on_log():
