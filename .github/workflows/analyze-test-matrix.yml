@@ -7,7 +7,7 @@ on:
 
 jobs:
   analyze-test:
-    uses: weewx-extensions/development_tools/.github/workflows/full-analyze-test.yml@v3.1.1
+    uses: weewx-extensions/development_tools/.github/workflows/full-analyze-test.yml@v3
     with:
       module-name: 'MQTTSubscribe'
       pip-list: 'paho-mqtt'
@@ -20,7 +20,7 @@ jobs:
   # ToDo: This currently fails, because the upload of the artifact uses the same name as above
   # But the concept of running tests against 1.6.1 works
   #analyze-test-paho-mqtt-1-6-1:
-  #  uses: weewx-extensions/development_tools/.github/workflows/analyze-test.yml@v3.1.1
+  #  uses: weewx-extensions/development_tools/.github/workflows/analyze-test.yml@v3
   #  with:
   #    module-name: 'MQTTSubscribe'
   #    pip-list: 'paho-mqtt==1.6.1'
