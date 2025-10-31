@@ -93,11 +93,12 @@ class TestCallbacks(unittest.TestCase):
 
         with mock.patch('user.MQTTSubscribe.MessageCallbackProvider'):
             with mock.patch('user.MQTTSubscribe.TopicManager'):
-                SUT = MQTTSubscriberV2(config, mock_logger)
+                with mock.patch('user.MQTTSubscribe.mqtt.Client'):
+                    SUT = MQTTSubscriberV2(config, mock_logger)
 
-                SUT._on_log(None, None, level, msg)
+                    SUT._on_log(None, None, level, msg)
 
-                SUT.logger.info.assert_called_with(f"MQTTSubscribe MQTT: {msg}")
+                    SUT.logger.info.assert_called_with(f"MQTTSubscribe MQTT: {msg}")
 
     def test_mqtt_log_set(self):
         mock_logger = mock.Mock(spec=Logger)
