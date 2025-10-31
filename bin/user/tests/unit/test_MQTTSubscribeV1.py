@@ -139,7 +139,7 @@ class TestCallbacks(unittest.TestCase):
                 with mock.patch('user.MQTTSubscribe.mqtt.Client'):
                     SUT = MQTTSubscriberV1(config, mock_logger)
 
-                s   elf.assertNotEqual(SUT.client.on_log, SUT._on_log)
+                    self.assertNotEqual(SUT.client.on_log, SUT._on_log)
 
 if __name__ == '__main__':
     # test_suite = unittest.TestSuite()
