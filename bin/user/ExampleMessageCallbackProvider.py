@@ -16,7 +16,7 @@ Configuration:
 import xml.etree.ElementTree
 import user.MQTTSubscribe
 
-from weeutil.weeutil import to_float # used in eval statement pylint: disable=unused-import
+from weeutil.weeutil import to_float  # noqa: F401 - used in eval statement
 
 class MessageCallbackProvider(user.MQTTSubscribe.AbstractMessageCallbackProvider):
     # pylint: disable=too-few-public-methods
@@ -33,7 +33,7 @@ class MessageCallbackProvider(user.MQTTSubscribe.AbstractMessageCallbackProvider
         observations = {}
         conversion_func = {
             'source': 'lambda x: to_float(x)',
-            'compiled': eval('lambda x: to_float(x)') # pylint: disable=eval-used
+            'compiled': eval('lambda x: to_float(x)')  # pylint: disable=eval-used
         }
 
         for child in parent:
@@ -44,10 +44,10 @@ class MessageCallbackProvider(user.MQTTSubscribe.AbstractMessageCallbackProvider
 
         if parent.text is None:
             for (_, tvalue) in parent.items():
-                (fieldname, value) = self._update_data(fullname[1:], tvalue, fields, conversion_func,  unit_system) # pylint: disable=eval-used
+                (fieldname, value) = self._update_data(fullname[1:], tvalue, fields, conversion_func, unit_system)
                 observations[fieldname] = value
         elif not parent:
-            (fieldname, value) = self._update_data(fullname[1:], parent.text, fields, conversion_func, unit_system) # pylint: disable=eval-used
+            (fieldname, value) = self._update_data(fullname[1:], parent.text, fields, conversion_func, unit_system)
             observations[fieldname] = value
 
         return observations
@@ -57,13 +57,13 @@ class MessageCallbackProvider(user.MQTTSubscribe.AbstractMessageCallbackProvider
         try:
             self.logger.debug(f"MessageCallbackProvider For {msg.topic} received: {msg.payload}")
             fields = self.topic_manager.get_fields(msg.topic)
-            unit_system = self.topic_manager.get_unit_system(msg.topic) # TODO - need public method
+            unit_system = self.topic_manager.get_unit_system(msg.topic)  # TODO - need public method
             root = xml.etree.ElementTree.fromstring(msg.payload)
             observations = self.get_observations(root, "", fields, unit_system)
 
             if observations:
                 self.topic_manager.append_data(msg.topic, observations)
 
-        except Exception as exception: # (want to catch all) pylint: disable=broad-except
+        except Exception as exception:
             self.logger.error(f"MessageCallbackProvider on_message_keyword failed with: {exception}")
             self.logger.error(f"**** MessageCallbackProvider Ignoring topic={msg.topic} and payload={msg.payload}")
