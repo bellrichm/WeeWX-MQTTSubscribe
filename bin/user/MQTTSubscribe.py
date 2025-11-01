@@ -2181,7 +2181,7 @@ class MQTTSubscribeService(StdService):
         service_dict = config_dict.get('MQTTSubscribeService')
         if service_dict is None:
             raise ValueError("No 'MQTTSubscribeService' configuration section found.")
-        
+
         logging_filename = service_dict.get('logging_filename', None)
         logging_level = service_dict.get('logging_level', 'NOTSET')
         console = to_bool(service_dict.get('console', False))
