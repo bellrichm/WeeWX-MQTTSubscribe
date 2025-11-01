@@ -1,13 +1,8 @@
 #
-#    Copyright (c) 2020-2024 Rich Bell <bellrichm@gmail.com>
+#    Copyright (c) 2020-2025 Rich Bell <bellrichm@gmail.com>
 #
 #    See the file LICENSE.txt for your full rights.
 #
-
-# pylint: disable=wrong-import-order
-# pylint: disable=wrong-import-position
-# pylint: disable=missing-docstring
-# pylint: disable=invalid-name
 
 import unittest
 import mock
@@ -50,7 +45,7 @@ class TestclosePort(unittest.TestCase):
         with mock.patch('user.MQTTSubscribe.MQTTSubscriber'):
             SUT = MQTTSubscribeDriver(config_dict, mock_engine)
             SUT.closePort()
-            SUT.subscriber.disconnect.assert_called_once() # pylint: disable=no-member
+            SUT.subscriber.disconnect.assert_called_once()
 
 class TestArchiveInterval(unittest.TestCase):
     def setUp(self):
@@ -78,7 +73,7 @@ class TestArchiveInterval(unittest.TestCase):
         with mock.patch('user.MQTTSubscribe.MQTTSubscriber'):
             with self.assertRaises(NotImplementedError) as error:
                 SUT = MQTTSubscribeDriver(config_dict, mock_engine)
-                SUT.archive_interval # pylint: disable=pointless-statement
+                SUT.archive_interval
 
             self.assertEqual(len(error.exception.args), 0)
 
@@ -145,7 +140,7 @@ class TestgenLoopPackets(unittest.TestCase):
     @staticmethod
     def empty_generator():
         return
-        yield # needed to make this a generator # pylint: disable=unreachable
+        yield  # needed to make this a generator
 
     def test_queue_empty(self):
         mock_engine = mock.Mock()
@@ -153,7 +148,7 @@ class TestgenLoopPackets(unittest.TestCase):
         self.setup_queue_tests(topic)
         queue = dict(
             {'name': topic}
-            )
+        )
 
         with mock.patch('user.MQTTSubscribe.MQTTSubscriber') as mock_manager_class:
             with mock.patch('user.MQTTSubscribe.time') as mock_time:
@@ -175,7 +170,7 @@ class TestgenLoopPackets(unittest.TestCase):
         self.setup_queue_tests(topic)
         queue = dict(
             {'name': topic}
-            )
+        )
 
         with mock.patch('user.MQTTSubscribe.MQTTSubscriber') as mock_manager_class:
             with mock.patch('user.MQTTSubscribe.time') as mock_time:
@@ -211,7 +206,7 @@ class TestgenLoopPackets(unittest.TestCase):
         with mock.patch('user.MQTTSubscribe.MQTTSubscriber') as mock_manager:
             with mock.patch('user.MQTTSubscribe.time') as mock_time:
                 type(mock_manager.return_value).subscribed_topics = mock.PropertyMock(return_value=[topic])
-                mock_time.sleep.side_effect = mock.Mock(side_effect=SystemExit()) # Hack one, use this to escape the infinit loop
+                mock_time.sleep.side_effect = mock.Mock(side_effect=SystemExit())  # Hack one, use this to escape the infinit loop
                 with self.assertRaises(SystemExit):
                     SUT = MQTTSubscribeDriver(config_dict, mock_engine)
 
@@ -219,7 +214,7 @@ class TestgenLoopPackets(unittest.TestCase):
                     packet = next(gen)
 
                 mock_time.sleep.assert_called_once()
-                self.assertIsNone(packet) # hack two, the generator never really returns because of the side effect exception
+                self.assertIsNone(packet)  # hack two, the generator never really returns because of the side effect exception
 
     def test_queue(self):
         mock_engine = mock.Mock()
@@ -294,7 +289,7 @@ class TestgenArchiveRecords(unittest.TestCase):
     @staticmethod
     def empty_generator():
         return
-        yield # needed to make this a generator # pylint: disable=unreachable
+        yield  # needed to make this a generator
 
     def test_empty_queue(self):
         mock_engine = mock.Mock()
