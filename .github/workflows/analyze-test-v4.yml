@@ -46,9 +46,9 @@ jobs:
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
-        flake8 --tee --output-file=results/flake8.txt bin/user --exclude tests --count --select=E9,F63,F7,F82 --show-source --statistics
+        flake8 --tee --output-file=results/flake8.txt bin/user --count --select=E9,F63,F7,F82 --show-source --statistics
         # exit-zero treats all errors as warnings.
-        flake8 --tee --output-file=results/flake8.txt bin/user --exclude tests --count --exit-zero --max-complexity=10 --statistics
+        flake8 --tee --output-file=results/flake8.txt bin/user --count --exit-zero --max-complexity=10 --statistics
     
     - name: Unit tests
       run: |

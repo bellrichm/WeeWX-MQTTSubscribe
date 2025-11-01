@@ -12,6 +12,7 @@ jobs:
       module-name: 'MQTTSubscribe'
       pip-list: 'paho-mqtt'
       package-list: 'mosquitto'
+      flake-extra-parms: '--exclude tests'
     secrets:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -24,6 +25,7 @@ jobs:
       pip-list: 'paho-mqtt==1.6.1'
       package-list: 'mosquitto'
       artifact-name-suffix: '-2'
+      flake-extra-parms: '--exclude tests'
     secrets:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
