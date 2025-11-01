@@ -1,13 +1,8 @@
 #
-#    Copyright (c) 2020-2023 Rich Bell <bellrichm@gmail.com>
+#    Copyright (c) 2020-2025 Rich Bell <bellrichm@gmail.com>
 #
 #    See the file LICENSE.txt for your full rights.
 #
-
-# pylint: disable=wrong-import-order
-# pylint: disable=wrong-import-position
-# pylint: disable=missing-docstring
-# pylint: disable=invalid-name
 
 import unittest
 import mock
@@ -248,22 +243,16 @@ class TestConfigureMessage(unittest.TestCase):
         self.assertIn(SUT.message_config_name, SUT.subscribed_topics['message'])
         self.assertNotIn('type', SUT.subscribed_topics['message'])
 
-    #def test_field_named_message(self):
+    # def test_field_named_message(self):
     def test_one(self):
         mock_logger = mock.Mock(spec=Logger)
         topic = random_string()
         config_key = random_string(10)
 
         config_dict = {}
-        #config_dict['message'] = {}
-        #config_dict['message']['type'] = random_string(10)
-        #config_dict['message']['flatten_delimiter'] = random_string(5)
-        #config_dict['message']['keyword_delimiter'] = random_string(5)
-        #config_dict['message']['keyword_separator'] = random_string(5)
 
         config_dict[topic] = {}
         config_dict[topic]['message'] = {}
-        #config_dict[topic]['message']['type'] = random_string(10)
         config_dict[topic]['message']['flatten_delimiter'] = random_string(5)
         config_dict[topic]['message']['keyword_delimiter'] = random_string(5)
         config_dict[topic]['message']['keyword_separator'] = random_string(5)
@@ -300,9 +289,6 @@ class TestConfigureFields(unittest.TestCase):
         configured_field[topic] = {}
         configured_field[topic]['name'] = topic
         configured_field[topic]['contains_total'] = True
-        #configured_field[topic]['ignore'] = False
-        #configured_field[topic]['conversion_func'] = {}
-        #configured_field[topic]['conversion_func']['source'] = 'lambda x: to_float(x)'
         configured_field[topic]['conversion_type'] = 'float'
         configured_field[topic]['conversion_error_to_none'] = False
         config_dict = {}
@@ -534,7 +520,6 @@ class TestConfigureFields(unittest.TestCase):
 
         self.assertEqual(SUT.subscribed_topics[topic]['fields'][fieldname]['conversion_func']['source'], 'lambda x: "foo"')
 
-
     def test_filter_out_message(self):
         mock_logger = mock.Mock(spec=Logger)
 
@@ -595,9 +580,9 @@ class TestQueueSizeCheck(unittest.TestCase):
         orig_queue_size = len(queue)
         max_queue = 2
 
-        SUT._queue_size_check(queue, max_queue) # pylint: disable=protected-access
-        self.assertEqual(mock_logger.error.call_count, orig_queue_size-max_queue+1)
-        self.assertEqual(len(queue), max_queue-1)
+        SUT._queue_size_check(queue, max_queue)
+        self.assertEqual(mock_logger.error.call_count, orig_queue_size - max_queue + 1)
+        self.assertEqual(len(queue), max_queue - 1)
 
     def test_queue_max_not_reached(self):
         mock_logger = mock.Mock(spec=Logger)
@@ -612,7 +597,7 @@ class TestQueueSizeCheck(unittest.TestCase):
         orig_queue_size = len(queue)
         max_queue = 7
 
-        SUT._queue_size_check(queue, max_queue) # pylint: disable=protected-access
+        SUT._queue_size_check(queue, max_queue)
         self.assertEqual(mock_logger.error.call_count, 0)
         self.assertEqual(len(queue), orig_queue_size)
 
@@ -629,9 +614,9 @@ class TestQueueSizeCheck(unittest.TestCase):
         orig_queue_size = len(queue)
         max_queue = 4
 
-        SUT._queue_size_check(queue, max_queue) # pylint: disable=protected-access
-        self.assertEqual(mock_logger.error.call_count, orig_queue_size-max_queue+1)
-        self.assertEqual(len(queue), max_queue-1)
+        SUT._queue_size_check(queue, max_queue)
+        self.assertEqual(mock_logger.error.call_count, orig_queue_size - max_queue + 1)
+        self.assertEqual(len(queue), max_queue - 1)
 
 class TestAppendData(unittest.TestCase):
     topic = random_string()
@@ -667,7 +652,7 @@ class TestAppendData(unittest.TestCase):
         SUT = TopicManager(None, self.config, mock_logger)
 
         SUT.append_data(self.topic, queue_data)
-        queue = SUT._get_queue(self.topic)['data']  # pylint: disable=protected-access
+        queue = SUT._get_queue(self.topic)['data']
 
         self.assertEqual(len(queue), 1)
         queue_element = queue.popleft()
@@ -691,7 +676,7 @@ class TestAppendData(unittest.TestCase):
         SUT = TopicManager(None, config, mock_logger)
 
         SUT.append_data(self.topic, queue_data)
-        queue = SUT._get_queue(self.topic)['data']  # pylint: disable=protected-access
+        queue = SUT._get_queue(self.topic)['data']
 
         self.assertEqual(len(queue), 1)
         queue_element = queue.popleft()
@@ -712,7 +697,7 @@ class TestAppendData(unittest.TestCase):
         SUT = TopicManager(None, self.config, mock_logger)
 
         SUT.append_data(self.topic, queue_data)
-        queue = SUT._get_queue(self.topic)['data']  # pylint: disable=protected-access
+        queue = SUT._get_queue(self.topic)['data']
 
         self.assertEqual(len(queue), 1)
         queue_element = queue.popleft()
@@ -732,7 +717,7 @@ class TestAppendData(unittest.TestCase):
         SUT = TopicManager(None, self.config, mock_logger)
 
         SUT.append_data(self.topic, queue_data)
-        queue = SUT._get_queue(self.topic)['data']  # pylint: disable=protected-access
+        queue = SUT._get_queue(self.topic)['data']
 
         self.assertEqual(len(queue), 1)
         queue_element = queue.popleft()
@@ -741,7 +726,6 @@ class TestAppendData(unittest.TestCase):
         self.assertIn('usUnits', data)
 
     def test_dateteime_format_add_offset(self):
-        # pylint: disable=too-many-locals
         queue_data_subset = {
             'inTemp': random.uniform(1, 100),
             'outTemp': random.uniform(1, 100),
@@ -774,8 +758,7 @@ class TestAppendData(unittest.TestCase):
         SUT = TopicManager(None, config, mock_logger)
 
         SUT.append_data(self.topic, queue_data)
-        queue = SUT._get_queue(self.topic)['data']  # pylint: disable=protected-access
-
+        queue = SUT._get_queue(self.topic)['data']
         self.assertEqual(len(queue), 1)
         queue_element = queue.popleft()
         data = queue_element['data']
@@ -784,7 +767,6 @@ class TestAppendData(unittest.TestCase):
         self.assertEqual(adjusted_epoch, data['dateTime'])
 
     def test_dateteime_format_subtract_offset(self):
-        # pylint: disable=too-many-locals
         queue_data_subset = {
             'inTemp': random.uniform(1, 100),
             'outTemp': random.uniform(1, 100),
@@ -817,7 +799,7 @@ class TestAppendData(unittest.TestCase):
         SUT = TopicManager(None, config, mock_logger)
 
         SUT.append_data(self.topic, queue_data)
-        queue = SUT._get_queue(self.topic)['data']  # pylint: disable=protected-access
+        queue = SUT._get_queue(self.topic)['data']
 
         self.assertEqual(len(queue), 1)
         queue_element = queue.popleft()
@@ -852,7 +834,7 @@ class TestAppendData(unittest.TestCase):
         SUT = TopicManager(None, config, mock_logger)
 
         SUT.append_data(self.topic, queue_data)
-        queue = SUT._get_queue(self.topic)['data']  # pylint: disable=protected-access
+        queue = SUT._get_queue(self.topic)['data']
 
         self.assertEqual(len(queue), 1)
         queue_element = queue.popleft()
@@ -1137,7 +1119,6 @@ class TestAccumulatedData(unittest.TestCase):
                 SUT = TopicManager(None, config, mock_logger)
                 SUT.append_data(self.topic, {'dateTime': start_ts})
 
-
                 accumulated_data = SUT.get_accumulated_data(SUT.subscribed_topics[self.topic]['queue'], 0, end_ts, 0)
 
                 mock_Accum.assert_called_once_with(test_weewx_stubs.TimeSpan(start_ts - adjust_start_time, end_ts))
@@ -1166,7 +1147,6 @@ class TestAccumulatedData(unittest.TestCase):
 
                 SUT = TopicManager(None, config, mock_logger)
                 SUT.append_data(self.topic, {'dateTime': end_ts})
-
 
                 accumulated_data = SUT.get_accumulated_data(SUT.subscribed_topics[self.topic]['queue'], 0, 0, 0)
 

@@ -1,15 +1,8 @@
 #
-#    Copyright (c) 2020-2023 Rich Bell <bellrichm@gmail.com>
+#    Copyright (c) 2020-2025 Rich Bell <bellrichm@gmail.com>
 #
 #    See the file LICENSE.txt for your full rights.
 #
-
-# pylint: disable=invalid-name
-# pylint: disable=wrong-import-order
-# pylint: disable=wrong-import-position
-# pylint: disable=missing-docstring
-# pylint: disable=bad-option-value, import-outside-toplevel
-# pylint: enable=bad-option-value
 
 import unittest
 import mock
@@ -44,7 +37,7 @@ class TestV4Logging(unittest.TestCase):
 
         with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
 
-            mock_logging._checkLevel.return_value = log_level # pylint: disable=protected-access
+            mock_logging._checkLevel.return_value = log_level
             mock_logging.getLevelName.return_value = f'Level {int(log_level)}'
 
             mock_grandparent_handler = mock.Mock()
@@ -64,18 +57,18 @@ class TestV4Logging(unittest.TestCase):
             SUT = Logger(random_string(), level=random_string())
 
             mock_logging.addLevelName.assert_called_once_with(log_level, 'TRACE')
-            SUT._logmsg.setLevel.assert_called_once_with(log_level) # pylint: disable=protected-access
+            SUT._logmsg.setLevel.assert_called_once_with(log_level)
 
             mock_grandparent_handler.setLevel.assert_called_once_with(log_level)
             mock_parent_handler.setLevel.assert_called_once_with(log_level)
 
-            self.assertEqual(SUT._logmsg.addHandler.call_count, 2) # pylint: disable=protected-access
+            self.assertEqual(SUT._logmsg.addHandler.call_count, 2)
 
     @staticmethod
     def test_init_filename_set():
         with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
 
-            mock_logging._checkLevel.return_value = 0 # pylint: disable=protected-access
+            mock_logging._checkLevel.return_value = 0
 
             mock_file_handler = mock.Mock()
             mock_logging.FileHandler.return_value = mock_file_handler
@@ -88,24 +81,24 @@ class TestV4Logging(unittest.TestCase):
             mock_logging.FileHandler.assert_called_once()
             mock_file_handler.setLevel.assert_called_once()
             mock_file_handler.setFormatter.assert_called_once()
-            SUT._logmsg.addHandler.assert_called_once() # pylint: disable=protected-access
+            SUT._logmsg.addHandler.assert_called_once()
 
     @staticmethod
     def test_init_console_set():
         with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
 
-            mock_logging._checkLevel.return_value = 0 # pylint: disable=protected-access
+            mock_logging._checkLevel.return_value = 0
             mode = random_string()
 
             SUT = Logger(mode, console=True)
 
-            SUT._logmsg.addHandler.assert_called_once() # pylint: disable=protected-access
+            SUT._logmsg.addHandler.assert_called_once()
 
     @staticmethod
     def test_error_logged():
         with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
 
-            mock_logging._checkLevel.return_value = 0 # pylint: disable=protected-access
+            mock_logging._checkLevel.return_value = 0
             mode = random_string()
             message = random_string()
 
@@ -113,13 +106,13 @@ class TestV4Logging(unittest.TestCase):
 
             SUT.error(message)
 
-            SUT._logmsg.error.assert_called_once_with(SUT.MSG_FORMAT, mode, message) # pylint: disable=protected-access
+            SUT._logmsg.error.assert_called_once_with(SUT.MSG_FORMAT, mode, message)
 
     @staticmethod
     def test_info_logged():
         with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
 
-            mock_logging._checkLevel.return_value = 0 # pylint: disable=protected-access
+            mock_logging._checkLevel.return_value = 0
             mode = random_string()
             message = random_string()
 
@@ -127,13 +120,13 @@ class TestV4Logging(unittest.TestCase):
 
             SUT.info(message)
 
-            SUT._logmsg.info.assert_called_once_with(SUT.MSG_FORMAT, mode, message) # pylint: disable=protected-access
+            SUT._logmsg.info.assert_called_once_with(SUT.MSG_FORMAT, mode, message)
 
     @staticmethod
     def test_debug_logged():
         with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
 
-            mock_logging._checkLevel.return_value = 0 # pylint: disable=protected-access
+            mock_logging._checkLevel.return_value = 0
             mode = random_string()
             message = random_string()
 
@@ -141,14 +134,14 @@ class TestV4Logging(unittest.TestCase):
 
             SUT.debug(message)
 
-            SUT._logmsg.debug.assert_called_once_with(SUT.MSG_FORMAT, mode, message) # pylint: disable=protected-access
+            SUT._logmsg.debug.assert_called_once_with(SUT.MSG_FORMAT, mode, message)
 
     @staticmethod
     def test_trace_logged_with_debug_set():
         with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
 
             sys.modules['weewx'].debug = 2
-            mock_logging._checkLevel.return_value = 0 # pylint: disable=protected-access
+            mock_logging._checkLevel.return_value = 0
             mode = random_string()
             message = random_string()
 
@@ -156,13 +149,13 @@ class TestV4Logging(unittest.TestCase):
 
             SUT.trace(message)
 
-            SUT._logmsg.debug.assert_called_once_with(SUT.MSG_FORMAT, mode, message) # pylint: disable=protected-access
+            SUT._logmsg.debug.assert_called_once_with(SUT.MSG_FORMAT, mode, message)
 
     @staticmethod
     def test_trace_logged_with_debug_not_set():
         with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
 
-            mock_logging._checkLevel.return_value = 0 # pylint: disable=protected-access
+            mock_logging._checkLevel.return_value = 0
             mode = random_string()
             message = random_string()
 
@@ -171,7 +164,7 @@ class TestV4Logging(unittest.TestCase):
 
             SUT.trace(message)
 
-            SUT._logmsg.log.assert_called_once_with(5, SUT.MSG_FORMAT, mode, message) # pylint: disable=protected-access
+            SUT._logmsg.log.assert_called_once_with(5, SUT.MSG_FORMAT, mode, message)
 
 if __name__ == '__main__':
     # test_suite = unittest.TestSuite()

@@ -1,12 +1,8 @@
 #
-#    Copyright (c) 2020-2023 Rich Bell <bellrichm@gmail.com>
+#    Copyright (c) 2020-2025 Rich Bell <bellrichm@gmail.com>
 #
 #    See the file LICENSE.txt for your full rights.
 #
-
-# pylint: disable=missing-docstring
-# pylint: disable=invalid-name
-# pylint: disable=too-few-public-methods
 
 import locale
 import random
@@ -19,15 +15,15 @@ from collections import ChainMap
 import mock
 
 def random_string(length=32):
-    return ''.join([random.choice(string.ascii_letters + string.digits) for n in range(length)]) # pylint: disable=unused-variable
+    return ''.join([random.choice(string.ascii_letters + string.digits) for n in range(length)])
 
 def random_ascii_letters(length=32):
-    return''.join([random.choice(string.ascii_letters) for n in range(length)]) # pylint: disable=unused-variable
+    return ''.join([random.choice(string.ascii_letters) for n in range(length)])
 
 class ListOfDicts(ChainMap):
-    # pylint: disable=too-many-ancestors
     def extend(self, m):
         self.maps.append(m)
+
     def prepend(self, m):
         self.maps.insert(0, m)
 
@@ -40,7 +36,6 @@ class TimeSpan(tuple):
         return tuple.__new__(cls, args)
 
 def to_bool(value):
-    # pylint: disable=no-else-return
     try:
         if value.lower() in ['true', 'yes']:
             return True
@@ -63,7 +58,6 @@ def to_int(value):
     return int(value)
 
 def timestamp_to_string(ts, format_str="%Y-%m-%d %H:%M:%S %Z"):
-    # pylint: disable=no-else-return
     if ts is not None:
         return f"{time.strftime(format_str, time.localtime(ts))} ({int(ts)})"
     else:
@@ -103,13 +97,13 @@ class units:
     conversionDict['unit_name'] = {'foobar': lambda x: x / 1}
 
     unit_constants = {
-        'US'       : US,
-        'METRIC'   : METRIC,
-        'METRICWX' : METRICWX
+        'US': US,
+        'METRIC': METRIC,
+        'METRICWX': METRICWX
     }
 
     obs_group_dict = ListOfDicts({
-        'barfoo' : {},
+        'barfoo': {},
         'subfield1': {}
     })
 
@@ -130,14 +124,18 @@ class WeeWxIOError(IOError):
 class engine:
     class StdEngine:
         pass
+
     class StdService:
         def __init__(self, eng, config_dict):
             pass
+
         def bind(self, p1, p2):
             pass
-class drivers: # pylint: disable=invalid-name
+
+class drivers:
     class AbstractDevice:
         pass
+
     class AbstractConfEditor:
         pass
 

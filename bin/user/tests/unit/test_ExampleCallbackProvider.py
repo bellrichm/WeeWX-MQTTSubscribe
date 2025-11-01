@@ -1,14 +1,8 @@
 #
-#    Copyright (c) 2020-2024 Rich Bell <bellrichm@gmail.com>
+#    Copyright (c) 2020-2025 Rich Bell <bellrichm@gmail.com>
 #
 #    See the file LICENSE.txt for your full rights.
 #
-
-# pylint: disable=wrong-import-order
-# pylint: disable=wrong-import-position
-# pylint: disable=missing-docstring
-# pylint: disable=invalid-name
-# pylint: disable=protected-access
 
 import unittest
 import mock
@@ -25,7 +19,6 @@ test_weewx_stubs.setup_stubs()
 from user.ExampleMessageCallbackProvider import MessageCallbackProvider
 
 class Msg:
-    # pylint: disable=too-few-public-methods
     def __init__(self, topic, payload, qos, retain):
         self.topic = topic
         self.payload = payload
@@ -68,7 +61,6 @@ class Test1(unittest.TestCase):
             xml_element.append(child)
         return xml_element
 
-
     def test_get_observations(self):
         observation_dict = self.create_observation_dict(5)
         root = self.create_observation_xml('observations', observation_dict)
@@ -101,4 +93,4 @@ if __name__ == '__main__':
     test_suite.addTest(Test1('test_on_message'))
     unittest.TextTestRunner().run(test_suite)
 
-    #unittest.main(exit=False)
+    # unittest.main(exit=False)

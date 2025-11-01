@@ -1,14 +1,8 @@
 #
-#    Copyright (c) 2020-2023 Rich Bell <bellrichm@gmail.com>
+#    Copyright (c) 2020-2025 Rich Bell <bellrichm@gmail.com>
 #
 #    See the file LICENSE.txt for your full rights.
 #
-
-# pylint: disable=wrong-import-order
-# pylint: disable=wrong-import-position
-# pylint: disable=missing-docstring
-# pylint: disable=invalid-name
-# pylint: disable=eval-used
 
 import unittest
 import mock
@@ -72,7 +66,7 @@ class TestTest(unittest.TestCase):
             orig_value = round(random.uniform(10, 100), 2)
             unit_system = random.randint(1, 99)
 
-            (updated_name, updated_value) = SUT._update_data(orig_name, orig_value, fields, default_field_conversion_func, unit_system) # pylint: disable=protected-access
+            (updated_name, updated_value) = SUT._update_data(orig_name, orig_value, fields, default_field_conversion_func, unit_system)
 
             self.assertEqual(updated_name, orig_name)
             self.assertIsNone(updated_value)
@@ -100,7 +94,7 @@ class TestTest(unittest.TestCase):
             orig_value = round(random.uniform(10, 100), 2)
             unit_system = random.randint(1, 99)
 
-            (updated_name, updated_value) = SUT._update_data(orig_name, orig_value, fields, default_field_conversion_func, unit_system) # pylint: disable=protected-access
+            (updated_name, updated_value) = SUT._update_data(orig_name, orig_value, fields, default_field_conversion_func, unit_system)
 
             self.assertEqual(updated_name, orig_name)
             self.assertIsNone(updated_value)
@@ -133,7 +127,7 @@ class TestTest(unittest.TestCase):
             orig_value = round(random.uniform(10, 100), 2)
             unit_system = random.randint(1, 99)
 
-            (updated_name, updated_value) = SUT._update_data(orig_name, orig_value, fields, default_field_conversion_func, unit_system) # pylint: disable=protected-access
+            (updated_name, updated_value) = SUT._update_data(orig_name, orig_value, fields, default_field_conversion_func, unit_system)
 
             self.assertEqual(updated_name, orig_name)
             self.assertEqual(updated_value, orig_value - previous_value)
@@ -166,7 +160,7 @@ class TestTest(unittest.TestCase):
             orig_value = round(random.uniform(10, 100), 2)
             unit_system = 99
 
-            (updated_name, updated_value) = SUT._update_data(orig_name, orig_value, fields, default_field_conversion_func, unit_system) # pylint: disable=protected-access
+            (updated_name, updated_value) = SUT._update_data(orig_name, orig_value, fields, default_field_conversion_func, unit_system)
 
             self.assertEqual(updated_name, orig_name)
             self.assertEqual(updated_value, converted_value)

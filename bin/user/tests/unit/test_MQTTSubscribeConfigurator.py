@@ -1,14 +1,9 @@
 #
-#    Copyright (c) 2023 Rich Bell <bellrichm@gmail.com>
+#    Copyright (c) 2023-2025 Rich Bell <bellrichm@gmail.com>
 #
 #    See the file LICENSE.txt for your full rights.
 #
 
-# pylint: disable=missing-docstring
-# pylint: disable=invalid-name
-# pylint: disable=protected-access
-# pylint: disable=wrong-import-order
-# pylint: disable=wrong-import-position
 
 import unittest
 import mock
@@ -42,7 +37,7 @@ class TestEnableArgParse(unittest.TestCase):
         self.assertEqual(error.exception.code, 2)
         self.assertIn("error: unrecognized arguments: --enable", stderr.getvalue())
 
-    #@unittest.skip("Not sure what to do with this test.")
+    #  @unittest.skip("Not sure what to do with this test.")
     def test_service_enable(self):
         parser = argparse.ArgumentParser()
 
@@ -515,7 +510,7 @@ class TestInitConfigurator(unittest.TestCase):
 
 class TestRunConfigurator(unittest.TestCase):
     '''
-    These are not 'real' tests. The results are not checked. The only check that the 
+    These are not 'real' tests. The results are not checked. The only check that the
     options run to completion.
     '''
     def setUp(self):

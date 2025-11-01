@@ -4,11 +4,6 @@
 #    See the file LICENSE.txt for your full rights.
 #
 
-# pylint: disable=wrong-import-order
-# pylint: disable=wrong-import-position
-# pylint: disable=missing-docstring
-# pylint: disable=invalid-name
-
 import unittest
 import mock
 
@@ -78,20 +73,18 @@ class atestInitialization(unittest.TestCase):
         mock_StdEngine.stn_info.hardware = 'MQTTSubscribeDriver'
 
         config_dict = {
-            'StdArchive': { 'record_generation': 'software'},
+            'StdArchive': {'record_generation': 'software'},
             'MQTTSubscribeService': {}
         }
 
         with mock.patch('user.MQTTSubscribe.MQTTSubscriber'):
             with mock.patch('user.MQTTSubscribe.Logger'):
-                # pylint: disable=no-member
                 SUT = user.MQTTSubscribe.MQTTSubscribeService(mock_StdEngine, config_dict)
                 self.assertEqual(SUT.logger.info.call_count, 2)
                 SUT.logger.info.assert_any_call('Running as both a driver and a service.')
 
     def test_archive_topic_specified(self):
         mock_StdEngine = mock.Mock()
-        #mock_StdEngine.stn_info.hardware = 'MQTTSubscribeDriver'
         archive_topic = random_string()
 
         config_dict = {
@@ -121,7 +114,7 @@ class atestInitialization(unittest.TestCase):
         with mock.patch('user.MQTTSubscribe.MQTTSubscriber') as mock_MQTTSubscribe:
             with mock.patch('user.MQTTSubscribe.Logger'):
                 type(mock_MQTTSubscribe.return_value).cached_fields = \
-                    mock.PropertyMock(return_value={fieldname:{'expires_after':random.randint(1, 10)}})
+                    mock.PropertyMock(return_value={fieldname: {'expires_after': random.randint(1, 10)}})
 
                 try:
                     user.MQTTSubscribe.MQTTSubscribeService(mock_StdEngine, config_dict)
@@ -145,7 +138,7 @@ class atestInitialization(unittest.TestCase):
         with mock.patch('user.MQTTSubscribe.MQTTSubscriber') as mock_MQTTSubscribe:
             with mock.patch('user.MQTTSubscribe.Logger'):
                 type(mock_MQTTSubscribe.return_value).cached_fields = \
-                    mock.PropertyMock(return_value={fieldname:{'expires_after':random.randint(1, 10)}})
+                    mock.PropertyMock(return_value={fieldname: {'expires_after': random.randint(1, 10)}})
 
                 try:
                     user.MQTTSubscribe.MQTTSubscribeService(mock_StdEngine, config_dict)
@@ -225,7 +218,7 @@ class Testnew_loop_packet(unittest.TestCase):
         self.final_packet_data.update(self.target_data)
         queue = dict(
             {'name': topic}
-            )
+        )
 
         mock_new_loop_packet_event = mock.NonCallableMagicMock()
         mock_new_loop_packet_event.packet = self.packet_data
@@ -283,7 +276,7 @@ class Testnew_loop_packet(unittest.TestCase):
         self.final_packet_data.update(self.target_data)
         queue = dict(
             {'name': topic}
-            )
+        )
 
         packet = {
             'outTemp': random.uniform(1, 100),
@@ -410,7 +403,7 @@ class Testnew_archive_record(unittest.TestCase):
         unit_system = random.randint(1, 10)
         fieldname = random_string()
         config_dict = {}
-        config_dict['StdArchive'] = { 'record_generation': 'software'}
+        config_dict['StdArchive'] = {'record_generation': 'software'}
         config_dict['MQTTSubscribeService'] = {}
 
         config = configobj.ConfigObj(config_dict)
@@ -420,10 +413,9 @@ class Testnew_archive_record(unittest.TestCase):
                 mock_MQTTSubscribe = mock.Mock()
                 mock_MQTTSubscribe_class.get_subscriber = mock_MQTTSubscribe
                 type(mock_MQTTSubscribe.return_value).cached_fields = \
-                    mock.PropertyMock(return_value={fieldname:{'expires_after':random.randint(1, 10)}})
+                    mock.PropertyMock(return_value={fieldname: {'expires_after': random.randint(1, 10)}})
                 value = round(random.uniform(10, 100), 2)
                 type(mock_cache.return_value).get_value = mock.Mock(return_value=value)
-                # pylint: disable=no-member
                 SUT = user.MQTTSubscribe.MQTTSubscribeService(self.mock_StdEngine, config)
 
                 record = {
@@ -447,17 +439,16 @@ class Testnew_archive_record(unittest.TestCase):
         unit_system = random.randint(1, 10)
         fieldname = random_string()
         config_dict = {}
-        config_dict['StdArchive'] = { 'record_generation': 'software'}
+        config_dict['StdArchive'] = {'record_generation': 'software'}
         config_dict['MQTTSubscribeService'] = {}
 
         config = configobj.ConfigObj(config_dict)
 
         with mock.patch('user.MQTTSubscribe.MQTTSubscriber') as mock_MQTTSubscribe_class:
             with mock.patch('user.MQTTSubscribe.RecordCache'):
-                # pylint: disable=no-member
                 mock_MQTTSubscribe = mock.Mock()
                 mock_MQTTSubscribe_class.get_subscriber = mock_MQTTSubscribe
-                type(mock_MQTTSubscribe.return_value).cached_fields = mock.PropertyMock(return_value={fieldname:{}})
+                type(mock_MQTTSubscribe.return_value).cached_fields = mock.PropertyMock(return_value={fieldname: {}})
                 SUT = user.MQTTSubscribe.MQTTSubscribeService(mock_StdEngine, config)
 
                 record = {
@@ -473,8 +464,8 @@ class Testnew_archive_record(unittest.TestCase):
                 SUT.cache.update_value.assert_called_once()
 
 if __name__ == '__main__':
-    #test_suite = unittest.TestSuite()
-    #test_suite.addTest(Testnew_loop_packet('test_cache_updated'))
-    #unittest.TextTestRunner().run(test_suite)
+    # test_suite = unittest.TestSuite()
+    # test_suite.addTest(Testnew_loop_packet('test_cache_updated'))
+    # unittest.TextTestRunner().run(test_suite)
 
     unittest.main(exit=False)

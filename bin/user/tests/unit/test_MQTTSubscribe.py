@@ -1,14 +1,8 @@
 #
-#    Copyright (c) 2020-2024 Rich Bell <bellrichm@gmail.com>
+#    Copyright (c) 2020-2025 Rich Bell <bellrichm@gmail.com>
 #
 #    See the file LICENSE.txt for your full rights.
 #
-
-# pylint: disable=wrong-import-order
-# pylint: disable=wrong-import-position
-# pylint: disable=missing-docstring
-# pylint: disable=invalid-name
-# pylint: disable=global-statement
 
 import unittest
 import mock
@@ -30,13 +24,14 @@ mock_client = None
 class MQTTSubscriberTest(MQTTSubscriber):
     def get_client(self, mqtt_options):
         return mock_client
+
     def set_callbacks(self, mqtt_options):
         pass
+
     def connect(self, mqtt_options):
         self.client.connect()
 
 class Msg:
-    # pylint: disable=too-few-public-methods
     def __init__(self):
         pass
 
@@ -137,7 +132,6 @@ class TestInitialization(unittest.TestCase):
 
         with mock.patch('user.MQTTSubscribe.MessageCallbackProvider'):
             with mock.patch('user.MQTTSubscribe.TopicManager'):
-                # pylint: disable=no-member
                 mock_client = mock.Mock()
                 SUT = MQTTSubscriberTest(config, mock_logger)
 
@@ -169,7 +163,6 @@ class TestInitialization(unittest.TestCase):
 
         with mock.patch('user.MQTTSubscribe.MessageCallbackProvider'):
             with mock.patch('user.MQTTSubscribe.TopicManager'):
-                # pylint: disable=no-member
                 mock_client = mock.Mock()
                 SUT = MQTTSubscriberTest(config, mock_logger)
 
@@ -201,7 +194,6 @@ class TestInitialization(unittest.TestCase):
 
         with mock.patch('user.MQTTSubscribe.MessageCallbackProvider'):
             with mock.patch('user.MQTTSubscribe.TopicManager'):
-                # pylint: disable=no-member
                 mock_client = mock.Mock()
                 SUT = MQTTSubscriberTest(config, mock_logger)
 
@@ -235,14 +227,13 @@ class TestInitialization(unittest.TestCase):
 
         with mock.patch('user.MQTTSubscribe.MessageCallbackProvider'):
             with mock.patch('user.MQTTSubscribe.TopicManager'):
-                # pylint: disable=no-member
                 mock_client = mock.Mock()
                 SUT = MQTTSubscriberTest(config, mock_logger)
 
                 SUT.client.username_pw_set.assert_called_once_with(username, password)
                 SUT.client.connect.assert_called_once()
 
-class  Testtls_configuration(unittest.TestCase):
+class Testtls_configuration(unittest.TestCase):
     def setUp(self):
         # reset stubs for every test
         test_weewx_stubs.setup_stubs()
@@ -276,15 +267,14 @@ class  Testtls_configuration(unittest.TestCase):
 
         with mock.patch('user.MQTTSubscribe.MessageCallbackProvider'):
             with mock.patch('user.MQTTSubscribe.TopicManager'):
-                # pylint: disable=no-member
                 mock_client = mock.Mock()
                 SUT = MQTTSubscriberTest(config, mock_logger)
                 SUT.client.tls_set.assert_called_once_with(ca_certs=ca_certs,
-                                                            certfile=None,
-                                                            keyfile=None,
-                                                            cert_reqs=ssl.CERT_REQUIRED,
-                                                            tls_version=ssl.PROTOCOL_TLSv1_2,
-                                                            ciphers=None)
+                                                           certfile=None,
+                                                           keyfile=None,
+                                                           cert_reqs=ssl.CERT_REQUIRED,
+                                                           tls_version=ssl.PROTOCOL_TLSv1_2,
+                                                           ciphers=None)
 
     def test_missing_PROTOCOL_TLS(self):
         global mock_client
@@ -505,7 +495,7 @@ class  Testtls_configuration(unittest.TestCase):
             'tls': {
                 'ca_certs': random_string(),
                 'certs_required': certs_required
-                },
+            },
             'topics': {
                 random_string(): {}
             }
@@ -591,7 +581,7 @@ class TestDeprecatedOptions(unittest.TestCase):
                 with self.assertRaises(ValueError) as error:
                     MQTTSubscriber(config, mock_logger)
                 self.assertEqual(error.exception.args[0],
-                                    "'archive_field_cache' is deprecated, use '[[topics]][[[topic name]]][[[[field name]]]]'")
+                                 "'archive_field_cache' is deprecated, use '[[topics]][[[topic name]]][[[[field name]]]]'")
 
     def test_full_topic_fieldname_is_deprecated(self):
         config_dict = {}
@@ -608,7 +598,7 @@ class TestDeprecatedOptions(unittest.TestCase):
                 with self.assertRaises(ValueError) as error:
                     MQTTSubscriber(config, mock_logger)
                 self.assertEqual(error.exception.args[0],
-                                    "'full_topic_fieldname' is deprecated, use '[[topics]][[[topic name]]][[[[field name]]]]'")
+                                 "'full_topic_fieldname' is deprecated, use '[[topics]][[[topic name]]][[[[field name]]]]'")
 
     def test_contains_total_is_deprecated(self):
         config_dict = {}
@@ -625,7 +615,7 @@ class TestDeprecatedOptions(unittest.TestCase):
                 with self.assertRaises(ValueError) as error:
                     MQTTSubscriber(config, mock_logger)
                 self.assertEqual(error.exception.args[0],
-                                    "'contains_total' is deprecated use '[[topics]][[[topic name]]][[[[field name]]]]' contains_total setting.")
+                                 "'contains_total' is deprecated use '[[topics]][[[topic name]]][[[[field name]]]]' contains_total setting.")
 
     def test_label_map_is_deprecated(self):
         config_dict = {}
@@ -642,7 +632,7 @@ class TestDeprecatedOptions(unittest.TestCase):
                 with self.assertRaises(ValueError) as error:
                     MQTTSubscriber(config, mock_logger)
                 self.assertEqual(error.exception.args[0],
-                                    "'label_map' is deprecated use '[[topics]][[[topic name]]][[[[field name]]]]' name setting.")
+                                 "'label_map' is deprecated use '[[topics]][[[topic name]]][[[[field name]]]]' name setting.")
 
     def test_fields_is_deprecated(self):
         config_dict = {}
@@ -659,7 +649,7 @@ class TestDeprecatedOptions(unittest.TestCase):
                 with self.assertRaises(ValueError) as error:
                     MQTTSubscriber(config, mock_logger)
                 self.assertEqual(error.exception.args[0],
-                                    "'fields' is deprecated, use '[[topics]][[[topic name]]][[[[field name]]]]'")
+                                 "'fields' is deprecated, use '[[topics]][[[topic name]]][[[[field name]]]]'")
 
     def test_use_topic_as_fieldname(self):
         global mock_client
@@ -694,7 +684,7 @@ class TestStart(unittest.TestCase):
         del sys.modules['weewx.drivers']
         del sys.modules['weewx.engine']
 
-    def set_connection_success(self, *args, **kwargs): # match signature pylint: disable=unused-argument
+    def set_connection_success(self, *args, **kwargs):
         self.SUT.userdata['connect'] = True
 
     def test_bad_connection_return_code(self):
@@ -720,7 +710,6 @@ class TestStart(unittest.TestCase):
         with mock.patch('user.MQTTSubscribe.MessageCallbackProvider'):
             with mock.patch('user.MQTTSubscribe.TopicManager'):
                 with mock.patch('user.MQTTSubscribe.time'):
-                    # pylint: disable=no-member
                     with self.assertRaises(test_weewx_stubs.WeeWxIOError) as error:
                         mock_client = mock.Mock()
                         SUT = MQTTSubscriberTest(config, mock_logger)
@@ -734,7 +723,7 @@ class TestStart(unittest.TestCase):
 
                     SUT.client.loop_start.assert_called_once()
                     self.assertEqual(error.exception.args[0],
-                                    f"Unable to connect. Return code is {int(connect_rc)}, '{rc_string}', flags are {flags}.")
+                                     f"Unable to connect. Return code is {int(connect_rc)}, '{rc_string}', flags are {flags}.")
 
     @staticmethod
     def test_immediate_connection():
@@ -749,7 +738,6 @@ class TestStart(unittest.TestCase):
         with mock.patch('user.MQTTSubscribe.MessageCallbackProvider'):
             with mock.patch('user.MQTTSubscribe.TopicManager'):
                 with mock.patch('user.MQTTSubscribe.time') as mock_time:
-                    # pylint: disable=no-member
                     mock_client = mock.Mock()
                     SUT = MQTTSubscriberTest(config, mock_logger)
 
@@ -773,15 +761,14 @@ class TestStart(unittest.TestCase):
         with mock.patch('user.MQTTSubscribe.MessageCallbackProvider'):
             with mock.patch('user.MQTTSubscribe.TopicManager'):
                 with mock.patch('user.MQTTSubscribe.time') as mock_time:
-                    # pylint: disable=no-member
                     mock_client = mock.Mock()
                     SUT = MQTTSubscriberTest(config, mock_logger)
 
-                    self.SUT = SUT # pylint: disable=attribute-defined-outside-init
+                    self.SUT = SUT
                     SUT.userdata = {}
                     SUT.userdata['connect'] = False
                     SUT.userdata['connect_rc'] = 0
-                    mock_time.sleep.side_effect = mock.Mock(side_effect=self.set_connection_success) # Hack, use this to escape the loop
+                    mock_time.sleep.side_effect = mock.Mock(side_effect=self.set_connection_success)  # Hack, use this to escape the loop
 
                     SUT.start()
                     SUT.client.loop_start.assert_called_once()
@@ -815,7 +802,6 @@ class Test_disconnect(unittest.TestCase):
 
         with mock.patch('user.MQTTSubscribe.MessageCallbackProvider'):
             with mock.patch('user.MQTTSubscribe.TopicManager'):
-                # pylint: disable=no-member
                 mock_client = mock.Mock()
                 SUT = MQTTSubscriberTest(config, mock_logger)
 
@@ -894,7 +880,7 @@ class Teston_connect(unittest.TestCase):
 
                 SUT = MQTTSubscriberTest(config, mock_logger)
 
-                SUT._subscribe(mock_client)   # pylint: disable=protected-access
+                SUT._subscribe(mock_client)
 
                 self.assertEqual(mock_client.subscribe.call_count, 2)
                 mock_client.subscribe.assert_any_call(topic1, qos)

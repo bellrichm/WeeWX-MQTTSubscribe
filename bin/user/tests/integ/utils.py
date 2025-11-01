@@ -1,11 +1,8 @@
 #
-#    Copyright (c) 2020-2024 Rich Bell <bellrichm@gmail.com>
+#    Copyright (c) 2020-2025 Rich Bell <bellrichm@gmail.com>
 #
 #    See the file LICENSE.txt for your full rights.
 #
-
-# pylint: disable=missing-docstring
-# pylint: disable=fixme
 
 import json
 import time
@@ -39,18 +36,18 @@ def on_connect_v1(client, userdata, _flags, _rc):
     # 5: Connection refused - not authorised
     # 6-255: Currently unused.
     for topic in userdata['topics']:
-        (result, mid) = client.subscribe(topic) # (match callback signature) pylint: disable=unused-variable
+        (result, mid) = client.subscribe(topic)
     userdata['connected_flag'] = True
 
 def on_connect_v2(client, userdata, _flags, _reason_code, _properties):
     for topic in userdata['topics']:
-        (result, mid) = client.subscribe(topic) # (match callback signature) pylint: disable=unused-variable
+        (result, mid) = client.subscribe(topic)
     userdata['connected_flag'] = True
 
-def on_message(client, userdata, msg): # (match callback signature) pylint: disable=unused-argument
+def on_message(client, userdata, msg):
     userdata['msg'] = True
-    #print(msg.topic)
-    #print(msg.payload)
+    # print(msg.topic)
+    # print(msg.payload)
 
 def send_mqtt_msg(publisher, topic, payload, userdata, self):
     userdata['msg'] = False
@@ -58,7 +55,7 @@ def send_mqtt_msg(publisher, topic, payload, userdata, self):
     mqtt_message_info = publisher(topic, payload)
     mqtt_message_info.wait_for_publish()
     i = 1
-    time.sleep(.5) # give it a bit of time before checking
+    time.sleep(.5)  # give it a bit of time before checking
     while not userdata['msg']:
         print("fwaiting for mqtt message {i}")
         if i > max_msg_wait:
@@ -74,7 +71,7 @@ def send_msg(sender, msg_type, publisher, topic, topic_info, userdata=None, self
     # pylint: disable=too-many-arguments
     i = 0
     if msg_type == 'individual':
-        for field in sorted(topic_info['data']): # a bit of a hack, but need a determined order
+        for field in sorted(topic_info['data']):  # a bit of a hack, but need a determined order
             payload = topic_info['data'][field]
             if isinstance(payload, int):
                 payload = str(payload).encode("utf-8")
@@ -120,7 +117,7 @@ def wait_on_queue(provider, msg_count, max_waits, sleep_time):
     while True:
         queue_count = 0
         for subscribed_topic in provider.subscriber.manager.subscribed_topics:
-            topic_queue = provider.subscriber.manager._get_queue(subscribed_topic)  # pylint: disable=protected-access
+            topic_queue = provider.subscriber.manager._get_queue(subscribed_topic)
             queue_count = queue_count + len(topic_queue)
 
         wait_count += 1
@@ -152,7 +149,6 @@ def check(self, test_type, results, expected_results):
         i += 1
 
 class Msg:
-    # pylint: disable=too-few-public-methods
     def __init__(self, topic, payload, qos, retain):
         self.topic = topic
         self.payload = payload

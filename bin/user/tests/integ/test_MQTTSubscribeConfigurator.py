@@ -1,14 +1,8 @@
 #
-#    Copyright (c) 2023-2024 Rich Bell <bellrichm@gmail.com>
+#    Copyright (c) 2023-2025 Rich Bell <bellrichm@gmail.com>
 #
 #    See the file LICENSE.txt for your full rights.
 #
-
-# pylint: disable=missing-docstring
-# pylint: disable=invalid-name
-# pylint: disable=protected-access
-# pylint: disable=wrong-import-order
-# pylint: disable=wrong-import-position
 
 import unittest
 
@@ -17,7 +11,7 @@ import argparse
 from user.MQTTSubscribe import Configurator
 
 class TestUpdateConfig(unittest.TestCase):
-    #@unittest.skip("This is really not a unit test, it is testing weeutil.config.conditional_merge")
+    # @unittest.skip("This is really not a unit test, it is testing weeutil.config.conditional_merge")
     def test_add_from(self):
         options = argparse.Namespace()
         options.type = 'driver'
@@ -78,7 +72,7 @@ class TestUpdateConfig(unittest.TestCase):
 
         self.assertEqual(SUT. config_dict.write(), [])
 
-    #@unittest.skip("This tests uses weeutil.config.deep_copy")
+    # @unittest.skip("This tests uses weeutil.config.deep_copy")
     def test_replace_with(self):
         options = argparse.Namespace()
         options.type = 'driver'
@@ -113,7 +107,7 @@ class TestUpdateConfig(unittest.TestCase):
 
         self.assertEqual(config_items, expected_config.split('\n'))
 
-    #@unittest.skip("This is really not a unit test, it is testing weeutil.config.merge_config")
+    # @unittest.skip("This is really not a unit test, it is testing weeutil.config.merge_config")
     def test_update_from(self):
         options = argparse.Namespace()
         options.type = 'driver'
