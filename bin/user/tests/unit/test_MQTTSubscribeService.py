@@ -63,10 +63,21 @@ class atestInitialization(unittest.TestCase):
 
         with mock.patch('user.MQTTSubscribe.MQTTSubscriber'):
             with mock.patch('user.MQTTSubscribe.Logger'):
-                # pylint: disable=no-member
                 SUT = user.MQTTSubscribe.MQTTSubscribeService(mock_StdEngine, config_dict)
                 SUT.logger.info.assert_called_once()
                 SUT.logger.info.assert_called_once_with("Not enabled, exiting.")
+
+    def test_configuration_section_missing(self):
+        mock_StdEngine = mock.Mock()
+
+        config_dict = {}
+
+        with mock.patch('user.MQTTSubscribe.MQTTSubscriber'):
+            with mock.patch('user.MQTTSubscribe.Logger'):
+                with self.assertRaises(ValueError) as error:
+                    user.MQTTSubscribe.MQTTSubscribeService(mock_StdEngine, config_dict)
+        
+        self.assertEqual(error.exception.args[0], "No 'MQTTSubscribeService' configuration section found.")
 
     def test_runing_as_service_and_driver_check(self):
         mock_StdEngine = mock.Mock()
@@ -251,7 +262,6 @@ class Testnew_loop_packet(unittest.TestCase):
 
         with mock.patch('user.MQTTSubscribe.MQTTSubscriber') as mock_MQTTSubscribe_class:
             with mock.patch('user.MQTTSubscribe.Logger'):
-                # pylint: disable=no-member
                 mock_MQTTSubscribe = mock.Mock()
                 mock_MQTTSubscribe_class.get_subscriber = mock_MQTTSubscribe
                 type(mock_MQTTSubscribe.return_value).get_accumulated_data = mock.Mock(return_value=self.target_data)
