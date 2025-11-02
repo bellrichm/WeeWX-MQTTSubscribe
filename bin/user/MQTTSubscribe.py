@@ -2670,7 +2670,7 @@ class MQTTSubscribeConfiguration():
             config_spec.initial_comment.append("# Replace '[MQTTSubscribe]' with '[MQTTSubscribeService]' or '[MQTTSubscribeDriver]'")
         config_spec.initial_comment.append((
             "# For additional information see, "
-            "https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/Configuring#the-mqttsubscribedrivermqttsubscribesection-section"))
+            "https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/Common-Options"))
 
         return config_spec
 

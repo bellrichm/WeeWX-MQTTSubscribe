@@ -10,12 +10,13 @@ import configobj
 
 from user.MQTTSubscribe import MQTTSubscribeConfiguration, CONFIG_SPEC_TEXT
 
-class TestDefaultCinfiguration(unittest.TestCase):
+class TestDefaultConfiguration(unittest.TestCase):
     def test_default_configuration(self):
         # This test ensures that the example config contains the expected options
+        self.maxDiff = None
 
         expected_config = '''# Replace '[MQTTSubscribe]' with '[MQTTSubscribeService]' or '[MQTTSubscribeDriver]'
-# For additional information see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/Configuring#the-mqttsubscribedrivermqttsubscribesection-section
+# For additional information see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/Common-Options
 [MQTTSubscribe]
     # The driver to use.
     # Only used by the driver.
