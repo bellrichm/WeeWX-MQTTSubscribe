@@ -70,7 +70,9 @@ CONFIG_SPEC_TEXT = """ \
 
     # The WeeWX archive interval.
     # The default is 300.
-    # Only used when the archive_topic is set and MQTTSubscribe is running in 'hardware generation' mode.
+    # Note, this really should be retrieved from the WeeWX configuration...
+    # Experimental:
+    #    When the archive_topic is set and MQTTSubscribe is running in 'hardware generation' mode, this is the WeeWX archive interval.
     archive_interval = 300
 
     # The MQTT clean_session setting.
@@ -2340,6 +2342,7 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice):
         self.start_loop_period_ts = 0
 
         self.wait_before_retry = float(stn_dict.get('wait_before_retry', 2))
+        # ToDo: This should be retrieved from the weewx.conf
         self._archive_interval = to_int(stn_dict.get('archive_interval', 300))
         self.archive_topic = stn_dict.get('archive_topic', None)
         self.prev_archive_start = 0
