@@ -2180,9 +2180,12 @@ class MQTTSubscribeService(StdService):
         super().__init__(engine, config_dict)
 
         self.subscriber = None
+
         service_dict = config_dict.get('MQTTSubscribeService')
         if service_dict is None:
-            raise ValueError("No 'MQTTSubscribeService' configuration section found.")
+            service_dict = config_dict.get('MQTTSubscribe')
+        if service_dict is None:
+            raise ValueError("No 'MQTTSubscribeService'/'MQTTSubscribe' configuration section found.")
 
         logging_filename = service_dict.get('logging_filename', None)
         logging_level = service_dict.get('logging_level', 'NOTSET')
@@ -2330,6 +2333,9 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice):
     """weewx driver that reads data from MQTT"""
     def __init__(self, config_dict, engine):
         stn_dict = config_dict[DRIVER_NAME]
+        if stn_dict is None:
+            stn_dict = config_dict.get('MQTTSubscribe')
+
         console = to_bool(stn_dict.get('console', False))
         logging_filename = stn_dict.get('logging_filename', None)
         logging_level = stn_dict.get('logging_level', 'NOTSET').upper()

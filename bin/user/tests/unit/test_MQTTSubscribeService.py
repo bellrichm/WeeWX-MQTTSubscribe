@@ -77,7 +77,7 @@ class atestInitialization(unittest.TestCase):
                 with self.assertRaises(ValueError) as error:
                     user.MQTTSubscribe.MQTTSubscribeService(mock_StdEngine, config_dict)
 
-        self.assertEqual(error.exception.args[0], "No 'MQTTSubscribeService' configuration section found.")
+        self.assertEqual(error.exception.args[0], "No 'MQTTSubscribeService'/'MQTTSubscribe' configuration section found.")
 
     def test_runing_as_service_and_driver_check(self):
         mock_StdEngine = mock.Mock()
