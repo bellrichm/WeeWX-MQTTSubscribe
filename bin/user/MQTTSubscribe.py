@@ -490,7 +490,6 @@ import random
 import re
 import ssl
 import sys
-import syslog
 import time
 import traceback
 from collections import deque
@@ -655,50 +654,6 @@ class Logger(AbstractLogger):
     def error(self, msg):
         """ Log error messages. """
         self._logmsg.error(self.MSG_FORMAT, self.mode, msg)
-
-    class Logger(AbstractLogger):
-        """ The logging class. """
-        def __init__(self, mode, level='NOTSET', filename=None, console=None):
-            super().__init__(mode, level, filename=filename, console=console)
-
-            self.file = self._open_file(filename)
-
-        def __del__(self):
-            if self.file:
-                self.file.close()
-
-        @staticmethod
-        def _open_file(filename):
-            if filename is not None:
-                return open(filename, 'w', encoding='UTF-8')
-            return None
-
-        def trace(self, msg):
-            """ Log trace messages. """
-            if self.level == self.trace_level or self.weewx_debug > 1:
-                self._logmsg(syslog.LOG_DEBUG, msg)
-
-        def debug(self, msg):
-            """ Log debug messages. """
-            if self.level <= 10:
-                self._logmsg(syslog.LOG_DEBUG, msg)
-
-        def info(self, msg):
-            """ Log informational messages. """
-            if self.level <= 20:
-                self._logmsg(syslog.LOG_INFO, msg)
-
-        def error(self, msg):
-            """ Log error messages. """
-            if self.level <= 40:
-                self._logmsg(syslog.LOG_ERR, msg)
-
-        def _logmsg(self, dst, msg):
-            syslog.syslog(dst, f'({self.mode}) {__name__}: {msg}')
-            if self.console:
-                print(f'{__name__}: {msg}')
-            if self.file:
-                self.file.write(f'{__name__}: {msg}\n')
 
 class RecordCache():
     """ Manage the cache. """
