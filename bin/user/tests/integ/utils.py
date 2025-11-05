@@ -8,8 +8,13 @@ import json
 import time
 
 import configobj
+import random
+import string
 
 import weeutil
+
+def random_string(length=32):
+    return ''.join([random.choice(string.ascii_letters + string.digits) for n in range(length)])
 
 def byteify(data, ignore_dicts=False):
     # if this is a list of values, return list of byteified values

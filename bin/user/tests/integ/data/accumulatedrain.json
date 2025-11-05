@@ -12,11 +12,11 @@
     "        # Timing issue when running test",
     "        ignore_start_time = True",
     "        adjust_start_time = 1",
-    "        [[[weewx/#]]]",
+    "        [[[weewx-$test_id/#]]]",
     "            [[[[rainTotal]]]]",
     "                name = rain",    
     "                contains_total = True",
-    "            [[[[weewx/rainTotal]]]]",
+    "            [[[[weewx-$test_id/rainTotal]]]]",
     "                name = rain",
     "                contains_total = True"
   ],
@@ -24,7 +24,7 @@
     {
       "messages": [
         {
-          "weewx": {
+          "weewx-$test_id": {
             "separator": ",",
             "delimiter": "=",
             "data": {
@@ -78,7 +78,7 @@
     {
       "messages": [
         {
-          "weewx": {
+          "weewx-$test_id": {
             "separator": ",",
             "delimiter": "=",
             "data": {
@@ -131,7 +131,7 @@
     {
       "messages": [
         {
-          "weewx": {
+          "weewx-$test_id": {
             "separator": ",",
             "delimiter": "=",
             "data": {
