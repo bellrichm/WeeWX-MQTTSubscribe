@@ -10,17 +10,17 @@
 		"    # The topics to subscribe to.",
 		"    [[topics]]",
 		"        unit_system = METRICWX",
-		"        [[[weewx/#]]]",
-		"            [[[[weewx/inTemp]]]]",
+		"        [[[weewx-$test_id/#]]]",
+		"            [[[[weewx-$test_id/inTemp]]]]",
 		"                name = inTemp",
-		"            [[[[weewx/outTemp]]]]",
+		"            [[[[weewx-$test_id/outTemp]]]]",
 		"                name = outTemp"		
 	],
 	"testruns": [
 		{
 			"messages": [
 				{
-					"weewx": {
+					"weewx-$test_id": {
 						"separator": ",",
 						"delimiter": "=",
 						"data": {
