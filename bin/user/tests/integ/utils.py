@@ -8,8 +8,13 @@ import json
 import time
 
 import configobj
+import random
+import string
 
 import weeutil
+
+def random_string(length=32):
+    return ''.join([random.choice(string.ascii_letters + string.digits) for n in range(length)])
 
 def byteify(data, ignore_dicts=False):
     # if this is a list of values, return list of byteified values
@@ -51,17 +56,20 @@ def on_message(client, userdata, msg):
 
 def send_mqtt_msg(publisher, topic, payload, userdata, self):
     userdata['msg'] = False
-    max_msg_wait = 5
+    max_msg_wait = 20
+    sleep_time = 1
+    time.sleep(1)
     mqtt_message_info = publisher(topic, payload)
     mqtt_message_info.wait_for_publish()
     i = 1
     time.sleep(.5)  # give it a bit of time before checking
     while not userdata['msg']:
-        print("fwaiting for mqtt message {i}")
+        print(f"waiting for mqtt message {i}")
         if i > max_msg_wait:
-            self.fail("Timed out waiting for MQTT message.")
-        time.sleep(1)
+            self.fail(f"Timed out waiting for MQTT message {i}.")
+        time.sleep(sleep_time)
         i += 1
+        # sleep_time += 1
 
 def send_direct_msg(publisher, topic, payload, userdata, self):
     # match function signature pylint: disable=unused-argument

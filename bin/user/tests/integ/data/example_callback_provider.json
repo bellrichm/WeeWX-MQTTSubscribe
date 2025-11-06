@@ -12,7 +12,7 @@
     "        adjust_start_time = 5",
     "        adjust_end_time = 5",
     "        use_server_datetime = True",
-    "        [[[weewx/#]]]",
+    "        [[[weewx-$test_id/#]]]",
     
     "    # Configuration for the message callback.",
 		"    [[message_callback]]"
@@ -21,7 +21,7 @@
     {
 			"messages": [
 				{
-					"weewx": {
+					"weewx-$test_id": {
 						"separator": ",",
 						"delimiter": "=",
 						"data": {

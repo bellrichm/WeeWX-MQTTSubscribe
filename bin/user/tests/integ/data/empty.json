@@ -7,7 +7,7 @@
     "    # The topics to subscribe to.",
     "    [[topics]]",
     "        ignore_start_time = True",
-    "        [[[weewx/#]]]"
+    "        [[[weewx-$test_id/#]]]"
   ],
   "testruns": [
     {

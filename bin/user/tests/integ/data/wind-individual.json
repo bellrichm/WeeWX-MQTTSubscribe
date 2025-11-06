@@ -12,16 +12,16 @@
     "        unit_system = METRICWX",
     "        use_topic_as_fieldname = True",
     "        collect_wind_across_loops = False",    
-    "        [[[weewx/windDir]]]",
+    "        [[[weewx-$test_id/windDir]]]",
     "            name = windDir",
-    "        [[[weewx/windSpeed]]]",
+    "        [[[weewx-$test_id/windSpeed]]]",
     "            name = windSpeed"
   ],
   "testruns": [
     {
       "messages": [
         {
-          "weewx": {
+          "weewx-$test_id": {
             "separator": ",",
             "delimiter": "=",
             "data": {

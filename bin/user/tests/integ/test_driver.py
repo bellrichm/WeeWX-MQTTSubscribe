@@ -5,6 +5,7 @@
 #
 
 import json
+import string
 import time
 import unittest
 
@@ -19,7 +20,10 @@ from user.MQTTSubscribe import MQTTSubscribeDriver
 
 class TestDriver(unittest.TestCase):
     def runit(self, payload, file_pointer, check_results=True):
-        test_data = json.load(file_pointer, object_hook=utils.byteify)
+        test_id = utils.random_string()
+        data_template = string.Template(file_pointer.read())
+        test_data = json.loads(data_template.substitute(test_id=test_id), object_hook=utils.byteify)
+
         config_dict = configobj.ConfigObj(test_data['config'])
         testruns = test_data['testruns']
 
