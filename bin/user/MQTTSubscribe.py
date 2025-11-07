@@ -3062,7 +3062,7 @@ For more inforation see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/M
 
             for record in driver.genArchiveRecords(end_period_ts):
                 record_msg =\
-                    (f"Record {i+1} of {self.record_count} is: "
+                    (f"Record {i + 1} of {self.record_count} is: "
                      f"{weeutil.weeutil.timestamp_to_string(record['dateTime'])} {to_sorted_string(record)}")
                 logger.info(record_msg)
                 print(record_msg)
@@ -3077,7 +3077,7 @@ For more inforation see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/M
         i = 0
         for packet in driver.genLoopPackets():
             record_msg = \
-                (f"Packet {i+1} of {self.record_count} is: "
+                (f"Packet {i + 1} of {self.record_count} is: "
                  f"{weeutil.weeutil.timestamp_to_string(packet['dateTime'])} {to_sorted_string(packet)}")
             logger.info(record_msg)
             print(record_msg)
@@ -3109,7 +3109,7 @@ For more inforation see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/M
                                                    origin='hardware')
             self.engine.dispatchEvent(new_archive_record_event)
             packet_msg = \
-                (f"Archive Record {i+1} of {self.record_count} is: "
+                (f"Archive Record {i + 1} of {self.record_count} is: "
                  f"{weeutil.weeutil.timestamp_to_string(new_archive_record_event.record['dateTime'])} "
                  f"{to_sorted_string(new_archive_record_event.record)}")
             logger.info(packet_msg)
@@ -3141,7 +3141,7 @@ For more inforation see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/M
                                                 packet=data)
             self.engine.dispatchEvent(new_loop_packet_event)
             packet_msg = \
-                f"Loop packet {i+1} of {self.record_count} is: "\
+                f"Loop packet {i + 1} of {self.record_count} is: "\
                 f"{weeutil.weeutil.timestamp_to_string(new_loop_packet_event.packet['dateTime'])} "\
                 f"{to_sorted_string(new_loop_packet_event.packet)}"
             logger.info(packet_msg)

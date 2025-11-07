@@ -147,7 +147,7 @@ def check(self, test_type, results, expected_results):
         for field in expected_result:
             self.assertIn(field, results[i])
             if expected_result[field] is not None:
-                msg = f"for payload of {test_type} and field {field} in record {i+1}\n"
+                msg = f"for payload of {test_type} and field {field} in record {i + 1}\n"
                 if expected_result[field] == "None":
                     msg = f"\n\t for field {field}"
                     self.assertIsNone(results[i][field], msg)
