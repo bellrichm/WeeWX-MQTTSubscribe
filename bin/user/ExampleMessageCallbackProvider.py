@@ -65,5 +65,5 @@ class MessageCallbackProvider(user.MQTTSubscribe.AbstractMessageCallbackProvider
                 self.topic_manager.append_data(msg.topic, observations)
 
         except Exception as exception:
-            self.logger.error(f"MessageCallbackProvider on_message_keyword failed with: {exception}")
-            self.logger.error(f"**** MessageCallbackProvider Ignoring topic={msg.topic} and payload={msg.payload}")
+            self.logger.error(None, f"MessageCallbackProvider on_message_keyword failed with: {exception}")
+            self.logger.error(None, f"**** MessageCallbackProvider Ignoring topic={msg.topic} and payload={msg.payload}")

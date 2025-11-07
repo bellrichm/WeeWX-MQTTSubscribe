@@ -7,6 +7,7 @@
 import unittest
 import mock
 
+import random
 import sys
 
 import test_weewx_stubs
@@ -100,13 +101,13 @@ class TestV4Logging(unittest.TestCase):
 
             mock_logging._checkLevel.return_value = 0
             mode = random_string()
-            message = random_string()
+            message_text = random_string()
 
             SUT = Logger({'mode': mode})
 
-            SUT.error(message)
+            SUT.error(random.randint(1, 100), message_text)
 
-            SUT._logmsg.error.assert_called_once_with(SUT.MSG_FORMAT, mode, message)
+            SUT._logmsg.error.assert_called_once_with(SUT.MSG_FORMAT, mode, message_text)
 
     @staticmethod
     def test_info_logged():
@@ -166,10 +167,32 @@ class TestV4Logging(unittest.TestCase):
 
             SUT._logmsg.log.assert_called_once_with(5, SUT.MSG_FORMAT, mode, message)
 
-if __name__ == '__main__':
-    # test_suite = unittest.TestSuite()
-    # test_suite.addTest(TestV4Logging('test_test'))
-    # test_suite.addTest(TestV3Logging('test_base'))
-    # unittest.TextTestRunner().run(test_suite)
+    def test_test(self):
+        print('start')
 
-    unittest.main(exit=False)
+        with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
+            mock_logging._checkLevel.return_value = 0
+
+            config = {
+                'mode': random_string(),
+                'throttle': {
+                    'all': {
+                        'duration': 300,
+                        'max': 2
+                    }
+                }
+            }
+
+            Logger(config, console=True)
+
+            # SUT._logmsg.addHandler.assert_called_once()
+        print('end')
+
+
+if __name__ == '__main__':
+    test_suite = unittest.TestSuite()
+    test_suite.addTest(TestV4Logging('test_test'))
+    test_suite.addTest(TestV4Logging('test_error_logged'))
+    unittest.TextTestRunner().run(test_suite)
+
+    # unittest.main(exit=False)

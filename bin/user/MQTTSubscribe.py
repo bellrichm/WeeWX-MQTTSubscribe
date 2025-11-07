@@ -631,9 +631,9 @@ class Logger():
         """ Log informational messages. """
         self._logmsg.info(self.MSG_FORMAT, self.mode, msg)
 
-    def error(self, msg):
+    def error(self, msg_id, msg_text):
         """ Log error messages. """
-        self._logmsg.error(self.MSG_FORMAT, self.mode, msg)
+        self._logmsg.error(self.MSG_FORMAT, self.mode, msg_text)
 
 class RecordCache():
     """ Manage the cache. """
@@ -756,7 +756,14 @@ class CollectData():
 
 class TopicManager():
     """ Manage the MQTT topic subscriptions. """
-    # pylint: disable=too-many-instance-attributes
+    msgX = {
+        # error messages
+        51001: "TopicManager queue limit {max_queue} reached. Removing: {element}",
+        # informational messages
+        # debug messages
+        # trace message
+    }
+
     def __init__(self, archive_topic, config, logger):
         self.logger = logger
 
@@ -1255,7 +1262,7 @@ class TopicManager():
     def _queue_size_check(self, queue, max_queue):
         while len(queue) >= max_queue:
             element = queue.popleft()
-            self.logger.error(f"TopicManager queue limit {int(max_queue)} reached. Removing: {element}")
+            self.logger.error(51001,TopicManager.msgX[51001].format(max_queue=int(max_queue), element=element))
 
     def get_fields(self, topic):
         """ Get the fields. """
@@ -1408,6 +1415,23 @@ class AbstractMessageCallbackProvider():  # pylint: disable=too-few-public-metho
 
 class MessageCallbackProvider(AbstractMessageCallbackProvider):
     """ Provide the MQTT callback. """
+    msgX = {
+        # error messages
+        41001: "Skipping {new_key} because array data too big. Array={value} subfields={subfields}",
+        41002: "Skipping {new_key} because array data too small. Array={value} subfields={subfields}",
+        41003: "Skipping {new_key} because data is an array and has no configured subfields. Array={value}",
+        41004: "MessageCallbackProvider {method} failed with {exception_type} and reason {exception}.",
+        41005: "**** MessageCallbackProvider Ignoring topic={topic} and payload={payload}",
+        41006: "**** MessageCallbackProvider {traceback}",
+        41007: "MessageCallbackProvider on_message_keyword failed to find separator: {keyword_separator}",
+        41008: "**** MessageCallbackProvider Skipping field={field} ",
+        41009: "MessageCallbackProvider on_message_keyword failed to find data in: topic {topic} and payload {payload}",
+        41010: "Unknown message_type={message_type}. Skipping topic={msg.topic} and payload={msg.payload}",
+        # informational messages
+        # debug messages
+        # trace message
+    }
+
     def __init__(self, config, logger, topic_manager):
         super().__init__(logger, topic_manager)
 
@@ -1464,9 +1488,9 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
         # pylint: disable=too-many-arguments
         if new_key in fields and 'subfields' in fields[new_key]:
             if len(value) > len(fields[new_key]['subfields']):
-                self.logger.error(f"Skipping {new_key} because array data too big. Array={value} subfields={fields[new_key]['subfields']}")
+                self.logger.error(41001, MessageCallbackProvider.msgX[41002].format(new_key=new_key, value=value, subfields=fields[new_key]['subfields']))
             elif len(value) < len(fields[new_key]['subfields']):
-                self.logger.error(f"Skipping {new_key} because array data too small. Array={value} subfields={fields[new_key]['subfields']}")
+                self.logger.error(41002, MessageCallbackProvider.msgX[41002].format(new_key=new_key, value=value, subfields=fields[new_key]['subfields']))
             else:
                 i = 0
                 for subvalue in value:
@@ -1479,16 +1503,16 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
             pass
         else:
             # if not fields.get(lookup_key, {}).get('ignore', fields_ignore_default):
-            self.logger.error(f"Skipping {new_key} because data is an array and has no configured subfields. Array={value}")
+            self.logger.error(41003, MessageCallbackProvider.msgX[41003].format(new_key=new_key, value=value))
 
     def _log_message(self, msg):
         self.logger.debug(
             f"MessageCallbackProvider data-> incoming topic: {msg.topic}, QOS: {int(msg.qos)}, retain: {msg.retain}, payload: {msg.payload}")
 
     def _log_exception(self, method, exception, msg):
-        self.logger.error(f"MessageCallbackProvider {method} failed with {type(exception)} and reason {exception}.")
-        self.logger.error(f"**** MessageCallbackProvider Ignoring topic={msg.topic} and payload={msg.payload}")
-        self.logger.error(f"**** MessageCallbackProvider {traceback.format_exc()}")
+        self.logger.error(41004, MessageCallbackProvider.msgX[41004].format(method=method, exception_type=type(exception), exception=exception))
+        self.logger.error(41005, MessageCallbackProvider.msgX[41005].format(topic=msg.topic, payload=msg.payload))
+        self.logger.error(41006, MessageCallbackProvider.msgX[41006].format(traceback=traceback.format_exc()))
 
     def _on_message_keyword(self, msg):
         # pylint: disable= too-many-locals
@@ -1509,9 +1533,8 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
                 eq_index = field.find(message_dict['keyword_separator'])
                 # Ignore all fields that do not have the separator
                 if eq_index == -1:
-                    self.logger.error(
-                        f"MessageCallbackProvider on_message_keyword failed to find separator: {message_dict['keyword_separator']}")
-                    self.logger.error(f"**** MessageCallbackProvider Skipping field={field} ")
+                    self.logger.error(41007,MessageCallbackProvider.msgX[41007].format(keyword_separator=message_dict['keyword_separator']))
+                    self.logger.error(41008, MessageCallbackProvider.msgX[41008].format(field=field))
                     continue
 
                 key = field[:eq_index].strip()
@@ -1524,8 +1547,7 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
             if data:
                 self.topic_manager.append_data(msg.topic, data)
             else:
-                self.logger.error(
-                    f"MessageCallbackProvider on_message_keyword failed to find data in: topic={msg.topic} and payload={msg.payload}")
+                self.logger.error(41009, MessageCallbackProvider.msgX[41009].format(topic=msg.topic, payload=msg.payload))
 
         except Exception as exception:  # (want to catch all) pylint: disable=broad-except
             self._log_exception('on_message_keyword', exception, msg)
@@ -1628,7 +1650,7 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
             elif message_type == 'keyword':
                 self._on_message_keyword(msg)
             else:
-                self.logger.error(f"Unknown message_type={message_type}. Skipping topic={msg.topic} and payload={msg.payload}")
+                self.logger.error(41010, MessageCallbackProvider.msgX[41010].format(topic=msg.topic, payload=msg.payload))
         except Exception as exception:  # (want to catch all) pylint: disable=broad-except
             self._log_exception('on_message_multi', exception, msg)
 
@@ -1697,7 +1719,14 @@ class ManageWeewxConfig():
 
 class MQTTSubscriber():
     """ Manage MQTT sunscriptions. """
-    # pylint: disable=too-many-instance-attributes
+    msgX = {
+        # error messages
+        31001: "Failed to connect to {host} at {port}. '{exception}'",
+        # informational messages
+        # debug messages
+        # trace message
+    }
+
     def __init__(self, service_dict, logger):
         self.logger = logger
 
@@ -1828,7 +1857,9 @@ class MQTTSubscriber():
         try:
             self.connect(mqtt_options)
         except Exception as exception:  # (want to catch all) pylint: disable=broad-except
-            self.logger.error(f"Failed to connect to {mqtt_options['host']} at {int(mqtt_options['port'])}. '{exception}'")
+            self.logger.error(31001, MQTTSubscriber.msgX[31001].format(host=mqtt_options['host'],
+                                                                       port=mqtt_options['port'],
+                                                                       exception=exception))
             raise weewx.WeeWxIOError(exception)
 
     def _check_deprecated_options(self, service_dict):
@@ -2016,7 +2047,7 @@ class MQTTSubscriberV1(MQTTSubscriber):
         self.logger.info(f"Subscribed to mid: {int(mid)} is size {len(granted_qos)} has a QOS of {int(granted_qos[0])}")
 
     def _on_log(self, _client, _userdata, level, msg):
-        self.mqtt_logger[level](f"MQTTSubscribe MQTT: {msg}")
+        self.mqtt_logger[level](None, f"MQTTSubscribe MQTT: {msg}")
 
     def _on_message(self, _client, _userdata, msg):
         self.callback(msg)
@@ -2111,6 +2142,14 @@ class MQTTSubscriberV2(MQTTSubscriber):
 
 class MQTTSubscribeService(StdService):
     """ The MQTT subscribe service. """
+    msgX = {
+        # error messages
+        21001: "Ignoring packet has dateTime of {dateTime:f} which is prior to previous packet {end_ts:f}",
+        # informational messages
+        # debug messages
+        # trace message        
+    }
+
     def __init__(self, engine, config_dict):
         super().__init__(engine, config_dict)
 
@@ -2176,7 +2215,7 @@ class MQTTSubscribeService(StdService):
         """ Handle the new loop packet event. """
         # packet has traveled back in time
         if self.end_ts > event.packet['dateTime']:
-            self.logger.error(f"Ignoring packet has dateTime of {event.packet['dateTime']:f} which is prior to previous packet {self.end_ts:f}")
+            self.logger.error(21001, MQTTSubscribeService.msgX[21001].format(dateTime=event.packet['dateTime'], end_ts=self.end_ts))
         else:
             start_ts = self.end_ts
             self.end_ts = event.packet['dateTime']
@@ -2266,6 +2305,15 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice):
     # (methods not used) pylint: disable=abstract-method
     # pylint: disable=too-many-instance-attributes
     """weewx driver that reads data from MQTT"""
+
+    msgX = {
+        # error messages
+        11001: "Ignoring record because {archive_start} archival start is before previous archive start {prev_archive_start}: {data}",
+        # informational messages
+        # debug messages
+        # trace messages
+    }
+
     def __init__(self, config_dict, engine):
         stn_dict = config_dict[DRIVER_NAME]
         if stn_dict is None:
@@ -2342,10 +2390,9 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice):
                 if data:
                     archive_start = weeutil.weeutil.startOfInterval(data['dateTime'], self._archive_interval)
                     if archive_start < self.prev_archive_start:
-                        self.logger.error(
-                            (f"Ignoring record because {archive_start} archival start "
-                             f"is before previous archive start {self.prev_archive_start}: "
-                             f"{to_sorted_string(data)}"))
+                        self.logger.error(11001, MQTTSubscribeDriver.msgX[11001].format(archive_start=archive_start,
+                                                                                        prev_archive_start=self.prev_archive_start,
+                                                                                        data=to_sorted_string(data)))
                     else:
                         self.last_loop_packet_ts = data['dateTime']
                         self.prev_archive_start = archive_start
