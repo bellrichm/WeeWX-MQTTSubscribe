@@ -544,9 +544,9 @@ class Logger():
     """ The logging class. """
     MSG_FORMAT = "(%s) %s"
 
-    def __init__(self, mode, level='NOTSET', filename=None, console=None):
+    def __init__(self, config, level='NOTSET', filename=None, console=None):
         self.console = console
-        self.mode = mode
+        self.mode = config['mode']
         self.filename = filename
         self.weewx_debug = weewx.debug
 
@@ -2125,7 +2125,7 @@ class MQTTSubscribeService(StdService):
         logging_filename = service_dict.get('logging_filename', None)
         logging_level = service_dict.get('logging_level', 'NOTSET')
         console = to_bool(service_dict.get('console', False))
-        self.logger = Logger('Service', level=logging_level, filename=logging_filename, console=console)
+        self.logger = Logger({'mode': 'Service'}, level=logging_level, filename=logging_filename, console=console)
         self.logger.log_environment(config_dict)
 
         self.enable = to_bool(service_dict.get('enable', True))
@@ -2274,7 +2274,7 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice):
         console = to_bool(stn_dict.get('console', False))
         logging_filename = stn_dict.get('logging_filename', None)
         logging_level = stn_dict.get('logging_level', 'NOTSET').upper()
-        self.logger = Logger('Driver', level=logging_level, filename=logging_filename, console=console)
+        self.logger = Logger({'mode': 'Driver'}, level=logging_level, filename=logging_filename, console=console)
         self.logger.log_environment(config_dict)
 
         self.max_loop_interval = to_int(stn_dict.get('max_loop_interval', 0))
@@ -2815,7 +2815,7 @@ class Parser():
 
         message_callback_config = self.config_dict.get('message_callback', None)
 
-        logger = Logger('Service', level=options.logging_level, filename=options.logging_file, console=options.console)
+        logger = Logger({'mode': 'Service'}, level=options.logging_level, filename=options.logging_file, console=options.console)
         self.manager = TopicManager(None, topics_dict, logger)
         self.message_callback_provider = MessageCallbackProvider(message_callback_config, logger, self.manager)
 

@@ -23,7 +23,7 @@ class TestAccumulatedData(unittest.TestCase):
         config_dict = configobj.ConfigObj(test_data['config'])['MQTTSubscribeService']
         testruns = test_data['testruns']
 
-        logger = Logger('IntegTest')
+        logger = Logger({'mode': 'IntegTest'})
         topics_dict = config_dict.get('topics', {})
         manager = TopicManager(None, topics_dict, logger)
 

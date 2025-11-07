@@ -33,7 +33,7 @@ class Msg:
 class TestJSONMessage(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.logger = Logger('FuncTest', level='ERROR', console=True)
+        cls.logger = Logger({'mode': 'FuncTest'}, level='ERROR', console=True)
 
         cls.topic = random_string()
         cls.config_str = '''

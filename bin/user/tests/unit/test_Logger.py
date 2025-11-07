@@ -54,7 +54,7 @@ class TestV4Logging(unittest.TestCase):
             mock_logger.parent = mock_parent_logger
             mock_logging.getLogger.return_value = mock_logger
 
-            SUT = Logger(random_string(), level=random_string())
+            SUT = Logger({'mode': random_string()}, level=random_string())
 
             mock_logging.addLevelName.assert_called_once_with(log_level, 'TRACE')
             SUT._logmsg.setLevel.assert_called_once_with(log_level)
@@ -75,7 +75,7 @@ class TestV4Logging(unittest.TestCase):
             mode = random_string()
             filename = random_string()
 
-            SUT = Logger(mode, filename=filename)
+            SUT = Logger({'mode': mode}, filename=filename)
 
             mock_logging.Formatter.assert_called_once()
             mock_logging.FileHandler.assert_called_once()
@@ -90,7 +90,7 @@ class TestV4Logging(unittest.TestCase):
             mock_logging._checkLevel.return_value = 0
             mode = random_string()
 
-            SUT = Logger(mode, console=True)
+            SUT = Logger({'mode': mode}, console=True)
 
             SUT._logmsg.addHandler.assert_called_once()
 
@@ -102,7 +102,7 @@ class TestV4Logging(unittest.TestCase):
             mode = random_string()
             message = random_string()
 
-            SUT = Logger(mode)
+            SUT = Logger({'mode': mode})
 
             SUT.error(message)
 
@@ -116,7 +116,7 @@ class TestV4Logging(unittest.TestCase):
             mode = random_string()
             message = random_string()
 
-            SUT = Logger(mode)
+            SUT = Logger({'mode': mode})
 
             SUT.info(message)
 
@@ -130,7 +130,7 @@ class TestV4Logging(unittest.TestCase):
             mode = random_string()
             message = random_string()
 
-            SUT = Logger(mode)
+            SUT = Logger({'mode': mode})
 
             SUT.debug(message)
 
@@ -145,7 +145,7 @@ class TestV4Logging(unittest.TestCase):
             mode = random_string()
             message = random_string()
 
-            SUT = Logger(mode)
+            SUT = Logger({'mode': mode})
 
             SUT.trace(message)
 
@@ -159,7 +159,7 @@ class TestV4Logging(unittest.TestCase):
             mode = random_string()
             message = random_string()
 
-            SUT = Logger(mode)
+            SUT = Logger({'mode': mode})
             SUT.weewx_debug = 0
 
             SUT.trace(message)
