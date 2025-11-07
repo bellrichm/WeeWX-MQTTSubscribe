@@ -540,8 +540,10 @@ def gettid():
 class ConversionError(ValueError):
     """ Error converting data types. """
 
-class AbstractLogger():
-    """ The abstract logging class. """
+class Logger():
+    """ The logging class. """
+    MSG_FORMAT = "(%s) %s"
+
     def __init__(self, mode, level='NOTSET', filename=None, console=None):
         self.console = console
         self.mode = mode
@@ -556,50 +558,6 @@ class AbstractLogger():
         # check that the level configured is valid
         self.level = logging._checkLevel(level)
 
-    def log_environment(self, config_dict):
-        """ Log the environment we are running in. """
-        # Since WeeWX logs this, only log it when debugging
-        self.debug(f"Using weewx version {weewx.__version__}")
-        self.debug(f"Using Python {sys.version}")
-        self.debug(f"Platform {platform.platform()}")
-        self.debug(f"Locale is '{locale.setlocale(locale.LC_ALL)}'")
-
-        # Too easy to leak sensitive information
-        # self.debug(config_dict)
-        archive_dict = config_dict.get('StdArchive', {})
-        record_augmentation = archive_dict.get('record_augmentation', None)
-        record_generation = archive_dict.get('record_generation', None)
-        self.debug(f"Record Augmentation is: {record_augmentation}")
-        self.debug(f"Record Generation is: {record_generation}")
-        self.info(f"Using paho.mqtt {paho.mqtt.__version__}")
-        self.info(f"Version is {VERSION}")
-        self.info(f"Log level: {int(self.level)}")
-        self.info(f"Log debug setting: {int(self.weewx_debug)}")
-        self.info(f"Log console: {self.console}")
-        self.info(f"Log file: {self.filename}")
-
-    def trace(self, msg):
-        """ Log trace messages. """
-        raise NotImplementedError("Method 'trace' not implemented")
-
-    def debug(self, msg):
-        """ Log debug messages. """
-        raise NotImplementedError("Method 'debug' not implemented")
-
-    def info(self, msg):
-        """ Log info messages. """
-        raise NotImplementedError("Method 'info' not implemented")
-
-    def error(self, msg):
-        """ Log error messages. """
-        raise NotImplementedError("Method 'error' not implemented")
-
-class Logger(AbstractLogger):
-    """ The logging class. """
-    MSG_FORMAT = "(%s) %s"
-
-    def __init__(self, mode, level='NOTSET', filename=None, console=None):
-        super().__init__(mode, level, filename=filename, console=console)
         self._logmsg = logging.getLogger(__name__)
         if self.console:
             self._logmsg.addHandler(logging.StreamHandler(sys.stdout))
@@ -635,6 +593,28 @@ class Logger(AbstractLogger):
             handlers.extend(self.get_handlers(logger.parent))
 
         return handlers
+
+    def log_environment(self, config_dict):
+        """ Log the environment we are running in. """
+        # Since WeeWX logs this, only log it when debugging
+        self.debug(f"Using weewx version {weewx.__version__}")
+        self.debug(f"Using Python {sys.version}")
+        self.debug(f"Platform {platform.platform()}")
+        self.debug(f"Locale is '{locale.setlocale(locale.LC_ALL)}'")
+
+        # Too easy to leak sensitive information
+        # self.debug(config_dict)
+        archive_dict = config_dict.get('StdArchive', {})
+        record_augmentation = archive_dict.get('record_augmentation', None)
+        record_generation = archive_dict.get('record_generation', None)
+        self.debug(f"Record Augmentation is: {record_augmentation}")
+        self.debug(f"Record Generation is: {record_generation}")
+        self.info(f"Using paho.mqtt {paho.mqtt.__version__}")
+        self.info(f"Version is {VERSION}")
+        self.info(f"Log level: {int(self.level)}")
+        self.info(f"Log debug setting: {int(self.weewx_debug)}")
+        self.info(f"Log console: {self.console}")
+        self.info(f"Log file: {self.filename}")
 
     def trace(self, msg):
         """ Log trace messages. """
