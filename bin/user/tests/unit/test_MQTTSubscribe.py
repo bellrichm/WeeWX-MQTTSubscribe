@@ -666,7 +666,7 @@ class TestDeprecatedOptions(unittest.TestCase):
                 SUT = MQTTSubscriberTest(config, mock_logger)
 
                 self.assertEqual(SUT.logger.info.call_count, 14)
-                mock_logger.info.assert_any_call("'use_topic_as_fieldname' option is no longer needed and can be removed.")
+                mock_logger.info.assert_any_call(0, "'use_topic_as_fieldname' option is no longer needed and can be removed.")
 
 class TestStart(unittest.TestCase):
     def setUp(self):

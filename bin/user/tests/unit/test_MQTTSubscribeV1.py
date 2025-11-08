@@ -57,7 +57,7 @@ class TestCallbacks(unittest.TestCase):
 
                     SUT._on_disconnect(None, None, rc)
 
-                    SUT.logger.info.assert_called_with(f"Disconnected with result code {int(rc)}")
+                    SUT.logger.info.assert_called_with(0, f"Disconnected with result code {int(rc)}")
 
     @staticmethod
     def test_on_subscribe():
@@ -78,7 +78,7 @@ class TestCallbacks(unittest.TestCase):
 
                     SUT._on_subscribe(None, None, mid, granted_qos)
 
-                    SUT.logger.info.assert_called_with(f"Subscribed to mid: {mid} is size {len(granted_qos)} has a QOS of {granted_qos[0]}")
+                    SUT.logger.info.assert_called_with(0, f"Subscribed to mid: {mid} is size {len(granted_qos)} has a QOS of {granted_qos[0]}")
 
     @staticmethod
     def test_on_log():
@@ -99,7 +99,7 @@ class TestCallbacks(unittest.TestCase):
 
                     SUT._on_log(None, None, level, msg)
 
-                    SUT.logger.info.assert_called_with(f"MQTTSubscribe MQTT: {msg}")
+                    SUT.logger.info.assert_called_with(0, f"MQTTSubscribe MQTT: {msg}")
 
     def test_mqtt_log_set(self):
         mock_logger = mock.Mock(spec=Logger)
