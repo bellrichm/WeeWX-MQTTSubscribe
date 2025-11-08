@@ -57,7 +57,7 @@ class TestCallbacks(unittest.TestCase):
 
                     SUT._on_disconnect(None, None, None, reason_code, None)
 
-                    SUT.logger.info.assert_called_with(0, f"Disconnected with result code {int(reason_code.value)}")
+                    SUT.logger.info.assert_called_with(72003, f"Disconnected with result code {int(reason_code.value)}")
 
     @staticmethod
     def test_on_subscribe():
@@ -80,8 +80,8 @@ class TestCallbacks(unittest.TestCase):
 
                     SUT._on_subscribe(None, None, mid, reason_codes, None)
 
-                    SUT.logger.info.assert_called_with(0, 
-                        f"Subscribed to mid: {mid} is size {len(reason_codes)} has a QOS of {reason_codes[0].value}")
+                    SUT.logger.info.assert_called_with(72004,
+                                                       f"Subscribed to mid: {mid} is size {len(reason_codes)} has a reason_code of {reason_codes[0].value}")
 
     @staticmethod
     def test_on_log():

@@ -74,8 +74,8 @@ class TestInitialization(unittest.TestCase):
 
         user.MQTTSubscribe.MessageCallbackProvider(config, mock_logger, mock_manager)
 
-        mock_logger.info.assert_called_once_with(0,
-            "Message configuration found under [[MessageCallback]] and [[Topic]]. Ignoring [[MessageCallback]].")
+        mock_logger.info.assert_called_once_with(42001,
+                                                 "Message configuration found under [[MessageCallback]] and [[Topic]]. Ignoring [[MessageCallback]].")
 
     def test_message_and_message_callback_not_set(self):
         mock_logger = mock.Mock(spec=Logger)
@@ -1186,8 +1186,8 @@ class TestJsonPayload(unittest.TestCase):
         SUT._on_message_json(msg)
 
         mock_manager.append_data.assert_not_called()
-        SUT.logger.info.assert_called_with(0,
-            f"MessageCallbackProvider on_message_json filtered out {msg.topic} : {msg.payload} with {lookup_key}={filters[lookup_key]}")
+        SUT.logger.info.assert_called_with(42002,
+                                           f"MessageCallbackProvider on_message_json filtered out {msg.topic} : {msg.payload} with {lookup_key}={filters[lookup_key]}")
 
 class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
     topic_end = random_string()

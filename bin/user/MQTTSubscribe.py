@@ -771,7 +771,7 @@ class TopicManager():
         50011: "TopicManager input to accumulate {queue_name} {weeutil.weeutil.timestamp_to_string(data['dateTime'])}: {to_sorted_string(data)}",
         50012: "TopicManager prior to conversion is {queue_name} {weeutil.weeutil.timestamp_to_string(aggregate_data['dateTime'])}: {to_sorted_string(aggregate_data)}",
         50013: "TopicManager after conversion is {queue_name} {weeutil.weeutil.timestamp_to_string(target_data['dateTime'])}: {to_sorted_string(target_data)}",
-        500154: "TopicManager accumulator was empty",
+        50014: "TopicManager accumulator was empty",
         50016: "TopicManager datetime conversion datetime_input:{datetime_input} datetime_format:{datetime_format} offset_format:{offset_format}",
         50017: "TopicManager datetime conversion offset:{offset} sign:{sign}",
         50018: "TopicManager datetime conversion datetime_string:{datetime_string} epoch:{epoch}",
@@ -787,7 +787,7 @@ class TopicManager():
         51009: "TopicManager data-> outgoing {queue_name}: {to_sorted_string(data)}",
         51010: "TopicManager data-> outgoing accumulated {queue_name}: {to_sorted_string(target_data)}",
         # informational messages
-        52001: "TopicManager ignoring record outside of interval {start_ts:f} {end_ts:f} {data['dateTime']:f} {to_sorted_string(data)}",
+        52001: "TopicManager ignoring record outside of interval {start_ts:f} {end_ts:f} {dateTime:f} {data}",
         # error messages
         54001: "TopicManager queue limit {max_queue} reached. Removing: {element}",
     }
@@ -1264,8 +1264,10 @@ class TopicManager():
                      f"{to_sorted_string(data)}"))
                 accumulator.addRecord(data)
             except weewx.accum.OutOfSpan:
-                self.logger.info(0,
-                                 f"TopicManager ignoring record outside of interval {start_ts:f} {end_ts:f} {data['dateTime']:f} {to_sorted_string(data)}")
+                self.logger.info(52001, TopicManager.msgX[52001].format(start_ts=start_ts,
+                                                                        end_ts=end_ts,
+                                                                        dateTime=data['dateTime'],
+                                                                        data=to_sorted_string(data)))
 
         target_data = {}
         if not accumulator.isEmpty:
@@ -1445,17 +1447,17 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
     """ Provide the MQTT callback. """
     msgX = {
         # trace message
-        4001: "MessageCallbackProvider _calc_increment calculating increment for {observation} with current: {current_total:f} and previous {previous_total is None and 'None' or str(previous_total)} values.",
-        4002: "MessageCallbackProvider _calc_increment wrap around detected for {observation} with current: {current_total:f} and previous {previous_total:f} values.",
-        4003: "MessageCallbackProvider _calc_increment skipping calculating increment for {observation} with current: {current_total:f} and previous {previous_total:f} values.",
-        4004: "MessageCallbackProvider on_message_keyword ignoring field: {key}",
-        4005: "MessageCallbackProvider on_message_json ignoring field: {lookup_key}",
-        4006: "MessageCallbackProvider on_message_individual ignoring field: {key}",
+        40001: "MessageCallbackProvider _calc_increment calculating increment for {observation} with current: {current_total:f} and previous {previous_total is None and 'None' or str(previous_total)} values.",
+        40002: "MessageCallbackProvider _calc_increment wrap around detected for {observation} with current: {current_total:f} and previous {previous_total:f} values.",
+        40003: "MessageCallbackProvider _calc_increment skipping calculating increment for {observation} with current: {current_total:f} and previous {previous_total:f} values.",
+        40004: "MessageCallbackProvider on_message_keyword ignoring field: {key}",
+        40005: "MessageCallbackProvider on_message_json ignoring field: {lookup_key}",
+        40006: "MessageCallbackProvider on_message_individual ignoring field: {key}",
         # debug messages
         41001: "MessageCallbackProvider data-> incoming topic: {msg.topic}, QOS: {int(msg.qos)}, retain: {msg.retain}, payload: {msg.payload}",
         # informational messages
         42001: "Message configuration found under [[MessageCallback]] and [[Topic]]. Ignoring [[MessageCallback]].",
-        42002: "MessageCallbackProvider on_message_json filtered out {msg.topic} : {msg.payload} with {lookup_key}={filters[lookup_key]}",
+        42002: "MessageCallbackProvider on_message_json filtered out {topic} : {payload} with {lookup_key}={filter}",
         # error messages
         44001: "Skipping {new_key} because array data too big. Array={value} subfields={subfields}",
         44002: "Skipping {new_key} because array data too small. Array={value} subfields={subfields}",
@@ -1481,7 +1483,7 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
                 if not topic_manager.subscribed_topics[topic][topic_manager.message_config_name]:
                     topic_manager.subscribed_topics[topic][topic_manager.message_config_name] = config.dict()
                 else:
-                    self.logger.info(0, "Message configuration found under [[MessageCallback]] and [[Topic]]. Ignoring [[MessageCallback]].")
+                    self.logger.info(42001, MessageCallbackProvider.msgX[42001])
 
             if not topic_manager.subscribed_topics[topic][topic_manager.message_config_name]:
                 raise ValueError(f"{topic} topic is missing '[[[[message]]]]' section")
@@ -1630,9 +1632,10 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
             else:
                 lookup_key = key
             if lookup_key in filters and value in filters[lookup_key]:
-                self.logger.info(0,
-                                 (f"MessageCallbackProvider on_message_json filtered out {msg.topic} : "
-                                  f"{msg.payload} with {lookup_key}={filters[lookup_key]}"))
+                self.logger.info(42002, MessageCallbackProvider.msgX[42002].format(topic=msg.topic,
+                                                                                   payload=msg.payload,
+                                                                                   lookup_key=lookup_key,
+                                                                                   filter=filters[lookup_key]))
                 return None
             if not fields.get(lookup_key, {}).get('ignore', fields_ignore_default):
                 (fieldname, value) = self._update_data(lookup_key, value, fields, fields_conversion_func, unit_system)
@@ -1763,25 +1766,25 @@ class MQTTSubscriber():
         31002: "MQTTSUBscriber sanitized_service_dict is {sanitized_service_dict}",
         31003: "Starting loop",
         # informational messages
-        32001: "Archive topic is {self.archive_topic}",
+        32001: "Archive topic is {archive_topic}",
         32002: "message_callback_provider_name is {message_callback_provider_name}",
-        32003: "clientid is {mqtt_options['clientid']}",
-        32004: "client_session is {mqtt_options['clean_session']}",
-        32005: "clean_start is {mqtt_options['clean_start']}",
-        32006: "host is {mqtt_options['host']}",
-        32007: "port is {mqtt_options['port']}",
-        32008: "protocol is {mqtt_options['protocol']}",
-        32009: "keepalive is {mqtt_options['keepalive']}",
-        32010: "username is {mqtt_options['username']}",
-        32011: "min_delay is {mqtt_options['min_delay']}",
-        32012: "max_delay is {mqtt_options['max_delay']}",
+        32003: "clientid is {clientid}",
+        32004: "client_session is {clean_session}",
+        32005: "clean_start is {clean_start}",
+        32006: "host is {host}",
+        32007: "port is {port}",
+        32008: "protocol is {protocol}",
+        32009: "keepalive is {keepalive}",
+        32010: "username is {username}",
+        32011: "min_delay is {min_delay}",
+        32012: "max_delay is {max_delay}",
         32013: "password is set",
         32014: "password is not set",
-        32015: {None},
-        32016: {None},
+        32015: "{msg}",
+        32016: "{msg}",
         32017: "Waiting for MQTT connection.",
         32018: "MQTT initialization complete.",
-        32019: "Subscribing to {topic} has a mid {int(mid)} and rc {int(result)}",
+        32019: "Subscribing to {topic} has a mid {mid} and rc {result}",
         # error messages
         34001: "Failed to connect to {host} at {port}. '{exception}'",
 
@@ -1805,11 +1808,11 @@ class MQTTSubscriber():
         if self.archive_topic and self.archive_topic not in service_dict['topics']:
             raise ValueError(f"Archive topic {self.archive_topic} must be in [[topics]]")
 
-        self.logger.info(0, f"Archive topic is {self.archive_topic}")
+        self.logger.info(32001, MQTTSubscriber.msgX[32001].format(archive_topic=self.archive_topic))
 
         message_callback_provider_name = service_dict.get('message_callback_provider',
                                                           'user.MQTTSubscribe.MessageCallbackProvider')
-        self.logger.info(0, f"message_callback_provider_name is {message_callback_provider_name}")
+        self.logger.info(32002, MQTTSubscriber.msgX[32002].format(message_callback_provider_name=message_callback_provider_name))
 
         self._check_deprecated_options(service_dict)
 
@@ -1841,20 +1844,20 @@ class MQTTSubscriber():
             'tls_dict': service_dict.get('tls'),
         }
 
-        self.logger.info(0, f"clientid is {mqtt_options['clientid']}")
-        self.logger.info(0, f"client_session is {mqtt_options['clean_session']}")
-        self.logger.info(0, f"clean_start is {mqtt_options['clean_start']}")
-        self.logger.info(0, f"host is {mqtt_options['host']}")
-        self.logger.info(0, f"port is {mqtt_options['port']}")
-        self.logger.info(0, f"protocol is {mqtt_options['protocol']}")
-        self.logger.info(0, f"keepalive is {mqtt_options['keepalive']}")
-        self.logger.info(0, f"username is {mqtt_options['username']}")
-        self.logger.info(0, f"min_delay is {mqtt_options['min_delay']}")
-        self.logger.info(0, f"max_delay is {mqtt_options['max_delay']}")
+        self.logger.info(32003, MQTTSubscriber.msgX[32003].format(clientid=mqtt_options['clientid']))
+        self.logger.info(32004, MQTTSubscriber.msgX[32004].format(clean_session=mqtt_options['clean_session']))
+        self.logger.info(32005, MQTTSubscriber.msgX[32005].format(clean_start=mqtt_options['clean_start']))
+        self.logger.info(32006, MQTTSubscriber.msgX[32006].format(host=mqtt_options['host']))
+        self.logger.info(32007, MQTTSubscriber.msgX[32007].format(port=mqtt_options['port']))
+        self.logger.info(32008, MQTTSubscriber.msgX[32008].format(protocol=mqtt_options['protocol']))
+        self.logger.info(32009, MQTTSubscriber.msgX[32009].format(keepalive=mqtt_options['keepalive']))
+        self.logger.info(32010, MQTTSubscriber.msgX[32010].format(username=mqtt_options['username']))
+        self.logger.info(32011, MQTTSubscriber.msgX[32011].format(min_delay=mqtt_options['min_delay']))
+        self.logger.info(32012, MQTTSubscriber.msgX[32012].format(max_delay=mqtt_options['max_delay']))
         if mqtt_options['password'] is not None:
-            self.logger.info(0, "password is set")
+            self.logger.info(32013, MQTTSubscriber.msgX[32013])
         else:
-            self.logger.info(0, "password is not set")
+            self.logger.info(32014, MQTTSubscriber.msgX[32014])
 
         self.manager = TopicManager(self.archive_topic, topics_dict, self.logger)
 
@@ -1936,11 +1939,11 @@ class MQTTSubscriber():
                                              warn_msgs)
 
         for msg in warn_msgs:
-            self.logger.info(0, msg)
+            self.logger.info(32015, MQTTSubscriber.msgX[32015].format(msg=msg))
         if len(error_msgs) > 0:
             if not to_bool(service_dict.get('stop_on_validation_errors', False)):
                 for msg in error_msgs:
-                    self.logger.info(0, msg)
+                    self.logger.info(32016, MQTTSubscriber.msgX[32016].format(msg=msg))
             else:
                 raise ValueError('\n'.join(error_msgs))
 
@@ -2018,7 +2021,7 @@ class MQTTSubscriber():
         self.logger.debug("Starting loop")
         self.client.loop_start()
 
-        self.logger.info(0, "Waiting for MQTT connection.")
+        self.logger.info(32017, MQTTSubscriber.msgX[32017])
         while not self.userdata['connect']:
             time.sleep(1)
 
@@ -2027,7 +2030,7 @@ class MQTTSubscriber():
                 (f"Unable to connect. Return code is {int(self.userdata['connect_rc'])}, '{connack_string(self.userdata['connect_rc'])}', "
                  f"flags are {self.userdata['connect_flags']}."))
 
-        self.logger.info(0, "MQTT initialization complete.")
+        self.logger.info(32018, MQTTSubscriber.msgX[32018])
 
     def disconnect(self):
         """ shut it down """
@@ -2039,7 +2042,7 @@ class MQTTSubscriber():
                 continue
 
             (result, mid) = client.subscribe(topic, self.manager.get_qos(topic))
-            self.logger.info(0, f"Subscribing to {topic} has a mid {int(mid)} and rc {int(result)}")
+            self.logger.info(32019, MQTTSubscriber.msgX[32019].format(topic=topic, mid=mid, result=result))
 
     def get_client(self, mqtt_options):
         ''' Get the MQTT client. '''
@@ -2059,10 +2062,10 @@ class MQTTSubscriberV1(MQTTSubscriber):
         # trace message
         # debug messages
         # informational messages
-        62001: "Connected with result code {int(rc)}",
-        62002: "Connected flags {str(flags)}",
-        62003: "Disconnected with result code {int(rc)}",
-        62004: "Subscribed to mid: {int(mid)} is size {len(granted_qos)} has a QOS of {int(granted_qos[0])}",
+        62001: "Connected with result code {rc}",
+        62002: "Connected flags {flags:s}",
+        62003: "Disconnected with result code {rc}",
+        62004: "Subscribed to mid: {mid} is size {size} has a QOS of {granted_qos)}",
         # error messages
     }
 
@@ -2102,8 +2105,8 @@ class MQTTSubscriberV1(MQTTSubscriber):
         # 4: Connection refused - bad username or password
         # 5: Connection refused - not authorised
         # 6-255: Currently unused.
-        self.logger.info(0, f"Connected with result code {int(rc)}")
-        self.logger.info(0, f"Connected flags {str(flags)}")
+        self.logger.info(62001, MQTTSubscriberV1.msgX[62001].format(rc=rc))
+        self.logger.info(62002, MQTTSubscriberV1.msgX[62002].format(flags=str(flags)))
 
         userdata['connect'] = True
         userdata['connect_rc'] = rc
@@ -2112,10 +2115,10 @@ class MQTTSubscriberV1(MQTTSubscriber):
         self._subscribe(client)
 
     def _on_disconnect(self, _client, _userdata, rc):
-        self.logger.info(0, f"Disconnected with result code {int(rc)}")
+        self.logger.info(62003, MQTTSubscriberV1.msgX[62003].format(rc=rc))
 
     def _on_subscribe(self, _client, _userdata, mid, granted_qos):
-        self.logger.info(0, f"Subscribed to mid: {int(mid)} is size {len(granted_qos)} has a QOS of {int(granted_qos[0])}")
+        self.logger.info(62004, MQTTSubscriberV1.msgX[62004].format(mid=mid, size=len(granted_qos), granted_qos=granted_qos[0]))
 
     def _on_log(self, _client, _userdata, level, msg):
         self.mqtt_logger[level](None, f"MQTTSubscribe MQTT: {msg}")
@@ -2129,10 +2132,10 @@ class MQTTSubscriberV2MQTT3(MQTTSubscriber):
         # trace message
         # debug messages
         # informational messages
-        72001: "Connected with result code {int(rc)}",
-        72002: "Connected flags {str(flags)}",
-        72003: "Disconnected with result code {int(rc)}",
-        72004: "Subscribed to mid: {int(mid)} is size {len(granted_qos)} has a QOS of {int(granted_qos[0])}",
+        72001: "Connected with result code {rc}",
+        72002: "Connected flags {flags:s}",
+        72003: "Disconnected with result code {rc}",
+        72004: "Subscribed to mid: {mid} is size {size} has a reason_code of {reason_code}",
         # error messages
     }
 
@@ -2156,8 +2159,8 @@ class MQTTSubscriberV2MQTT3(MQTTSubscriber):
         self.client.connect(mqtt_options['host'], mqtt_options['port'], mqtt_options['keepalive'])
 
     def _on_connect(self, client, userdata, flags, reason_code, _properties):
-        self.logger.info(0, f"Connected with result code {int(reason_code.value)}")
-        self.logger.info(0, f"Connected flags {str(flags)}")
+        self.logger.info(72001, MQTTSubscriberV2MQTT3.msgX[72001].format(rc=reason_code.value))
+        self.logger.info(72002, MQTTSubscriberV2MQTT3.msgX[72002].format(flags=str(flags)))
 
         userdata['connect'] = True
         userdata['connect_rc'] = reason_code.value
@@ -2166,10 +2169,10 @@ class MQTTSubscriberV2MQTT3(MQTTSubscriber):
         self._subscribe(client)
 
     def _on_disconnect(self, _client, _userdata, _flags, reason_code, _properties):
-        self.logger.info(0, f"Disconnected with result code {int(reason_code.value)}")
+        self.logger.info(72003, MQTTSubscriberV2MQTT3.msgX[72003].format(rc=reason_code.value))
 
     def _on_subscribe(self, _client, _userdata, mid, reason_codes, _properties):
-        self.logger.info(0, f"Subscribed to mid: {int(mid)} is size {len(reason_codes)} has a QOS of {int(reason_codes[0].value)}")
+        self.logger.info(72004, MQTTSubscriberV2MQTT3.msgX[72004].format(mid=mid, size=len(reason_codes), reason_code=reason_codes[0].value))
 
     def _on_log(self, _client, _userdata, level, msg):
         self.mqtt_logger[level](f"MQTTSubscribe MQTT: {msg}")
@@ -2183,10 +2186,10 @@ class MQTTSubscriberV2(MQTTSubscriber):
         # trace message
         # debug messages
         # informational messages
-        82001: "Connected with result code {int(rc)}",
-        82002: "Connected flags {str(flags)}",
-        82003: "Disconnected with result code {int(rc)}",
-        82004: "Subscribed to mid: {int(mid)} is size {len(granted_qos)} has a QOS of {int(granted_qos[0])}",
+        82001: "Connected with result code {rc}",
+        82002: "Connected flags {flags:s}",
+        82003: "Disconnected with result code {rc}",
+        82004: "Subscribed to mid: {mid} is size {size} has a reason_code of {rc}",
         # error messages
     }
 
@@ -2212,8 +2215,8 @@ class MQTTSubscriberV2(MQTTSubscriber):
                             clean_start=mqtt_options['clean_start'])
 
     def _on_connect(self, client, userdata, flags, reason_code, _properties):
-        self.logger.info(0, f"Connected with result code {int(reason_code.value)}")
-        self.logger.info(f"Connected flags {str(flags)}")
+        self.logger.info(82001, MQTTSubscriberV2.msgX[82001].format(rc=reason_code.value))
+        self.logger.info(82002, MQTTSubscriberV2.msgX[82002].format(flags=str(flags)))
 
         userdata['connect'] = True
         userdata['connect_rc'] = reason_code.value
@@ -2222,10 +2225,10 @@ class MQTTSubscriberV2(MQTTSubscriber):
         self._subscribe(client)
 
     def _on_disconnect(self, _client, _userdata, _flags, reason_code, _properties):
-        self.logger.info(0, f"Disconnected with result code {int(reason_code.value)}")
+        self.logger.info(82003, MQTTSubscriberV2.msgX[82003].format(rc=reason_code.value))
 
     def _on_subscribe(self, _client, _userdata, mid, reason_codes, _properties):
-        self.logger.info(0, f"Subscribed to mid: {int(mid)} is size {len(reason_codes)} has a QOS of {int(reason_codes[0].value)}")
+        self.logger.info(82004, MQTTSubscriberV2.msgX[82004].format(mid=mid, size=len(reason_codes), rc=reason_codes[0].value))
 
     def _on_log(self, _client, _userdata, level, msg):
         self.mqtt_logger[level](f"MQTTSubscribe MQTT: {msg}")
@@ -2260,7 +2263,7 @@ class MQTTSubscribeService(StdService):
         # informational messages
         22001: "Not enabled, exiting.",
         22002: "Running as both a driver and a service.",
-        22003: "binding is {self.binding}",
+        22003: "binding is {binding}",
         # error messages
         24001: "Ignoring packet has dateTime of {dateTime:f} which is prior to previous packet {end_ts:f}",
     }
@@ -2284,11 +2287,11 @@ class MQTTSubscribeService(StdService):
 
         self.enable = to_bool(service_dict.get('enable', True))
         if not self.enable:
-            self.logger.info(0, "Not enabled, exiting.")
+            self.logger.info(22001, MQTTSubscribeService.msgX[22001])
             return
 
         if engine.stn_info.hardware == DRIVER_NAME:
-            self.logger.info(0, "Running as both a driver and a service.")
+            self.logger.info(22002, MQTTSubscribeService.msgX[22002])
 
         self.binding = service_dict.get('binding', 'loop')
 
@@ -2299,7 +2302,7 @@ class MQTTSubscribeService(StdService):
 
         self.subscriber = MQTTSubscriber.get_subscriber(service_dict, self.logger)
 
-        self.logger.info(0, f"binding is {self.binding}")
+        self.logger.info(22003, MQTTSubscribeService.msgX[22003].format(binding=self.binding))
 
         self.subscriber.start()
 
@@ -2432,12 +2435,8 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice):
         11004: "No archive topic configured.",
         11005: "data-> final archive record is {self.archive_topic} {weeutil.weeutil.timestamp_to_string(data['dateTime'])}: {to_sorted_string(data)}",
         # informational messages
-        12001: "Max loop interval is: {int(self.max_loop_interval)}",
-        12002: "Wait before retry is {int(self.wait_before_retry)}",
-        12003: {None},
-        12004: {None},
-        12005: {None},
-        12006: {None},
+        12001: "Max loop interval is: {max_loop_interval}",
+        12002: "Wait before retry is {wait_before_retry}",
         # error messages
         14001: "Ignoring record because {archive_start} archival start is before previous archive start {prev_archive_start}: {data}",
     }
@@ -2454,7 +2453,7 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice):
         self.logger.log_environment(config_dict)
 
         self.max_loop_interval = to_int(stn_dict.get('max_loop_interval', 0))
-        self.logger.info(0, f"Max loop interval is: {int(self.max_loop_interval)}")
+        self.logger.info(12001, MQTTSubscribeDriver.msgX[12001].format(max_loop_interval=self.max_loop_interval))
         self.last_loop_packet_ts = 0
         self.start_loop_period_ts = 0
 
@@ -2470,7 +2469,7 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice):
 
         self.queue = next((q for q in self.subscriber.queues if q['name'] == self.archive_topic), None)
 
-        self.logger.info(0, f"Wait before retry is {int(self.wait_before_retry)}")
+        self.logger.info(12002, MQTTSubscribeDriver.msgX[12002].format(wait_before_retry=self.wait_before_retry))
         self.subscriber.start()
 
     @property

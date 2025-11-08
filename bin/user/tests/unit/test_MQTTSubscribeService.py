@@ -65,7 +65,7 @@ class atestInitialization(unittest.TestCase):
             with mock.patch('user.MQTTSubscribe.Logger'):
                 SUT = user.MQTTSubscribe.MQTTSubscribeService(mock_StdEngine, config_dict)
                 SUT.logger.info.assert_called_once()
-                SUT.logger.info.assert_called_once_with(0, "Not enabled, exiting.")
+                SUT.logger.info.assert_called_once_with(22001, "Not enabled, exiting.")
 
     def test_configuration_section_missing(self):
         mock_StdEngine = mock.Mock()
@@ -92,7 +92,7 @@ class atestInitialization(unittest.TestCase):
             with mock.patch('user.MQTTSubscribe.Logger'):
                 SUT = user.MQTTSubscribe.MQTTSubscribeService(mock_StdEngine, config_dict)
                 self.assertEqual(SUT.logger.info.call_count, 2)
-                SUT.logger.info.assert_any_call(0, 'Running as both a driver and a service.')
+                SUT.logger.info.assert_any_call(22002, 'Running as both a driver and a service.')
 
     def test_archive_topic_specified(self):
         mock_StdEngine = mock.Mock()
