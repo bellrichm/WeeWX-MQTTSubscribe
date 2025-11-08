@@ -133,7 +133,7 @@ class TestV4Logging(unittest.TestCase):
 
             SUT = Logger({'mode': mode})
 
-            SUT.debug(message)
+            SUT.debug(random.randint(1, 100), message)
 
             SUT._logmsg.debug.assert_called_once_with(SUT.MSG_FORMAT, mode, message)
 

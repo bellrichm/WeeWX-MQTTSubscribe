@@ -597,18 +597,18 @@ class Logger():
     def log_environment(self, config_dict):
         """ Log the environment we are running in. """
         # Since WeeWX logs this, only log it when debugging
-        self.debug(f"Using weewx version {weewx.__version__}")
-        self.debug(f"Using Python {sys.version}")
-        self.debug(f"Platform {platform.platform()}")
-        self.debug(f"Locale is '{locale.setlocale(locale.LC_ALL)}'")
+        self.debug(0, f"Using weewx version {weewx.__version__}")
+        self.debug(0, f"Using Python {sys.version}")
+        self.debug(0, f"Platform {platform.platform()}")
+        self.debug(0, f"Locale is '{locale.setlocale(locale.LC_ALL)}'")
 
         # Too easy to leak sensitive information
         # self.debug(config_dict)
         archive_dict = config_dict.get('StdArchive', {})
         record_augmentation = archive_dict.get('record_augmentation', None)
         record_generation = archive_dict.get('record_generation', None)
-        self.debug(f"Record Augmentation is: {record_augmentation}")
-        self.debug(f"Record Generation is: {record_generation}")
+        self.debug(0, f"Record Augmentation is: {record_augmentation}")
+        self.debug(0, f"Record Generation is: {record_generation}")
         self.info(0, f"Using paho.mqtt {paho.mqtt.__version__}")
         self.info(0, f"Version is {VERSION}")
         self.info(0, f"Log level: {int(self.level)}")
@@ -623,9 +623,9 @@ class Logger():
         else:
             self._logmsg.log(self.trace_level, self.MSG_FORMAT, self.mode, msg)
 
-    def debug(self, msg):
+    def debug(self, msg_id, msg_text):
         """ Log debug messages. """
-        self._logmsg.debug(self.MSG_FORMAT, self.mode, msg)
+        self._logmsg.debug(self.MSG_FORMAT, self.mode, msg_text)
 
     def info(self, msg_id, msg_text):
         """ Log informational messages. """
@@ -776,16 +776,17 @@ class TopicManager():
         50017: "TopicManager datetime conversion offset:{offset} sign:{sign}",
         50018: "TopicManager datetime conversion datetime_string:{datetime_string} epoch:{epoch}",
         # debug messages
-        51001: "TopicManager self.subscribed_topics is {json.dumps(self.subscribed_topics, default=str)}",
-        51002: "TopicManager self.cached_fields is {self.cached_fields}",
-        51003: "TopicManager self.collect_wind_across_loops is {self.collect_wind_across_loops}",
-        51004: "TopicManager self.collect_observations is {self.collect_observations}",
-        51005: "TopicManager single_queue is {single_queue}",
-        51006: "TopicManager data-> incoming {topic}: {to_sorted_string(in_data)}",
-        51007: "TopicManager data-> outgoing wind {queue_name}: {to_sorted_string(data)}",
-        51008: "TopicManager data-> outgoing collected {queue_name}: {to_sorted_string(data)}",
-        51009: "TopicManager data-> outgoing {queue_name}: {to_sorted_string(data)}",
-        51010: "TopicManager data-> outgoing accumulated {queue_name}: {to_sorted_string(target_data)}",
+        51001: "TopicManager single_queue default is {single_queue}",
+        51002: "TopicManager self.subscribed_topics is {json.dumps(self.subscribed_topics, default=str)}",
+        51003: "TopicManager self.cached_fields is {self.cached_fields}",
+        51004: "TopicManager self.collect_wind_across_loops is {self.collect_wind_across_loops}",
+        51005: "TopicManager self.collect_observations is {self.collect_observations}",
+        51006: "TopicManager single_queue is {single_queue}",
+        51007: "TopicManager data-> incoming {topic}: {to_sorted_string(in_data)}",
+        51008: "TopicManager data-> outgoing wind {queue_name}: {to_sorted_string(data)}",
+        51009: "TopicManager data-> outgoing collected {queue_name}: {to_sorted_string(data)}",
+        51010: "TopicManager data-> outgoing {queue_name}: {to_sorted_string(data)}",
+        51011: "TopicManager data-> outgoing accumulated {queue_name}: {to_sorted_string(target_data)}",
         # informational messages
         52001: "TopicManager ignoring record outside of interval {start_ts:f} {end_ts:f} {dateTime:f} {data}",
         # error messages
@@ -822,7 +823,7 @@ class TopicManager():
         self.queues = []
 
         single_queue = to_bool(config.get('single_queue', False))
-        self.logger.debug(f"TopicManager single_queue default is {single_queue}")
+        self.logger.debug(51001, f"TopicManager single_queue default is {single_queue}")
         single_queue_obj = None
         if single_queue:
             single_queue_obj = dict(
@@ -842,8 +843,8 @@ class TopicManager():
 
         self._add_collector_queue(topic_defaults)
 
-        self.logger.debug(f"TopicManager self.subscribed_topics is {json.dumps(self.subscribed_topics, default=str)}")
-        self.logger.debug(f"TopicManager self.cached_fields is {self.cached_fields}")
+        self.logger.debug(51002, f"TopicManager self.subscribed_topics is {json.dumps(self.subscribed_topics, default=str)}")
+        self.logger.debug(51003, f"TopicManager self.cached_fields is {self.cached_fields}")
 
     def _configure_topics(self, config, archive_topic, single_queue, single_queue_obj, default_message_dict, topic_defaults, field_defaults):
         # pylint: disable=too-many-arguments, too-many-locals
@@ -1030,13 +1031,13 @@ class TopicManager():
         default = {}
 
         self.collect_wind_across_loops = to_bool(config.get('collect_wind_across_loops', True))
-        self.logger.debug(f"TopicManager self.collect_wind_across_loops is {self.collect_wind_across_loops}")
+        self.logger.debug(51004, f"TopicManager self.collect_wind_across_loops is {self.collect_wind_across_loops}")
 
         self.collect_observations = to_bool(config.get('collect_observations', False))
-        self.logger.debug(f"TopicManager self.collect_observations is {self.collect_observations}")
+        self.logger.debug(51005, f"TopicManager self.collect_observations is {self.collect_observations}")
 
         single_queue = to_bool(config.get('single_queue', False))
-        self.logger.debug(f"TopicManager single_queue is {single_queue}")
+        self.logger.debug(51006, f"TopicManager single_queue is {single_queue}")
 
         default['unit_system_name'] = config.get('unit_system', 'US').strip().upper()
         if default['unit_system_name'] not in weewx.units.unit_constants:
@@ -1122,7 +1123,7 @@ class TopicManager():
 
     def append_data(self, topic, in_data, fieldname=None):
         """ Add the MQTT data to the queue. """
-        self.logger.debug(f"TopicManager data-> incoming {topic}: {to_sorted_string(in_data)}")
+        self.logger.debug(51007, f"TopicManager data-> incoming {topic}: {to_sorted_string(in_data)}")
         data = dict(in_data)
         payload = {}
 
@@ -1195,13 +1196,13 @@ class TopicManager():
         if not self.collect_wind_across_loops:
             data = collector.get_data()
             if data:
-                self.logger.debug(f"TopicManager data-> outgoing wind {queue_name}: {to_sorted_string(data)}")
+                self.logger.debug(51008, f"TopicManager data-> outgoing wind {queue_name}: {to_sorted_string(data)}")
                 yield data
 
         if self.collect_observations:
             data = observation_collector.get_data()
             if data:
-                self.logger.debug(f"TopicManager data-> outgoing collected {queue_name}: {to_sorted_string(data)}")
+                self.logger.debug(51009, f"TopicManager data-> outgoing collected {queue_name}: {to_sorted_string(data)}")
                 yield data
 
     def _process_queue(self, end_ts, collector, observation_collector, queue):
@@ -1226,7 +1227,7 @@ class TopicManager():
                 data = payload['data']
 
             if data:
-                self.logger.debug(f"TopicManager data-> outgoing {queue_name}: {to_sorted_string(data)}")
+                self.logger.debug(51010, f"TopicManager data-> outgoing {queue_name}: {to_sorted_string(data)}")
                 yield data
 
     def get_accumulated_data(self, queue, start_time, end_time, units):
@@ -1286,7 +1287,7 @@ class TopicManager():
         if ignore_end_time:
             target_data['dateTime'] = end_time
 
-        self.logger.debug(f"TopicManager data-> outgoing accumulated {queue_name}: {to_sorted_string(target_data)}")
+        self.logger.debug(51011, f"TopicManager data-> outgoing accumulated {queue_name}: {to_sorted_string(target_data)}")
         return target_data
 
     def _queue_size_check(self, queue, max_queue):
@@ -1545,7 +1546,7 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
             self.logger.error(44003, MessageCallbackProvider.msgX[44003].format(new_key=new_key, value=value))
 
     def _log_message(self, msg):
-        self.logger.debug(
+        self.logger.debug(41001,
             f"MessageCallbackProvider data-> incoming topic: {msg.topic}, QOS: {int(msg.qos)}, retain: {msg.retain}, payload: {msg.payload}")
 
     def _log_exception(self, method, exception, msg):
@@ -1795,8 +1796,8 @@ class MQTTSubscriber():
 
         exclude_keys = ['password']
         sanitized_service_dict = {k: service_dict[k] for k in set(list(service_dict.keys())) - set(exclude_keys)}
-        self.logger.debug(f"sanitized configuration removed {exclude_keys}")
-        self.logger.debug(f"MQTTSUBscriber sanitized_service_dict is {sanitized_service_dict}")
+        self.logger.debug(31001, f"sanitized configuration removed {exclude_keys}")
+        self.logger.debug(31002, f"MQTTSUBscriber sanitized_service_dict is {sanitized_service_dict}")
 
         message_callback_config = service_dict.get('message_callback', None)
 
@@ -2018,7 +2019,7 @@ class MQTTSubscriber():
 
     def start(self):
         """ start subscribing to the topics """
-        self.logger.debug("Starting loop")
+        self.logger.debug(31003, "Starting loop")
         self.client.loop_start()
 
         self.logger.info(32017, MQTTSubscriber.msgX[32017])
@@ -2356,7 +2357,7 @@ class MQTTSubscribeService(StdService):
                         self.logger.trace(f"cache dump before invalidate_value: {self.cache.dump_key(field)}")
                         self.cache.invalidate_value(field, event.packet['dateTime'])
                         self.logger.trace(f"cache dump after invalidate_value: {self.cache.dump_key(field)}")
-            self.logger.debug(
+            self.logger.debug(21001, 
                 f"data-> final packet is {weeutil.weeutil.timestamp_to_string(event.packet['dateTime'])}: {to_sorted_string(event.packet)}")
 
     # this works for hardware generation, but software generation does not 'quality control'
@@ -2364,7 +2365,7 @@ class MQTTSubscribeService(StdService):
     # If this is important, bind to the loop packet.
     def new_archive_record(self, event):
         """ Handle the new archive record event. """
-        self.logger.debug(
+        self.logger.debug(21002, 
             f"data-> incoming record is {weeutil.weeutil.timestamp_to_string(event.record['dateTime'])}: {to_sorted_string(event.record)}")
         if self.binding == 'archive':
             end_ts = event.record['dateTime']
@@ -2408,7 +2409,7 @@ class MQTTSubscribeService(StdService):
 
             event.record.update(target_data)
 
-        self.logger.debug(
+        self.logger.debug(21003, 
             f"data-> final record is {weeutil.weeutil.timestamp_to_string(event.record['dateTime'])}: {to_sorted_string(event.record)}")
 
 def loader(config_dict, engine):
@@ -2481,7 +2482,7 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice):
     def archive_interval(self):
         """ The archive interval. """
         if not self.archive_topic:
-            self.logger.debug("No archive topic configured.")
+            self.logger.debug(11001, "No archive topic configured.")
             raise NotImplementedError
 
         return self._archive_interval
@@ -2492,7 +2493,7 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice):
 
     def new_archive_record(self, event):
         """ Handle the new archive record event. """
-        self.logger.debug(
+        self.logger.debug(11002,
             f"data-> final record is {weeutil.weeutil.timestamp_to_string(event.record['dateTime'])}: {to_sorted_string(event.record)}")
 
     def genLoopPackets(self):  # need to override parent - pylint: disable=invalid-name
@@ -2523,7 +2524,7 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice):
                     else:
                         self.last_loop_packet_ts = data['dateTime']
                         self.prev_archive_start = archive_start
-                        self.logger.debug(
+                        self.logger.debug(11003,
                             (f"data-> final loop packet is {queue['name']} {weeutil.weeutil.timestamp_to_string(data['dateTime'])}: "
                              f"{to_sorted_string(data)}"))
                         yield data
@@ -2552,12 +2553,12 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice):
     def genArchiveRecords(self, lastgood_ts):  # need to override parent - pylint: disable=invalid-name
         """ Called to generate the archive records. """
         if not self.archive_topic:
-            self.logger.debug("No archive topic configured.")
+            self.logger.debug(11004, "No archive topic configured.")
             raise NotImplementedError
 
         for data in self.subscriber.get_data(self.queue):
             if data:
-                self.logger.debug(
+                self.logger.debug(11005, 
                     (f"data-> final archive record is {self.archive_topic} {weeutil.weeutil.timestamp_to_string(data['dateTime'])}: "
                      f"{to_sorted_string(data)}"))
                 if lastgood_ts is None or data['dateTime'] > lastgood_ts:
