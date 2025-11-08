@@ -148,7 +148,7 @@ class TestV4Logging(unittest.TestCase):
 
             SUT = Logger({'mode': mode})
 
-            SUT.trace(message)
+            SUT.trace(random.randint(1, 100), message)
 
             SUT._logmsg.debug.assert_called_once_with(SUT.MSG_FORMAT, mode, message)
 
@@ -163,7 +163,7 @@ class TestV4Logging(unittest.TestCase):
             SUT = Logger({'mode': mode})
             SUT.weewx_debug = 0
 
-            SUT.trace(message)
+            SUT.trace(random.randint(1, 100), message)
 
             SUT._logmsg.log.assert_called_once_with(5, SUT.MSG_FORMAT, mode, message)
 
