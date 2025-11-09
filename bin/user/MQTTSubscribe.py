@@ -547,6 +547,7 @@ class Logger():
     def __init__(self, config, level='NOTSET', filename=None, console=None):
         self.console = console
         self.mode = config['mode']
+        self.throttle_config = config.get('throttle', {})
         self.filename = filename
         self.weewx_debug = weewx.debug
 
@@ -580,6 +581,19 @@ class Logger():
             file_handler.setLevel(self.level)
             file_handler.setFormatter(formatter)
             self._logmsg.addHandler(file_handler)
+
+    def _is_throttled(self, logging_level, msg_id):
+        print(f"logging_level: {logging_level} msg_id:{msg_id}")
+        print(f"throttle_config: {self.throttle_config}")
+
+        if msg_id is not None and msg_id in self.throttle_config:
+            pass
+        elif logging_level in self.throttle_config:
+            pass
+        elif 'all' in self.throttle_config:
+            pass
+
+        return False
 
     def get_handlers(self, logger):
         """ recursively get parent handlers """

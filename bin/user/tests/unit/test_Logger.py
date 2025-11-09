@@ -183,7 +183,9 @@ class TestV4Logging(unittest.TestCase):
                 }
             }
 
-            Logger(config, console=True)
+            SUT = Logger(config, console=True)
+
+            SUT._is_throttled("ERROR", None)
 
             # SUT._logmsg.addHandler.assert_called_once()
         print('end')
@@ -191,8 +193,8 @@ class TestV4Logging(unittest.TestCase):
 
 if __name__ == '__main__':
     test_suite = unittest.TestSuite()
-    test_suite.addTest(TestV4Logging('test_test'))
-    test_suite.addTest(TestV4Logging('test_error_logged'))
+    testcase = 'test_test'
+    test_suite.addTest(TestV4Logging(testcase))
     unittest.TextTestRunner().run(test_suite)
 
     # unittest.main(exit=False)
