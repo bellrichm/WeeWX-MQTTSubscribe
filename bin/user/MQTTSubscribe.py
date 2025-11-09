@@ -2089,7 +2089,7 @@ class MQTTSubscriberV1(MQTTSubscriber):
         # debug messages
         # informational messages
         62001: "Connected with result code {rc}",
-        62002: "Connected flags {flags:s}",
+        62002: "Connected flags {flags}",
         62003: "Disconnected with result code {rc}",
         62004: "Subscribed to mid: {mid} is size {size} has a QOS of {granted_qos)}",
         # error messages
