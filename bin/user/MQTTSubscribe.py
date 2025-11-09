@@ -1487,7 +1487,7 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
         44007: "MessageCallbackProvider on_message_keyword failed to find separator: {keyword_separator}",
         44008: "**** MessageCallbackProvider Skipping field={field} ",
         44009: "MessageCallbackProvider on_message_keyword failed to find data in: topic {topic} and payload {payload}",
-        44010: "Unknown message_type={message_type}. Skipping topic={msg.topic} and payload={msg.payload}",
+        44010: "Unknown message_type={message_type}. Skipping topic={topic} and payload={payload}",
     }
 
     def __init__(self, config, logger, topic_manager):
