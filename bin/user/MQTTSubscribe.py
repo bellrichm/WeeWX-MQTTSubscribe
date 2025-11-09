@@ -2159,7 +2159,7 @@ class MQTTSubscriberV2MQTT3(MQTTSubscriber):
         # debug messages
         # informational messages
         72001: "Connected with result code {rc}",
-        72002: "Connected flags {flags:s}",
+        72002: "Connected flags {flags}",
         72003: "Disconnected with result code {rc}",
         72004: "Subscribed to mid: {mid} is size {size} has a reason_code of {reason_code}",
         # error messages
@@ -2213,7 +2213,7 @@ class MQTTSubscriberV2(MQTTSubscriber):
         # debug messages
         # informational messages
         82001: "Connected with result code {rc}",
-        82002: "Connected flags {flags:s}",
+        82002: "Connected flags {flags}",
         82003: "Disconnected with result code {rc}",
         82004: "Subscribed to mid: {mid} is size {size} has a reason_code of {rc}",
         # error messages
@@ -2269,7 +2269,7 @@ class MQTTSubscribeService(StdService):
         20001: "Packet prior to update is: {dateTime} {packet}",
         20002: "Queue {queue_name} has data: {target_data}",
         20003: "Packet after update is: {dateTime} {packet}",
-        20004: "field: {field} value: {event.packet[field]} dateTime: {dateTime}",
+        20004: "field: {field} value: {packet} dateTime: {dateTime}",
         20005: "cache dump before invalidate_value: {value}",
         20006: "cache dump after invalidate_value: {value}",
         20007: "Record prior to update is: {dateTime} {record}",
@@ -2384,9 +2384,9 @@ class MQTTSubscribeService(StdService):
                                           format(field=field,
                                                  packet=event.packet[field],
                                                  dateTime=weeutil.weeutil.timestamp_to_string(event.packet['dateTime'])))
-                        self.logger.trace(20005, MQTTSubscribeService.msgX[20005].format(field=self.cache.dump_key(field)))
+                        self.logger.trace(20005, MQTTSubscribeService.msgX[20005].format(value=self.cache.dump_key(field)))
                         self.cache.invalidate_value(field, event.packet['dateTime'])
-                        self.logger.trace(20006, MQTTSubscribeService.msgX[20006].format(field=self.cache.dump_key(field)))
+                        self.logger.trace(20006, MQTTSubscribeService.msgX[20006].format(value=self.cache.dump_key(field)))
             self.logger.debug(21001,
                               MQTTSubscribeService.msgX[21001].format(dateTime=weeutil.weeutil.timestamp_to_string(event.packet['dateTime']),
                                                                       packet=to_sorted_string(event.packet)))
@@ -2525,7 +2525,7 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice):
 
     def new_archive_record(self, event):
         """ Handle the new archive record event. """
-        self.logger.debug(11002, MQTTSubscribeDriver.msgX[11002].format(data=weeutil.weeutil.timestamp_to_string(event.record['dateTime']),
+        self.logger.debug(11002, MQTTSubscribeDriver.msgX[11002].format(dateTime=weeutil.weeutil.timestamp_to_string(event.record['dateTime']),
                                                                         record=to_sorted_string(event.record)))
 
     def genLoopPackets(self):  # need to override parent - pylint: disable=invalid-name
