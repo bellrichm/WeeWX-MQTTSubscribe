@@ -659,6 +659,15 @@ class Logger():
 
 class RecordCache():
     """ Manage the cache. """
+    msgX = {
+        # trace message
+        # debug messages
+        # informational messages
+        # error messages
+        # exception messages
+        109001: "Unit system does not match unit system of the cache. {unit_system} vs {self_unit_system}",
+    }
+
     def __init__(self):
         self.unit_system = None
         self.cached_values = {}
@@ -814,6 +823,12 @@ class TopicManager():
         52001: "TopicManager ignoring record outside of interval {start_ts:f} {end_ts:f} {dateTime:f} {data}",
         # error messages
         54001: "TopicManager queue limit {max_queue} reached. Removing: {element}",
+        # exception messages
+        59001: "At least one topic must be configured.",
+        59002: "MQTTSubscribe: Unknown unit system: {unit_system_name}",
+        59003: "MQTTSubscribe: Unknown unit system: {'unit_system_name'}",
+        59004: "For {field_name} invalid units, {units}.",
+        59005: "Did not find topic, {topic}.",
     }
 
     def __init__(self, archive_topic, config, logger):
@@ -1423,6 +1438,9 @@ class AbstractMessageCallbackProvider():  # pylint: disable=too-few-public-metho
         # debug messages
         # informational messages
         # error messages
+        # exception messages
+        99001: "Method 'get_callback' not implemented",
+        99002: "Failed converting field {field} with value {value} using '{conversion_func}' with reason {exception}.",
     }
 
     def __init__(self, logger, topic_manager):
@@ -1510,6 +1528,13 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
         44008: "**** MessageCallbackProvider Skipping field={field} ",
         44009: "MessageCallbackProvider on_message_keyword failed to find data in: topic {topic} and payload {payload}",
         44010: "Unknown message_type={message_type}. Skipping topic={topic} and payload={payload}",
+        # exception messages
+        49001: "{topic} topic is missing '[[[[message]]]]' section",
+        49002: "{topic} topic is missing '[[[[message]]]] type=' section",
+        49003: "Invalid type configured: {message_type}",
+        49004: "{unit} is missing a group.",
+        49005: "{unit} is missing an unit_system.",
+        49006: "Invalid unit_system {unit_system} for {unit}.",
     }
 
     def __init__(self, config, logger, topic_manager):
@@ -1835,7 +1860,17 @@ class MQTTSubscriber():
         32019: "Subscribing to {topic} has a mid {mid} and rc {result}",
         # error messages
         34001: "Failed to connect to {host} at {port}. '{exception}'",
-
+        # exception messages
+        39001: "[[topics]] is required.",
+        39002: "Archive topic {archive_topic} must be in [[topics]]",
+        39003: "'{clean_start_string}' is an invalid option for 'clean_start' option.",
+        39004: "{error_msgs}",
+        39005: "Invalid 'certs_required'., {certs_required}",
+        39006: "Invalid 'tls_version'., {tls_version}",
+        39007: "Unable to connect. Return code is {connect_rc}, '{connack_string_rc}', flags are {connect_flags}.",
+        39008: "Method 'get_client' is not implemented",
+        39009: "Method 'set_callbacks' is not implemented",
+        39010: "Method 'connect' is not implemented",
     }
 
     def __init__(self, service_dict, logger):
@@ -2115,6 +2150,8 @@ class MQTTSubscriberV1(MQTTSubscriber):
         62003: "Disconnected with result code {rc}",
         62004: "Subscribed to mid: {mid} is size {size} has a QOS of {granted_qos)}",
         # error messages
+        # exception messages
+        69001: "Invalid protocol, {protocol_string}.",
     }
 
     def __init__(self, service_dict, logger):
@@ -2314,6 +2351,11 @@ class MQTTSubscribeService(StdService):
         22003: "binding is {binding}",
         # error messages
         24001: "Ignoring packet has dateTime of {dateTime:f} which is prior to previous packet {end_ts:f}",
+        # exception messages
+        29001: "No 'MQTTSubscribeService'/'MQTTSubscribe' configuration section found.",
+        29002: "archive_topic, {service_dict['archive_topic']}, is invalid when running as a service",
+        29003: "MQTTSubscribeService: Unknown binding: {binding}",
+        29004: "caching is not available with record generation of type '{record_generation}' and and binding of type 'loop'",
     }
 
     def __init__(self, engine, config_dict):
@@ -2494,6 +2536,9 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice):
         12002: "Wait before retry is {wait_before_retry}",
         # error messages
         14001: "Ignoring record because {archive_start} archival start is before previous archive start {prev_archive_start}: {data}",
+        # exception messages:
+        19001: "Trying to remove {remove_item} and it is not in the config spec.",
+        19002: "[[topics]] is required.",
     }
 
     def __init__(self, config_dict, engine):
