@@ -696,7 +696,7 @@ class RecordCache():
         if self.unit_system is None:
             self.unit_system = unit_system
         if unit_system != self.unit_system:
-            raise ValueError(f"Unit system does not match unit system of the cache. {unit_system} vs {self.unit_system}")
+            raise ValueError(RecordCache.msgX[109001].format(unit_system=unit_system, self_unit_system=self.unit_system))
         self.cached_values[key] = {}
         self.cached_values[key]['value'] = value
         self.cached_values[key]['timestamp'] = timestamp
@@ -826,7 +826,7 @@ class TopicManager():
         # exception messages
         59001: "At least one topic must be configured.",
         59002: "MQTTSubscribe: Unknown unit system: {unit_system_name}",
-        59003: "MQTTSubscribe: Unknown unit system: {'unit_system_name'}",
+        59003: "MQTTSubscribe: Unknown unit system: {unit_system_name}",
         59004: "For {field_name} invalid units, {units}.",
         59005: "Did not find topic, {topic}.",
     }
@@ -835,7 +835,7 @@ class TopicManager():
         self.logger = logger
 
         if not config.sections:
-            raise ValueError("At least one topic must be configured.")
+            raise ValueError(TopicManager.msgX[59001])
 
         self.message_config_name = f"message-{time.time():f}"
 
@@ -898,7 +898,7 @@ class TopicManager():
 
             unit_system_name = topic_dict.get('unit_system', topic_defaults['unit_system_name']).strip().upper()
             if unit_system_name not in weewx.units.unit_constants:
-                raise ValueError(f"MQTTSubscribe: Unknown unit system: {unit_system_name}")
+                raise ValueError(TopicManager.msgX[59002].format(unit_system_name=unit_system_name))
             unit_system = weewx.units.unit_constants[unit_system_name]
 
             self.subscribed_topics[topic] = {}
@@ -1079,7 +1079,7 @@ class TopicManager():
 
         default['unit_system_name'] = config.get('unit_system', 'US').strip().upper()
         if default['unit_system_name'] not in weewx.units.unit_constants:
-            raise ValueError(f"MQTTSubscribe: Unknown unit system: {default['unit_system_name']}")
+            raise ValueError(TopicManager.msgX[59003].format(unit_system_name=default['unit_system_name']))
 
         default['msg_id_field'] = config.get('msg_id_field', None)
         default['qos'] = to_int(config.get('qos', 0))
@@ -1134,7 +1134,7 @@ class TopicManager():
             if field_dict['units'] in weewx.units.conversionDict and field['name'] in weewx.units.obs_group_dict:
                 field['units'] = field_dict['units']
             else:
-                raise ValueError(f"For {field['name']} invalid units, {field_dict['units']}.")
+                raise ValueError(TopicManager.msgX[59004].format(field_name=field['name'], units=field_dict['units']))
 
         if (field_dict).get('subfields', None):
             field['subfields'] = (field_dict)['subfields'].sections
@@ -1398,7 +1398,7 @@ class TopicManager():
                 self.topics[topic] = subscribed_topic
                 return subscribed_topic
 
-        raise ValueError(f"Did not find topic, {topic}.")
+        raise ValueError(TopicManager.msgX[59005].format(topic=topic))
 
     def _to_epoch(self, datetime_input, datetime_format, offset_format=None):
         self.logger.trace(50015, TopicManager.msgX[50015].format(datetime_input=datetime_input,
@@ -1450,7 +1450,7 @@ class AbstractMessageCallbackProvider():  # pylint: disable=too-few-public-metho
 
     def get_callback(self):
         """ Get the MQTT callback. """
-        raise NotImplementedError("Method 'get_callback' not implemented")
+        raise NotImplementedError(AbstractMessageCallbackProvider.msgX[99001])
 
     def _update_data(self, orig_name, orig_value, fields, default_field_conversion_func, unit_system):
         # pylint: disable=too-many-arguments
@@ -1501,8 +1501,10 @@ class AbstractMessageCallbackProvider():  # pylint: disable=too-few-public-metho
             conversion_error_to_none = fields.get(field, {}).get('conversion_error_to_none', False)
             if conversion_error_to_none:
                 return None
-            raise ConversionError(
-                f"Failed converting field {field} with value {value} using '{conversion_func['source']}' with reason {exception}.")\
+            raise ConversionError(AbstractMessageCallbackProvider.msgX[99002].format(field=field,
+                                                                                     value=value,
+                                                                                     conversion_func=conversion_func['source'],
+                                                                                     exception=exception))\
                 from exception
 
 class MessageCallbackProvider(AbstractMessageCallbackProvider):
@@ -1532,9 +1534,6 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
         49001: "{topic} topic is missing '[[[[message]]]]' section",
         49002: "{topic} topic is missing '[[[[message]]]] type=' section",
         49003: "Invalid type configured: {message_type}",
-        49004: "{unit} is missing a group.",
-        49005: "{unit} is missing an unit_system.",
-        49006: "Invalid unit_system {unit_system} for {unit}.",
     }
 
     def __init__(self, config, logger, topic_manager):
@@ -1552,12 +1551,12 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
                     self.logger.info(42001, MessageCallbackProvider.msgX[42001])
 
             if not topic_manager.subscribed_topics[topic][topic_manager.message_config_name]:
-                raise ValueError(f"{topic} topic is missing '[[[[message]]]]' section")
+                raise ValueError(MessageCallbackProvider.msgX[49001].format(topic=topic))
             message_type = topic_manager.subscribed_topics[topic][topic_manager.message_config_name].get('type', None)
             if message_type is None:
-                raise ValueError(f"{topic} topic is missing '[[[[message]]]] type=' section")
+                raise ValueError(MessageCallbackProvider.msgX[49002].format(topic=topic))
             if message_type not in ['json', 'keyword', 'individual']:
-                raise ValueError(f"Invalid type configured: {message_type}")
+                raise ValueError(MessageCallbackProvider.msgX[49003].format(message_type=message_type))
 
             self._set_flatten_delimiter(topic, topic_manager)
 
@@ -1769,15 +1768,26 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
 
 class ManageWeewxConfig():
     ''' Manage the WeeWX configuration. '''
+    msgX = {
+        # trace message
+        # debug messages
+        # informational messages
+        # error messages
+        # exception messages
+        119001: "{unit} is missing a group.",
+        119002: "{unit} is missing an unit_system.",
+        119003: "Invalid unit_system {unit_system} for {unit}.",
+    }
+
     @staticmethod
     def _add_unit_group(unit_config, unit):
         group = unit_config.get('group')
         if not group:
-            raise ValueError(f"{unit} is missing a group.")
+            raise ValueError(ManageWeewxConfig.msgX[119001].format(unit=unit))
 
         unit_systems = weeutil.weeutil.option_as_list(unit_config.get('unit_system'))
         if not unit_systems:
-            raise ValueError(f"{unit} is missing an unit_system.")
+            raise ValueError(ManageWeewxConfig.msgX[119002].format(unit=unit))
 
         for unit_system in unit_systems:
             if unit_system == 'us':
@@ -1787,7 +1797,7 @@ class ManageWeewxConfig():
             elif unit_system == 'metricwx':
                 weewx.units.MetricWXUnits.extend({group: unit})
             else:
-                raise ValueError(f"Invalid unit_system {unit_system} for {unit}.")
+                raise ValueError(ManageWeewxConfig.msgX[119003].format(unit_system=unit_system, unit=unit))
 
     def _update_format_config(self, unit_config, unit):
         format_config = unit_config.get('format')
@@ -1885,11 +1895,11 @@ class MQTTSubscriber():
 
         topics_dict = service_dict.get('topics', None)
         if topics_dict is None:
-            raise ValueError("[[topics]] is required.")
+            raise ValueError(MQTTSubscriber.msgX[39001])
 
         self.archive_topic = service_dict.get('archive_topic', None)
         if self.archive_topic and self.archive_topic not in service_dict['topics']:
-            raise ValueError(f"Archive topic {self.archive_topic} must be in [[topics]]")
+            raise ValueError(MQTTSubscriber.msgX[39002].format(archive_topic=self.archive_topic))
 
         self.logger.info(32001, MQTTSubscriber.msgX[32001].format(archive_topic=self.archive_topic))
 
@@ -1909,7 +1919,7 @@ class MQTTSubscriber():
             try:
                 clean_start = getattr(mqtt, clean_start_string)
             except AttributeError:
-                raise ValueError(f"'{clean_start_string}' is an invalid option for 'clean_start' option.") from None
+                raise ValueError(MQTTSubscriber.msgX[39003].format(clean_start_string=clean_start_string)) from None
 
         mqtt_options = {
             'clientid': service_dict.get('clientid', 'MQTTSubscribe-' + str(random.randint(1000, 9999))),
@@ -2028,7 +2038,7 @@ class MQTTSubscriber():
                 for msg in error_msgs:
                     self.logger.info(32016, MQTTSubscriber.msgX[32016].format(msg=msg))
             else:
-                raise ValueError('\n'.join(error_msgs))
+                raise ValueError(MQTTSubscriber.msgX[39004].format(error_msgs='\n'.join(error_msgs)))
 
     @property
     def queues(self):
@@ -2078,11 +2088,11 @@ class MQTTSubscriber():
 
         valid_cert_reqs = valid_cert_reqs.get(tls_dict.get('certs_required', 'required'))
         if valid_cert_reqs is None:
-            raise ValueError(f"Invalid 'certs_required'., {tls_dict['certs_required']}")
+            raise ValueError(MQTTSubscriber.msgX[39005].format(certs_required=tls_dict['certs_required']))
 
         tls_version = valid_tls_versions.get(tls_dict.get('tls_version', 'tlsv12'))
         if tls_version is None:
-            raise ValueError(f"Invalid 'tls_version'., {tls_dict['tls_version']}")
+            raise ValueError(MQTTSubscriber.msgX[39006].format(tls_version=tls_dict['tls_version']))
 
         self.client.tls_set(ca_certs=ca_certs,
                             certfile=tls_dict.get('certfile'),
@@ -2109,9 +2119,9 @@ class MQTTSubscriber():
             time.sleep(1)
 
         if self.userdata['connect_rc'] > 0:
-            raise weewx.WeeWxIOError(
-                (f"Unable to connect. Return code is {int(self.userdata['connect_rc'])}, '{connack_string(self.userdata['connect_rc'])}', "
-                 f"flags are {self.userdata['connect_flags']}."))
+            raise weewx.WeeWxIOError(MQTTSubscriber.msgX[39007].format(connect_rc=int(self.userdata['connect_rc']),
+                                                                       connack_string_rc=connack_string(self.userdata['connect_rc']),
+                                                                       connect_flags=self.userdata['connect_flags']))
 
         self.logger.info(32018, MQTTSubscriber.msgX[32018])
 
@@ -2129,15 +2139,15 @@ class MQTTSubscriber():
 
     def get_client(self, mqtt_options):
         ''' Get the MQTT client. '''
-        raise NotImplementedError("Method 'get_client' is not implemented")
+        raise NotImplementedError(MQTTSubscriber.msgX[39008])
 
     def set_callbacks(self, mqtt_options):
         ''' Setup the MQTT callbacks. '''
-        raise NotImplementedError("Method 'set_callbacks' is not implemented")
+        raise NotImplementedError(MQTTSubscriber.msgX[39009])
 
     def connect(self, mqtt_options):
         ''' Connect to the MQTT server. '''
-        raise NotImplementedError("Method 'connect' is not implemented")
+        raise NotImplementedError(MQTTSubscriber.msgX[39010])
 
 class MQTTSubscriberV1(MQTTSubscriber):
     ''' MQTTSubscriber that communicates with paho mqtt v1. '''
@@ -2158,7 +2168,7 @@ class MQTTSubscriberV1(MQTTSubscriber):
         protocol_string = service_dict.get('protocol', 'MQTTv311')
         protocol = getattr(mqtt, protocol_string, 0)
         if protocol not in [mqtt.MQTTv31, mqtt.MQTTv311]:
-            raise ValueError(f"Invalid protocol, {protocol_string}.")
+            raise ValueError(MQTTSubscriberV1.msgX[69001].format(protocol_string=protocol_string))
 
         super().__init__(service_dict, logger)
 
@@ -2353,7 +2363,7 @@ class MQTTSubscribeService(StdService):
         24001: "Ignoring packet has dateTime of {dateTime:f} which is prior to previous packet {end_ts:f}",
         # exception messages
         29001: "No 'MQTTSubscribeService'/'MQTTSubscribe' configuration section found.",
-        29002: "archive_topic, {service_dict['archive_topic']}, is invalid when running as a service",
+        29002: "archive_topic, {archive_topic}, is invalid when running as a service",
         29003: "MQTTSubscribeService: Unknown binding: {binding}",
         29004: "caching is not available with record generation of type '{record_generation}' and and binding of type 'loop'",
     }
@@ -2367,7 +2377,7 @@ class MQTTSubscribeService(StdService):
         if service_dict is None:
             service_dict = config_dict.get('MQTTSubscribe')
         if service_dict is None:
-            raise ValueError("No 'MQTTSubscribeService'/'MQTTSubscribe' configuration section found.")
+            raise ValueError(MQTTSubscribeService.msgX[29001])
 
         logging_filename = service_dict.get('logging_filename', None)
         logging_level = service_dict.get('logging_level', 'NOTSET')
@@ -2386,7 +2396,7 @@ class MQTTSubscribeService(StdService):
         self.binding = service_dict.get('binding', 'loop')
 
         if 'archive_topic' in service_dict:
-            raise ValueError(f"archive_topic, {service_dict['archive_topic']}, is invalid when running as a service")
+            raise ValueError(MQTTSubscribeService.msgX[29002].format(archive_topic=service_dict['archive_topic']))
 
         self.end_ts = 0  # prime for processing loop packet
 
@@ -2403,7 +2413,7 @@ class MQTTSubscribeService(StdService):
         record_generation = archive_dict.get('record_generation', "none").lower()
 
         if self.binding not in ('loop', 'archive'):
-            raise ValueError(f"MQTTSubscribeService: Unknown binding: {self.binding}")
+            raise ValueError(MQTTSubscribeService.msgX[29003].format(binding=self.binding))
 
         self.bind(weewx.NEW_ARCHIVE_RECORD, self.new_archive_record)
 
@@ -2412,7 +2422,7 @@ class MQTTSubscribeService(StdService):
 
         # ToDo: Remove when issue 178 is complete
         if self.subscriber.cached_fields and record_generation != 'software' and self.binding == 'loop':
-            raise ValueError(f"caching is not available with record generation of type '{record_generation}' and and binding of type 'loop'")
+            raise ValueError(MQTTSubscribeService.msgX[29004].format(record_generation=record_generation))
 
     def shutDown(self):  # need to override parent - pylint: disable=invalid-name
         """Run when an engine shutdown is requested."""
@@ -2905,7 +2915,7 @@ class MQTTSubscribeConfiguration():
             if remove_item in current_section:
                 del current_section[remove_item]
             else:
-                raise ValueError(f"Trying to remove {remove_item} and it is not in the config spec.")
+                raise ValueError(MQTTSubscribeDriver.msgX[19001].format(remove_item=remove_item))
 
     @property
     def default_stanza(self):
@@ -3085,7 +3095,7 @@ class Parser():
 
         topics_dict = self.config_dict.get('topics', None)
         if topics_dict is None:
-            raise ValueError("[[topics]] is required.")
+            raise ValueError(MQTTSubscribeDriver.msgX[19002])
 
         self._validate()
 
