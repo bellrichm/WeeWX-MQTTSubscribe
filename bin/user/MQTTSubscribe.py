@@ -550,6 +550,7 @@ class Logger():
         self.throttle_config = config.get('throttle', {})
         self.filename = filename
         self.weewx_debug = weewx.debug
+        self.msg_data = {}
 
         # Setup custom TRACE level
         self.trace_level = 5
@@ -591,9 +592,16 @@ class Logger():
         elif logging_level in self.throttle_config:
             pass
         elif 'all' in self.throttle_config:
-            pass
+            self._check_message(msg_id, self.throttle_config['all'])
 
         return False
+
+    def _check_message(self, msg_id, throttle_config):
+        print(f"msg_id:{msg_id}")
+        print(f"throttle_config: {throttle_config}")
+        print(f"msg_data: {self.msg_data}")
+
+        print("whoops")
 
     def get_handlers(self, logger):
         """ recursively get parent handlers """
