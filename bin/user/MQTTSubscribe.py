@@ -2158,7 +2158,7 @@ class MQTTSubscriberV1(MQTTSubscriber):
         62001: "Connected with result code {rc}",
         62002: "Connected flags {flags}",
         62003: "Disconnected with result code {rc}",
-        62004: "Subscribed to mid: {mid} is size {size} has a QOS of {granted_qos)}",
+        62004: "Subscribed to mid: {mid} is size {size} has a QOS of {qos}",
         # error messages
         # exception messages
         69001: "Invalid protocol, {protocol_string}.",
@@ -2213,7 +2213,7 @@ class MQTTSubscriberV1(MQTTSubscriber):
         self.logger.info(62003, MQTTSubscriberV1.msgX[62003].format(rc=rc))
 
     def _on_subscribe(self, _client, _userdata, mid, granted_qos):
-        self.logger.info(62004, MQTTSubscriberV1.msgX[62004].format(mid=mid, size=len(granted_qos), granted_qos=granted_qos[0]))
+        self.logger.info(62004, MQTTSubscriberV1.msgX[62004].format(mid=mid, size=len(granted_qos), qos=granted_qos[0]))
 
     def _on_log(self, _client, _userdata, level, msg):
         self.mqtt_logger[level](None, f"MQTTSubscribe MQTT: {msg}")
