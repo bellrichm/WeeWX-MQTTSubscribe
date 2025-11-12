@@ -133,6 +133,40 @@ class TestTest(unittest.TestCase):
             self.assertEqual(updated_value, orig_value - previous_value)
             self.assertEqual(SUT.previous_values[orig_name], orig_value)
 
+    def test_wrap_around(self):
+        mock_logger = mock.Mock(spec=Logger)
+        mock_manager = mock.Mock(spec=TopicManager)
+
+        with mock.patch('weewx.units'):
+            SUT = AbstractMessageCallbackProvider(mock_logger, mock_manager)
+
+            default_field_conversion_func = {
+                'source': 'lambda x: to_float(x)',
+                'compiled': eval('lambda x: to_float(x)')
+            }
+            orig_name = random_string()
+            previous_value = round(random.uniform(10, 100), 2)
+
+            SUT.previous_values = {
+                orig_name: previous_value
+            }
+
+            fields = {
+                orig_name: {
+                    'contains_total': True,
+                    'total_wrap_around': True
+                }
+            }
+
+            orig_value = round(random.uniform(0, 9), 2)
+            unit_system = random.randint(1, 99)
+
+            (updated_name, updated_value) = SUT._update_data(orig_name, orig_value, fields, default_field_conversion_func, unit_system)
+
+            self.assertEqual(updated_name, orig_name)
+            self.assertEqual(updated_value, orig_value)
+            self.assertEqual(SUT.previous_values[orig_name], orig_value)
+
     def test_converting_value(self):
         mock_logger = mock.Mock(spec=Logger)
         mock_manager = mock.Mock(spec=TopicManager)

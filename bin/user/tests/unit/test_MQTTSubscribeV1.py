@@ -11,8 +11,6 @@ import configobj
 import random
 import sys
 
-import paho
-
 import test_weewx_stubs
 from test_weewx_stubs import random_string
 # setup stubs before importing MQTTSubscribe
@@ -22,11 +20,48 @@ from user.MQTTSubscribe import MQTTSubscriberV1, Logger
 
 mock_client = None
 
-@unittest.skipIf(hasattr(paho.mqtt.client, 'CallbackAPIVersion'), "paho-mqtt is NOT v1, skipping tests.")
+# @unittest.skipIf(hasattr(paho.mqtt.client, 'CallbackAPIVersion'), "paho-mqtt is NOT v1, skipping tests.")
+class TestInit(unittest.TestCase):
+    def setUp(self):
+        # reset stubs for every test
+        test_weewx_stubs.setup_stubs()
+
+    def tearDown(self):
+        # cleanup stubs
+        del sys.modules['weecfg']
+        del sys.modules['weeutil']
+        del sys.modules['weeutil.config']
+        del sys.modules['weeutil.weeutil']
+        del sys.modules['weeutil.logger']
+        del sys.modules['weewx']
+        del sys.modules['weewx.drivers']
+        del sys.modules['weewx.engine']
+
 class TestCallbacks(unittest.TestCase):
     def setUp(self):
         # reset stubs for every test
         test_weewx_stubs.setup_stubs()
+
+    def test_protocol_not_found(self):
+        mock_logger = mock.Mock(spec=Logger)
+
+        protocol = random_string()
+        config_dict = {}
+        config_dict['protocol'] = protocol
+        #config_dict['message_callback'] = {}
+        #config_dict['topics'] = {}
+        config = configobj.ConfigObj(config_dict)
+
+        #rc = random.randint(1, 10)
+
+        #with mock.patch('user.MQTTSubscribe.MessageCallbackProvider'):
+        #    with mock.patch('user.MQTTSubscribe.TopicManager'):
+        #        with mock.patch('user.MQTTSubscribe.mqtt.Client'):
+        with self.assertRaises(ValueError) as error:
+            MQTTSubscriberV1(config, mock_logger)
+
+        self.assertEqual(error.exception.args[0], f"Invalid protocol, {protocol}.")
+
 
     def tearDown(self):
         # cleanup stubs
@@ -78,7 +113,8 @@ class TestCallbacks(unittest.TestCase):
 
                     SUT._on_subscribe(None, None, mid, granted_qos)
 
-                    SUT.logger.info.assert_called_with(62004, f"Subscribed to mid: {mid} is size {len(granted_qos)} has a QOS of {granted_qos[0]}")
+                    SUT.logger.info.assert_called_with(62004,
+                                                       f"Subscribed to mid: {mid} is size {len(granted_qos)} has a QOS of {granted_qos[0]}")
 
     @staticmethod
     def test_on_log():

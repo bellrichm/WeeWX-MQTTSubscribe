@@ -108,6 +108,40 @@ class TestInit(unittest.TestCase):
 
         self.assertEqual(error.exception.args[0], f"For {field} invalid units, {config_dict[topic][field]['units']}.")
 
+class TestHelperFunctions(unittest.TestCase):
+    def setUp(self):
+        # reset stubs for every test
+        test_weewx_stubs.setup_stubs()
+
+    def tearDown(self):
+        # cleanup stubs
+        del sys.modules['weecfg']
+        del sys.modules['weeutil']
+        del sys.modules['weeutil.config']
+        del sys.modules['weeutil.weeutil']
+        del sys.modules['weeutil.logger']
+        del sys.modules['weewx']
+        del sys.modules['weewx.drivers']
+        del sys.modules['weewx.engine']
+
+    def test_topic_not_found(self):
+        mock_logger = mock.Mock(spec=Logger)
+
+        config_dict = {}
+
+        topic = random_string()
+        topic2 = ''.join(reversed(topic))
+        config_dict[topic] = {}
+
+        config = configobj.ConfigObj(config_dict)
+
+        SUT = TopicManager(None, config, mock_logger)
+
+        with self.assertRaises(ValueError) as error:
+            SUT._lookup_topic(topic2)
+
+        self.assertEqual(error.exception.args[0], f"Did not find topic, {topic2}.")
+
 class TestConfigureMessage(unittest.TestCase):
     def setUp(self):
         # reset stubs for every test
@@ -1029,6 +1063,56 @@ class TestGetWindQueueData(unittest.TestCase):
             next(gen, None)
 
             mock_CollectData.get_data.assert_not_called()
+
+class TestGetCollectedData(unittest.TestCase):
+    topic = random_string()
+    config_dict = {}
+    config_dict['collect_wind_across_loops'] = False
+    config_dict[topic] = {}
+    config = configobj.ConfigObj(config_dict)
+
+    fieldname = 'windSpeed'
+
+    def setUp(self):
+        # reset stubs for every test
+        test_weewx_stubs.setup_stubs()
+
+    def tearDown(self):
+        # cleanup stubs
+        del sys.modules['weecfg']
+        del sys.modules['weeutil']
+        del sys.modules['weeutil.config']
+        del sys.modules['weeutil.weeutil']
+        del sys.modules['weeutil.logger']
+        del sys.modules['weewx']
+        del sys.modules['weewx.drivers']
+        del sys.modules['weewx.engine']
+
+    def create_queue_data(self):
+        return {
+            self.fieldname: random.uniform(1, 100),
+            'usUnits': 1,
+            'dateTime': time.time()
+        }
+
+    def test_get_from_collector_returns_data(self):
+        mock_logger = mock.Mock(spec=Logger)
+        config = copy.deepcopy(self.config)
+        config['collect_wind_across_loops'] = True
+        config['collect_observations'] = True
+
+        collected_data = self.create_queue_data()
+        with mock.patch('user.MQTTSubscribe.CollectData') as mock_CollectData:
+            type(mock_CollectData.return_value).get_data = mock.Mock(return_value=collected_data)
+            SUT = TopicManager(None, config, mock_logger)
+
+            gen = SUT.get_data(SUT.subscribed_topics[self.topic]['queue'], 0)
+            data = next(gen, None)
+
+            self.assertEqual(data, collected_data)
+
+            data = next(gen, None)
+            self.assertIsNone(data)
 
 class TestAccumulatedData(unittest.TestCase):
 
