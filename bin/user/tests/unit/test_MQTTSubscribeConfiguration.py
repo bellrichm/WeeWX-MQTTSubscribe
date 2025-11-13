@@ -8,6 +8,7 @@ import unittest
 
 import configobj
 
+import user.MQTTSubscribe
 from user.MQTTSubscribe import MQTTSubscribeConfiguration, CONFIG_SPEC_TEXT
 
 class TestDefaultConfiguration(unittest.TestCase):
@@ -144,6 +145,31 @@ class TestDefaultConfiguration(unittest.TestCase):
         SUT = MQTTSubscribeConfiguration(None)
 
         self.assertEqual(SUT.default_config.write()[5:], expected_config.split('\n'))
+
+    def test_A_default_configuration_too_many_options_to_delete(self):
+        self.assertAlmostEqualssave_config_spec_text = None
+
+        # This test ensures that the example config contains the expected options
+        self.maxDiff = None
+
+        # This is the first key in remove_items in the default_config property
+        item_removed = 'archive_interval'
+
+        def set_up(self):
+            self.save_config_spec_text = user.MQTTSubscribe.CONFIG_SPEC_TEXT
+            user.MQTTSubscribe.CONFIG_SPEC_TEXT = ''
+
+        def tear_down(self):
+            user.MQTTSubscribe.CONFIG_SPEC_TEXT = self.save_config_spec_text
+
+        SUT = MQTTSubscribeConfiguration(None)
+
+        set_up(self)
+        with self.assertRaises(ValueError) as error:
+            SUT.default_config
+        tear_down(self)
+
+        self.assertEqual(error.exception.args[0], f"Trying to remove {item_removed} and it is not in the config spec.")
 
 class TestValidateTopicsSection(unittest.TestCase):
     def test_topic_configured_as_field(self):

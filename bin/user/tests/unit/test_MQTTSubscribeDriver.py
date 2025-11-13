@@ -12,12 +12,13 @@ import random
 import sys
 import time
 
+import weewx
 import test_weewx_stubs
-from test_weewx_stubs import random_string, startOfInterval, to_sorted_string
+from test_weewx_stubs import random_string, startOfInterval, timestamp_to_string, to_sorted_string
 # setup stubs before importing MQTTSubscribe
 test_weewx_stubs.setup_stubs()
 
-from user.MQTTSubscribe import MQTTSubscribeDriver
+from user.MQTTSubscribe import MQTTSubscribeDriver, Logger
 
 class TestclosePort(unittest.TestCase):
     def setUp(self):
@@ -47,6 +48,28 @@ class TestclosePort(unittest.TestCase):
             SUT = MQTTSubscribeDriver(config_dict, mock_engine)
             SUT.closePort()
             SUT.subscriber.disconnect.assert_called_once()
+
+    @staticmethod
+    def test_new_archive_record():
+        mock_engine = mock.Mock()
+        stn_dict = {}
+        stn_dict['topic'] = random_string()
+        config_dict = {}
+        config_dict['MQTTSubscribeDriver'] = stn_dict
+
+        event = weewx.Event(weewx.NEW_ARCHIVE_RECORD,
+                            record={
+                                'dateTime': time.time()
+                            })
+
+        with mock.patch('user.MQTTSubscribe.MQTTSubscriber'):
+            with mock.patch('user.MQTTSubscribe.Logger', spec=Logger):
+                SUT = MQTTSubscribeDriver(config_dict, mock_engine)
+                SUT.new_archive_record(event)
+
+            SUT.logger.debug.assert_called_with(11002,
+                                                (f"data-> final record is {timestamp_to_string(event.record['dateTime'])}: "
+                                                 f"{to_sorted_string(event.record)}"))
 
 class TestArchiveInterval(unittest.TestCase):
     def setUp(self):
