@@ -7,12 +7,13 @@
 import unittest
 import mock
 
+import copy
 import random
 import sys
 import time
 
 import test_weewx_stubs
-from test_weewx_stubs import random_string
+from test_weewx_stubs import random_string, startOfInterval, to_sorted_string
 # setup stubs before importing MQTTSubscribe
 test_weewx_stubs.setup_stubs()
 
@@ -141,6 +142,36 @@ class TestgenLoopPackets(unittest.TestCase):
     def empty_generator():
         return
         yield  # needed to make this a generator
+
+    def test_packet_is_earlier_than_previous(self):
+        mock_engine = mock.Mock()
+        topic = random_string()
+        self.setup_queue_tests(topic)
+        queue = dict(
+            {'name': topic}
+        )
+
+        with mock.patch('user.MQTTSubscribe.MQTTSubscriber') as mock_manager_class:
+            with mock.patch('user.MQTTSubscribe.Logger'):
+                mock_manager = mock.Mock()
+                mock_manager_class.get_subscriber = mock_manager
+                type(mock_manager.return_value).queues = mock.PropertyMock(return_value=[queue])
+                queue_data = copy.deepcopy(self.queue_data)
+                queue_data['dateTime'] = queue_data['dateTime'] + 2000
+                type(mock_manager.return_value).get_data = mock.Mock(side_effect=[self.generator([self.queue_data]),
+                                                                                  self.generator([queue_data])])
+
+                SUT = MQTTSubscribeDriver(self.config_dict, mock_engine)
+
+                prev_archive_start = self.queue_data['dateTime'] + 100
+                SUT.prev_archive_start = prev_archive_start
+                gen = SUT.genLoopPackets()
+                next(gen, None)
+
+            start_of_interval = startOfInterval(self.queue_data['dateTime'], SUT._archive_interval)
+            SUT.logger.error.assert_called_once_with(14001, (f"Ignoring record because {start_of_interval} archival start is "
+                                                             f"before previous archive start {prev_archive_start}: "
+                                                             f"{to_sorted_string(self.queue_data)}"))
 
     def test_queue_empty(self):
         mock_engine = mock.Mock()
@@ -361,4 +392,10 @@ class TestgenArchiveRecords(unittest.TestCase):
             self.assertListEqual(records, queue_list)
 
 if __name__ == '__main__':
+    test_suite = unittest.TestSuite()
+
+    testcase = 'test_packet_is_earlier_than_previous'
+    test_suite.addTest(TestgenLoopPackets(testcase))
+    # unittest.TextTestRunner().run(test_suite)
+
     unittest.main(exit=False)
