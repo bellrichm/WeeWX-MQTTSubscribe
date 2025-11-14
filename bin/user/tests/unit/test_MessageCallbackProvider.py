@@ -569,7 +569,7 @@ class TestJsonPayload(unittest.TestCase):
         mock_manager = mock.Mock(spec=TopicManager)
         mock_manager.get_msg_id_field.return_value = None
         mock_manager.get_fields_ignoring_msg_id.return_value = []
-        mock_manager.get_message_dict.return_value = {'flatten_delimiter': '_'}
+        mock_manager.get_message_dict.return_value = {'type': 'json', 'flatten_delimiter': '_'}
         mock_manager.subscribed_topics = {}
 
         SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
@@ -579,7 +579,7 @@ class TestJsonPayload(unittest.TestCase):
                   0,
                   0)
 
-        SUT._on_message_json(msg)
+        SUT.on_message_multi(msg)
         self.assertEqual(mock_logger.error.call_count, 3)
 
     def test_empty_payload(self):
@@ -591,14 +591,14 @@ class TestJsonPayload(unittest.TestCase):
         }
         mock_manager.get_msg_id_field.return_value = None
         mock_manager.get_fields_ignoring_msg_id.return_value = []
-        mock_manager.get_message_dict.return_value = {'flatten_delimiter': '_'}
+        mock_manager.get_message_dict.return_value = {'type': 'json', 'flatten_delimiter': '_'}
         mock_manager.subscribed_topics = {}
 
         SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
 
         msg = Msg(self.topic, '', 0, 0)
 
-        SUT._on_message_json(msg)
+        SUT.on_message_multi(msg)
         self.assertEqual(mock_logger.error.call_count, 3)
 
     def test_missing_dateTime(self):
@@ -613,7 +613,7 @@ class TestJsonPayload(unittest.TestCase):
         }
         mock_manager.get_fields.return_value = {}
         mock_manager.get_filters.return_value = {}
-        mock_manager.get_message_dict.return_value = {'flatten_delimiter': '_'}
+        mock_manager.get_message_dict.return_value = {'type': 'json', 'flatten_delimiter': '_'}
         mock_manager.subscribed_topics = {}
 
         SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
@@ -625,7 +625,7 @@ class TestJsonPayload(unittest.TestCase):
 
         msg = Msg(self.topic, payload, 0, 0)
 
-        SUT._on_message_json(msg)
+        SUT.on_message_multi(msg)
 
         mock_manager.append_data.assert_called_once_with(msg.topic, payload_dict)
 
@@ -641,7 +641,7 @@ class TestJsonPayload(unittest.TestCase):
         }
         mock_manager.get_fields.return_value = {}
         mock_manager.get_filters.return_value = {}
-        mock_manager.get_message_dict.return_value = {'flatten_delimiter': '_'}
+        mock_manager.get_message_dict.return_value = {'type': 'json', 'flatten_delimiter': '_'}
         mock_manager.subscribed_topics = {}
 
         SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
@@ -653,7 +653,7 @@ class TestJsonPayload(unittest.TestCase):
 
         msg = Msg(self.topic, payload, 0, 0)
 
-        SUT._on_message_json(msg)
+        SUT.on_message_multi(msg)
 
         mock_manager.append_data.assert_called_once_with(msg.topic, payload_dict)
 
@@ -671,7 +671,7 @@ class TestJsonPayload(unittest.TestCase):
         mock_manager.get_fields.return_value = {}
         mock_manager.get_filters.return_value = {}
         mock_manager.get_filters.return_value = {}
-        mock_manager.get_message_dict.return_value = {'flatten_delimiter': '_'}
+        mock_manager.get_message_dict.return_value = {'type': 'json', 'flatten_delimiter': '_'}
         mock_manager.subscribed_topics = {}
 
         SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
@@ -684,7 +684,7 @@ class TestJsonPayload(unittest.TestCase):
 
         msg = Msg(self.topic, payload, 0, 0)
 
-        SUT._on_message_json(msg)
+        SUT.on_message_multi(msg)
 
         mock_manager.append_data.assert_called_once_with(msg.topic, payload_dict)
         call_args_list = mock_manager.append_data.call_args_list
@@ -706,7 +706,7 @@ class TestJsonPayload(unittest.TestCase):
         mock_manager.get_fields_ignoring_msg_id.return_value = []
         mock_manager.get_filters.return_value = {}
         mock_manager.get_filters.return_value = {}
-        mock_manager.get_message_dict.return_value = {'flatten_delimiter': '_'}
+        mock_manager.get_message_dict.return_value = {'type': 'json', 'flatten_delimiter': '_'}
         mock_manager.subscribed_topics = {}
 
         SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
@@ -725,7 +725,7 @@ class TestJsonPayload(unittest.TestCase):
 
         msg = Msg(self.topic, payload, 0, 0)
 
-        SUT._on_message_json(msg)
+        SUT.on_message_multi(msg)
 
         mock_manager.append_data.assert_called_once_with(msg.topic, final_dict)
         call_args_list = mock_manager.append_data.call_args_list
@@ -745,7 +745,7 @@ class TestJsonPayload(unittest.TestCase):
             'compiled': eval('lambda x: to_float(x)')
         }
         mock_manager.get_filters.return_value = {}
-        mock_manager.get_message_dict.return_value = {'flatten_delimiter': '_'}
+        mock_manager.get_message_dict.return_value = {'type': 'json', 'flatten_delimiter': '_'}
         mock_manager.subscribed_topics = {}
 
         SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
@@ -768,7 +768,7 @@ class TestJsonPayload(unittest.TestCase):
 
         msg = Msg(self.topic, payload, 0, 0)
 
-        SUT._on_message_json(msg)
+        SUT.on_message_multi(msg)
 
         mock_manager.append_data.assert_called_once_with(msg.topic, payload_dict)
         call_args_list = mock_manager.append_data.call_args_list
@@ -793,7 +793,7 @@ class TestJsonPayload(unittest.TestCase):
         mock_manager.get_fields.return_value = fields
         mock_manager.get_filters.return_value = {}
         mock_manager.get_filters.return_value = {}
-        mock_manager.get_message_dict.return_value = {'flatten_delimiter': '_'}
+        mock_manager.get_message_dict.return_value = {'type': 'json', 'flatten_delimiter': '_'}
         mock_manager.subscribed_topics = {}
 
         SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
@@ -808,7 +808,7 @@ class TestJsonPayload(unittest.TestCase):
 
         msg = Msg(self.topic, payload, 0, 0)
 
-        SUT._on_message_json(msg)
+        SUT.on_message_multi(msg)
 
         SUT.logger.error.assert_called_once()
         mock_manager.append_data.assert_called_once_with(msg.topic, output_dict)
@@ -834,7 +834,7 @@ class TestJsonPayload(unittest.TestCase):
         mock_manager.get_fields.return_value = fields
         mock_manager.get_filters.return_value = {}
         mock_manager.get_filters.return_value = {}
-        mock_manager.get_message_dict.return_value = {'flatten_delimiter': '_'}
+        mock_manager.get_message_dict.return_value = {'type': 'json', 'flatten_delimiter': '_'}
         mock_manager.subscribed_topics = {}
 
         SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
@@ -849,7 +849,7 @@ class TestJsonPayload(unittest.TestCase):
 
         msg = Msg(self.topic, payload, 0, 0)
 
-        SUT._on_message_json(msg)
+        SUT.on_message_multi(msg)
 
         SUT.logger.error.assert_called_once()
         mock_manager.append_data.assert_called_once_with(msg.topic, output_dict)
@@ -873,7 +873,7 @@ class TestJsonPayload(unittest.TestCase):
         mock_manager.get_fields.return_value = fields
         mock_manager.get_filters.return_value = {}
         mock_manager.get_filters.return_value = {}
-        mock_manager.get_message_dict.return_value = {'flatten_delimiter': '_'}
+        mock_manager.get_message_dict.return_value = {'type': 'json', 'flatten_delimiter': '_'}
         mock_manager.subscribed_topics = {}
 
         SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
@@ -891,7 +891,7 @@ class TestJsonPayload(unittest.TestCase):
 
         msg = Msg(self.topic, payload, 0, 0)
 
-        SUT._on_message_json(msg)
+        SUT.on_message_multi(msg)
 
         self.assertEqual(mock_logger.error.call_count, 1)
 
@@ -914,7 +914,7 @@ class TestJsonPayload(unittest.TestCase):
         mock_manager.get_fields.return_value = fields
         mock_manager.get_filters.return_value = {}
         mock_manager.get_filters.return_value = {}
-        mock_manager.get_message_dict.return_value = {'flatten_delimiter': '_'}
+        mock_manager.get_message_dict.return_value = {'type': 'json', 'flatten_delimiter': '_'}
         mock_manager.subscribed_topics = {}
 
         SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
@@ -932,7 +932,7 @@ class TestJsonPayload(unittest.TestCase):
 
         msg = Msg(self.topic, payload, 0, 0)
 
-        SUT._on_message_json(msg)
+        SUT.on_message_multi(msg)
 
         mock_manager.append_data.assert_called_once_with(msg.topic, output_dict)
         call_args_list = mock_manager.append_data.call_args_list
@@ -952,7 +952,7 @@ class TestJsonPayload(unittest.TestCase):
         }
         mock_manager.get_fields.return_value = {}
         mock_manager.get_filters.return_value = {}
-        mock_manager.get_message_dict.return_value = {'flatten_delimiter': '_'}
+        mock_manager.get_message_dict.return_value = {'type': 'json', 'flatten_delimiter': '_'}
         mock_manager.subscribed_topics = {}
 
         SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
@@ -978,7 +978,7 @@ class TestJsonPayload(unittest.TestCase):
 
         msg = Msg(self.topic, payload, 0, 0)
 
-        SUT._on_message_json(msg)
+        SUT.on_message_multi(msg)
 
         mock_manager.append_data.assert_called_once_with(msg.topic, flattened_payload_dict)
 
@@ -994,7 +994,7 @@ class TestJsonPayload(unittest.TestCase):
         }
         mock_manager.get_fields.return_value = {'nested01_inTemp': {'name': 'inTemp'}}
         mock_manager.get_filters.return_value = {}
-        mock_manager.get_message_dict.return_value = {'flatten_delimiter': '_'}
+        mock_manager.get_message_dict.return_value = {'type': 'json', 'flatten_delimiter': '_'}
         mock_manager.subscribed_topics = {}
 
         message_handler_config_dict = copy.deepcopy(self.message_handler_config_dict)
@@ -1025,7 +1025,7 @@ class TestJsonPayload(unittest.TestCase):
 
         msg = Msg(self.topic, payload, 0, 0)
 
-        SUT._on_message_json(msg)
+        SUT.on_message_multi(msg)
 
         mock_manager.append_data.assert_called_once_with(msg.topic, flattened_payload_dict)
 
@@ -1034,7 +1034,7 @@ class TestJsonPayload(unittest.TestCase):
         mock_logger = mock.Mock(spec=Logger)
         mock_manager.get_msg_id_field.return_value = None
         mock_manager.get_fields_ignoring_msg_id.return_value = []
-        mock_manager.get_message_dict.return_value = {'flatten_delimiter': '_'}
+        mock_manager.get_message_dict.return_value = {'type': 'json', 'flatten_delimiter': '_'}
         mock_manager.subscribed_topics = {}
         mock_manager.get_filters.return_value = {}
 
@@ -1056,7 +1056,7 @@ class TestJsonPayload(unittest.TestCase):
 
         msg = Msg(self.topic, payload, 0, 0)
 
-        SUT._on_message_json(msg)
+        SUT.on_message_multi(msg)
 
         self.assertFalse(mock_manager.append_data.called)
 
@@ -1072,7 +1072,7 @@ class TestJsonPayload(unittest.TestCase):
         }
         mock_manager.get_fields.return_value = {}
         mock_manager.get_filters.return_value = {}
-        mock_manager.get_message_dict.return_value = {'flatten_delimiter': '_'}
+        mock_manager.get_message_dict.return_value = {'type': 'json', 'flatten_delimiter': '_'}
         mock_manager.subscribed_topics = {}
 
         message_handler_config_dict = {}
@@ -1101,7 +1101,7 @@ class TestJsonPayload(unittest.TestCase):
 
         msg = Msg(self.topic, payload, 0, 0)
 
-        SUT._on_message_json(msg)
+        SUT.on_message_multi(msg)
 
         mock_manager.append_data.assert_called_once_with(msg.topic, payload_dict)
         call_args_list = mock_manager.append_data.call_args_list
@@ -1121,7 +1121,7 @@ class TestJsonPayload(unittest.TestCase):
         }
         mock_manager.get_fields.return_value = {}
         mock_manager.get_filters.return_value = {}
-        mock_manager.get_message_dict.return_value = {'flatten_delimiter': '_'}
+        mock_manager.get_message_dict.return_value = {'type': 'json', 'flatten_delimiter': '_'}
         mock_manager.subscribed_topics = {}
 
         message_handler_config_dict = {}
@@ -1146,7 +1146,7 @@ class TestJsonPayload(unittest.TestCase):
 
         msg = Msg(self.topic, payload, 0, 0)
 
-        SUT._on_message_json(msg)
+        SUT.on_message_multi(msg)
 
         mock_manager.append_data.assert_called_once_with(msg.topic, payload_dict)
         call_args_list = mock_manager.append_data.call_args_list
@@ -1168,7 +1168,7 @@ class TestJsonPayload(unittest.TestCase):
         }
         mock_manager.get_fields.return_value = {}
         mock_manager.get_filters.return_value = filters
-        mock_manager.get_message_dict.return_value = {'flatten_delimiter': '_'}
+        mock_manager.get_message_dict.return_value = {'type': 'json', 'flatten_delimiter': '_'}
         mock_manager.subscribed_topics = {}
 
         message_handler_config_dict = {}
@@ -1193,7 +1193,7 @@ class TestJsonPayload(unittest.TestCase):
 
         msg = Msg(self.topic, payload, 0, 0)
 
-        SUT._on_message_json(msg)
+        SUT.on_message_multi(msg)
 
         mock_manager.append_data.assert_not_called()
         SUT.logger.info.assert_called_with(42002,
