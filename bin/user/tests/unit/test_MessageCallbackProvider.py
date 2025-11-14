@@ -236,7 +236,8 @@ class TestKeywordload(unittest.TestCase):
         mock_manager = mock.Mock(spec=TopicManager)
         mock_manager.get_msg_id_field.return_value = None
         mock_manager.get_fields_ignoring_msg_id.return_value = []
-        mock_manager.get_message_dict.return_value = {'keyword_delimiter': ',', 'keyword_separator': '='}
+        mock_manager.get_message_dict.return_value = {'type': 'keyword', 'keyword_delimiter': ',', 'keyword_separator': '='}
+
         mock_manager.subscribed_topics = {}
 
         SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
@@ -246,7 +247,7 @@ class TestKeywordload(unittest.TestCase):
 
         msg = Msg(self.topic, payload, 0, 0)
 
-        SUT._on_message_keyword(msg)
+        SUT.on_message_multi(msg)
         self.assertEqual(mock_logger.error.call_count, 3)
 
     def test_payload_bad_data(self):
@@ -260,7 +261,8 @@ class TestKeywordload(unittest.TestCase):
             'compiled': eval('lambda x: to_float(x)')
         }
         mock_manager.get_fields.return_value = {}
-        mock_manager.get_message_dict.return_value = {'keyword_delimiter': ',', 'keyword_separator': '='}
+        mock_manager.get_message_dict.return_value = {'type': 'keyword', 'keyword_delimiter': ',', 'keyword_separator': '='}
+
         mock_manager.subscribed_topics = {}
 
         SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
@@ -270,7 +272,7 @@ class TestKeywordload(unittest.TestCase):
 
         msg = Msg(self.topic, payload, 0, 0)
 
-        SUT._on_message_keyword(msg)
+        SUT.on_message_multi(msg)
         self.assertEqual(mock_logger.error.call_count, 3)
 
     def test_payload_missing_delimiter(self):
@@ -284,7 +286,8 @@ class TestKeywordload(unittest.TestCase):
             'compiled': eval('lambda x: to_float(x)')
         }
         mock_manager.get_fields.return_value = {}
-        mock_manager.get_message_dict.return_value = {'keyword_delimiter': ',', 'keyword_separator': '='}
+        mock_manager.get_message_dict.return_value = {'type': 'keyword', 'keyword_delimiter': ',', 'keyword_separator': '='}
+
         mock_manager.subscribed_topics = {}
 
         SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
@@ -294,7 +297,7 @@ class TestKeywordload(unittest.TestCase):
 
         msg = Msg(self.topic, payload, 0, 0)
 
-        SUT._on_message_keyword(msg)
+        SUT.on_message_multi(msg)
         self.assertEqual(mock_logger.error.call_count, 3)
 
     def test_payload_missing_separator(self):
@@ -304,7 +307,8 @@ class TestKeywordload(unittest.TestCase):
         mock_manager.get_fields_ignoring_msg_id.return_value = []
         mock_manager.get_ignore_value.return_value = False
         mock_manager.get_fields.return_value = {}
-        mock_manager.get_message_dict.return_value = {'keyword_delimiter': ',', 'keyword_separator': '='}
+        mock_manager.get_message_dict.return_value = {'type': 'keyword', 'keyword_delimiter': ',', 'keyword_separator': '='}
+
         mock_manager.subscribed_topics = {}
 
         SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
@@ -314,7 +318,7 @@ class TestKeywordload(unittest.TestCase):
 
         msg = Msg(self.topic, payload, 0, 0)
 
-        SUT._on_message_keyword(msg)
+        SUT.on_message_multi(msg)
         self.assertEqual(mock_logger.error.call_count, 3)
 
     def test_payload_missing_dateTime(self):
@@ -328,7 +332,8 @@ class TestKeywordload(unittest.TestCase):
             'compiled': eval('lambda x: to_float(x)')
         }
         mock_manager.get_fields.return_value = {}
-        mock_manager.get_message_dict.return_value = {'keyword_delimiter': ',', 'keyword_separator': '='}
+        mock_manager.get_message_dict.return_value = {'type': 'keyword', 'keyword_delimiter': ',', 'keyword_separator': '='}
+
         mock_manager.subscribed_topics = {}
 
         SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
@@ -346,7 +351,7 @@ class TestKeywordload(unittest.TestCase):
 
         msg = Msg(self.topic, payload_str, 0, 0)
 
-        SUT._on_message_keyword(msg)
+        SUT.on_message_multi(msg)
 
         mock_manager.append_data.assert_called_once_with(msg.topic, payload_dict)
 
@@ -361,7 +366,8 @@ class TestKeywordload(unittest.TestCase):
             'compiled': eval('lambda x: to_float(x)')
         }
         mock_manager.get_fields.return_value = {}
-        mock_manager.get_message_dict.return_value = {'keyword_delimiter': ',', 'keyword_separator': '='}
+        mock_manager.get_message_dict.return_value = {'type': 'keyword', 'keyword_delimiter': ',', 'keyword_separator': '='}
+
         mock_manager.subscribed_topics = {}
 
         SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
@@ -379,7 +385,7 @@ class TestKeywordload(unittest.TestCase):
 
         msg = Msg(self.topic, payload_str, 0, 0)
 
-        SUT._on_message_keyword(msg)
+        SUT.on_message_multi(msg)
         mock_manager.append_data.assert_called_once_with(msg.topic, payload_dict)
 
     def test_payload_good(self):
@@ -393,7 +399,8 @@ class TestKeywordload(unittest.TestCase):
             'compiled': eval('lambda x: to_float(x)')
         }
         mock_manager.get_fields.return_value = {}
-        mock_manager.get_message_dict.return_value = {'keyword_delimiter': ',', 'keyword_separator': '='}
+        mock_manager.get_message_dict.return_value = {'type': 'keyword', 'keyword_delimiter': ',', 'keyword_separator': '='}
+
         mock_manager.subscribed_topics = {}
 
         SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
@@ -412,7 +419,7 @@ class TestKeywordload(unittest.TestCase):
 
         msg = Msg(self.topic, payload_str, 0, 0)
 
-        SUT._on_message_keyword(msg)
+        SUT.on_message_multi(msg)
         mock_manager.append_data.assert_called_once_with(msg.topic, payload_dict)
 
     def test_ignore_default_true(self):
@@ -420,7 +427,7 @@ class TestKeywordload(unittest.TestCase):
         mock_logger = mock.Mock(spec=Logger)
         mock_manager.get_msg_id_field.return_value = None
         mock_manager.get_fields_ignoring_msg_id.return_value = []
-        mock_manager.get_message_dict.return_value = {'keyword_delimiter': ',', 'keyword_separator': '='}
+        mock_manager.get_message_dict.return_value = {'type': 'keyword', 'keyword_delimiter': ',', 'keyword_separator': '='}
         mock_manager.subscribed_topics = {}
 
         message_handler_config_dict = {}
@@ -447,7 +454,7 @@ class TestKeywordload(unittest.TestCase):
 
         msg = Msg(self.topic, payload_str, 0, 0)
 
-        SUT._on_message_keyword(msg)
+        SUT.on_message_multi(msg)
         self.assertFalse(mock_manager.append_data.called)
 
     def test_ignore_default_true_ignore_field_false(self):
@@ -461,7 +468,8 @@ class TestKeywordload(unittest.TestCase):
             'compiled': eval('lambda x: to_float(x)')
         }
         mock_manager.get_fields.return_value = {}
-        mock_manager.get_message_dict.return_value = {'keyword_delimiter': ',', 'keyword_separator': '='}
+        mock_manager.get_message_dict.return_value = {'type': 'keyword', 'keyword_delimiter': ',', 'keyword_separator': '='}
+
         mock_manager.subscribed_topics = {}
 
         message_handler_config_dict = {}
@@ -496,7 +504,7 @@ class TestKeywordload(unittest.TestCase):
 
         msg = Msg(self.topic, payload_str, 0, 0)
 
-        SUT._on_message_keyword(msg)
+        SUT.on_message_multi(msg)
         mock_manager.append_data.assert_called_once_with(msg.topic, payload_dict)
 
     def test_ignore_field_true(self):
@@ -510,7 +518,8 @@ class TestKeywordload(unittest.TestCase):
             'compiled': eval('lambda x: to_float(x)')
         }
         mock_manager.get_fields.return_value = {}
-        mock_manager.get_message_dict.return_value = {'keyword_delimiter': ',', 'keyword_separator': '='}
+        mock_manager.get_message_dict.return_value = {'type': 'keyword', 'keyword_delimiter': ',', 'keyword_separator': '='}
+
         mock_manager.subscribed_topics = {}
 
         message_handler_config_dict = {}
@@ -541,7 +550,7 @@ class TestKeywordload(unittest.TestCase):
 
         msg = Msg(self.topic, payload_str, 0, 0)
 
-        SUT._on_message_keyword(msg)
+        SUT.on_message_multi(msg)
         mock_manager.append_data.assert_called_once_with(msg.topic, payload_dict)
 
 class TestJsonPayload(unittest.TestCase):
