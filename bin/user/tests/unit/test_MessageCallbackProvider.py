@@ -1229,7 +1229,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
             'compiled': eval('lambda x: to_float(x)')
         }
         mock_manager.get_fields.return_value = {}
-        mock_manager.get_message_dict.return_value = {}
+        mock_manager.get_message_dict.return_value = {'type': 'individual'}
         mock_manager.subscribed_topics = {}
 
         SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
@@ -1239,7 +1239,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
 
         msg = Msg(self.topic, payload, 0, 0)
 
-        SUT._on_message_individual(msg)
+        SUT.on_message_multi(msg)
         self.assertEqual(mock_logger.error.call_count, 3)
 
     def test_empty_payload(self):
@@ -1253,7 +1253,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
             'compiled': eval('lambda x: to_float(x)')
         }
         mock_manager.get_fields.return_value = {}
-        mock_manager.get_message_dict.return_value = {}
+        mock_manager.get_message_dict.return_value = {'type': 'individual'}
         mock_manager.subscribed_topics = {}
 
         SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
@@ -1263,7 +1263,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
 
         msg = Msg(self.topic, payload, 0, 0)
 
-        SUT._on_message_individual(msg)
+        SUT.on_message_multi(msg)
         self.assertEqual(mock_logger.error.call_count, 3)
 
     def test_None_payload(self):
@@ -1278,7 +1278,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         }
         mock_manager.get_topic_tail_is_fieldname.return_value = False
         mock_manager.get_fields.return_value = {}
-        mock_manager.get_message_dict.return_value = {}
+        mock_manager.get_message_dict.return_value = {'type': 'individual'}
         mock_manager.subscribed_topics = {}
 
         SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
@@ -1286,7 +1286,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         payload = None
         msg = Msg(self.topic, payload, 0, 0)
 
-        SUT._on_message_individual(msg)
+        SUT.on_message_multi(msg)
 
         mock_manager.append_data.assert_called_once_with(msg.topic, {msg.topic: None}, msg.topic)
 
@@ -1302,7 +1302,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         }
         mock_manager.get_topic_tail_is_fieldname.return_value = False
         mock_manager.get_fields.return_value = {}
-        mock_manager.get_message_dict.return_value = {}
+        mock_manager.get_message_dict.return_value = {'type': 'individual'}
         mock_manager.subscribed_topics = {}
 
         topic = self.topic
@@ -1314,7 +1314,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
 
         msg = Msg(topic, payload_str, 0, 0)
 
-        SUT._on_message_individual(msg)
+        SUT.on_message_multi(msg)
         mock_manager.append_data.assert_called_once_with(msg.topic, {msg.topic: payload}, msg.topic)
 
         call_args_list = mock_manager.append_data.call_args_list
@@ -1333,7 +1333,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
             'compiled': eval('lambda x: to_float(x)')
         }
         mock_manager.get_fields.return_value = {}
-        mock_manager.get_message_dict.return_value = {}
+        mock_manager.get_message_dict.return_value = {'type': 'individual'}
         mock_manager.subscribed_topics = {}
 
         SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
@@ -1343,7 +1343,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
 
         msg = Msg(self.single_topic, payload_str, 0, 0)
 
-        SUT._on_message_individual(msg)
+        SUT.on_message_multi(msg)
         mock_manager.append_data.assert_called_once_with(msg.topic, {self.topic_end: payload}, self.topic_end)
 
     def test_multiple_topics(self):
@@ -1358,7 +1358,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         }
         mock_manager.get_topic_tail_is_fieldname.return_value = False
         mock_manager.get_fields.return_value = {}
-        mock_manager.get_message_dict.return_value = {}
+        mock_manager.get_message_dict.return_value = {'type': 'individual'}
         mock_manager.subscribed_topics = {}
 
         SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
@@ -1371,7 +1371,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
                   0,
                   0)
 
-        SUT._on_message_individual(msg)
+        SUT.on_message_multi(msg)
         mock_manager.append_data.assert_called_once_with(msg.topic, {msg.topic: payload}, msg.topic)
 
     def test_two_topics(self):
@@ -1386,7 +1386,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         }
         mock_manager.get_topic_tail_is_fieldname.return_value = False
         mock_manager.get_fields.return_value = {}
-        mock_manager.get_message_dict.return_value = {}
+        mock_manager.get_message_dict.return_value = {'type': 'individual'}
         mock_manager.subscribed_topics = {}
 
         SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
@@ -1399,7 +1399,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
                   0,
                   0)
 
-        SUT._on_message_individual(msg)
+        SUT.on_message_multi(msg)
         mock_manager.append_data.assert_called_once_with(msg.topic, {msg.topic: payload}, msg.topic)
 
     def test_ignore_default_true(self):
@@ -1407,7 +1407,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         mock_logger = mock.Mock(spec=Logger)
         mock_manager.get_msg_id_field.return_value = None
         mock_manager.get_fields_ignoring_msg_id.return_value = []
-        mock_manager.get_message_dict.return_value = {}
+        mock_manager.get_message_dict.return_value = {'type': 'individual'}
         mock_manager.subscribed_topics = {}
 
         message_handler_config_dict = {}
@@ -1425,7 +1425,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
 
         msg = Msg(self.single_topic, payload_str, 0, 0)
 
-        SUT._on_message_individual(msg)
+        SUT.on_message_multi(msg)
         self.assertFalse(mock_manager.append_data.called)
 
     def test_ignore_default_true_ignore_field_false(self):
@@ -1439,7 +1439,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
             'compiled': eval('lambda x: to_float(x)')
         }
         mock_manager.get_fields.return_value = {}
-        mock_manager.get_message_dict.return_value = {}
+        mock_manager.get_message_dict.return_value = {'type': 'individual'}
         mock_manager.subscribed_topics = {}
 
         message_handler_config_dict = {}
@@ -1461,7 +1461,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
 
         msg = Msg(self.single_topic, payload_str, 0, 0)
 
-        SUT._on_message_individual(msg)
+        SUT.on_message_multi(msg)
         mock_manager.append_data.assert_called_once_with(msg.topic, {self.topic_end: payload}, self.topic_end)
 
     def test_ignore_field_true(self):
@@ -1469,7 +1469,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
         mock_logger = mock.Mock(spec=Logger)
         mock_manager.get_msg_id_field.return_value = None
         mock_manager.get_fields_ignoring_msg_id.return_value = []
-        mock_manager.get_message_dict.return_value = {}
+        mock_manager.get_message_dict.return_value = {'type': 'individual'}
         mock_manager.subscribed_topics = {}
 
         message_handler_config_dict = {}
@@ -1489,7 +1489,7 @@ class TestIndividualPayloadSingleTopicFieldName(unittest.TestCase):
 
         msg = Msg(self.single_topic, payload_str, 0, 0)
 
-        SUT._on_message_individual(msg)
+        SUT.on_message_multi(msg)
         self.assertFalse(mock_manager.append_data.called)
 
 class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
@@ -1521,7 +1521,7 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
             'compiled': eval('lambda x: to_float(x)')
         }
         mock_manager.get_fields.return_value = {}
-        mock_manager.get_message_dict.return_value = {}
+        mock_manager.get_message_dict.return_value = {'type': 'individual'}
         mock_manager.subscribed_topics = {}
 
         SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
@@ -1531,7 +1531,7 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
 
         msg = Msg(self.topic, payload, 0, 0)
 
-        SUT._on_message_individual(msg)
+        SUT.on_message_multi(msg)
         self.assertEqual(mock_logger.error.call_count, 3)
 
     def test_empty_payload(self):
@@ -1545,7 +1545,7 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
             'compiled': eval('lambda x: to_float(x)')
         }
         mock_manager.get_fields.return_value = {}
-        mock_manager.get_message_dict.return_value = {}
+        mock_manager.get_message_dict.return_value = {'type': 'individual'}
         mock_manager.subscribed_topics = {}
 
         SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
@@ -1554,7 +1554,7 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
         payload = payload.encode("utf-8")
         msg = Msg(self.topic, payload, 0, 0)
 
-        SUT._on_message_individual(msg)
+        SUT.on_message_multi(msg)
         self.assertEqual(mock_logger.error.call_count, 3)
 
     def test_None_payload(self):
@@ -1569,7 +1569,7 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
         }
         mock_manager.get_topic_tail_is_fieldname.return_value = False
         mock_manager.get_fields.return_value = {}
-        mock_manager.get_message_dict.return_value = {}
+        mock_manager.get_message_dict.return_value = {'type': 'individual'}
         mock_manager.subscribed_topics = {}
 
         message_handler_config_dict = dict(self.message_handler_config_dict)
@@ -1578,7 +1578,7 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
 
         msg = Msg(self.topic, None, 0, 0)
 
-        SUT._on_message_individual(msg)
+        SUT.on_message_multi(msg)
         mock_manager.append_data.assert_called_once_with(msg.topic, {msg.topic: None}, msg.topic)
 
     def test_single_topic(self):
@@ -1592,7 +1592,7 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
             'compiled': eval('lambda x: to_float(x)')
         }
         mock_manager.get_fields.return_value = {}
-        mock_manager.get_message_dict.return_value = {}
+        mock_manager.get_message_dict.return_value = {'type': 'individual'}
         mock_manager.subscribed_topics = {}
 
         SUT = user.MQTTSubscribe.MessageCallbackProvider(configobj.ConfigObj(self.message_handler_config_dict), mock_logger, mock_manager)
@@ -1602,7 +1602,7 @@ class TestIndividualPayloadFullTopicFieldName(unittest.TestCase):
 
         msg = Msg(self.single_topic, payload_str, 0, 0)
 
-        SUT._on_message_individual(msg)
+        SUT.on_message_multi(msg)
         mock_manager.append_data.assert_called_once_with(msg.topic, {self.topic_end: payload}, self.topic_end)
 
 if __name__ == '__main__':
