@@ -520,7 +520,7 @@ import weewx.drivers
 from weewx.engine import StdEngine, StdService
 # pylint: enable=wrong-import-position
 
-VERSION = '3.1.0-rc04'
+VERSION = '3.1.0-rc05'
 DRIVER_NAME = 'MQTTSubscribeDriver'
 DRIVER_VERSION = VERSION
 
