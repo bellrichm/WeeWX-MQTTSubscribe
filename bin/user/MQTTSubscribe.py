@@ -1762,7 +1762,9 @@ class MessageCallbackProvider(AbstractMessageCallbackProvider):
             elif message_type == 'keyword':
                 self._on_message_keyword(msg)
             else:
-                self.logger.error(44010, MessageCallbackProvider.msgX[44010].format(topic=msg.topic, payload=msg.payload))
+                self.logger.error(44010, MessageCallbackProvider.msgX[44010].format(message_type=message_type,
+                                                                                    topic=msg.topic,
+                                                                                    payload=msg.payload))
         except Exception as exception:  # (want to catch all) pylint: disable=broad-except
             self._log_exception('on_message_multi', exception, msg)
 

@@ -219,6 +219,73 @@ class TestInitialization(unittest.TestCase):
         self.assertEqual(error.exception.args[0], f"{topic} topic is missing '[[[[message]]]] type=' section")
 
 # missing message section? todo
+class TestMultiMessageMethod(unittest.TestCase):
+    def setUp(self):
+        # reset stubs for every test
+        test_weewx_stubs.setup_stubs()
+
+    def tearDown(self):
+        # cleanup stubs
+        del sys.modules['weecfg']
+        del sys.modules['weeutil']
+        del sys.modules['weeutil.config']
+        del sys.modules['weeutil.weeutil']
+        del sys.modules['weeutil.logger']
+        del sys.modules['weewx']
+        del sys.modules['weewx.drivers']
+        del sys.modules['weewx.engine']
+
+    @staticmethod
+    def test_invalid_type():
+        type = random_string()
+
+        mock_logger = mock.Mock(spec=Logger)
+        mock_manager = mock.Mock(spec=TopicManager)
+        mock_manager.get_message_dict.return_value = {'type': type}
+
+        mock_manager.subscribed_topics = {}
+
+        config_dict = {}
+        config = configobj.ConfigObj(config_dict)
+
+        SUT = user.MQTTSubscribe.MessageCallbackProvider(config, mock_logger, mock_manager)
+
+        payload = random_string()
+        payload = payload.encode('UTF-8')
+        topic = random_string()
+
+        msg = Msg(topic, payload, 0, 0)
+
+        SUT.on_message_multi(msg)
+        mock_logger.error.assert_called_with(44010, f"Unknown message_type={type}. Skipping topic={topic} and payload={payload}")
+
+    def test_exception_raised(self):
+        traceback = random_string()
+        user.MQTTSubscribe.traceback.format_exc = mock.Mock(return_value=traceback)
+        mock_logger = mock.Mock(spec=Logger)
+        mock_manager = mock.Mock(spec=TopicManager)
+        mock_manager.get_message_dict = mock.Mock(side_effect=Exception("done"))
+
+        mock_manager.subscribed_topics = {}
+
+        config_dict = {}
+        config = configobj.ConfigObj(config_dict)
+
+        SUT = user.MQTTSubscribe.MessageCallbackProvider(config, mock_logger, mock_manager)
+
+        payload = random_string()
+        payload = payload.encode('UTF-8')
+        topic = random_string()
+
+        msg = Msg(topic, payload, 0, 0)
+
+        SUT.on_message_multi(msg)
+        self.assertEqual(mock_logger.error.call_count, 3)
+        mock_logger.error.assert_has_calls([
+            mock.call(44004, "MessageCallbackProvider on_message_multi failed with <class 'Exception'> and reason done."),
+            mock.call(44005, f"**** MessageCallbackProvider Ignoring topic={topic} and payload={payload}"),
+            mock.call(44006, f"**** MessageCallbackProvider {traceback}")
+        ])
 
 class TestKeywordload(unittest.TestCase):
     topic = random_string()
