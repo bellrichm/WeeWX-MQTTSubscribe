@@ -557,6 +557,26 @@ class TestDeprecatedOptions(unittest.TestCase):
         del sys.modules['weewx.drivers']
         del sys.modules['weewx.engine']
 
+    def test_a_deprecated_config_options_is_logged_and_exception_not_raised(self):
+        global mock_client
+        mock_client = mock.Mock()
+        config_dict = {}
+        config_dict['stop_on_validation_errors'] = False
+        config_dict['message_callback'] = {}
+        config_dict['topics'] = {}
+        config_dict['topic'] = random_string()
+        config = configobj.ConfigObj(config_dict)
+
+        mock_logger = mock.Mock(spec=Logger)
+
+        with mock.patch('user.MQTTSubscribe.MessageCallbackProvider'):
+            with mock.patch('user.MQTTSubscribe.TopicManager'):
+                with mock.patch('user.MQTTSubscribe.Logger', spec=Logger) as mock_logger:
+                    MQTTSubscriberTest(config, mock_logger)
+
+                self.assertEqual(mock_logger.info.call_count, 15)
+                mock_logger.info.assert_any_call(32016, "'topic' is deprecated, use '[[topics]][[[topic name]]]'")
+
     def test_topic_is_deprecated(self):
         config_dict = {}
         config_dict['stop_on_validation_errors'] = True

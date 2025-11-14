@@ -218,6 +218,39 @@ class TestgenLoopPackets(unittest.TestCase):
                 mock_time.sleep.assert_called_once()
                 self.assertEqual(mock_manager.return_value.get_data.call_count, 2)
 
+    def test_queue_empty2(self):
+        mock_engine = mock.Mock()
+        topic = random_string()
+        self.setup_queue_tests(topic)
+        queue = dict(
+            {'name': topic}
+        )
+        config_dict = copy.deepcopy(self.config_dict)
+        config_dict['MQTTSubscribeDriver']['max_loop_interval'] = 1
+
+        start_loop_period_ts = int(time.time() + 0.5)
+
+        with mock.patch('user.MQTTSubscribe.MQTTSubscriber') as mock_manager_class:
+            with mock.patch('user.MQTTSubscribe.time'):
+                with mock.patch('user.MQTTSubscribe.Logger'):
+                    mock_manager = mock.Mock()
+                    mock_manager_class.get_subscriber = mock_manager
+                    type(mock_manager.return_value).queues = mock.PropertyMock(return_value=[queue])
+                    type(mock_manager.return_value).get_data = mock.Mock(side_effect=[self.empty_generator(), self.generator([self.queue_data])])
+                    
+                    SUT = MQTTSubscribeDriver(config_dict, mock_engine)
+                    SUT.start_loop_period_ts = start_loop_period_ts
+
+                    gen = SUT.genLoopPackets()
+                    bar = next(gen, None)
+
+                    self.assertEqual(mock_manager.return_value.get_data.call_count, 1)
+                    self.assertDictEqual(bar, {
+                        'dateTime': start_loop_period_ts,
+                        'MQTTSubscribe': None,
+                        'usUnits': 1,
+                    })
+
     def test_queue_returns_none(self):
         mock_engine = mock.Mock()
         topic = random_string()

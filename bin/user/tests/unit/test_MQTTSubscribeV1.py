@@ -48,20 +48,12 @@ class TestCallbacks(unittest.TestCase):
         protocol = random_string()
         config_dict = {}
         config_dict['protocol'] = protocol
-        #config_dict['message_callback'] = {}
-        #config_dict['topics'] = {}
         config = configobj.ConfigObj(config_dict)
 
-        #rc = random.randint(1, 10)
-
-        #with mock.patch('user.MQTTSubscribe.MessageCallbackProvider'):
-        #    with mock.patch('user.MQTTSubscribe.TopicManager'):
-        #        with mock.patch('user.MQTTSubscribe.mqtt.Client'):
         with self.assertRaises(ValueError) as error:
             MQTTSubscriberV1(config, mock_logger)
 
         self.assertEqual(error.exception.args[0], f"Invalid protocol, {protocol}.")
-
 
     def tearDown(self):
         # cleanup stubs
@@ -73,6 +65,28 @@ class TestCallbacks(unittest.TestCase):
         del sys.modules['weewx']
         del sys.modules['weewx.drivers']
         del sys.modules['weewx.engine']
+
+    def test_on_connect(self):
+        mock_logger = mock.Mock(spec=Logger)
+
+        config_dict = {}
+        config_dict['message_callback'] = {}
+        config_dict['topics'] = {}
+        config = configobj.ConfigObj(config_dict)
+
+        flags = random_string()
+        rc = random.randint(1, 10)
+
+        with mock.patch('user.MQTTSubscribe.TopicManager'):
+            with mock.patch('user.MQTTSubscribe.mqtt.Client'):
+
+                SUT = MQTTSubscriberV1(config, mock_logger)
+
+                SUT._on_connect(None, {}, flags, rc)
+
+                self.assertEqual(SUT.logger.info.call_count, 16)
+                mock_logger.info.assert_any_call(62001, f"Connected with result code {rc}")
+                mock_logger.info.assert_any_call(62002, f"Connected flags {flags}")
 
     @staticmethod
     def test_on_disconnect():
