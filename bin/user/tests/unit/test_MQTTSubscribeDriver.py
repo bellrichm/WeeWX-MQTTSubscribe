@@ -237,7 +237,7 @@ class TestgenLoopPackets(unittest.TestCase):
                     mock_manager_class.get_subscriber = mock_manager
                     type(mock_manager.return_value).queues = mock.PropertyMock(return_value=[queue])
                     type(mock_manager.return_value).get_data = mock.Mock(side_effect=[self.empty_generator(), self.generator([self.queue_data])])
-                    
+
                     SUT = MQTTSubscribeDriver(config_dict, mock_engine)
                     SUT.start_loop_period_ts = start_loop_period_ts
 
