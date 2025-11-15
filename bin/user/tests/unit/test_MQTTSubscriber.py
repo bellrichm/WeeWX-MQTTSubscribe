@@ -233,6 +233,30 @@ class TestInitialization(unittest.TestCase):
                 SUT.client.username_pw_set.assert_called_once_with(username, password)
                 SUT.client.connect.assert_called_once()
 
+    def test_clean_start_not_valid(self):
+        global mock_client
+        clean_start = random_string()
+        config_dict = {
+            'clean_start': clean_start,
+            'topics': {
+                random_string(): {}
+            }
+        }
+
+        config = configobj.ConfigObj(config_dict)
+
+        mock_logger = mock.Mock(spec=Logger)
+
+        with mock.patch('user.MQTTSubscribe.MessageCallbackProvider'):
+            with mock.patch('user.MQTTSubscribe.TopicManager'):
+                mock_client = mock.Mock()
+                with self.assertRaises(ValueError) as error:
+
+                    MQTTSubscriberTest(config, mock_logger)
+
+                self.assertEqual(error.exception.args[0], f"'{clean_start}' is an invalid option for 'clean_start' option.")
+
+
 class Testtls_configuration(unittest.TestCase):
     def setUp(self):
         # reset stubs for every test
@@ -533,6 +557,26 @@ class TestDeprecatedOptions(unittest.TestCase):
         del sys.modules['weewx.drivers']
         del sys.modules['weewx.engine']
 
+    def test_a_deprecated_config_options_is_logged_and_exception_not_raised(self):
+        global mock_client
+        mock_client = mock.Mock()
+        config_dict = {}
+        config_dict['stop_on_validation_errors'] = False
+        config_dict['message_callback'] = {}
+        config_dict['topics'] = {}
+        config_dict['topic'] = random_string()
+        config = configobj.ConfigObj(config_dict)
+
+        mock_logger = mock.Mock(spec=Logger)
+
+        with mock.patch('user.MQTTSubscribe.MessageCallbackProvider'):
+            with mock.patch('user.MQTTSubscribe.TopicManager'):
+                with mock.patch('user.MQTTSubscribe.Logger', spec=Logger) as mock_logger:
+                    MQTTSubscriberTest(config, mock_logger)
+
+                self.assertEqual(mock_logger.info.call_count, 15)
+                mock_logger.info.assert_any_call(32016, "'topic' is deprecated, use '[[topics]][[[topic name]]]'")
+
     def test_topic_is_deprecated(self):
         config_dict = {}
         config_dict['stop_on_validation_errors'] = True
@@ -666,7 +710,7 @@ class TestDeprecatedOptions(unittest.TestCase):
                 SUT = MQTTSubscriberTest(config, mock_logger)
 
                 self.assertEqual(SUT.logger.info.call_count, 14)
-                mock_logger.info.assert_any_call("'use_topic_as_fieldname' option is no longer needed and can be removed.")
+                mock_logger.info.assert_any_call(32015, "'use_topic_as_fieldname' option is no longer needed and can be removed.")
 
 class TestStart(unittest.TestCase):
     def setUp(self):

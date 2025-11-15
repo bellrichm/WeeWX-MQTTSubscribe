@@ -16,6 +16,7 @@ from test_weewx_stubs import random_ascii_letters
 # setup stubs before importing MQTTSubscribe
 test_weewx_stubs.setup_stubs()
 
+from user.MQTTSubscribe import Logger
 from user.ExampleMessageCallbackProvider import MessageCallbackProvider
 
 class Msg:
@@ -72,7 +73,7 @@ class Test1(unittest.TestCase):
         self.assertDictEqual(observation_dict, results)
 
     def test_on_message(self):
-        mock_logger = mock.Mock()
+        mock_logger = mock.Mock(spec=Logger)
         mock_manager = mock.Mock()
         mock_manager.get_fields.return_value = {}
 

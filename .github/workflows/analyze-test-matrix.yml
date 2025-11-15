@@ -1,4 +1,4 @@
-name: Matrix analyze and test
+name: Analyze and test matrix
 
 on:
   push:

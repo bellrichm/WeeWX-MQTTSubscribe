@@ -38,6 +38,27 @@ class TestCallbacks(unittest.TestCase):
         del sys.modules['weewx.drivers']
         del sys.modules['weewx.engine']
 
+    def test_on_connect(self):
+        mock_logger = mock.Mock(spec=Logger)
+
+        config_dict = {}
+        config_dict['message_callback'] = {}
+        config_dict['topics'] = {}
+        config = configobj.ConfigObj(config_dict)
+
+        flags = random_string()
+        reason_code = paho.mqtt.reasoncodes.ReasonCode(paho.mqtt.packettypes.PacketTypes.CONNACK,
+                                                       identifier=random.randint(131, 138))
+
+        with mock.patch('user.MQTTSubscribe.TopicManager'):
+            SUT = MQTTSubscriberV2MQTT3(config, mock_logger)
+
+            SUT._on_connect(None, {}, flags, reason_code, None)
+
+            self.assertEqual(SUT.logger.info.call_count, 16)
+            mock_logger.info.assert_any_call(72001, f"Connected with result code {reason_code.value}")
+            mock_logger.info.assert_any_call(72002, f"Connected flags {flags}")
+
     @staticmethod
     def test_on_disconnect():
         mock_logger = mock.Mock(spec=Logger)
@@ -57,7 +78,7 @@ class TestCallbacks(unittest.TestCase):
 
                     SUT._on_disconnect(None, None, None, reason_code, None)
 
-                    SUT.logger.info.assert_called_with(f"Disconnected with result code {int(reason_code.value)}")
+                    SUT.logger.info.assert_called_with(72003, f"Disconnected with result code {int(reason_code.value)}")
 
     @staticmethod
     def test_on_subscribe():
@@ -80,8 +101,9 @@ class TestCallbacks(unittest.TestCase):
 
                     SUT._on_subscribe(None, None, mid, reason_codes, None)
 
-                    SUT.logger.info.assert_called_with(
-                        f"Subscribed to mid: {mid} is size {len(reason_codes)} has a QOS of {reason_codes[0].value}")
+                    SUT.logger.info.assert_called_with(72004,
+                                                       (f"Subscribed to mid: {mid} is size {len(reason_codes)} has a reason_code of "
+                                                        f"{reason_codes[0].value}"))
 
     @staticmethod
     def test_on_log():

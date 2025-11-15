@@ -7,6 +7,7 @@
 import unittest
 import mock
 
+import random
 import sys
 
 import test_weewx_stubs
@@ -54,7 +55,7 @@ class TestV4Logging(unittest.TestCase):
             mock_logger.parent = mock_parent_logger
             mock_logging.getLogger.return_value = mock_logger
 
-            SUT = Logger(random_string(), level=random_string())
+            SUT = Logger({'mode': random_string()}, level=random_string())
 
             mock_logging.addLevelName.assert_called_once_with(log_level, 'TRACE')
             SUT._logmsg.setLevel.assert_called_once_with(log_level)
@@ -75,7 +76,7 @@ class TestV4Logging(unittest.TestCase):
             mode = random_string()
             filename = random_string()
 
-            SUT = Logger(mode, filename=filename)
+            SUT = Logger({'mode': mode}, filename=filename)
 
             mock_logging.Formatter.assert_called_once()
             mock_logging.FileHandler.assert_called_once()
@@ -90,7 +91,7 @@ class TestV4Logging(unittest.TestCase):
             mock_logging._checkLevel.return_value = 0
             mode = random_string()
 
-            SUT = Logger(mode, console=True)
+            SUT = Logger({'mode': mode}, console=True)
 
             SUT._logmsg.addHandler.assert_called_once()
 
@@ -100,13 +101,13 @@ class TestV4Logging(unittest.TestCase):
 
             mock_logging._checkLevel.return_value = 0
             mode = random_string()
-            message = random_string()
+            message_text = random_string()
 
-            SUT = Logger(mode)
+            SUT = Logger({'mode': mode})
 
-            SUT.error(message)
+            SUT.error(random.randint(1, 100), message_text)
 
-            SUT._logmsg.error.assert_called_once_with(SUT.MSG_FORMAT, mode, message)
+            SUT._logmsg.error.assert_called_once_with(SUT.MSG_FORMAT, mode, message_text)
 
     @staticmethod
     def test_info_logged():
@@ -116,9 +117,9 @@ class TestV4Logging(unittest.TestCase):
             mode = random_string()
             message = random_string()
 
-            SUT = Logger(mode)
+            SUT = Logger({'mode': mode})
 
-            SUT.info(message)
+            SUT.info(random.randint(1, 100), message)
 
             SUT._logmsg.info.assert_called_once_with(SUT.MSG_FORMAT, mode, message)
 
@@ -130,9 +131,9 @@ class TestV4Logging(unittest.TestCase):
             mode = random_string()
             message = random_string()
 
-            SUT = Logger(mode)
+            SUT = Logger({'mode': mode})
 
-            SUT.debug(message)
+            SUT.debug(random.randint(1, 100), message)
 
             SUT._logmsg.debug.assert_called_once_with(SUT.MSG_FORMAT, mode, message)
 
@@ -145,9 +146,9 @@ class TestV4Logging(unittest.TestCase):
             mode = random_string()
             message = random_string()
 
-            SUT = Logger(mode)
+            SUT = Logger({'mode': mode})
 
-            SUT.trace(message)
+            SUT.trace(random.randint(1, 100), message)
 
             SUT._logmsg.debug.assert_called_once_with(SUT.MSG_FORMAT, mode, message)
 
@@ -159,17 +160,41 @@ class TestV4Logging(unittest.TestCase):
             mode = random_string()
             message = random_string()
 
-            SUT = Logger(mode)
+            SUT = Logger({'mode': mode})
             SUT.weewx_debug = 0
 
-            SUT.trace(message)
+            SUT.trace(random.randint(1, 100), message)
 
             SUT._logmsg.log.assert_called_once_with(5, SUT.MSG_FORMAT, mode, message)
 
-if __name__ == '__main__':
-    # test_suite = unittest.TestSuite()
-    # test_suite.addTest(TestV4Logging('test_test'))
-    # test_suite.addTest(TestV3Logging('test_base'))
-    # unittest.TextTestRunner().run(test_suite)
+    def test_test(self):
+        print('start')
 
-    unittest.main(exit=False)
+        with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
+            mock_logging._checkLevel.return_value = 0
+
+            config = {
+                'mode': random_string(),
+                'throttle': {
+                    'all': {
+                        'duration': 300,
+                        'max': 2
+                    }
+                }
+            }
+
+            SUT = Logger(config, console=True)
+
+            SUT._is_throttled("ERROR", None)
+
+            # SUT._logmsg.addHandler.assert_called_once()
+        print('end')
+
+
+if __name__ == '__main__':
+    test_suite = unittest.TestSuite()
+    testcase = 'test_test'
+    test_suite.addTest(TestV4Logging(testcase))
+    unittest.TextTestRunner().run(test_suite)
+
+    # unittest.main(exit=False)

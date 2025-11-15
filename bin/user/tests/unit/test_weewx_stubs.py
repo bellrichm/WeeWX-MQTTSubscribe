@@ -110,6 +110,12 @@ class units:
     def to_std_system(self):
         pass
 
+class Event:
+    def __init__(self, event_type, **argv):
+        self.event_type = event_type
+
+        for key in argv:
+            setattr(self, key, argv[key])
 class accum:
     def Accum(self):
         pass
@@ -156,6 +162,7 @@ def setup_stubs():
     sys.modules['weeutil.weeutil'].to_float = to_float
     sys.modules['weeutil.weeutil'].to_int = to_int
     sys.modules['weeutil.weeutil'].timestamp_to_string = timestamp_to_string
+    sys.modules['weeutil'].weeutil.timestamp_to_string = timestamp_to_string
     sys.modules['weeutil.weeutil'].to_sorted_string = to_sorted_string
     sys.modules['weeutil'].weeutil.option_as_list = option_as_list
     sys.modules['weeutil.logger'] = mock.MagicMock()
@@ -164,6 +171,7 @@ def setup_stubs():
     sys.modules['weewx'].drivers = drivers
     sys.modules['weewx.drivers'] = mock.MagicMock()
     sys.modules['weewx.engine'] = engine
+    sys.modules['weewx'].Event = Event
 
     sys.modules['weewx'].units = units
     sys.modules['weewx'].units.conversionDict['unit_name'] = {'foobar': lambda x: x / 1}

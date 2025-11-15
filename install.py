@@ -11,7 +11,7 @@ import configobj
 
 from weecfg.extension import ExtensionInstaller
 
-VERSION = '3.1.0-rc04'
+VERSION = '3.1.0-rc05'
 
 MQTTSUBSCRIBE_CONFIG = """
 
@@ -24,7 +24,7 @@ MQTTSUBSCRIBE_CONFIG = """
 
     # Controls if validation errors raise an exception (stopping WeeWX from starting) or only logged.
     # Default is false
-    stop_on_validation_errors = true    
+    stop_on_validation_errors = true
 
 [MQTTSubscribeService]
     # This section is for the MQTTSubscribe service.
@@ -37,9 +37,8 @@ MQTTSUBSCRIBE_CONFIG = """
     # Controls if validation errors raise an exception (stopping WeeWX from starting) or only logged.
     # Default is false
     stop_on_validation_errors = true
-    
-"""
 
+"""
 
 def loader():
     """ Load and return the extension installer. """

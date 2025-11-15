@@ -55,7 +55,7 @@ class MessageCallbackProvider(user.MQTTSubscribe.AbstractMessageCallbackProvider
     def _on_message(self, msg):
         # Wrap all the processing in a try, so it doesn't crash and burn on any error
         try:
-            self.logger.debug(f"MessageCallbackProvider For {msg.topic} received: {msg.payload}")
+            self.logger.debug(None, f"MessageCallbackProvider For {msg.topic} received: {msg.payload}")
             fields = self.topic_manager.get_fields(msg.topic)
             unit_system = self.topic_manager.get_unit_system(msg.topic)  # TODO - need public method
             root = xml.etree.ElementTree.fromstring(msg.payload)
@@ -65,5 +65,5 @@ class MessageCallbackProvider(user.MQTTSubscribe.AbstractMessageCallbackProvider
                 self.topic_manager.append_data(msg.topic, observations)
 
         except Exception as exception:
-            self.logger.error(f"MessageCallbackProvider on_message_keyword failed with: {exception}")
-            self.logger.error(f"**** MessageCallbackProvider Ignoring topic={msg.topic} and payload={msg.payload}")
+            self.logger.error(None, f"MessageCallbackProvider on_message_keyword failed with: {exception}")
+            self.logger.error(None, f"**** MessageCallbackProvider Ignoring topic={msg.topic} and payload={msg.payload}")

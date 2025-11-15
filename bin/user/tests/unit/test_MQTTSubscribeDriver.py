@@ -7,16 +7,18 @@
 import unittest
 import mock
 
+import copy
 import random
 import sys
 import time
 
+import weewx
 import test_weewx_stubs
-from test_weewx_stubs import random_string
+from test_weewx_stubs import random_string, startOfInterval, timestamp_to_string, to_sorted_string
 # setup stubs before importing MQTTSubscribe
 test_weewx_stubs.setup_stubs()
 
-from user.MQTTSubscribe import MQTTSubscribeDriver
+from user.MQTTSubscribe import MQTTSubscribeDriver, Logger
 
 class TestclosePort(unittest.TestCase):
     def setUp(self):
@@ -46,6 +48,28 @@ class TestclosePort(unittest.TestCase):
             SUT = MQTTSubscribeDriver(config_dict, mock_engine)
             SUT.closePort()
             SUT.subscriber.disconnect.assert_called_once()
+
+    @staticmethod
+    def test_new_archive_record():
+        mock_engine = mock.Mock()
+        stn_dict = {}
+        stn_dict['topic'] = random_string()
+        config_dict = {}
+        config_dict['MQTTSubscribeDriver'] = stn_dict
+
+        event = weewx.Event(weewx.NEW_ARCHIVE_RECORD,
+                            record={
+                                'dateTime': time.time()
+                            })
+
+        with mock.patch('user.MQTTSubscribe.MQTTSubscriber'):
+            with mock.patch('user.MQTTSubscribe.Logger', spec=Logger):
+                SUT = MQTTSubscribeDriver(config_dict, mock_engine)
+                SUT.new_archive_record(event)
+
+            SUT.logger.debug.assert_called_with(11002,
+                                                (f"data-> final record is {timestamp_to_string(event.record['dateTime'])}: "
+                                                 f"{to_sorted_string(event.record)}"))
 
 class TestArchiveInterval(unittest.TestCase):
     def setUp(self):
@@ -142,6 +166,36 @@ class TestgenLoopPackets(unittest.TestCase):
         return
         yield  # needed to make this a generator
 
+    def test_packet_is_earlier_than_previous(self):
+        mock_engine = mock.Mock()
+        topic = random_string()
+        self.setup_queue_tests(topic)
+        queue = dict(
+            {'name': topic}
+        )
+
+        with mock.patch('user.MQTTSubscribe.MQTTSubscriber') as mock_manager_class:
+            with mock.patch('user.MQTTSubscribe.Logger'):
+                mock_manager = mock.Mock()
+                mock_manager_class.get_subscriber = mock_manager
+                type(mock_manager.return_value).queues = mock.PropertyMock(return_value=[queue])
+                queue_data = copy.deepcopy(self.queue_data)
+                queue_data['dateTime'] = queue_data['dateTime'] + 2000
+                type(mock_manager.return_value).get_data = mock.Mock(side_effect=[self.generator([self.queue_data]),
+                                                                                  self.generator([queue_data])])
+
+                SUT = MQTTSubscribeDriver(self.config_dict, mock_engine)
+
+                prev_archive_start = self.queue_data['dateTime'] + 100
+                SUT.prev_archive_start = prev_archive_start
+                gen = SUT.genLoopPackets()
+                next(gen, None)
+
+            start_of_interval = startOfInterval(self.queue_data['dateTime'], SUT._archive_interval)
+            SUT.logger.error.assert_called_once_with(14001, (f"Ignoring record because {start_of_interval} archival start is "
+                                                             f"before previous archive start {prev_archive_start}: "
+                                                             f"{to_sorted_string(self.queue_data)}"))
+
     def test_queue_empty(self):
         mock_engine = mock.Mock()
         topic = random_string()
@@ -163,6 +217,39 @@ class TestgenLoopPackets(unittest.TestCase):
 
                 mock_time.sleep.assert_called_once()
                 self.assertEqual(mock_manager.return_value.get_data.call_count, 2)
+
+    def test_queue_empty2(self):
+        mock_engine = mock.Mock()
+        topic = random_string()
+        self.setup_queue_tests(topic)
+        queue = dict(
+            {'name': topic}
+        )
+        config_dict = copy.deepcopy(self.config_dict)
+        config_dict['MQTTSubscribeDriver']['max_loop_interval'] = 1
+
+        start_loop_period_ts = int(time.time() + 0.5)
+
+        with mock.patch('user.MQTTSubscribe.MQTTSubscriber') as mock_manager_class:
+            with mock.patch('user.MQTTSubscribe.time'):
+                with mock.patch('user.MQTTSubscribe.Logger'):
+                    mock_manager = mock.Mock()
+                    mock_manager_class.get_subscriber = mock_manager
+                    type(mock_manager.return_value).queues = mock.PropertyMock(return_value=[queue])
+                    type(mock_manager.return_value).get_data = mock.Mock(side_effect=[self.empty_generator(), self.generator([self.queue_data])])
+
+                    SUT = MQTTSubscribeDriver(config_dict, mock_engine)
+                    SUT.start_loop_period_ts = start_loop_period_ts
+
+                    gen = SUT.genLoopPackets()
+                    bar = next(gen, None)
+
+                    self.assertEqual(mock_manager.return_value.get_data.call_count, 1)
+                    self.assertDictEqual(bar, {
+                        'dateTime': start_loop_period_ts,
+                        'MQTTSubscribe': None,
+                        'usUnits': 1,
+                    })
 
     def test_queue_returns_none(self):
         mock_engine = mock.Mock()
@@ -361,4 +448,10 @@ class TestgenArchiveRecords(unittest.TestCase):
             self.assertListEqual(records, queue_list)
 
 if __name__ == '__main__':
+    test_suite = unittest.TestSuite()
+
+    testcase = 'test_packet_is_earlier_than_previous'
+    test_suite.addTest(TestgenLoopPackets(testcase))
+    # unittest.TextTestRunner().run(test_suite)
+
     unittest.main(exit=False)
