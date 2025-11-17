@@ -11,7 +11,7 @@ import configobj
 
 from weecfg.extension import ExtensionInstaller
 
-VERSION = '3.1.0-rc05'
+VERSION = '3.1.0-rc06'
 
 MQTTSUBSCRIBE_CONFIG = """
 
