@@ -150,31 +150,6 @@ class atestInitialization(unittest.TestCase):
 
                 user.MQTTSubscribe.MQTTSubscribeService(mock_StdEngine, config_dict)
 
-    def test_caching_invalid_software_generation(self):
-        mock_StdEngine = mock.Mock()
-
-        fieldname = random_string()
-        record_generation = 'hardware'
-
-        config_dict = {
-            'StdArchive': {
-                'record_generation': record_generation
-            },
-            'MQTTSubscribeService': {
-                'binding': 'loop'
-            }
-        }
-
-        with mock.patch('user.MQTTSubscribe.MQTTSubscriber') as mock_MQTTSubscribe:
-            with mock.patch('user.MQTTSubscribe.Logger'):
-                type(mock_MQTTSubscribe.return_value).cached_fields = \
-                    mock.PropertyMock(return_value={fieldname: {'expires_after': random.randint(1, 10)}})
-
-                with self.assertRaises(ValueError) as error:
-                    user.MQTTSubscribe.MQTTSubscribeService(mock_StdEngine, config_dict)
-                self.assertEqual(error.exception.args[0],
-                                 f"caching is not available with record generation of type '{record_generation}' and and binding of type 'loop'")
-
 class Testnew_loop_packet(unittest.TestCase):
     mock_StdEngine = mock.Mock()
 
@@ -295,7 +270,6 @@ class Testnew_loop_packet(unittest.TestCase):
 
                 SUT.shutDown()
 
-    @unittest.skip("Enable when issue 178 is completed (around line 2456)")
     def test_cached_field_in_packet(self):
         topic = random_string()
         current_time = int(time.time() + 0.5)
