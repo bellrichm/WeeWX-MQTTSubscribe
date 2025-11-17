@@ -2494,7 +2494,7 @@ class MQTTSubscribeService(StdService):
             for field in self.subscriber.cached_fields:
                 timestamp = event.record['dateTime']
                 if field in event.record:
-                    self.logger.trace(20010, MQTTSubscribeService.msgX[20010].format(value=event.rcord[field], field=field,
+                    self.logger.trace(20010, MQTTSubscribeService.msgX[20010].format(value=event.record[field], field=field,
                                                                                      units=event.record['usUnits'],
                                                                                      timestamp=timestamp))
                     self.logger.trace(20011, MQTTSubscribeService.msgX[20011].format(value=self.cache.dump_key(field)))
