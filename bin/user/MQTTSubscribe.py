@@ -661,6 +661,11 @@ class RecordCache():
     """ Manage the cache. """
     msgX = {
         # trace message
+        100001: "RecordCache is_valid {key} {timestamp} {expires_after}",
+        100002: "RecordCache get_value {key} {timestamp} {expires_after}",
+        100003: "RecordCache update_value {key} {value} {unit_system} {timestamp}",
+        100004: "RecordCache invalidate_value {key} {timestamp}",
+        100005: "RecordCache remove_value {key} ",
         # debug messages
         # informational messages
         # error messages
@@ -668,7 +673,8 @@ class RecordCache():
         109001: "Unit system does not match unit system of the cache. {unit_system} vs {self_unit_system}",
     }
 
-    def __init__(self):
+    def __init__(self, logger):
+        self.logger = logger
         self.unit_system = None
         self.cached_values = {}
 
@@ -678,6 +684,7 @@ class RecordCache():
 
     def is_valid(self, key, timestamp, expires_after):
         """ Check is the key is still not valid (has not expired and  not been marked invalid). """
+        self.logger.trace(100001, RecordCache.msgX[100001].format(key=key, timestamp=timestamp, expires_after=expires_after))
         valid = None
         if key in self.cached_values:
             valid = (expires_after is None or timestamp - self.cached_values[key]['timestamp'] < expires_after) and \
@@ -686,6 +693,7 @@ class RecordCache():
 
     def get_value(self, key, timestamp, expires_after):
         """ Get the cached value. """
+        self.logger.trace(100002, RecordCache.msgX[100002].format(key=key, timestamp=timestamp, expires_after=expires_after))
         if self.is_valid(key, timestamp, expires_after):
             return self.cached_values[key]['value']
 
@@ -693,6 +701,7 @@ class RecordCache():
 
     def update_value(self, key, value, unit_system, timestamp):
         """ Update the cached value. """
+        self.logger.trace(100003, RecordCache.msgX[100003].format(key=key, value=value, unit_system=unit_system, timestamp=timestamp))
         if self.unit_system is None:
             self.unit_system = unit_system
         if unit_system != self.unit_system:
@@ -708,6 +717,7 @@ class RecordCache():
                   For additional inforamtion see, https://groups.google.com/g/weewx-development/c/1cJBMAX3Wsg
                   Add also, https://github.com/bellrichm/WeeWX-MQTTSubscribe/issues/178
         """
+        self.logger.trace(100004, RecordCache.msgX[100004].format(key=key, timestamp=timestamp))
         if key in self.cached_values and timestamp < self.cached_values[key]['invalidated']:
             self.cached_values[key]['invalidated'] = timestamp
 
@@ -721,6 +731,7 @@ class RecordCache():
             If a key/value is no longer valid, use invalidate_value with current timestamp.
             Do not use this method to remove invalidated cached key/values.
         """
+        self.logger.trace(100005, RecordCache.msgX[100005].format(key=key))
         if key in self.cached_values:
             del self.cached_values[key]
 
@@ -1316,11 +1327,11 @@ class TopicManager():
         if not accumulator.isEmpty:
             aggregate_data = accumulator.getRecord()
             self.logger.trace(50012, TopicManager.msgX[50012].format(queue_name=queue_name,
-                                                                     dateTime=weeutil.weeutil.timestamp_to_string(data['dateTime']),
+                                                                     dateTime=weeutil.weeutil.timestamp_to_string(aggregate_data['dateTime']),
                                                                      aggregate_data=to_sorted_string(aggregate_data)))
             target_data = weewx.units.to_std_system(aggregate_data, units)
             self.logger.trace(50013, TopicManager.msgX[50013].format(queue_name=queue_name,
-                                                                     dateTime=weeutil.weeutil.timestamp_to_string(data['dateTime']),
+                                                                     dateTime=weeutil.weeutil.timestamp_to_string(aggregate_data['dateTime']),
                                                                      target_data=to_sorted_string(target_data)))
         else:
             self.logger.trace(50014, TopicManager.msgX[50014])
@@ -2408,7 +2419,7 @@ class MQTTSubscribeService(StdService):
 
         self.subscriber.start()
 
-        self.cache = RecordCache()
+        self.cache = RecordCache(self.logger)
 
         if self.binding not in ('loop', 'archive'):
             raise ValueError(MQTTSubscribeService.msgX[29003].format(binding=self.binding))

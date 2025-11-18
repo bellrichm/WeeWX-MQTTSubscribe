@@ -1,5 +1,5 @@
 #
-#    Copyright (c) 2020-2023 Rich Bell <bellrichm@gmail.com>
+#    Copyright (c) 2020-2025 Rich Bell <bellrichm@gmail.com>
 #
 #    See the file LICENSE.txt for your full rights.
 #
@@ -14,17 +14,20 @@ import sys
 import time
 
 import unittest
+import mock
 
 import test_weewx_stubs
 from test_weewx_stubs import random_string
 # setup stubs before importing MQTTSubscribe
 test_weewx_stubs.setup_stubs()
-from user.MQTTSubscribe import RecordCache
+from user.MQTTSubscribe import RecordCache, Logger
 
 class Test_clear_cache(unittest.TestCase):
     def test_cache_is_cleared(self):
+        mock_logger = mock.Mock(spec=Logger)
+
         unit_system = random.randint(1, 10)
-        SUT = RecordCache()
+        SUT = RecordCache(mock_logger)
 
         key = random_string()
         value = round(random.uniform(1, 100), 2)
@@ -51,8 +54,9 @@ class Test_update_value(unittest.TestCase):
         del sys.modules['weewx.engine']
 
     def test_value_is_updated(self):
+        mock_logger = mock.Mock(spec=Logger)
         unit_system = random.randint(1, 10)
-        SUT = RecordCache()
+        SUT = RecordCache(mock_logger)
 
         key = random_string()
         value = round(random.uniform(1, 100), 2)
@@ -64,8 +68,9 @@ class Test_update_value(unittest.TestCase):
         self.assertEqual(SUT.cached_values[key]['timestamp'], timestamp)
 
     def test_mismatch_unit_system(self):
+        mock_logger = mock.Mock(spec=Logger)
         unit_system = random.randint(1, 10)
-        SUT = RecordCache()
+        SUT = RecordCache(mock_logger)
 
         key = random_string()
 
@@ -95,15 +100,17 @@ class Test_get_value(unittest.TestCase):
         del sys.modules['weewx.engine']
 
     def test_key_not_in_cache(self):
-        SUT = RecordCache()
+        mock_logger = mock.Mock(spec=Logger)
+        SUT = RecordCache(mock_logger)
 
         value = SUT.get_value(random_string(), 0, None)
 
         self.assertIsNone(value)
 
     def test_get_data_expiration_is_none(self):
+        mock_logger = mock.Mock(spec=Logger)
         unit_system = random.randint(1, 10)
-        SUT = RecordCache()
+        SUT = RecordCache(mock_logger)
 
         key = random_string()
         value = round(random.uniform(1, 100), 2)
@@ -113,8 +120,9 @@ class Test_get_value(unittest.TestCase):
         self.assertEqual(cached_value, value)
 
     def test_get_data_is_not_expired(self):
+        mock_logger = mock.Mock(spec=Logger)
         unit_system = random.randint(1, 10)
-        SUT = RecordCache()
+        SUT = RecordCache(mock_logger)
         key = random_string()
         value = round(random.uniform(1, 100), 2)
         timestamp = time.time()
@@ -124,8 +132,9 @@ class Test_get_value(unittest.TestCase):
         self.assertEqual(cached_value, value)
 
     def test_get_data_is_expired(self):
+        mock_logger = mock.Mock(spec=Logger)
         unit_system = random.randint(1, 10)
-        SUT = RecordCache()
+        SUT = RecordCache(mock_logger)
         key = random_string()
         value = round(random.uniform(1, 100), 2)
         timestamp = time.time()
@@ -153,8 +162,9 @@ class Test_update_timestamp(unittest.TestCase):
 
     def test_key_does_not_exist(self):
         # somewhat silly test
+        mock_logger = mock.Mock(spec=Logger)
         unit_system = random.randint(1, 10)
-        SUT = RecordCache()
+        SUT = RecordCache(mock_logger)
         key = random_string()
         value = round(random.uniform(1, 100), 2)
         SUT.update_value(key, value, unit_system, time.time())
@@ -164,8 +174,9 @@ class Test_update_timestamp(unittest.TestCase):
         self.assertNotIn(nonexisting_key, SUT.cached_values)
 
     def test_key_exists(self):
+        mock_logger = mock.Mock(spec=Logger)
         unit_system = random.randint(1, 10)
-        SUT = RecordCache()
+        SUT = RecordCache(mock_logger)
         key = random_string()
         value = round(random.uniform(1, 100), 2)
         SUT.update_value(key, value, unit_system, 0)
@@ -192,8 +203,9 @@ class Test_remove_value(unittest.TestCase):
 
     def test_key_does_not_exist(self):
         # somewhat silly test
+        mock_logger = mock.Mock(spec=Logger)
         unit_system = random.randint(1, 10)
-        SUT = RecordCache()
+        SUT = RecordCache(mock_logger)
         key = random_string()
         value = round(random.uniform(1, 100), 2)
         SUT.update_value(key, value, unit_system, time.time())
@@ -203,8 +215,9 @@ class Test_remove_value(unittest.TestCase):
         self.assertNotIn(nonexisting_key, SUT.cached_values)
 
     def test_key_exists(self):
+        mock_logger = mock.Mock(spec=Logger)
         unit_system = random.randint(1, 10)
-        SUT = RecordCache()
+        SUT = RecordCache(mock_logger)
         key = random_string()
         value = round(random.uniform(1, 100), 2)
         SUT.update_value(key, value, unit_system, time.time())
