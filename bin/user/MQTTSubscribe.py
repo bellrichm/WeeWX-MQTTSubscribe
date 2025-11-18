@@ -509,6 +509,10 @@ user_root = os.getenv('USER_ROOT')
 if user_root is not None:
     sys.path.append(user_root + '/..')
 
+# This is the timestamp of the achive record being processed.
+# It is 'captured' via the NEw_ARCHIVE_RECORD event and added to every log message.
+global_archive_timestamp = 0
+
 import weeutil
 import weeutil.logger
 from weeutil.weeutil import to_bool, to_float, to_int, to_sorted_string
@@ -542,7 +546,7 @@ class ConversionError(ValueError):
 
 class Logger():
     """ The logging class. """
-    MSG_FORMAT = "(%s) %s"
+    MSG_FORMAT = "(%s) (%s) %s"
 
     def __init__(self, config, level='NOTSET', filename=None, console=None):
         self.console = console
@@ -641,21 +645,21 @@ class Logger():
     def trace(self, msg_id, msg_text):
         """ Log trace messages. """
         if self.weewx_debug > 1:
-            self._logmsg.debug(self.MSG_FORMAT, self.mode, msg_text)
+            self._logmsg.debug(self.MSG_FORMAT, self.mode, global_archive_timestamp, msg_text)
         else:
-            self._logmsg.log(self.trace_level, self.MSG_FORMAT, self.mode, msg_text)
+            self._logmsg.log(self.trace_level, self.MSG_FORMAT, self.mode, global_archive_timestamp, msg_text)
 
     def debug(self, msg_id, msg_text):
         """ Log debug messages. """
-        self._logmsg.debug(self.MSG_FORMAT, self.mode, msg_text)
+        self._logmsg.debug(self.MSG_FORMAT, self.mode, global_archive_timestamp, msg_text)
 
     def info(self, msg_id, msg_text):
         """ Log informational messages. """
-        self._logmsg.info(self.MSG_FORMAT, self.mode, msg_text)
+        self._logmsg.info(self.MSG_FORMAT, self.mode, global_archive_timestamp, msg_text)
 
     def error(self, msg_id, msg_text):
         """ Log error messages. """
-        self._logmsg.error(self.MSG_FORMAT, self.mode, msg_text)
+        self._logmsg.error(self.MSG_FORMAT, self.mode, global_archive_timestamp, msg_text)
 
 class RecordCache():
     """ Manage the cache. """
@@ -2472,6 +2476,7 @@ class MQTTSubscribeService(StdService):
     # If this is important, bind to the loop packet.
     def new_archive_record(self, event):
         """ Handle the new archive record event. """
+        global global_archive_timestamp
         self.logger.debug(21002, MQTTSubscribeService.msgX[21002].format(dateTime=weeutil.weeutil.timestamp_to_string(event.record['dateTime']),
                                                                          record=to_sorted_string(event.record)))
         if self.binding == 'archive':
@@ -2506,6 +2511,7 @@ class MQTTSubscribeService(StdService):
 
         self.logger.debug(21003, MQTTSubscribeService.msgX[21003].format(dateTime=weeutil.weeutil.timestamp_to_string(event.record['dateTime']),
                                                                          record=to_sorted_string(event.record)))
+        global_archive_timestamp = event.record['dateTime'] + event.record['interval'] * 60
 
 def loader(config_dict, engine):
     """ Load and return the driver. """
@@ -2591,8 +2597,10 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice):
 
     def new_archive_record(self, event):
         """ Handle the new archive record event. """
+        global global_archive_timestamp
         self.logger.debug(11002, MQTTSubscribeDriver.msgX[11002].format(dateTime=weeutil.weeutil.timestamp_to_string(event.record['dateTime']),
                                                                         record=to_sorted_string(event.record)))
+        global_archive_timestamp = event.record['dateTime'] + event.record['interval'] * 60
 
     def genLoopPackets(self):  # need to override parent - pylint: disable=invalid-name
         """ Called to generate loop packets. """
