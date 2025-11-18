@@ -661,16 +661,11 @@ class RecordCache():
     """ Manage the cache. """
     msgX = {
         # trace message
-        100001: "RecordCache is_valid {key} {timestamp} {expires_after}",
-        100002: "RecordCache is_valid {value}",
-        100003: "RecordCache get_value {key} {timestamp} {expires_after}",
-        100004: "RecordCache get_value {value}",
-        100005: "RecordCache update_value {key} {value} {unit_system} {timestamp}",
-        100006: "RecordCache update_value {value}",
-        100007: "RecordCache invalidate_value {key} {timestamp}",
-        100008: "RecordCache invalidate_value {value}",
-        100009: "RecordCache remove_value {key} ",
-        100010: "RecordCache remove_value {value}",
+        100001: "RecordCache is_valid key={key} timestamp={timestamp} expires_after={expires_after} cache_value={cache_value}",
+        100002: "RecordCache get_value key={key} timestamp={timestamp} expires_after={expires_after} cache_value={cache_value}",
+        100003: "RecordCache update_value key={key} value={value} unit_system={unit_system} timestamp={timestamp} cache_value={cache_value}",
+        100004: "RecordCache invalidate_value key={key} timestamp={timestamp} cache_value={cache_value}",
+        100005: "RecordCache remove_value key={key} cache_value={cache_value}",
         # debug messages
         # informational messages
         # error messages
@@ -689,8 +684,10 @@ class RecordCache():
 
     def is_valid(self, key, timestamp, expires_after):
         """ Check is the key is still not valid (has not expired and  not been marked invalid). """
-        self.logger.trace(100001, RecordCache.msgX[100001].format(key=key, timestamp=timestamp, expires_after=expires_after))
-        self.logger.trace(100002, RecordCache.msgX[100002].format(value=self.dump_key(key)))
+        self.logger.trace(100001, RecordCache.msgX[100001].format(key=key,
+                                                                  timestamp=timestamp,
+                                                                  expires_after=expires_after,
+                                                                  cache_value=self.dump_key(key)))
         valid = None
         if key in self.cached_values:
             valid = (expires_after is None or timestamp - self.cached_values[key]['timestamp'] < expires_after) and \
@@ -699,8 +696,10 @@ class RecordCache():
 
     def get_value(self, key, timestamp, expires_after):
         """ Get the cached value. """
-        self.logger.trace(100003, RecordCache.msgX[100003].format(key=key, timestamp=timestamp, expires_after=expires_after))
-        self.logger.trace(100004, RecordCache.msgX[100004].format(value=self.dump_key(key)))
+        self.logger.trace(100002, RecordCache.msgX[100002].format(key=key,
+                                                                  timestamp=timestamp,
+                                                                  expires_after=expires_after,
+                                                                  cache_value=self.dump_key(key)))
         if self.is_valid(key, timestamp, expires_after):
             return self.cached_values[key]['value']
 
@@ -708,8 +707,11 @@ class RecordCache():
 
     def update_value(self, key, value, unit_system, timestamp):
         """ Update the cached value. """
-        self.logger.trace(100005, RecordCache.msgX[100005].format(key=key, value=value, unit_system=unit_system, timestamp=timestamp))
-        self.logger.trace(100006, RecordCache.msgX[100006].format(value=self.dump_key(key)))
+        self.logger.trace(100003, RecordCache.msgX[100003].format(key=key,
+                                                                  value=value,
+                                                                  unit_system=unit_system,
+                                                                  timestamp=timestamp,
+                                                                  cache_value=self.dump_key(key)))
         if self.unit_system is None:
             self.unit_system = unit_system
         if unit_system != self.unit_system:
@@ -725,8 +727,7 @@ class RecordCache():
                   For additional inforamtion see, https://groups.google.com/g/weewx-development/c/1cJBMAX3Wsg
                   Add also, https://github.com/bellrichm/WeeWX-MQTTSubscribe/issues/178
         """
-        self.logger.trace(100007, RecordCache.msgX[100007].format(key=key, timestamp=timestamp))
-        self.logger.trace(100008, RecordCache.msgX[100008].format(value=self.dump_key(key)))
+        self.logger.trace(100004, RecordCache.msgX[100004].format(key=key, timestamp=timestamp, cache_value=self.dump_key(key)))
         if key in self.cached_values and timestamp < self.cached_values[key]['invalidated']:
             self.cached_values[key]['invalidated'] = timestamp
 
@@ -740,8 +741,7 @@ class RecordCache():
             If a key/value is no longer valid, use invalidate_value with current timestamp.
             Do not use this method to remove invalidated cached key/values.
         """
-        self.logger.trace(100009, RecordCache.msgX[100009].format(key=key))
-        self.logger.trace(100010, RecordCache.msgX[100010].format(value=self.dump_key(key)))
+        self.logger.trace(100005, RecordCache.msgX[100005].format(key=key, cache_value=self.dump_key(key)))
         if key in self.cached_values:
             del self.cached_values[key]
 
