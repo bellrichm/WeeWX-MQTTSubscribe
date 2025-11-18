@@ -668,9 +668,9 @@ class RecordCache():
         100005: "RecordCache update_value {key} {value} {unit_system} {timestamp}",
         100006: "RecordCache update_value {value}",
         100007: "RecordCache invalidate_value {key} {timestamp}",
-        100008: "RecordCache update_value {value}",
+        100008: "RecordCache invalidate_value {value}",
         100009: "RecordCache remove_value {key} ",
-        100010: "RecordCache update_value {value}",
+        100010: "RecordCache remove_value {value}",
         # debug messages
         # informational messages
         # error messages
