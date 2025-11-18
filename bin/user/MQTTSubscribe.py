@@ -662,10 +662,15 @@ class RecordCache():
     msgX = {
         # trace message
         100001: "RecordCache is_valid {key} {timestamp} {expires_after}",
-        100002: "RecordCache get_value {key} {timestamp} {expires_after}",
-        100003: "RecordCache update_value {key} {value} {unit_system} {timestamp}",
-        100004: "RecordCache invalidate_value {key} {timestamp}",
-        100005: "RecordCache remove_value {key} ",
+        100002: "RecordCache is_valid {value}",
+        100003: "RecordCache get_value {key} {timestamp} {expires_after}",
+        100004: "RecordCache get_value {value}",
+        100005: "RecordCache update_value {key} {value} {unit_system} {timestamp}",
+        100006: "RecordCache update_value {value}",
+        100007: "RecordCache invalidate_value {key} {timestamp}",
+        100008: "RecordCache update_value {value}",
+        100009: "RecordCache remove_value {key} ",
+        100010: "RecordCache update_value {value}",
         # debug messages
         # informational messages
         # error messages
@@ -685,6 +690,7 @@ class RecordCache():
     def is_valid(self, key, timestamp, expires_after):
         """ Check is the key is still not valid (has not expired and  not been marked invalid). """
         self.logger.trace(100001, RecordCache.msgX[100001].format(key=key, timestamp=timestamp, expires_after=expires_after))
+        self.logger.trace(100002, RecordCache.msgX[100002].format(value=self.dump_key(key)))
         valid = None
         if key in self.cached_values:
             valid = (expires_after is None or timestamp - self.cached_values[key]['timestamp'] < expires_after) and \
@@ -693,7 +699,8 @@ class RecordCache():
 
     def get_value(self, key, timestamp, expires_after):
         """ Get the cached value. """
-        self.logger.trace(100002, RecordCache.msgX[100002].format(key=key, timestamp=timestamp, expires_after=expires_after))
+        self.logger.trace(100003, RecordCache.msgX[100003].format(key=key, timestamp=timestamp, expires_after=expires_after))
+        self.logger.trace(100004, RecordCache.msgX[100004].format(value=self.dump_key(key)))
         if self.is_valid(key, timestamp, expires_after):
             return self.cached_values[key]['value']
 
@@ -701,7 +708,8 @@ class RecordCache():
 
     def update_value(self, key, value, unit_system, timestamp):
         """ Update the cached value. """
-        self.logger.trace(100003, RecordCache.msgX[100003].format(key=key, value=value, unit_system=unit_system, timestamp=timestamp))
+        self.logger.trace(100005, RecordCache.msgX[100005].format(key=key, value=value, unit_system=unit_system, timestamp=timestamp))
+        self.logger.trace(100006, RecordCache.msgX[100006].format(value=self.dump_key(key)))
         if self.unit_system is None:
             self.unit_system = unit_system
         if unit_system != self.unit_system:
@@ -717,7 +725,8 @@ class RecordCache():
                   For additional inforamtion see, https://groups.google.com/g/weewx-development/c/1cJBMAX3Wsg
                   Add also, https://github.com/bellrichm/WeeWX-MQTTSubscribe/issues/178
         """
-        self.logger.trace(100004, RecordCache.msgX[100004].format(key=key, timestamp=timestamp))
+        self.logger.trace(100007, RecordCache.msgX[100007].format(key=key, timestamp=timestamp))
+        self.logger.trace(100008, RecordCache.msgX[100008].format(value=self.dump_key(key)))
         if key in self.cached_values and timestamp < self.cached_values[key]['invalidated']:
             self.cached_values[key]['invalidated'] = timestamp
 
@@ -731,7 +740,8 @@ class RecordCache():
             If a key/value is no longer valid, use invalidate_value with current timestamp.
             Do not use this method to remove invalidated cached key/values.
         """
-        self.logger.trace(100005, RecordCache.msgX[100005].format(key=key))
+        self.logger.trace(100009, RecordCache.msgX[100009].format(key=key))
+        self.logger.trace(100010, RecordCache.msgX[100010].format(value=self.dump_key(key)))
         if key in self.cached_values:
             del self.cached_values[key]
 
@@ -2351,19 +2361,9 @@ class MQTTSubscribeService(StdService):
         20001: "Packet prior to update is: {dateTime} {packet}",
         20002: "Queue {queue_name} has data: {target_data}",
         20003: "Packet after update is: {dateTime} {packet}",
-        20004: "field: {field} value: {packet} dateTime: {dateTime}",
-        20005: "cache dump before invalidate_value: {value}",
-        20006: "cache dump after invalidate_value: {value}",
-        20007: "Record prior to update is: {dateTime} {record}",
-        20008: "Queue {queue_name} has data: {target_data}",
-        20009: "Record after update is: {dateTime} {record}",
-        20010: "Update cache {value} to {field} with units of {units} and timestamp of {timestamp}",
-        20011: "cache dump before update_value: {value}",
-        20012: "cache dump after update_value: {value}",
-        20013: "cache dump before get_value: {value}",
-        20014: "field: {field} timestamp: {timestamp} is_valid: {is_valid}",
-        20015: "get_value returned value: {target_data}",
-        20016: "target_data after cache lookup is: {target_data}",
+        20004: "Record prior to update is: {dateTime} {record}",
+        20005: "Queue {queue_name} has data: {target_data}",
+        20006: "Record after update is: {dateTime} {record}",
         # debug messages
         21001: "data-> final packet is {dateTime}: {packet}",
         21002: "data-> incoming record is {dateTime}: {record}",
@@ -2458,14 +2458,7 @@ class MQTTSubscribeService(StdService):
             if self.subscriber.cached_fields:
                 for field in self.subscriber.cached_fields:
                     if field in event.packet:
-                        self.logger.trace(20004,
-                                          MQTTSubscribeService.msgX[20004].
-                                          format(field=field,
-                                                 packet=event.packet[field],
-                                                 dateTime=weeutil.weeutil.timestamp_to_string(event.packet['dateTime'])))
-                        self.logger.trace(20005, MQTTSubscribeService.msgX[20005].format(value=self.cache.dump_key(field)))
                         self.cache.invalidate_value(field, event.packet['dateTime'])
-                        self.logger.trace(20006, MQTTSubscribeService.msgX[20006].format(value=self.cache.dump_key(field)))
             self.logger.debug(21001,
                               MQTTSubscribeService.msgX[21001].format(dateTime=weeutil.weeutil.timestamp_to_string(event.packet['dateTime']),
                                                                       packet=to_sorted_string(event.packet)))
@@ -2482,14 +2475,14 @@ class MQTTSubscribeService(StdService):
             start_ts = end_ts - event.record['interval'] * 60
 
             for queue in self.subscriber.queues:
-                self.logger.trace(20007,
-                                  MQTTSubscribeService.msgX[20007].format(dateTime=weeutil.weeutil.timestamp_to_string(event.record['dateTime']),
+                self.logger.trace(20004,
+                                  MQTTSubscribeService.msgX[20004].format(dateTime=weeutil.weeutil.timestamp_to_string(event.record['dateTime']),
                                                                           record=to_sorted_string(event.record)))
                 target_data = self.subscriber.get_accumulated_data(queue, start_ts, end_ts, event.record['usUnits'])
-                self.logger.trace(20008, MQTTSubscribeService.msgX[20008].format(queue_name=queue['name'], target_data=target_data))
+                self.logger.trace(20005, MQTTSubscribeService.msgX[20005].format(queue_name=queue['name'], target_data=target_data))
                 event.record.update(target_data)
-                self.logger.trace(20009,
-                                  MQTTSubscribeService.msgX[20009].format(dateTime=weeutil.weeutil.timestamp_to_string(event.record['dateTime']),
+                self.logger.trace(20006,
+                                  MQTTSubscribeService.msgX[20006].format(dateTime=weeutil.weeutil.timestamp_to_string(event.record['dateTime']),
                                                                           record=to_sorted_string(event.record)))
 
         if self.subscriber.cached_fields:
@@ -2497,27 +2490,14 @@ class MQTTSubscribeService(StdService):
             for field in self.subscriber.cached_fields:
                 timestamp = event.record['dateTime']
                 if field in event.record:
-                    self.logger.trace(20010, MQTTSubscribeService.msgX[20010].format(value=event.record[field], field=field,
-                                                                                     units=event.record['usUnits'],
-                                                                                     timestamp=timestamp))
-                    self.logger.trace(20011, MQTTSubscribeService.msgX[20011].format(value=self.cache.dump_key(field)))
                     self.cache.update_value(field,
                                             event.record[field],
                                             event.record['usUnits'],
                                             timestamp)
-                    self.logger.trace(20012, MQTTSubscribeService.msgX[20012].format(value=self.cache.dump_key(field)))
                 else:
-                    is_valid = self.cache.is_valid(field,
-                                                   timestamp,
-                                                   self.subscriber.cached_fields[field]['expires_after'])
-                    self.logger.trace(20013, MQTTSubscribeService.msgX[20013].format(value=self.cache.dump_key(field)))
-                    self.logger.trace(20014, MQTTSubscribeService.msgX[20014].format(field=field, timestamp=time, is_valid=is_valid))
                     target_data[field] = self.cache.get_value(field,
                                                               timestamp,
                                                               self.subscriber.cached_fields[field]['expires_after'])
-                    self.logger.trace(20015, MQTTSubscribeService.msgX[20015].format(target_data=target_data[field]))
-                    self.logger.trace(20016, MQTTSubscribeService.msgX[20016].format(target_data=to_sorted_string(target_data)))
-
             event.record.update(target_data)
 
         self.logger.debug(21003, MQTTSubscribeService.msgX[21003].format(dateTime=weeutil.weeutil.timestamp_to_string(event.record['dateTime']),
