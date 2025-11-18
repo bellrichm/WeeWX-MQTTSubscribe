@@ -661,7 +661,8 @@ class RecordCache():
     """ Manage the cache. """
     msgX = {
         # trace message
-        100001: "RecordCache is_valid key={key} timestamp={timestamp} expires_after={expires_after} cache_value={cache_value}",
+        100001:
+        "RecordCache is_valid key={key} timestamp={timestamp} expires_after={expires_after} cache_value={cache_value} is_valid={is_valid}",
         100002: "RecordCache get_value key={key} timestamp={timestamp} expires_after={expires_after} cache_value={cache_value}",
         100003: "RecordCache update_value key={key} value={value} unit_system={unit_system} timestamp={timestamp} cache_value={cache_value}",
         100004: "RecordCache invalidate_value key={key} timestamp={timestamp} cache_value={cache_value}",
@@ -684,14 +685,17 @@ class RecordCache():
 
     def is_valid(self, key, timestamp, expires_after):
         """ Check is the key is still not valid (has not expired and  not been marked invalid). """
-        self.logger.trace(100001, RecordCache.msgX[100001].format(key=key,
-                                                                  timestamp=timestamp,
-                                                                  expires_after=expires_after,
-                                                                  cache_value=self.dump_key(key)))
-        valid = None
+
+        valid = False
         if key in self.cached_values:
             valid = (expires_after is None or timestamp - self.cached_values[key]['timestamp'] < expires_after) and \
                 self.cached_values[key]['invalidated'] > timestamp
+
+        self.logger.trace(100001, RecordCache.msgX[100001].format(key=key,
+                                                                  timestamp=timestamp,
+                                                                  expires_after=expires_after,
+                                                                  cache_value=self.dump_key(key),
+                                                                  is_valid=valid))
         return valid
 
     def get_value(self, key, timestamp, expires_after):
