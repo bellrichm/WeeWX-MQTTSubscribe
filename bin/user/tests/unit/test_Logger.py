@@ -107,7 +107,7 @@ class TestV4Logging(unittest.TestCase):
 
             SUT.error(random.randint(1, 100), message_text)
 
-            SUT._logmsg.error.assert_called_once_with(SUT.MSG_FORMAT, mode, 0, message_text)
+            SUT._logmsg.error.assert_called_once_with(SUT.MSG_FORMAT, mode, -1, message_text)
 
     @staticmethod
     def test_info_logged():
@@ -121,7 +121,7 @@ class TestV4Logging(unittest.TestCase):
 
             SUT.info(random.randint(1, 100), message)
 
-            SUT._logmsg.info.assert_called_once_with(SUT.MSG_FORMAT, mode, 0, message)
+            SUT._logmsg.info.assert_called_once_with(SUT.MSG_FORMAT, mode, -1, message)
 
     @staticmethod
     def test_debug_logged():
@@ -135,7 +135,7 @@ class TestV4Logging(unittest.TestCase):
 
             SUT.debug(random.randint(1, 100), message)
 
-            SUT._logmsg.debug.assert_called_once_with(SUT.MSG_FORMAT, mode, 0, message)
+            SUT._logmsg.debug.assert_called_once_with(SUT.MSG_FORMAT, mode, -1, message)
 
     @staticmethod
     def test_trace_logged_with_debug_set():
@@ -150,7 +150,7 @@ class TestV4Logging(unittest.TestCase):
 
             SUT.trace(random.randint(1, 100), message)
 
-            SUT._logmsg.debug.assert_called_once_with(SUT.MSG_FORMAT, mode, 0, message)
+            SUT._logmsg.debug.assert_called_once_with(SUT.MSG_FORMAT, mode, -1, message)
 
     @staticmethod
     def test_trace_logged_with_debug_not_set():
@@ -165,7 +165,7 @@ class TestV4Logging(unittest.TestCase):
 
             SUT.trace(random.randint(1, 100), message)
 
-            SUT._logmsg.log.assert_called_once_with(5, SUT.MSG_FORMAT, mode, 0, message)
+            SUT._logmsg.log.assert_called_once_with(5, SUT.MSG_FORMAT, mode, -1, message)
 
     def test_test(self):
         print('start')

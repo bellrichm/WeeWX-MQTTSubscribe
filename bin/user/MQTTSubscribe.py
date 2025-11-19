@@ -510,8 +510,9 @@ if user_root is not None:
     sys.path.append(user_root + '/..')
 
 # This is the timestamp of the achive record being processed.
-# It is 'captured' via the NEw_ARCHIVE_RECORD event and added to every log message.
-global_archive_timestamp = 0
+# It is 'captured' via the NEw_ARCHIVE_RECORD event but due to WeeWX processing, updated via the END_ARCHIVE_PERIOD.
+# It is added to every log message.
+global_archive_timestamp = -1
 
 import weeutil
 import weeutil.logger
@@ -2419,6 +2420,8 @@ class MQTTSubscribeService(StdService):
         if 'archive_topic' in service_dict:
             raise ValueError(MQTTSubscribeService.msgX[29002].format(archive_topic=service_dict['archive_topic']))
 
+        self.next_archive_timestamp = 0
+
         self.end_ts = 0  # prime for processing loop packet
 
         self.subscriber = MQTTSubscriber.get_subscriber(service_dict, self.logger)
@@ -2433,6 +2436,7 @@ class MQTTSubscribeService(StdService):
             raise ValueError(MQTTSubscribeService.msgX[29003].format(binding=self.binding))
 
         self.bind(weewx.NEW_ARCHIVE_RECORD, self.new_archive_record)
+        engine.bind(weewx.END_ARCHIVE_PERIOD, self.end_archive_period)
 
         if self.binding == 'loop':
             self.bind(weewx.NEW_LOOP_PACKET, self.new_loop_packet)
@@ -2476,7 +2480,6 @@ class MQTTSubscribeService(StdService):
     # If this is important, bind to the loop packet.
     def new_archive_record(self, event):
         """ Handle the new archive record event. """
-        global global_archive_timestamp
         self.logger.debug(21002, MQTTSubscribeService.msgX[21002].format(dateTime=weeutil.weeutil.timestamp_to_string(event.record['dateTime']),
                                                                          record=to_sorted_string(event.record)))
         if self.binding == 'archive':
@@ -2511,7 +2514,12 @@ class MQTTSubscribeService(StdService):
 
         self.logger.debug(21003, MQTTSubscribeService.msgX[21003].format(dateTime=weeutil.weeutil.timestamp_to_string(event.record['dateTime']),
                                                                          record=to_sorted_string(event.record)))
-        global_archive_timestamp = event.record['dateTime'] + event.record['interval'] * 60
+        self.next_archive_timestamp = int(event.record['dateTime'] + event.record['interval'] * 120)
+
+    def end_archive_period(self, event):
+        """ Handle the end archive period event."""
+        global global_archive_timestamp
+        global_archive_timestamp = self.next_archive_timestamp
 
 def loader(config_dict, engine):
     """ Load and return the driver. """
@@ -2567,8 +2575,10 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice):
         self._archive_interval = to_int(stn_dict.get('archive_interval', 300))
         self.archive_topic = stn_dict.get('archive_topic', None)
         self.prev_archive_start = 0
+        self.next_archive_timestamp = 0
 
         engine.bind(weewx.NEW_ARCHIVE_RECORD, self.new_archive_record)
+        engine.bind(weewx.END_ARCHIVE_PERIOD, self.end_archive_period)
 
         self.subscriber = MQTTSubscriber.get_subscriber(stn_dict, self.logger)
 
@@ -2597,10 +2607,14 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice):
 
     def new_archive_record(self, event):
         """ Handle the new archive record event. """
-        global global_archive_timestamp
         self.logger.debug(11002, MQTTSubscribeDriver.msgX[11002].format(dateTime=weeutil.weeutil.timestamp_to_string(event.record['dateTime']),
                                                                         record=to_sorted_string(event.record)))
-        global_archive_timestamp = event.record['dateTime'] + event.record['interval'] * 60
+        self.next_archive_timestamp = int(event.record['dateTime'] + event.record['interval'] * 120)
+
+    def end_archive_period(self, event):
+        """ Handle the end archive period event."""
+        global global_archive_timestamp
+        global_archive_timestamp = self.next_archive_timestamp
 
     def genLoopPackets(self):  # need to override parent - pylint: disable=invalid-name
         """ Called to generate loop packets. """
