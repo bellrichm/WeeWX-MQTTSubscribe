@@ -7,6 +7,7 @@
 import unittest
 import mock
 
+import configobj
 import random
 import sys
 
@@ -167,34 +168,66 @@ class TestV4Logging(unittest.TestCase):
 
             SUT._logmsg.log.assert_called_once_with(5, SUT.MSG_FORMAT, mode, message)
 
-    def test_test(self):
+class TestThrottling(unittest.TestCase):
+    def setUp(self):
+        # reset stubs for every test
+        test_weewx_stubs.setup_stubs()
+
+    def tearDown(self):
+        # cleanup stubs
+        del sys.modules['weecfg']
+        del sys.modules['weeutil']
+        del sys.modules['weeutil.config']
+        del sys.modules['weeutil.weeutil']
+        del sys.modules['weeutil.logger']
+        del sys.modules['weewx']
+        del sys.modules['weewx.drivers']
+        del sys.modules['weewx.engine']
+
+    def test_initialization(self):
         print('start')
 
         with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
             mock_logging._checkLevel.return_value = 0
 
-            config = {
+            config_dict = {
                 'mode': random_string(),
                 'throttle': {
-                    'all': {
-                        'duration': 300,
-                        'max': 2
+                    'category': {
+                        'all': {
+                            'duration': 300,
+                            'max': 2
+                        },
+                        'error': {
+                            'duration': 300,
+                            'max': 5,
+                        },
+                    },
+                    'messages': {
+                        'REPLACE_ME_with_specific_message_ids': {
+                            'messages': ['m1', 'm2'],
+                            'duration': 0,
+                            'max': 1
+                        },
+                        'REPLACE_ME_with_single_message_id': {
+                            'duration': 1,
+                            'max': 0
+                        }
                     }
                 }
             }
+            config = configobj.ConfigObj(config_dict)
 
             SUT = Logger(config, console=True)
 
-            SUT._is_throttled("ERROR", None)
+            SUT._is_throttled("ERROR", 'm3')
 
-            # SUT._logmsg.addHandler.assert_called_once()
         print('end')
-
 
 if __name__ == '__main__':
     test_suite = unittest.TestSuite()
-    testcase = 'test_test'
-    test_suite.addTest(TestV4Logging(testcase))
+    testcase = 'test_initialization'
+    test_suite.addTest(TestThrottling(testcase))
     unittest.TextTestRunner().run(test_suite)
 
     # unittest.main(exit=False)
