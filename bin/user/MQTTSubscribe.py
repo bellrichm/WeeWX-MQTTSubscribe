@@ -562,25 +562,30 @@ class Logger():
 
         self.logged_ids = {}
         self.throttle_config = {}
-        self.throttle_config['category'] = copy.deepcopy(config['throttle'].get('category', {}))
-        self.throttle_config['message'] = {}
-        for message in config['throttle']['messages'].sections:
-            print(message)
-            if 'messages' in config['throttle']['messages'][message]:
-                for message_id in weeutil.weeutil.option_as_list(config['throttle']['messages'][message]['messages']):
-                    print(message_id)
-                    if message_id in self.throttle_config['message']:
-                        raise ValueError(Logger.msgX[129001].format(message_id=message_id))
-                    self.throttle_config['message'][message_id] = {}
-                    self.throttle_config['message'][message_id]['duration'] = config['throttle']['messages'][message]['duration']
-                    self.throttle_config['message'][message_id]['max'] = config['throttle']['messages'][message]['max']
-            else:
+        if 'throttle' in config:
+            self.throttle_config['category'] = copy.deepcopy(config['throttle'].get('category', {}))
+
+            self.throttle_config['message'] = {}
+            for message in config['throttle']['messages'].sections:
                 print(message)
-                if message in self.throttle_config['message']:
-                    raise ValueError(Logger.msgX[129002].format(message_id=message))
-                self.throttle_config['message'][message] = {}
-                self.throttle_config['message'][message]['duration'] = config['throttle']['messages'][message]['duration']
-                self.throttle_config['message'][message]['max'] = config['throttle']['messages'][message]['max']
+                if 'messages' in config['throttle']['messages'][message]:
+                    for message_id in weeutil.weeutil.option_as_list(config['throttle']['messages'][message]['messages']):
+                        print(message_id)
+                        if message_id in self.throttle_config['message']:
+                            raise ValueError(Logger.msgX[129001].format(message_id=message_id))
+                        self.throttle_config['message'][message_id] = {}
+                        self.throttle_config['message'][message_id]['duration'] = config['throttle']['messages'][message]['duration']
+                        self.throttle_config['message'][message_id]['max'] = config['throttle']['messages'][message]['max']
+                else:
+                    print(message)
+                    if message in self.throttle_config['message']:
+                        raise ValueError(Logger.msgX[129002].format(message_id=message))
+                    self.throttle_config['message'][message] = {}
+                    self.throttle_config['message'][message]['duration'] = config['throttle']['messages'][message]['duration']
+                    self.throttle_config['message'][message]['max'] = config['throttle']['messages'][message]['max']
+        else:
+            self.throttle_config['category'] = {}
+            self.throttle_config['message'] = {}
 
         # Setup custom TRACE level
         self.trace_level = 5
