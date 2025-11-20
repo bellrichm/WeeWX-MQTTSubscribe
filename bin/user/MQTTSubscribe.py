@@ -626,6 +626,9 @@ class Logger():
         return False
 
     def _check_message(self, msg_id, throttle_config):
+        if throttle_config['duration'] == 0:
+            return True
+        
         now = int(time.time())
         window = now // throttle_config['duration']
         if msg_id not in self.logged_ids:
