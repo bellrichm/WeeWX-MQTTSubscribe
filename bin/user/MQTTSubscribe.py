@@ -490,6 +490,7 @@ import random
 import re
 import ssl
 import sys
+import threading
 import time
 import traceback
 from collections import deque
@@ -547,7 +548,7 @@ class ConversionError(ValueError):
 
 class Logger():
     """ The logging class. """
-    MSG_FORMAT = "(%s) (%s) %s"
+    MSG_FORMAT = "(%s-%s) (%s) %s"
 
     def __init__(self, config, level='NOTSET', filename=None, console=None):
         self.console = console
@@ -646,21 +647,21 @@ class Logger():
     def trace(self, msg_id, msg_text):
         """ Log trace messages. """
         if self.weewx_debug > 1:
-            self._logmsg.debug(self.MSG_FORMAT, self.mode, global_archive_timestamp, msg_text)
+            self._logmsg.debug(self.MSG_FORMAT, self.mode, threading.get_native_id(), global_archive_timestamp, msg_text)
         else:
-            self._logmsg.log(self.trace_level, self.MSG_FORMAT, self.mode, global_archive_timestamp, msg_text)
+            self._logmsg.log(self.trace_level, self.MSG_FORMAT, self.mode, threading.get_native_id(), global_archive_timestamp, msg_text)
 
     def debug(self, msg_id, msg_text):
         """ Log debug messages. """
-        self._logmsg.debug(self.MSG_FORMAT, self.mode, global_archive_timestamp, msg_text)
+        self._logmsg.debug(self.MSG_FORMAT, self.mode, threading.get_native_id(), global_archive_timestamp, msg_text)
 
     def info(self, msg_id, msg_text):
         """ Log informational messages. """
-        self._logmsg.info(self.MSG_FORMAT, self.mode, global_archive_timestamp, msg_text)
+        self._logmsg.info(self.MSG_FORMAT, self.mode, threading.get_native_id(), global_archive_timestamp, msg_text)
 
     def error(self, msg_id, msg_text):
         """ Log error messages. """
-        self._logmsg.error(self.MSG_FORMAT, self.mode, global_archive_timestamp, msg_text)
+        self._logmsg.error(self.MSG_FORMAT, self.mode, threading.get_native_id(), global_archive_timestamp, msg_text)
 
 class RecordCache():
     """ Manage the cache. """

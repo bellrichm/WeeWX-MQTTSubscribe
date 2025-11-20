@@ -98,74 +98,84 @@ class TestV4Logging(unittest.TestCase):
     @staticmethod
     def test_error_logged():
         with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
+            with mock.patch('user.MQTTSubscribe.threading') as mock_threading:
+                mock_logging._checkLevel.return_value = 0
+                thread_id = random.randint(10000, 99999)
+                mock_threading.get_native_id.return_value = thread_id
+                mode = random_string()
+                message_text = random_string()
 
-            mock_logging._checkLevel.return_value = 0
-            mode = random_string()
-            message_text = random_string()
+                SUT = Logger({'mode': mode})
 
-            SUT = Logger({'mode': mode})
+                SUT.error(random.randint(1, 100), message_text)
 
-            SUT.error(random.randint(1, 100), message_text)
-
-            SUT._logmsg.error.assert_called_once_with(SUT.MSG_FORMAT, mode, -1, message_text)
+                SUT._logmsg.error.assert_called_once_with(SUT.MSG_FORMAT, mode, thread_id, -1, message_text)
 
     @staticmethod
     def test_info_logged():
         with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
+            with mock.patch('user.MQTTSubscribe.threading') as mock_threading:
+                mock_logging._checkLevel.return_value = 0
+                thread_id = random.randint(10000, 99999)
+                mock_threading.get_native_id.return_value = thread_id
+                mode = random_string()
+                message = random_string()
 
-            mock_logging._checkLevel.return_value = 0
-            mode = random_string()
-            message = random_string()
+                SUT = Logger({'mode': mode})
 
-            SUT = Logger({'mode': mode})
+                SUT.info(random.randint(1, 100), message)
 
-            SUT.info(random.randint(1, 100), message)
-
-            SUT._logmsg.info.assert_called_once_with(SUT.MSG_FORMAT, mode, -1, message)
+                SUT._logmsg.info.assert_called_once_with(SUT.MSG_FORMAT, mode, thread_id, -1, message)
 
     @staticmethod
     def test_debug_logged():
         with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
+            with mock.patch('user.MQTTSubscribe.threading') as mock_threading:
+                mock_logging._checkLevel.return_value = 0
+                thread_id = random.randint(10000, 99999)
+                mock_threading.get_native_id.return_value = thread_id
+                mode = random_string()
+                message = random_string()
 
-            mock_logging._checkLevel.return_value = 0
-            mode = random_string()
-            message = random_string()
+                SUT = Logger({'mode': mode})
 
-            SUT = Logger({'mode': mode})
+                SUT.debug(random.randint(1, 100), message)
 
-            SUT.debug(random.randint(1, 100), message)
-
-            SUT._logmsg.debug.assert_called_once_with(SUT.MSG_FORMAT, mode, -1, message)
+                SUT._logmsg.debug.assert_called_once_with(SUT.MSG_FORMAT, mode, thread_id, -1, message)
 
     @staticmethod
     def test_trace_logged_with_debug_set():
         with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
+            with mock.patch('user.MQTTSubscribe.threading') as mock_threading:
+                sys.modules['weewx'].debug = 2
+                mock_logging._checkLevel.return_value = 0
+                thread_id = random.randint(10000, 99999)
+                mock_threading.get_native_id.return_value = thread_id
+                mode = random_string()
+                message = random_string()
 
-            sys.modules['weewx'].debug = 2
-            mock_logging._checkLevel.return_value = 0
-            mode = random_string()
-            message = random_string()
+                SUT = Logger({'mode': mode})
 
-            SUT = Logger({'mode': mode})
+                SUT.trace(random.randint(1, 100), message)
 
-            SUT.trace(random.randint(1, 100), message)
-
-            SUT._logmsg.debug.assert_called_once_with(SUT.MSG_FORMAT, mode, -1, message)
+                SUT._logmsg.debug.assert_called_once_with(SUT.MSG_FORMAT, mode, thread_id, -1, message)
 
     @staticmethod
     def test_trace_logged_with_debug_not_set():
         with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
+            with mock.patch('user.MQTTSubscribe.threading') as mock_threading:
+                mock_logging._checkLevel.return_value = 0
+                thread_id = random.randint(10000, 99999)
+                mock_threading.get_native_id.return_value = thread_id
+                mode = random_string()
+                message = random_string()
 
-            mock_logging._checkLevel.return_value = 0
-            mode = random_string()
-            message = random_string()
+                SUT = Logger({'mode': mode})
+                SUT.weewx_debug = 0
 
-            SUT = Logger({'mode': mode})
-            SUT.weewx_debug = 0
+                SUT.trace(random.randint(1, 100), message)
 
-            SUT.trace(random.randint(1, 100), message)
-
-            SUT._logmsg.log.assert_called_once_with(5, SUT.MSG_FORMAT, mode, -1, message)
+                SUT._logmsg.log.assert_called_once_with(5, SUT.MSG_FORMAT, mode, thread_id, -1, message)
 
     def test_test(self):
         print('start')
