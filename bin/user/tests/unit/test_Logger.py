@@ -10,6 +10,7 @@ import mock
 import configobj
 import random
 import sys
+import time
 
 import test_weewx_stubs
 from test_weewx_stubs import random_string
@@ -218,15 +219,58 @@ class TestThrottling(unittest.TestCase):
             }
             config = configobj.ConfigObj(config_dict)
 
-            SUT = Logger(config, console=True)
+            Logger(config)
 
-            SUT._is_throttled("ERROR", 'm3')
+        print('end')
+
+    def test_test(self):
+        print('start')
+        now = time.time()
+
+        with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
+            with mock.patch('user.MQTTSubscribe.time') as mock_time:
+                mock_logging._checkLevel.return_value = 0
+                mock_time.time.return_value = now
+
+                config_dict = {
+                    'mode': random_string(),
+                    'throttle': {
+                        'category': {
+                            'all': {
+                                'duration': 300,
+                                'max': 2
+                            },
+                            'error': {
+                                'duration': 300,
+                                'max': 5,
+                            },
+                        },
+                        'messages': {
+                            'REPLACE_ME_with_specific_message_ids': {
+                                'messages': ['m1', 'm2'],
+                                'duration': 0,
+                                'max': 1
+                            },
+                            'REPLACE_ME_with_single_message_id': {
+                                'duration': 1,
+                                'max': 0
+                            }
+                        }
+                    }
+                }
+                config = configobj.ConfigObj(config_dict)
+
+                SUT = Logger(config)
+
+                SUT._is_throttled("error", 'm1')
 
         print('end')
 
 if __name__ == '__main__':
     test_suite = unittest.TestSuite()
     testcase = 'test_initialization'
+    # test_suite.addTest(TestThrottling(testcase))
+    testcase = 'test_test'
     test_suite.addTest(TestThrottling(testcase))
     unittest.TextTestRunner().run(test_suite)
 
