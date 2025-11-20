@@ -548,15 +548,47 @@ class ConversionError(ValueError):
 
 class Logger():
     """ The logging class. """
-    MSG_FORMAT = "(%s-%s) (%s) %s"
+    msgX = {
+        # trace message
+        # debug messages
+        # informational messages
+        # error messages
+        # exception messages
+        129001: "{message_id} has been configured multiple times",
+        129002: "{message_id} has been configured multiple times",
+    }
+
+    MSG_FORMAT = "(%s) %s"
 
     def __init__(self, config, level='NOTSET', filename=None, console=None):
         self.console = console
         self.mode = config['mode']
-        self.throttle_config = config.get('throttle', {})
         self.filename = filename
         self.weewx_debug = weewx.debug
-        self.msg_data = {}
+
+        self.logged_ids = {}
+        self.throttle_config = {}
+        if 'throttle' in config:
+            self.throttle_config['category'] = copy.deepcopy(config['throttle'].get('category', {}))
+
+            self.throttle_config['message'] = {}
+            for message in config['throttle']['messages'].sections:
+                if 'messages' in config['throttle']['messages'][message]:
+                    for message_id in weeutil.weeutil.option_as_list(config['throttle']['messages'][message]['messages']):
+                        if message_id in self.throttle_config['message']:
+                            raise ValueError(Logger.msgX[129001].format(message_id=message_id))
+                        self.throttle_config['message'][message_id] = {}
+                        self.throttle_config['message'][message_id]['duration'] = config['throttle']['messages'][message]['duration']
+                        self.throttle_config['message'][message_id]['max'] = config['throttle']['messages'][message]['max']
+                else:
+                    if message in self.throttle_config['message']:
+                        raise ValueError(Logger.msgX[129002].format(message_id=message))
+                    self.throttle_config['message'][message] = {}
+                    self.throttle_config['message'][message]['duration'] = config['throttle']['messages'][message]['duration']
+                    self.throttle_config['message'][message]['max'] = config['throttle']['messages'][message]['max']
+        else:
+            self.throttle_config['category'] = {}
+            self.throttle_config['message'] = {}
 
         # Setup custom TRACE level
         self.trace_level = 5
@@ -590,24 +622,41 @@ class Logger():
             self._logmsg.addHandler(file_handler)
 
     def _is_throttled(self, logging_level, msg_id):
-        print(f"logging_level: {logging_level} msg_id:{msg_id}")
-        print(f"throttle_config: {self.throttle_config}")
-
-        if msg_id is not None and msg_id in self.throttle_config:
-            pass
-        elif logging_level in self.throttle_config:
-            pass
-        elif 'all' in self.throttle_config:
-            self._check_message(msg_id, self.throttle_config['all'])
+        if msg_id is not None and msg_id in self.throttle_config['message']:
+            return self._check_message(msg_id, self.throttle_config['message'][msg_id])
+        elif logging_level in self.throttle_config['category']:
+            return self._check_message(msg_id, self.throttle_config['category'][logging_level])
+        elif 'all' in self.throttle_config['category']:
+            return self._check_message(msg_id, self.throttle_config['category']['all'])
 
         return False
 
     def _check_message(self, msg_id, throttle_config):
-        print(f"msg_id:{msg_id}")
-        print(f"throttle_config: {throttle_config}")
-        print(f"msg_data: {self.msg_data}")
+        if throttle_config['duration'] == 0:
+            return True
 
-        print("whoops")
+        now = int(time.time())
+        window = now // throttle_config['duration']
+        if msg_id not in self.logged_ids:
+            self.logged_ids[msg_id] = {}
+            self.logged_ids[msg_id]['window'] = window
+            self.logged_ids[msg_id]['count'] = 1
+            self.logged_ids[msg_id]['previous_count'] = 0
+            return False
+
+        if window != self.logged_ids[msg_id]['window']:
+            self.logged_ids[msg_id]['previous_count'] = self.logged_ids[msg_id]['count']
+            self.logged_ids[msg_id]['count'] = 0
+            self.logged_ids[msg_id]['window'] = window
+
+        self.logged_ids[msg_id]['count'] += 1
+        window_elapsed = (now % throttle_config['duration']) / throttle_config['duration']
+        threshold = self.logged_ids[msg_id]['previous_count'] * (1 - window_elapsed) + self.logged_ids[msg_id]['count']
+
+        if threshold < throttle_config['max']:
+            return True
+
+        return False
 
     def get_handlers(self, logger):
         """ recursively get parent handlers """
