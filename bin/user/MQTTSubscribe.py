@@ -530,19 +530,6 @@ VERSION = '3.1.0-rc06'
 DRIVER_NAME = 'MQTTSubscribeDriver'
 DRIVER_VERSION = VERSION
 
-def gettid():
-    """Get TID as displayed by htop.
-       This is architecture dependent."""
-    import ctypes  # pylint: disable=import-outside-toplevel
-    from ctypes.util import find_library  # pylint: disable=import-outside-toplevel
-    libc = ctypes.CDLL(find_library('c'))
-    for cmd in (186, 224, 178):
-        tid = ctypes.CDLL(libc).syscall(cmd)
-        if tid != -1:
-            return tid
-
-    return 0
-
 class ConversionError(ValueError):
     """ Error converting data types. """
 
