@@ -55,6 +55,8 @@ def to_float(value):
     return float(value) if value is not None else None
 
 def to_int(value):
+    if isinstance(value, str) and (value.lower() == 'none' or value == ''):
+        return None
     return int(value)
 
 def timestamp_to_string(ts, format_str="%Y-%m-%d %H:%M:%S %Z"):

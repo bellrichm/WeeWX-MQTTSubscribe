@@ -261,9 +261,9 @@ class TestThrottling(unittest.TestCase):
                                 'duration': 0,
                                 'max': 1
                             },
-                            'REPLACE_ME_with_single_message_id': {
+                            'm3': {
                                 'duration': 1,
-                                'max': 0
+                                'max': 'none'
                             }
                         }
                     }
@@ -272,7 +272,7 @@ class TestThrottling(unittest.TestCase):
 
                 SUT = Logger(config)
 
-                SUT._is_throttled("error", 'm1')
+                SUT._is_throttled("error", 'm3')
 
             # SUT._logmsg.addHandler.assert_called_once()
         print('end')

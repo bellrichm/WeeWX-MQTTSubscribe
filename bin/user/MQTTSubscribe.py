@@ -565,14 +565,14 @@ class Logger():
                         if message_id in self.throttle_config['message']:
                             raise ValueError(Logger.msgX[129001].format(message_id=message_id))
                         self.throttle_config['message'][message_id] = {}
-                        self.throttle_config['message'][message_id]['duration'] = config['throttle']['messages'][message]['duration']
-                        self.throttle_config['message'][message_id]['max'] = config['throttle']['messages'][message]['max']
+                        self.throttle_config['message'][message_id]['duration'] = to_int(config['throttle']['messages'][message]['duration'])
+                        self.throttle_config['message'][message_id]['max'] = to_int(config['throttle']['messages'][message]['max'])
                 else:
                     if message in self.throttle_config['message']:
                         raise ValueError(Logger.msgX[129002].format(message_id=message))
                     self.throttle_config['message'][message] = {}
-                    self.throttle_config['message'][message]['duration'] = config['throttle']['messages'][message]['duration']
-                    self.throttle_config['message'][message]['max'] = config['throttle']['messages'][message]['max']
+                    self.throttle_config['message'][message]['duration'] = to_int(config['throttle']['messages'][message]['duration'])
+                    self.throttle_config['message'][message]['max'] = to_int(config['throttle']['messages'][message]['max'])
         else:
             self.throttle_config['category'] = {}
             self.throttle_config['message'] = {}
@@ -621,6 +621,9 @@ class Logger():
     def _check_message(self, msg_id, throttle_config):
         if throttle_config['duration'] == 0:
             return True
+
+        if throttle_config['max'] is None:
+            return False
 
         now = int(time.time())
         window = now // throttle_config['duration']
