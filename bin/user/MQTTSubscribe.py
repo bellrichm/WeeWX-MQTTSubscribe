@@ -545,7 +545,7 @@ class Logger():
         129002: "{message_id} has been configured multiple times",
     }
 
-    MSG_FORMAT = "(%s) %s"
+    MSG_FORMAT = "(%s-%s) %s %s"
 
     def __init__(self, config, level='NOTSET', filename=None, console=None):
         self.console = console
