@@ -540,6 +540,7 @@ class Logger():
         # debug messages
         # informational messages
         # error messages
+        124001: "{count} messages have been suppressed.",
         # exception messages
         129001: "{message_id} has been configured multiple times",
         129002: "{message_id} has been configured multiple times",
@@ -643,7 +644,11 @@ class Logger():
         window_elapsed = (now % throttle_config['duration']) / throttle_config['duration']
         threshold = self.logged_ids[msg_id]['previous_count'] * (1 - window_elapsed) + self.logged_ids[msg_id]['count']
 
-        if threshold < throttle_config['max']:
+        if threshold <= throttle_config['max']:
+            self.error(124001, Logger.msgX[124001].format(count=threshold))
+            return True
+        
+        if threshold % throttle_config['max'] == 0:
             return True
 
         return False
