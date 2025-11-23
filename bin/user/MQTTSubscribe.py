@@ -647,7 +647,7 @@ class Logger():
         if threshold <= throttle_config['max']:
             self.error(124001, Logger.msgX[124001].format(count=threshold))
             return True
-        
+
         if threshold % throttle_config['max'] == 0:
             return True
 

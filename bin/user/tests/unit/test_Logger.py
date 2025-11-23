@@ -195,6 +195,72 @@ class TestThrottling(unittest.TestCase):
         del sys.modules['weewx.drivers']
         del sys.modules['weewx.engine']
 
+    def test_duration_is_zero(self):
+        print("start")
+        msg_id = random_string()
+        duration = 0
+        max = random.randint(1, 1000)
+
+        config_dict = {
+            'mode': random_string(),
+            'throttle': {
+                'messages': {
+                    msg_id: {
+                        'duration': duration,
+                        'max': max
+                    }
+                }
+            }
+        }
+        config = configobj.ConfigObj(config_dict)
+
+        with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
+            with mock.patch('user.MQTTSubscribe.time') as mock_time:
+                mock_logging._checkLevel.return_value = 0
+
+                SUT = Logger(config)
+
+                throttle = SUT._check_message(msg_id, SUT.throttle_config['message'][msg_id])
+
+                self.assertTrue(throttle)
+                self.assertEqual(len(SUT.logged_ids), 0)
+                self.assertEqual(mock_time.timer.call_count, 0)
+
+        print("end")
+
+    def test_max_is_none(self):
+        print("start")
+        msg_id = random_string()
+        duration = random.randint(60, 600)
+        max = 'None'
+
+        config_dict = {
+            'mode': random_string(),
+            'throttle': {
+                'messages': {
+                    msg_id: {
+                        'duration': duration,
+                        'max': max
+                    }
+                }
+            }
+        }
+        config = configobj.ConfigObj(config_dict)
+
+        with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
+            with mock.patch('user.MQTTSubscribe.time') as mock_time:
+                mock_logging._checkLevel.return_value = 0
+
+                SUT = Logger(config)
+
+                throttle = SUT._check_message(msg_id, SUT.throttle_config['message'][msg_id])
+
+                self.assertFalse(throttle)
+                self.assertEqual(len(SUT.logged_ids), 0)
+                self.assertEqual(mock_time.timer.call_count, 0)
+
+        print("end")
+
     def test_initialization(self):
         print('start')
 
@@ -279,10 +345,9 @@ class TestThrottling(unittest.TestCase):
 
 
 if __name__ == '__main__':
+    testcase = sys.argv[1]
+
     test_suite = unittest.TestSuite()
-    testcase = 'test_initialization'
-    # test_suite.addTest(TestThrottling(testcase))
-    testcase = 'test_test'
     test_suite.addTest(TestThrottling(testcase))
     unittest.TextTestRunner().run(test_suite)
 
