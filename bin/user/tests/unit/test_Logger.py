@@ -492,9 +492,10 @@ class TestThrottling(unittest.TestCase):
 
                     SUT.logged_ids = {
                         msg_id: {
-                            'window': -1,
+                            'window': now // duration,
                             'count': count,
                             'previous_count': previous_count,
+                            'passed_threshold': True,
                         }
                     }
 
@@ -503,8 +504,8 @@ class TestThrottling(unittest.TestCase):
                     logged_ids = {
                         msg_id: {
                             'window': now // duration,
-                            'count': 1,
-                            'previous_count': count,
+                            'count': count + 1,
+                            'previous_count': previous_count,
                             'passed_threshold': True,
                         }
                     }
@@ -598,7 +599,7 @@ class TestThrottling(unittest.TestCase):
 
 if __name__ == '__main__':
     # testcase = sys.argv[1]
-    testcase = 'test_new_window'
+    testcase = 'test_message_is_over_threshold'
 
     test_suite = unittest.TestSuite()
     test_suite.addTest(TestThrottling(testcase))
