@@ -196,7 +196,6 @@ class TestThrottling(unittest.TestCase):
         del sys.modules['weewx.engine']
 
     def test_duration_is_zero(self):
-        print("start")
         msg_id = random_string()
         duration = 0
         max = random.randint(1, 1000)
@@ -226,10 +225,7 @@ class TestThrottling(unittest.TestCase):
                 self.assertEqual(len(SUT.logged_ids), 0)
                 self.assertEqual(mock_time.timer.call_count, 0)
 
-        print("end")
-
     def test_max_is_none(self):
-        print("start")
         msg_id = random_string()
         duration = random.randint(60, 600)
         max = 'None'
@@ -259,7 +255,257 @@ class TestThrottling(unittest.TestCase):
                 self.assertEqual(len(SUT.logged_ids), 0)
                 self.assertEqual(mock_time.timer.call_count, 0)
 
-        print("end")
+    def test_frst_time_message_is_logged(self):
+        msg_id = random_string()
+        duration = random.randint(60, 600)
+        max = random.randint(1, 1000)
+        now = time.time()
+
+        config_dict = {
+            'mode': random_string(),
+            'throttle': {
+                'messages': {
+                    msg_id: {
+                        'duration': duration,
+                        'max': max
+                    }
+                }
+            }
+        }
+        config = configobj.ConfigObj(config_dict)
+
+        with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
+            with mock.patch('user.MQTTSubscribe.time') as mock_time:
+                mock_logging._checkLevel.return_value = 0
+                mock_time.time.return_value = now
+
+                SUT = Logger(config)
+
+                throttle = SUT._check_message(msg_id, SUT.throttle_config['message'][msg_id])
+
+                logged_ids = {
+                    msg_id: {
+                        'window': now // duration,
+                        'count': 1,
+                        'previous_count': 0,
+                    }
+                }
+
+                self.assertFalse(throttle)
+                self.assertEqual(len(SUT.logged_ids), 1)
+                self.assertDictEqual(SUT.logged_ids, logged_ids)
+
+    def test_new_window(self):
+        msg_id = random_string()
+        duration = random.randint(60, 600)
+        max = random.randint(1, 1000)
+        count = random.randint(1, 100)
+        previous_count = random.randint(1, 100)
+        now = time.time()
+
+        config_dict = {
+            'mode': random_string(),
+            'throttle': {
+                'messages': {
+                    msg_id: {
+                        'duration': duration,
+                        'max': max
+                    }
+                }
+            }
+        }
+        config = configobj.ConfigObj(config_dict)
+
+        with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
+            with mock.patch('user.MQTTSubscribe.time') as mock_time:
+                mock_logging._checkLevel.return_value = 0
+                mock_time.time.return_value = now
+
+                SUT = Logger(config)
+
+                SUT.logged_ids = {
+                    msg_id: {
+                        'window': -1,
+                        'count': count,
+                        'previous_count': previous_count,
+                    }
+                }
+
+                throttle = SUT._check_message(msg_id, SUT.throttle_config['message'][msg_id])
+
+                logged_ids = {
+                    msg_id: {
+                        'window': now // duration,
+                        'count': 1,
+                        'previous_count': count,
+                    }
+                }
+
+                self.assertTrue(throttle)
+                self.assertEqual(len(SUT.logged_ids), 1)
+                self.assertDictEqual(SUT.logged_ids, logged_ids)
+
+    def test_message_within_threshold(self):
+        msg_id = random_string()
+        duration = random.randint(60, 600)
+        count = random.randint(1, 100)
+        previous_count = random.randint(1, 100)
+        max = count + previous_count + 1
+        now = time.time()
+
+        config_dict = {
+            'mode': random_string(),
+            'throttle': {
+                'messages': {
+                    msg_id: {
+                        'duration': duration,
+                        'max': max
+                    }
+                }
+            }
+        }
+        config = configobj.ConfigObj(config_dict)
+
+        with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
+            with mock.patch('user.MQTTSubscribe.time') as mock_time:
+                mock_logging._checkLevel.return_value = 0
+                mock_time.time.return_value = now
+
+                SUT = Logger(config)
+
+                SUT.logged_ids = {
+                    msg_id: {
+                        'window': -1,
+                        'count': count,
+                        'previous_count': previous_count,
+                    }
+                }
+
+                throttle = SUT._check_message(msg_id, SUT.throttle_config['message'][msg_id])
+
+                logged_ids = {
+                    msg_id: {
+                        'window': now // duration,
+                        'count': 1,
+                        'previous_count': count,
+                    }
+                }
+
+                self.assertTrue(throttle)
+                self.assertEqual(len(SUT.logged_ids), 1)
+                self.assertDictEqual(SUT.logged_ids, logged_ids)
+
+    def test_threshold_is_met(self):
+        now = time.time()
+        mode = random_string()
+        msg_id = random_string()
+        duration = random.randint(60, 600)
+        count = random.randint(1, 100)
+        previous_count = random.randint(1, 100)
+        window_elapsed = now % duration / duration
+        threshold = round(count * (1 - window_elapsed) + 1)
+        max = threshold
+
+        config_dict = {
+            'mode': mode,
+            'throttle': {
+                'messages': {
+                    msg_id: {
+                        'duration': duration,
+                        'max': max
+                    }
+                }
+            }
+        }
+        config = configobj.ConfigObj(config_dict)
+
+        with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
+            with mock.patch('user.MQTTSubscribe.time') as mock_time:
+                with mock.patch('user.MQTTSubscribe.threading') as mock_threading:
+                    mock_logging._checkLevel.return_value = 0
+                    mock_time.time.return_value = now
+                    thread_id = random.randint(10000, 99999)
+                    mock_threading.get_native_id.return_value = thread_id
+
+                    SUT = Logger(config)
+
+                    SUT.logged_ids = {
+                        msg_id: {
+                            'window': -1,
+                            'count': count,
+                            'previous_count': previous_count,
+                        }
+                    }
+
+                    throttle = SUT._check_message(msg_id, SUT.throttle_config['message'][msg_id])
+
+                    logged_ids = {
+                        msg_id: {
+                            'window': now // duration,
+                            'count': 1,
+                            'previous_count': count,
+                        }
+                    }
+                    message_text = f"{threshold} messages have been suppressed."
+
+                    self.assertTrue(throttle)
+                    self.assertEqual(len(SUT.logged_ids), 1)
+                    self.assertDictEqual(SUT.logged_ids, logged_ids)
+                    SUT._logmsg.error.assert_called_once_with(SUT.MSG_FORMAT, mode, thread_id, -1, message_text)
+
+    def test_message_is_over_threshold(self):
+        mode = random_string()
+        msg_id = random_string()
+        duration = random.randint(60, 600)
+        count = random.randint(1, 100)
+        previous_count = random.randint(1, 100)
+        max = count - 2
+        now = duration
+
+        config_dict = {
+            'mode': mode,
+            'throttle': {
+                'messages': {
+                    msg_id: {
+                        'duration': duration,
+                        'max': max
+                    }
+                }
+            }
+        }
+        config = configobj.ConfigObj(config_dict)
+
+        with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
+            with mock.patch('user.MQTTSubscribe.time') as mock_time:
+                with mock.patch('user.MQTTSubscribe.threading') as mock_threading:
+                    mock_logging._checkLevel.return_value = 0
+                    mock_time.time.return_value = now
+                    thread_id = random.randint(10000, 99999)
+                    mock_threading.get_native_id.return_value = thread_id
+
+                    SUT = Logger(config)
+
+                    SUT.logged_ids = {
+                        msg_id: {
+                            'window': -1,
+                            'count': count,
+                            'previous_count': previous_count,
+                        }
+                    }
+
+                    throttle = SUT._check_message(msg_id, SUT.throttle_config['message'][msg_id])
+
+                    logged_ids = {
+                        msg_id: {
+                            'window': now // duration,
+                            'count': 1,
+                            'previous_count': count,
+                        }
+                    }
+
+                    self.assertFalse(throttle)
+                    self.assertEqual(len(SUT.logged_ids), 1)
+                    self.assertDictEqual(SUT.logged_ids, logged_ids)
 
     def test_initialization(self):
         print('start')
@@ -345,7 +591,8 @@ class TestThrottling(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    testcase = sys.argv[1]
+    # testcase = sys.argv[1]
+    testcase = 'test_message_is_over_threshold'
 
     test_suite = unittest.TestSuite()
     test_suite.addTest(TestThrottling(testcase))

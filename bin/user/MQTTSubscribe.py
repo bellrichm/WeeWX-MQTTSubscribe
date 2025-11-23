@@ -642,13 +642,13 @@ class Logger():
 
         self.logged_ids[msg_id]['count'] += 1
         window_elapsed = (now % throttle_config['duration']) / throttle_config['duration']
-        threshold = self.logged_ids[msg_id]['previous_count'] * (1 - window_elapsed) + self.logged_ids[msg_id]['count']
+        threshold = round(self.logged_ids[msg_id]['previous_count'] * (1 - window_elapsed) + self.logged_ids[msg_id]['count'])
 
-        if threshold <= throttle_config['max']:
-            self.error(124001, Logger.msgX[124001].format(count=threshold))
+        if threshold < throttle_config['max']:
             return True
 
         if threshold % throttle_config['max'] == 0:
+            self.error(124001, Logger.msgX[124001].format(count=threshold))
             return True
 
         return False
