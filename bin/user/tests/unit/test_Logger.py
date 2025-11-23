@@ -255,11 +255,11 @@ class TestThrottling(unittest.TestCase):
                 self.assertEqual(len(SUT.logged_ids), 0)
                 self.assertEqual(mock_time.timer.call_count, 0)
 
-    def test_frst_time_message_is_logged(self):
+    def test_first_time_message_is_logged(self):
         msg_id = random_string()
         duration = random.randint(60, 600)
         max = random.randint(1, 1000)
-        now = time.time()
+        now = int(time.time())
 
         config_dict = {
             'mode': random_string(),
@@ -288,6 +288,7 @@ class TestThrottling(unittest.TestCase):
                         'window': now // duration,
                         'count': 1,
                         'previous_count': 0,
+                        'passed_threshold': False,
                     }
                 }
 
@@ -338,6 +339,7 @@ class TestThrottling(unittest.TestCase):
                         'window': now // duration,
                         'count': 1,
                         'previous_count': count,
+                        'passed_threshold': False,
                     }
                 }
 
@@ -388,6 +390,7 @@ class TestThrottling(unittest.TestCase):
                         'window': now // duration,
                         'count': 1,
                         'previous_count': count,
+                        'passed_threshold': False,
                     }
                 }
 
@@ -395,16 +398,14 @@ class TestThrottling(unittest.TestCase):
                 self.assertEqual(len(SUT.logged_ids), 1)
                 self.assertDictEqual(SUT.logged_ids, logged_ids)
 
-    def test_threshold_is_met(self):
-        now = time.time()
+    def test_first_time_passed_threshold(self):
         mode = random_string()
         msg_id = random_string()
         duration = random.randint(60, 600)
         count = random.randint(1, 100)
         previous_count = random.randint(1, 100)
-        window_elapsed = now % duration / duration
-        threshold = round(count * (1 - window_elapsed) + 1)
-        max = threshold
+        max = count - 2
+        now = duration
 
         config_dict = {
             'mode': mode,
@@ -444,8 +445,12 @@ class TestThrottling(unittest.TestCase):
                             'window': now // duration,
                             'count': 1,
                             'previous_count': count,
+                            'passed_threshold': True,
                         }
                     }
+                    window_elapsed = (now % duration) / duration
+                    threshold = count * (1 - window_elapsed) + 1
+
                     message_text = f"{threshold} messages have been suppressed."
 
                     self.assertTrue(throttle)
@@ -500,6 +505,7 @@ class TestThrottling(unittest.TestCase):
                             'window': now // duration,
                             'count': 1,
                             'previous_count': count,
+                            'passed_threshold': True,
                         }
                     }
 

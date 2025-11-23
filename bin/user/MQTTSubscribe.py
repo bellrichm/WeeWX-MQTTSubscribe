@@ -633,26 +633,26 @@ class Logger():
             self.logged_ids[msg_id]['window'] = window
             self.logged_ids[msg_id]['count'] = 1
             self.logged_ids[msg_id]['previous_count'] = 0
+            self.logged_ids[msg_id]['passed_threshold'] = False
             return False
 
         if window != self.logged_ids[msg_id]['window']:
             self.logged_ids[msg_id]['previous_count'] = self.logged_ids[msg_id]['count']
             self.logged_ids[msg_id]['count'] = 0
             self.logged_ids[msg_id]['window'] = window
+            self.logged_ids[msg_id]['passed_threshold'] = False
 
         self.logged_ids[msg_id]['count'] += 1
         window_elapsed = (now % throttle_config['duration']) / throttle_config['duration']
-        threshold = round(self.logged_ids[msg_id]['previous_count'] * (1 - window_elapsed) + self.logged_ids[msg_id]['count'])
+        threshold = self.logged_ids[msg_id]['previous_count'] * (1 - window_elapsed) + self.logged_ids[msg_id]['count']
 
         if threshold < throttle_config['max']:
             return False
 
-        # This will not work with a sliding window. 
-        # Beause the percent is based on time, could go right by the threshold count
-        # ToDo: Need a flag of 'first time passed' this threshold increment
-        if threshold % throttle_config['max'] == 0:
+        if not self.logged_ids[msg_id]['passed_threshold']:
             self.error(124001, Logger.msgX[124001].format(count=threshold))
 
+        self.logged_ids[msg_id]['passed_threshold'] = True
         return True
 
     def get_handlers(self, logger):
