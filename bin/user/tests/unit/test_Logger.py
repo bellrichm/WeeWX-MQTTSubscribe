@@ -517,11 +517,11 @@ class TestThrottling(unittest.TestCase):
                 'mode': random_string(),
                 'throttle': {
                     'category': {
-                        'all': {
+                        'ALL': {
                             'duration': 300,
                             'max': 2
                         },
-                        'error': {
+                        'ERROR': {
                             'duration': 300,
                             'max': 5,
                         },
@@ -558,11 +558,11 @@ class TestThrottling(unittest.TestCase):
                     'mode': random_string(),
                     'throttle': {
                         'category': {
-                            'all': {
+                            'ALL': {
                                 'duration': 300,
                                 'max': 2
                             },
-                            'error': {
+                            'ERROR': {
                                 'duration': 300,
                                 'max': 5,
                             },
@@ -584,7 +584,7 @@ class TestThrottling(unittest.TestCase):
 
                 SUT = Logger(config)
 
-                SUT._is_throttled("error", 'm3')
+                SUT._is_throttled("ERROR", 'm3')
 
             # SUT._logmsg.addHandler.assert_called_once()
         print('end')
@@ -592,7 +592,7 @@ class TestThrottling(unittest.TestCase):
 
 if __name__ == '__main__':
     # testcase = sys.argv[1]
-    testcase = 'test_message_is_over_threshold'
+    testcase = 'test_new_window'
 
     test_suite = unittest.TestSuite()
     test_suite.addTest(TestThrottling(testcase))
