@@ -645,13 +645,15 @@ class Logger():
         threshold = round(self.logged_ids[msg_id]['previous_count'] * (1 - window_elapsed) + self.logged_ids[msg_id]['count'])
 
         if threshold < throttle_config['max']:
-            return True
+            return False
 
+        # This will not work with a sliding window. 
+        # Beause the percent is based on time, could go right by the threshold count
+        # ToDo: Need a flag of 'first time passed' this threshold increment
         if threshold % throttle_config['max'] == 0:
             self.error(124001, Logger.msgX[124001].format(count=threshold))
-            return True
 
-        return False
+        return True
 
     def get_handlers(self, logger):
         """ recursively get parent handlers """

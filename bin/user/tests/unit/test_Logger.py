@@ -341,7 +341,7 @@ class TestThrottling(unittest.TestCase):
                     }
                 }
 
-                self.assertTrue(throttle)
+                self.assertFalse(throttle)
                 self.assertEqual(len(SUT.logged_ids), 1)
                 self.assertDictEqual(SUT.logged_ids, logged_ids)
 
@@ -391,7 +391,7 @@ class TestThrottling(unittest.TestCase):
                     }
                 }
 
-                self.assertTrue(throttle)
+                self.assertFalse(throttle)
                 self.assertEqual(len(SUT.logged_ids), 1)
                 self.assertDictEqual(SUT.logged_ids, logged_ids)
 
@@ -503,7 +503,7 @@ class TestThrottling(unittest.TestCase):
                         }
                     }
 
-                    self.assertFalse(throttle)
+                    self.assertTrue(throttle)
                     self.assertEqual(len(SUT.logged_ids), 1)
                     self.assertDictEqual(SUT.logged_ids, logged_ids)
 
@@ -596,6 +596,6 @@ if __name__ == '__main__':
 
     test_suite = unittest.TestSuite()
     test_suite.addTest(TestThrottling(testcase))
-    unittest.TextTestRunner().run(test_suite)
+    # unittest.TextTestRunner().run(test_suite)
 
-    # unittest.main(exit=False)
+    unittest.main(exit=False)
