@@ -1397,7 +1397,7 @@ class TopicManager():
                                                                      aggregate_data=to_sorted_string(aggregate_data)))
             target_data = weewx.units.to_std_system(aggregate_data, units)
             self.logger.trace(50013, TopicManager.msgX[50013].format(queue_name=queue_name,
-                                                                     dateTime=weeutil.weeutil.timestamp_to_string(aggregate_data['dateTime']),
+                                                                     dateTime=weeutil.weeutil.timestamp_to_string(target_data['dateTime']),
                                                                      target_data=to_sorted_string(target_data)))
         else:
             self.logger.trace(50014, TopicManager.msgX[50014])
