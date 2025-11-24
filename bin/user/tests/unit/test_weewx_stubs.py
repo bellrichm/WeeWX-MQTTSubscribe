@@ -13,6 +13,23 @@ import time
 from collections import ChainMap
 
 import mock
+import unittest
+
+class BaseTestClass(unittest.TestCase):
+    def setUp(self):
+        # reset stubs for every test
+        setup_stubs()
+
+    def tearDown(self):
+        # cleanup stubs
+        del sys.modules['weecfg']
+        del sys.modules['weeutil']
+        del sys.modules['weeutil.config']
+        del sys.modules['weeutil.weeutil']
+        del sys.modules['weeutil.logger']
+        del sys.modules['weewx']
+        del sys.modules['weewx.drivers']
+        del sys.modules['weewx.engine']
 
 def random_string(length=32):
     return ''.join([random.choice(string.ascii_letters + string.digits) for n in range(length)])
@@ -55,6 +72,8 @@ def to_float(value):
     return float(value) if value is not None else None
 
 def to_int(value):
+    if isinstance(value, str) and (value.lower() == 'none' or value == ''):
+        return None
     return int(value)
 
 def timestamp_to_string(ts, format_str="%Y-%m-%d %H:%M:%S %Z"):

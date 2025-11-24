@@ -11,6 +11,18 @@
             "program": "${file}",
             "console": "integratedTerminal"
         },
+        // Debug in code-server (running vs-code in a browser)
+        {
+            "name": "codeserver - Run current test",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "args": [
+                "test_max_is_none"
+            ]
+        },
+
         {
             "justMyCode": true,
             "name": "Sim Service: Loop",

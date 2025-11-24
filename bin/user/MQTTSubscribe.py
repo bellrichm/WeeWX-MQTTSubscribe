@@ -490,6 +490,7 @@ import random
 import re
 import ssl
 import sys
+import threading
 import time
 import traceback
 from collections import deque
@@ -509,6 +510,11 @@ user_root = os.getenv('USER_ROOT')
 if user_root is not None:
     sys.path.append(user_root + '/..')
 
+# This is the timestamp of the achive record being processed.
+# It is 'captured' via the NEw_ARCHIVE_RECORD event but due to WeeWX processing, updated via the END_ARCHIVE_PERIOD.
+# It is added to every log message.
+global_archive_timestamp = -1
+
 import weeutil
 import weeutil.logger
 from weeutil.weeutil import to_bool, to_float, to_int, to_sorted_string
@@ -520,37 +526,57 @@ import weewx.drivers
 from weewx.engine import StdEngine, StdService
 # pylint: enable=wrong-import-position
 
-VERSION = '3.1.0-rc05'
+VERSION = '3.1.0-rc06'
 DRIVER_NAME = 'MQTTSubscribeDriver'
 DRIVER_VERSION = VERSION
-
-def gettid():
-    """Get TID as displayed by htop.
-       This is architecture dependent."""
-    import ctypes  # pylint: disable=import-outside-toplevel
-    from ctypes.util import find_library  # pylint: disable=import-outside-toplevel
-    libc = ctypes.CDLL(find_library('c'))
-    for cmd in (186, 224, 178):
-        tid = ctypes.CDLL(libc).syscall(cmd)
-        if tid != -1:
-            return tid
-
-    return 0
 
 class ConversionError(ValueError):
     """ Error converting data types. """
 
 class Logger():
     """ The logging class. """
-    MSG_FORMAT = "(%s) %s"
+    msgX = {
+        # trace message
+        # debug messages
+        # informational messages
+        # error messages
+        124001: "{count} messages have been suppressed.",
+        # exception messages
+        129001: "{message_id} has been configured multiple times",
+        129002: "{message_id} has been configured multiple times",
+    }
+
+    MSG_FORMAT = "(%s-%s) %s %s"
 
     def __init__(self, config, level='NOTSET', filename=None, console=None):
         self.console = console
         self.mode = config['mode']
-        self.throttle_config = config.get('throttle', {})
         self.filename = filename
         self.weewx_debug = weewx.debug
-        self.msg_data = {}
+
+        self.logged_ids = {}
+        self.throttle_config = {}
+        if 'throttle' in config:
+            self.throttle_config['category'] = copy.deepcopy(config['throttle'].get('category', {}))
+
+            self.throttle_config['message'] = {}
+            for message in config['throttle']['messages'].sections:
+                if 'messages' in config['throttle']['messages'][message]:
+                    for message_id in weeutil.weeutil.option_as_list(config['throttle']['messages'][message]['messages']):
+                        if message_id in self.throttle_config['message']:
+                            raise ValueError(Logger.msgX[129001].format(message_id=message_id))
+                        self.throttle_config['message'][message_id] = {}
+                        self.throttle_config['message'][message_id]['duration'] = to_int(config['throttle']['messages'][message]['duration'])
+                        self.throttle_config['message'][message_id]['max'] = to_int(config['throttle']['messages'][message]['max'])
+                else:
+                    if message in self.throttle_config['message']:
+                        raise ValueError(Logger.msgX[129002].format(message_id=message))
+                    self.throttle_config['message'][message] = {}
+                    self.throttle_config['message'][message]['duration'] = to_int(config['throttle']['messages'][message]['duration'])
+                    self.throttle_config['message'][message]['max'] = to_int(config['throttle']['messages'][message]['max'])
+        else:
+            self.throttle_config['category'] = {}
+            self.throttle_config['message'] = {}
 
         # Setup custom TRACE level
         self.trace_level = 5
@@ -584,24 +610,50 @@ class Logger():
             self._logmsg.addHandler(file_handler)
 
     def _is_throttled(self, logging_level, msg_id):
-        print(f"logging_level: {logging_level} msg_id:{msg_id}")
-        print(f"throttle_config: {self.throttle_config}")
-
-        if msg_id is not None and msg_id in self.throttle_config:
-            pass
-        elif logging_level in self.throttle_config:
-            pass
-        elif 'all' in self.throttle_config:
-            self._check_message(msg_id, self.throttle_config['all'])
+        if msg_id is not None and msg_id in self.throttle_config['message']:
+            return self._check_message(msg_id, self.throttle_config['message'][msg_id])
+        elif logging_level in self.throttle_config['category']:
+            return self._check_message(msg_id, self.throttle_config['category'][logging_level])
+        elif 'all' in self.throttle_config['category']:
+            return self._check_message(msg_id, self.throttle_config['category']['all'])
 
         return False
 
     def _check_message(self, msg_id, throttle_config):
-        print(f"msg_id:{msg_id}")
-        print(f"throttle_config: {throttle_config}")
-        print(f"msg_data: {self.msg_data}")
+        if throttle_config['duration'] == 0:
+            return True
 
-        print("whoops")
+        if throttle_config['max'] is None:
+            return False
+
+        now = int(time.time())
+        window = now // throttle_config['duration']
+        if msg_id not in self.logged_ids:
+            self.logged_ids[msg_id] = {}
+            self.logged_ids[msg_id]['window'] = window
+            self.logged_ids[msg_id]['count'] = 1
+            self.logged_ids[msg_id]['previous_count'] = 0
+            self.logged_ids[msg_id]['passed_threshold'] = False
+            return False
+
+        if window != self.logged_ids[msg_id]['window']:
+            self.logged_ids[msg_id]['previous_count'] = self.logged_ids[msg_id]['count']
+            self.logged_ids[msg_id]['count'] = 0
+            self.logged_ids[msg_id]['window'] = window
+            self.logged_ids[msg_id]['passed_threshold'] = False
+
+        self.logged_ids[msg_id]['count'] += 1
+        window_elapsed = (now % throttle_config['duration']) / throttle_config['duration']
+        threshold = self.logged_ids[msg_id]['previous_count'] * (1 - window_elapsed) + self.logged_ids[msg_id]['count']
+
+        if threshold < throttle_config['max']:
+            return False
+
+        if not self.logged_ids[msg_id]['passed_threshold']:
+            self.error(124001, Logger.msgX[124001].format(count=threshold))
+
+        self.logged_ids[msg_id]['passed_threshold'] = True
+        return True
 
     def get_handlers(self, logger):
         """ recursively get parent handlers """
@@ -641,26 +693,32 @@ class Logger():
     def trace(self, msg_id, msg_text):
         """ Log trace messages. """
         if self.weewx_debug > 1:
-            self._logmsg.debug(self.MSG_FORMAT, self.mode, msg_text)
+            self._logmsg.debug(self.MSG_FORMAT, self.mode, threading.get_native_id(), global_archive_timestamp, msg_text)
         else:
-            self._logmsg.log(self.trace_level, self.MSG_FORMAT, self.mode, msg_text)
+            self._logmsg.log(self.trace_level, self.MSG_FORMAT, self.mode, threading.get_native_id(), global_archive_timestamp, msg_text)
 
     def debug(self, msg_id, msg_text):
         """ Log debug messages. """
-        self._logmsg.debug(self.MSG_FORMAT, self.mode, msg_text)
+        self._logmsg.debug(self.MSG_FORMAT, self.mode, threading.get_native_id(), global_archive_timestamp, msg_text)
 
     def info(self, msg_id, msg_text):
         """ Log informational messages. """
-        self._logmsg.info(self.MSG_FORMAT, self.mode, msg_text)
+        self._logmsg.info(self.MSG_FORMAT, self.mode, threading.get_native_id(), global_archive_timestamp, msg_text)
 
     def error(self, msg_id, msg_text):
         """ Log error messages. """
-        self._logmsg.error(self.MSG_FORMAT, self.mode, msg_text)
+        self._logmsg.error(self.MSG_FORMAT, self.mode, threading.get_native_id(), global_archive_timestamp, msg_text)
 
 class RecordCache():
     """ Manage the cache. """
     msgX = {
         # trace message
+        100001:
+        "RecordCache is_valid key={key} timestamp={timestamp} expires_after={expires_after} cache_value={cache_value} is_valid={is_valid}",
+        100002: "RecordCache get_value key={key} timestamp={timestamp} expires_after={expires_after} cache_value={cache_value}",
+        100003: "RecordCache update_value key={key} value={value} unit_system={unit_system} timestamp={timestamp} cache_value={cache_value}",
+        100004: "RecordCache invalidate_value key={key} timestamp={timestamp} cache_value={cache_value}",
+        100005: "RecordCache remove_value key={key} cache_value={cache_value}",
         # debug messages
         # informational messages
         # error messages
@@ -668,7 +726,8 @@ class RecordCache():
         109001: "Unit system does not match unit system of the cache. {unit_system} vs {self_unit_system}",
     }
 
-    def __init__(self):
+    def __init__(self, logger):
+        self.logger = logger
         self.unit_system = None
         self.cached_values = {}
 
@@ -678,14 +737,25 @@ class RecordCache():
 
     def is_valid(self, key, timestamp, expires_after):
         """ Check is the key is still not valid (has not expired and  not been marked invalid). """
-        valid = None
+
+        valid = False
         if key in self.cached_values:
             valid = (expires_after is None or timestamp - self.cached_values[key]['timestamp'] < expires_after) and \
                 self.cached_values[key]['invalidated'] > timestamp
+
+        self.logger.trace(100001, RecordCache.msgX[100001].format(key=key,
+                                                                  timestamp=timestamp,
+                                                                  expires_after=expires_after,
+                                                                  cache_value=self.dump_key(key),
+                                                                  is_valid=valid))
         return valid
 
     def get_value(self, key, timestamp, expires_after):
         """ Get the cached value. """
+        self.logger.trace(100002, RecordCache.msgX[100002].format(key=key,
+                                                                  timestamp=timestamp,
+                                                                  expires_after=expires_after,
+                                                                  cache_value=self.dump_key(key)))
         if self.is_valid(key, timestamp, expires_after):
             return self.cached_values[key]['value']
 
@@ -693,6 +763,11 @@ class RecordCache():
 
     def update_value(self, key, value, unit_system, timestamp):
         """ Update the cached value. """
+        self.logger.trace(100003, RecordCache.msgX[100003].format(key=key,
+                                                                  value=value,
+                                                                  unit_system=unit_system,
+                                                                  timestamp=timestamp,
+                                                                  cache_value=self.dump_key(key)))
         if self.unit_system is None:
             self.unit_system = unit_system
         if unit_system != self.unit_system:
@@ -708,6 +783,7 @@ class RecordCache():
                   For additional inforamtion see, https://groups.google.com/g/weewx-development/c/1cJBMAX3Wsg
                   Add also, https://github.com/bellrichm/WeeWX-MQTTSubscribe/issues/178
         """
+        self.logger.trace(100004, RecordCache.msgX[100004].format(key=key, timestamp=timestamp, cache_value=self.dump_key(key)))
         if key in self.cached_values and timestamp < self.cached_values[key]['invalidated']:
             self.cached_values[key]['invalidated'] = timestamp
 
@@ -721,6 +797,7 @@ class RecordCache():
             If a key/value is no longer valid, use invalidate_value with current timestamp.
             Do not use this method to remove invalidated cached key/values.
         """
+        self.logger.trace(100005, RecordCache.msgX[100005].format(key=key, cache_value=self.dump_key(key)))
         if key in self.cached_values:
             del self.cached_values[key]
 
@@ -1316,11 +1393,11 @@ class TopicManager():
         if not accumulator.isEmpty:
             aggregate_data = accumulator.getRecord()
             self.logger.trace(50012, TopicManager.msgX[50012].format(queue_name=queue_name,
-                                                                     dateTime=weeutil.weeutil.timestamp_to_string(data['dateTime']),
+                                                                     dateTime=weeutil.weeutil.timestamp_to_string(aggregate_data['dateTime']),
                                                                      aggregate_data=to_sorted_string(aggregate_data)))
             target_data = weewx.units.to_std_system(aggregate_data, units)
             self.logger.trace(50013, TopicManager.msgX[50013].format(queue_name=queue_name,
-                                                                     dateTime=weeutil.weeutil.timestamp_to_string(data['dateTime']),
+                                                                     dateTime=weeutil.weeutil.timestamp_to_string(target_data['dateTime']),
                                                                      target_data=to_sorted_string(target_data)))
         else:
             self.logger.trace(50014, TopicManager.msgX[50014])
@@ -2340,19 +2417,9 @@ class MQTTSubscribeService(StdService):
         20001: "Packet prior to update is: {dateTime} {packet}",
         20002: "Queue {queue_name} has data: {target_data}",
         20003: "Packet after update is: {dateTime} {packet}",
-        20004: "field: {field} value: {packet} dateTime: {dateTime}",
-        20005: "cache dump before invalidate_value: {value}",
-        20006: "cache dump after invalidate_value: {value}",
-        20007: "Record prior to update is: {dateTime} {record}",
-        20008: "Queue {queue_name} has data: {target_data}",
-        20009: "Record after update is: {dateTime} {record}",
-        20010: "Update cache {value} to {field} with units of {units} and timestamp of {timestamp}",
-        20011: "cache dump before update_value: {value}",
-        20012: "cache dump after update_value: {value}",
-        20013: "cache dump before get_value: {value}",
-        20014: "field: {field} timestamp: {timestamp} is_valid: {is_valid}",
-        20015: "get_value returned value: {target_data}",
-        20016: "target_data after cache lookup is: {target_data}",
+        20004: "Record prior to update is: {dateTime} {record}",
+        20005: "Queue {queue_name} has data: {target_data}",
+        20006: "Record after update is: {dateTime} {record}",
         # debug messages
         21001: "data-> final packet is {dateTime}: {packet}",
         21002: "data-> incoming record is {dateTime}: {record}",
@@ -2400,6 +2467,8 @@ class MQTTSubscribeService(StdService):
         if 'archive_topic' in service_dict:
             raise ValueError(MQTTSubscribeService.msgX[29002].format(archive_topic=service_dict['archive_topic']))
 
+        self.next_archive_timestamp = 0
+
         self.end_ts = 0  # prime for processing loop packet
 
         self.subscriber = MQTTSubscriber.get_subscriber(service_dict, self.logger)
@@ -2408,7 +2477,7 @@ class MQTTSubscribeService(StdService):
 
         self.subscriber.start()
 
-        self.cache = RecordCache()
+        self.cache = RecordCache(self.logger)
 
         # ToDo: Remove when issue 178 is complete
         archive_dict = config_dict.get('StdArchive', {})
@@ -2418,6 +2487,7 @@ class MQTTSubscribeService(StdService):
             raise ValueError(MQTTSubscribeService.msgX[29003].format(binding=self.binding))
 
         self.bind(weewx.NEW_ARCHIVE_RECORD, self.new_archive_record)
+        engine.bind(weewx.END_ARCHIVE_PERIOD, self.end_archive_period)
 
         if self.binding == 'loop':
             self.bind(weewx.NEW_LOOP_PACKET, self.new_loop_packet)
@@ -2455,14 +2525,7 @@ class MQTTSubscribeService(StdService):
             if self.subscriber.cached_fields:
                 for field in self.subscriber.cached_fields:
                     if field in event.packet:
-                        self.logger.trace(20004,
-                                          MQTTSubscribeService.msgX[20004].
-                                          format(field=field,
-                                                 packet=event.packet[field],
-                                                 dateTime=weeutil.weeutil.timestamp_to_string(event.packet['dateTime'])))
-                        self.logger.trace(20005, MQTTSubscribeService.msgX[20005].format(value=self.cache.dump_key(field)))
                         self.cache.invalidate_value(field, event.packet['dateTime'])
-                        self.logger.trace(20006, MQTTSubscribeService.msgX[20006].format(value=self.cache.dump_key(field)))
             self.logger.debug(21001,
                               MQTTSubscribeService.msgX[21001].format(dateTime=weeutil.weeutil.timestamp_to_string(event.packet['dateTime']),
                                                                       packet=to_sorted_string(event.packet)))
@@ -2479,14 +2542,14 @@ class MQTTSubscribeService(StdService):
             start_ts = end_ts - event.record['interval'] * 60
 
             for queue in self.subscriber.queues:
-                self.logger.trace(20007,
-                                  MQTTSubscribeService.msgX[20007].format(dateTime=weeutil.weeutil.timestamp_to_string(event.record['dateTime']),
+                self.logger.trace(20004,
+                                  MQTTSubscribeService.msgX[20004].format(dateTime=weeutil.weeutil.timestamp_to_string(event.record['dateTime']),
                                                                           record=to_sorted_string(event.record)))
                 target_data = self.subscriber.get_accumulated_data(queue, start_ts, end_ts, event.record['usUnits'])
-                self.logger.trace(20008, MQTTSubscribeService.msgX[20008].format(queue_name=queue['name'], target_data=target_data))
+                self.logger.trace(20005, MQTTSubscribeService.msgX[20005].format(queue_name=queue['name'], target_data=target_data))
                 event.record.update(target_data)
-                self.logger.trace(20009,
-                                  MQTTSubscribeService.msgX[20009].format(dateTime=weeutil.weeutil.timestamp_to_string(event.record['dateTime']),
+                self.logger.trace(20006,
+                                  MQTTSubscribeService.msgX[20006].format(dateTime=weeutil.weeutil.timestamp_to_string(event.record['dateTime']),
                                                                           record=to_sorted_string(event.record)))
 
         if self.subscriber.cached_fields:
@@ -2494,31 +2557,24 @@ class MQTTSubscribeService(StdService):
             for field in self.subscriber.cached_fields:
                 timestamp = event.record['dateTime']
                 if field in event.record:
-                    self.logger.trace(20010, MQTTSubscribeService.msgX[20010].format(value=event.record[field], field=field,
-                                                                                     units=event.record['usUnits'],
-                                                                                     timestamp=timestamp))
-                    self.logger.trace(20011, MQTTSubscribeService.msgX[20011].format(value=self.cache.dump_key(field)))
                     self.cache.update_value(field,
                                             event.record[field],
                                             event.record['usUnits'],
                                             timestamp)
-                    self.logger.trace(20012, MQTTSubscribeService.msgX[20012].format(value=self.cache.dump_key(field)))
                 else:
-                    is_valid = self.cache.is_valid(field,
-                                                   timestamp,
-                                                   self.subscriber.cached_fields[field]['expires_after'])
-                    self.logger.trace(20013, MQTTSubscribeService.msgX[20013].format(value=self.cache.dump_key(field)))
-                    self.logger.trace(20014, MQTTSubscribeService.msgX[20014].format(field=field, timestamp=time, is_valid=is_valid))
                     target_data[field] = self.cache.get_value(field,
                                                               timestamp,
                                                               self.subscriber.cached_fields[field]['expires_after'])
-                    self.logger.trace(20015, MQTTSubscribeService.msgX[20015].format(target_data=target_data[field]))
-                    self.logger.trace(20016, MQTTSubscribeService.msgX[20016].format(target_data=to_sorted_string(target_data)))
-
             event.record.update(target_data)
 
         self.logger.debug(21003, MQTTSubscribeService.msgX[21003].format(dateTime=weeutil.weeutil.timestamp_to_string(event.record['dateTime']),
                                                                          record=to_sorted_string(event.record)))
+        self.next_archive_timestamp = int(event.record['dateTime'] + event.record['interval'] * 120)
+
+    def end_archive_period(self, event):
+        """ Handle the end archive period event."""
+        global global_archive_timestamp
+        global_archive_timestamp = self.next_archive_timestamp
 
 def loader(config_dict, engine):
     """ Load and return the driver. """
@@ -2574,8 +2630,10 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice):
         self._archive_interval = to_int(stn_dict.get('archive_interval', 300))
         self.archive_topic = stn_dict.get('archive_topic', None)
         self.prev_archive_start = 0
+        self.next_archive_timestamp = 0
 
         engine.bind(weewx.NEW_ARCHIVE_RECORD, self.new_archive_record)
+        engine.bind(weewx.END_ARCHIVE_PERIOD, self.end_archive_period)
 
         self.subscriber = MQTTSubscriber.get_subscriber(stn_dict, self.logger)
 
@@ -2606,6 +2664,12 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice):
         """ Handle the new archive record event. """
         self.logger.debug(11002, MQTTSubscribeDriver.msgX[11002].format(dateTime=weeutil.weeutil.timestamp_to_string(event.record['dateTime']),
                                                                         record=to_sorted_string(event.record)))
+        self.next_archive_timestamp = int(event.record['dateTime'] + event.record['interval'] * 120)
+
+    def end_archive_period(self, event):
+        """ Handle the end archive period event."""
+        global global_archive_timestamp
+        global_archive_timestamp = self.next_archive_timestamp
 
     def genLoopPackets(self):  # need to override parent - pylint: disable=invalid-name
         """ Called to generate loop packets. """

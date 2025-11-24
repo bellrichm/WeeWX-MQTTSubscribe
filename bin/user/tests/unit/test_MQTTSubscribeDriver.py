@@ -59,7 +59,8 @@ class TestclosePort(unittest.TestCase):
 
         event = weewx.Event(weewx.NEW_ARCHIVE_RECORD,
                             record={
-                                'dateTime': time.time()
+                                'dateTime': time.time(),
+                                'interval': 5,
                             })
 
         with mock.patch('user.MQTTSubscribe.MQTTSubscriber'):

@@ -65,6 +65,11 @@ jobs:
         export PYTHONPATH=bin:weewx/bin:$PYTHONPATH
         pytest bin/user/tests/integ --html=results/integtests.html --self-contained-html
 
+    - name: E2E tests
+      run: |
+        export PYTHONPATH=bin:weewx/bin:$PYTHONPATH
+        pytest bin/user/tests/e2e --html=results/e2etests.html --self-contained-html
+
     - name: Archive test-results
       uses: actions/upload-artifact@v4
       with:

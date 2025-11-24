@@ -150,6 +150,7 @@ class atestInitialization(unittest.TestCase):
 
                 user.MQTTSubscribe.MQTTSubscribeService(mock_StdEngine, config_dict)
 
+    # @unittest.skip("Skipping while developing 178. Remove when released. Run in 'production' code.")
     def test_caching_invalid_software_generation(self):
         mock_StdEngine = mock.Mock()
 
@@ -449,7 +450,8 @@ class Testnew_archive_record(unittest.TestCase):
 
                 record = {
                     'usUnits': unit_system,
-                    'dateTime': time.time()
+                    'dateTime': time.time(),
+                    'interval': 5,
                 }
 
                 mock_new_archive_record_event = mock.MagicMock()
@@ -483,6 +485,7 @@ class Testnew_archive_record(unittest.TestCase):
                 record = {
                     'usUnits': unit_system,
                     'dateTime': time.time(),
+                    'interval': 5,
                     fieldname: round(random.uniform(1, 100), 2)
                 }
 
