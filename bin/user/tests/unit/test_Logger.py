@@ -283,6 +283,137 @@ class TestInintialization(BaseTestClass):
 
         self.assertEqual(error.exception.args[0], f"{message_ids} has been configured multiple times")
 
+    def test_is_throttled_all_level_id_set(self):
+        logging_level = random_string()
+        message_id = random_string()
+
+        config_dict = {
+            'mode': random_string(),
+            'throttle': {
+                'category': {
+                    'ALL': {
+                        'duration': random.randint(1, 10),
+                        'max': random.randint(1, 10),                        
+                    },
+                    logging_level: {
+                        'duration': random.randint(1, 10),
+                        'max': random.randint(1, 10),                        
+                    },
+                },                
+                'messages': {
+                    message_id: {
+                        'duration': random.randint(1, 10),
+                        'max': random.randint(1, 10),                        
+                    }
+                }
+            }
+        }
+        config = configobj.ConfigObj(config_dict)
+
+        with mock.patch.object(Logger, '_check_message') as mock_check_message:
+            SUT = Logger(config)
+            SUT._is_throttled(logging_level, message_id)
+
+            mock_check_message.assert_called_once_with(message_id, config_dict['throttle']['messages'][message_id])
+
+    def test_is_throttled_all_level_set(self):
+        logging_level = random_string()
+        message_id = random_string()
+        random_message_id = random_string()
+
+        config_dict = {
+            'mode': random_string(),
+            'throttle': {
+                'category': {
+                    'ALL': {
+                        'duration': random.randint(1, 10),
+                        'max': random.randint(1, 10),                        
+                    },
+                    logging_level: {
+                        'duration': random.randint(1, 10),
+                        'max': random.randint(1, 10),                        
+                    },
+                },                
+                'messages': {
+                    message_id: {
+                        'duration': random.randint(1, 10),
+                        'max': random.randint(1, 10),                        
+                    }
+                }
+            }
+        }
+        config = configobj.ConfigObj(config_dict)
+
+        with mock.patch.object(Logger, '_check_message') as mock_check_message:
+            SUT = Logger(config)
+            SUT._is_throttled(logging_level, random_message_id)
+
+            mock_check_message.assert_called_once_with(random_message_id, config_dict['throttle']['category'][logging_level])
+
+    def test_is_throttled_all_set(self):
+        logging_level = random_string()
+        message_id = random_string()
+        random_message_id = random_string()
+
+        config_dict = {
+            'mode': random_string(),
+            'throttle': {
+                'category': {
+                    'ALL': {
+                        'duration': random.randint(1, 10),
+                        'max': random.randint(1, 10),                        
+                    },
+                    logging_level: {
+                        'duration': random.randint(1, 10),
+                        'max': random.randint(1, 10),                        
+                    },
+                },                
+                'messages': {
+                    message_id: {
+                        'duration': random.randint(1, 10),
+                        'max': random.randint(1, 10),                        
+                    }
+                }
+            }
+        }
+        config = configobj.ConfigObj(config_dict)
+
+        with mock.patch.object(Logger, '_check_message') as mock_check_message:
+            SUT = Logger(config)
+            SUT._is_throttled(random_string(), random_message_id)
+
+            mock_check_message.assert_called_once_with(random_message_id, config_dict['throttle']['category']['ALL'])
+
+    def test_is_throttled_no_match(self):
+        logging_level = random_string()
+        message_id = random_string()
+        random_message_id = random_string()
+
+        config_dict = {
+            'mode': random_string(),
+            'throttle': {
+                'category': {
+                    logging_level: {
+                        'duration': random.randint(1, 10),
+                        'max': random.randint(1, 10),                        
+                    },
+                },                
+                'messages': {
+                    message_id: {
+                        'duration': random.randint(1, 10),
+                        'max': random.randint(1, 10),                        
+                    }
+                }
+            }
+        }
+        config = configobj.ConfigObj(config_dict)
+
+        with mock.patch.object(Logger, '_check_message') as mock_check_message:
+            SUT = Logger(config)
+            SUT._is_throttled(random_string(), random_message_id)
+
+            mock_check_message.assert_not_called()
+
 class TestLogging(BaseTestClass):
     @staticmethod
     def test_error_logged():

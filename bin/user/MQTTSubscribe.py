@@ -614,8 +614,8 @@ class Logger():
             return self._check_message(msg_id, self.throttle_config['message'][msg_id])
         elif logging_level in self.throttle_config['category']:
             return self._check_message(msg_id, self.throttle_config['category'][logging_level])
-        elif 'all' in self.throttle_config['category']:
-            return self._check_message(msg_id, self.throttle_config['category']['all'])
+        elif 'ALL' in self.throttle_config['category']:
+            return self._check_message(msg_id, self.throttle_config['category']['ALL'])
 
         return False
 
