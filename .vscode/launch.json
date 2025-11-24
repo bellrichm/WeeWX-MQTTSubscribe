@@ -18,9 +18,9 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
-            "args": [
-                "test_max_is_none"
-            ]
+            //"args": [
+            //    "test_max_is_none"
+            //]
         },
 
         {
