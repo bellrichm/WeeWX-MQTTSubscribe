@@ -13,28 +13,13 @@ import sys
 import time
 
 import test_weewx_stubs
-from test_weewx_stubs import random_string
+from test_weewx_stubs import BaseTestClass, random_string
 # setup stubs before importing MQTTSubscribe
 test_weewx_stubs.setup_stubs()
 
 from user.MQTTSubscribe import Logger
 
-class TestV4Logging(unittest.TestCase):
-    def setUp(self):
-        # reset stubs for every test
-        test_weewx_stubs.setup_stubs()
-
-    def tearDown(self):
-        # cleanup stubs
-        del sys.modules['weecfg']
-        del sys.modules['weeutil']
-        del sys.modules['weeutil.config']
-        del sys.modules['weeutil.weeutil']
-        del sys.modules['weeutil.logger']
-        del sys.modules['weewx']
-        del sys.modules['weewx.drivers']
-        del sys.modules['weewx.engine']
-
+class TestInintialization(BaseTestClass):
     def test_init_set_trace_log_level(self):
         log_level = 5
 
@@ -97,6 +82,45 @@ class TestV4Logging(unittest.TestCase):
 
             SUT._logmsg.addHandler.assert_called_once()
 
+    def test_initialization(self):
+        print('start')
+
+        with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
+            mock_logging._checkLevel.return_value = 0
+
+            config_dict = {
+                'mode': random_string(),
+                'throttle': {
+                    'category': {
+                        'ALL': {
+                            'duration': 300,
+                            'max': 2
+                        },
+                        'ERROR': {
+                            'duration': 300,
+                            'max': 5,
+                        },
+                    },
+                    'messages': {
+                        'REPLACE_ME_with_specific_message_ids': {
+                            'messages': ['m1', 'm2'],
+                            'duration': 0,
+                            'max': 1
+                        },
+                        'REPLACE_ME_with_single_message_id': {
+                            'duration': 1,
+                            'max': 0
+                        }
+                    }
+                }
+            }
+            config = configobj.ConfigObj(config_dict)
+
+            Logger(config)
+
+        print('end')
+
+class TestLogging(BaseTestClass):
     @staticmethod
     def test_error_logged():
         with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
@@ -179,22 +203,7 @@ class TestV4Logging(unittest.TestCase):
 
                 SUT._logmsg.log.assert_called_once_with(5, SUT.MSG_FORMAT, mode, thread_id, -1, message)
 
-class TestThrottling(unittest.TestCase):
-    def setUp(self):
-        # reset stubs for every test
-        test_weewx_stubs.setup_stubs()
-
-    def tearDown(self):
-        # cleanup stubs
-        del sys.modules['weecfg']
-        del sys.modules['weeutil']
-        del sys.modules['weeutil.config']
-        del sys.modules['weeutil.weeutil']
-        del sys.modules['weeutil.logger']
-        del sys.modules['weewx']
-        del sys.modules['weewx.drivers']
-        del sys.modules['weewx.engine']
-
+class TestThrottling(BaseTestClass):
     def test_duration_is_zero(self):
         msg_id = random_string()
         duration = 0
@@ -513,89 +522,6 @@ class TestThrottling(unittest.TestCase):
                     self.assertTrue(throttle)
                     self.assertEqual(len(SUT.logged_ids), 1)
                     self.assertDictEqual(SUT.logged_ids, logged_ids)
-
-    def test_initialization(self):
-        print('start')
-
-        with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
-            mock_logging._checkLevel.return_value = 0
-
-            config_dict = {
-                'mode': random_string(),
-                'throttle': {
-                    'category': {
-                        'ALL': {
-                            'duration': 300,
-                            'max': 2
-                        },
-                        'ERROR': {
-                            'duration': 300,
-                            'max': 5,
-                        },
-                    },
-                    'messages': {
-                        'REPLACE_ME_with_specific_message_ids': {
-                            'messages': ['m1', 'm2'],
-                            'duration': 0,
-                            'max': 1
-                        },
-                        'REPLACE_ME_with_single_message_id': {
-                            'duration': 1,
-                            'max': 0
-                        }
-                    }
-                }
-            }
-            config = configobj.ConfigObj(config_dict)
-
-            Logger(config)
-
-        print('end')
-
-    def test_test(self):
-        print('start')
-        now = time.time()
-
-        with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
-            with mock.patch('user.MQTTSubscribe.time') as mock_time:
-                mock_logging._checkLevel.return_value = 0
-                mock_time.time.return_value = now
-
-                config_dict = {
-                    'mode': random_string(),
-                    'throttle': {
-                        'category': {
-                            'ALL': {
-                                'duration': 300,
-                                'max': 2
-                            },
-                            'ERROR': {
-                                'duration': 300,
-                                'max': 5,
-                            },
-                        },
-                        'messages': {
-                            'REPLACE_ME_with_specific_message_ids': {
-                                'messages': ['m1', 'm2'],
-                                'duration': 0,
-                                'max': 1
-                            },
-                            'm3': {
-                                'duration': 1,
-                                'max': 'none'
-                            }
-                        }
-                    }
-                }
-                config = configobj.ConfigObj(config_dict)
-
-                SUT = Logger(config)
-
-                SUT._is_throttled("ERROR", 'm3')
-
-            # SUT._logmsg.addHandler.assert_called_once()
-        print('end')
-
 
 if __name__ == '__main__':
     # testcase = sys.argv[1]
