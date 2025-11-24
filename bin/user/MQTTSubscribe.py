@@ -560,7 +560,7 @@ class Logger():
             self.throttle_config['category'] = copy.deepcopy(config['throttle'].get('category', {}))
 
             self.throttle_config['message'] = {}
-            for message in config['throttle']['messages'].sections:
+            for message in config['throttle'].get('messages', configobj.ConfigObj({})).sections:
                 if 'messages' in config['throttle']['messages'][message]:
                     for message_id in weeutil.weeutil.option_as_list(config['throttle']['messages'][message]['messages']):
                         if message_id in self.throttle_config['message']:
