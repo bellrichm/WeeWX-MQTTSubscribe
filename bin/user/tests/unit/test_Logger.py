@@ -8,6 +8,7 @@ import unittest
 import mock
 
 import configobj
+import copy
 import random
 import sys
 import time
@@ -81,6 +82,150 @@ class TestInintialization(BaseTestClass):
             SUT = Logger({'mode': mode}, console=True)
 
             SUT._logmsg.addHandler.assert_called_once()
+
+    def test_throttle_not_in_config(self):
+        config_dict = {
+            'mode': random_string(),
+        }
+        config = configobj.ConfigObj(config_dict)
+
+        expected_throttle_config = {
+            'category': {},
+            'message': {},
+        }
+
+        SUT = Logger(config)
+        self.assertDictEqual(SUT.throttle_config, expected_throttle_config)
+
+    def test_empty_throttle_section(self):
+        config_dict = {
+            'mode': random_string(),
+            'throttle': {}
+        }
+        config = configobj.ConfigObj(config_dict)
+
+        expected_throttle_config = {
+            'category': {},
+            'message': {},
+        }
+
+        SUT = Logger(config)
+        self.assertDictEqual(SUT.throttle_config, expected_throttle_config)
+
+    def test_throttle_category_section(self):
+        category = {
+            random_string(): {
+                random_string(): random.randint(1, 10),
+            }
+        }
+
+        config_dict = {
+            'mode': random_string(),
+            'throttle': {
+                'category': copy.deepcopy(category),
+            }
+        }
+        config = configobj.ConfigObj(config_dict)
+
+        expected_throttle_config = {
+            'category': copy.deepcopy(category),
+            'message': {},
+        }
+
+        SUT = Logger(config)
+        self.assertDictEqual(SUT.throttle_config, expected_throttle_config)
+
+    def test_no_messages_specified_in_message_section(self):
+        message_id = random_string()
+        message = {
+            message_id: {
+                'duration': random.randint(1, 10),
+                'max': random.randint(1, 10),
+            }
+        }
+
+        config_dict = {
+            'mode': random_string(),
+            'throttle': {
+                'messages': copy.deepcopy(message),
+            }
+        }
+        config = configobj.ConfigObj(config_dict)
+
+        expected_throttle_config = {
+            'category': {},
+            'message': {
+                message_id: copy.deepcopy(message[message_id])
+            },
+        }
+
+        SUT = Logger(config)
+        self.assertDictEqual(SUT.throttle_config, expected_throttle_config)
+
+    def test_single_message_specified_in_message_section(self):
+        messages_name = random_string()
+        message_ids = random_string()
+        message = {
+            messages_name: {
+                'duration': random.randint(1, 10),
+                'max': random.randint(1, 10),
+                'messages': message_ids,
+            }
+        }
+
+        config_dict = {
+            'mode': random_string(),
+            'throttle': {
+                'messages': copy.deepcopy(message),
+            }
+        }
+        config = configobj.ConfigObj(config_dict)
+
+        expected_throttle_config = {
+            'category': {},
+            'message': {
+                message_ids: copy.deepcopy(message[messages_name])
+            },
+        }
+        del expected_throttle_config['message'][message_ids]['messages']
+
+        SUT = Logger(config)
+        self.assertDictEqual(SUT.throttle_config, expected_throttle_config)
+
+    def test_multiple_messages_specified_in_message_section(self):
+        messages_name = random_string()
+        message_ids = [random_string(), random_string()]
+        duration = random.randint(1, 10)
+        max = random.randint(1, 10)
+        message = {
+            messages_name: {
+                'duration': duration,
+                'max': max,
+                'messages': message_ids,
+            }
+        }
+
+        config_dict = {
+            'mode': random_string(),
+            'throttle': {
+                'messages': copy.deepcopy(message),
+            }
+        }
+        config = configobj.ConfigObj(config_dict)
+
+        expected_throttle_config = {
+            'category': {},
+            'message': {
+            },
+        }
+        for message_id in message_ids:
+            expected_throttle_config['message'][message_id] = {
+                'duration': duration,
+                'max': max,
+            }
+
+        SUT = Logger(config)
+        self.assertDictEqual(SUT.throttle_config, expected_throttle_config)
 
     def test_initialization(self):
         print('start')
