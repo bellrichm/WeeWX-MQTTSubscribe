@@ -227,43 +227,61 @@ class TestInintialization(BaseTestClass):
         SUT = Logger(config)
         self.assertDictEqual(SUT.throttle_config, expected_throttle_config)
 
-    def test_initialization(self):
-        print('start')
+    def test_message_id_in_list_already_specified(self):
+        messages_name = random_string()
+        message_ids = random_string()
+        message = {
+            message_ids: {
+                'duration': random.randint(1, 10),
+                'max': random.randint(1, 10),
+            },
+            messages_name: {
+                'duration': random.randint(1, 10),
+                'max': random.randint(1, 10),
+                'messages': message_ids,
+            },
+        }
 
-        with mock.patch('user.MQTTSubscribe.logging') as mock_logging:
-            mock_logging._checkLevel.return_value = 0
-
-            config_dict = {
-                'mode': random_string(),
-                'throttle': {
-                    'category': {
-                        'ALL': {
-                            'duration': 300,
-                            'max': 2
-                        },
-                        'ERROR': {
-                            'duration': 300,
-                            'max': 5,
-                        },
-                    },
-                    'messages': {
-                        'REPLACE_ME_with_specific_message_ids': {
-                            'messages': ['m1', 'm2'],
-                            'duration': 0,
-                            'max': 1
-                        },
-                        'REPLACE_ME_with_single_message_id': {
-                            'duration': 1,
-                            'max': 0
-                        }
-                    }
-                }
+        config_dict = {
+            'mode': random_string(),
+            'throttle': {
+                'messages': copy.deepcopy(message),
             }
-            config = configobj.ConfigObj(config_dict)
+        }
+        config = configobj.ConfigObj(config_dict)
 
+        with self.assertRaises(ValueError) as error:
             Logger(config)
 
-        print('end')
+        self.assertEqual(error.exception.args[0], f"{message_ids} has been configured multiple times")
+
+    def test_message_id_already_specified(self):
+        messages_name = random_string()
+        message_ids = random_string()
+        message = {
+            messages_name: {
+                'duration': random.randint(1, 10),
+                'max': random.randint(1, 10),
+                'messages': message_ids,
+            },
+            message_ids: {
+                'duration': random.randint(1, 10),
+                'max': random.randint(1, 10),
+            },
+        }
+
+        config_dict = {
+            'mode': random_string(),
+            'throttle': {
+                'messages': copy.deepcopy(message),
+            }
+        }
+        config = configobj.ConfigObj(config_dict)
+
+        with self.assertRaises(ValueError) as error:
+            Logger(config)
+
+        self.assertEqual(error.exception.args[0], f"{message_ids} has been configured multiple times")
 
 class TestLogging(BaseTestClass):
     @staticmethod
