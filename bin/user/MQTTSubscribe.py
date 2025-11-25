@@ -621,6 +621,8 @@ class Logger():
 
     def _check_message(self, msg_id, throttle_config):
         if throttle_config['duration'] == 0:
+            # ToDo: This is dangerous because a message will never be logged.
+            # And there is no trace anywwhere why....
             return True
 
         if throttle_config['max'] is None:
@@ -692,22 +694,26 @@ class Logger():
 
     def trace(self, msg_id, msg_text):
         """ Log trace messages. """
-        if self.weewx_debug > 1:
-            self._logmsg.debug(self.MSG_FORMAT, self.mode, threading.get_native_id(), global_archive_timestamp, msg_text)
-        else:
-            self._logmsg.log(self.trace_level, self.MSG_FORMAT, self.mode, threading.get_native_id(), global_archive_timestamp, msg_text)
+        if not self._is_throttled('TRACE', msg_id):
+            if self.weewx_debug > 1:
+                self._logmsg.debug(self.MSG_FORMAT, self.mode, threading.get_native_id(), global_archive_timestamp, msg_text)
+            else:
+                self._logmsg.log(self.trace_level, self.MSG_FORMAT, self.mode, threading.get_native_id(), global_archive_timestamp, msg_text)
 
     def debug(self, msg_id, msg_text):
         """ Log debug messages. """
-        self._logmsg.debug(self.MSG_FORMAT, self.mode, threading.get_native_id(), global_archive_timestamp, msg_text)
+        if not self._is_throttled('DEBUG', msg_id):
+            self._logmsg.debug(self.MSG_FORMAT, self.mode, threading.get_native_id(), global_archive_timestamp, msg_text)
 
     def info(self, msg_id, msg_text):
         """ Log informational messages. """
-        self._logmsg.info(self.MSG_FORMAT, self.mode, threading.get_native_id(), global_archive_timestamp, msg_text)
+        if not self._is_throttled('INFO', msg_id):
+            self._logmsg.info(self.MSG_FORMAT, self.mode, threading.get_native_id(), global_archive_timestamp, msg_text)
 
     def error(self, msg_id, msg_text):
         """ Log error messages. """
-        self._logmsg.error(self.MSG_FORMAT, self.mode, threading.get_native_id(), global_archive_timestamp, msg_text)
+        if not self._is_throttled('ERROR', msg_id):
+            self._logmsg.error(self.MSG_FORMAT, self.mode, threading.get_native_id(), global_archive_timestamp, msg_text)
 
 class RecordCache():
     """ Manage the cache. """
