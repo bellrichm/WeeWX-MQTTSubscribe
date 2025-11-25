@@ -114,8 +114,9 @@ class TestInintialization(BaseTestClass):
 
     def test_throttle_category_section(self):
         category = {
-            random_string(): {
-                random_string(): random.randint(1, 10),
+            'ERROR': {
+                'max': random.randint(1, 10),
+                'duration': random.randint(1, 10),
             }
         }
 
@@ -284,7 +285,7 @@ class TestInintialization(BaseTestClass):
         self.assertEqual(error.exception.args[0], f"{message_ids} has been configured multiple times")
 
     def test_is_throttled_all_level_id_set(self):
-        logging_level = random_string()
+        logging_level = 'ERROR'
         message_id = random_string()
 
         config_dict = {
@@ -310,14 +311,14 @@ class TestInintialization(BaseTestClass):
         }
         config = configobj.ConfigObj(config_dict)
 
+        SUT = Logger(config)
         with mock.patch.object(Logger, '_check_message') as mock_check_message:
-            SUT = Logger(config)
             SUT._is_throttled(logging_level, message_id)
 
             mock_check_message.assert_called_once_with(message_id, config_dict['throttle']['messages'][message_id])
 
     def test_is_throttled_all_level_set(self):
-        logging_level = random_string()
+        logging_level = 'ERROR'
         message_id = random_string()
         random_message_id = random_string()
 
@@ -344,14 +345,14 @@ class TestInintialization(BaseTestClass):
         }
         config = configobj.ConfigObj(config_dict)
 
+        SUT = Logger(config)
         with mock.patch.object(Logger, '_check_message') as mock_check_message:
-            SUT = Logger(config)
             SUT._is_throttled(logging_level, random_message_id)
 
             mock_check_message.assert_called_once_with(random_message_id, config_dict['throttle']['category'][logging_level])
 
     def test_is_throttled_all_set(self):
-        logging_level = random_string()
+        logging_level = 'ERROR'
         message_id = random_string()
         random_message_id = random_string()
 
@@ -377,15 +378,14 @@ class TestInintialization(BaseTestClass):
             }
         }
         config = configobj.ConfigObj(config_dict)
-
+        SUT = Logger(config)
         with mock.patch.object(Logger, '_check_message') as mock_check_message:
-            SUT = Logger(config)
             SUT._is_throttled(random_string(), random_message_id)
 
             mock_check_message.assert_called_once_with(random_message_id, config_dict['throttle']['category']['ALL'])
 
     def test_is_throttled_no_match(self):
-        logging_level = random_string()
+        logging_level = 'ERROR'
         message_id = random_string()
         random_message_id = random_string()
 

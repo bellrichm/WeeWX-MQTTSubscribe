@@ -163,6 +163,31 @@ CONFIG_SPEC_TEXT = """ \
         # Default is tlsv12.
         tls_version = tlsv12
 
+    # ToDo: Need to 'document' via comments
+    [[logging]]
+        [[[throttle]]]
+            [[[[category]]]]
+                [[[[[ALL]]]]]
+                    max =
+                    duration =
+                [[[[[ERROR]]]]]
+                    max =
+                    duration =
+                [[[[[INFO]]]]]
+                    max =
+                    duration =
+                [[[[[DEBUG]]]]]
+                    max =
+                    duration =
+                [[[[[TRACE]]]]]
+                    max =
+                    duration =
+            [[[[messages]]]]
+                [[[[[REPLACE_ME]]]]]
+                    max =
+                    duration =
+                    messages =
+
     # Configuration for the message callback.
     # DEPRECATED - use [[[message]]] under [[topics]]
     [[message_callback]]
@@ -539,15 +564,23 @@ class Logger():
         # trace message
         # debug messages
         # informational messages
+        122001: "Throttling messages is an experimental option. It has limited support and may cause one to miss important messages.",
         # error messages
         124001: "{count} messages have been suppressed.",
         124002: "{count} messages have been suppressed of {max}.",
         # exception messages
         129001: "{message_id} has been configured multiple times",
         129002: "{message_id} has been configured multiple times",
+        129003: "{category} is not valid. Valid categories are {valid_categories}",
+        129004: "{category} is missing 'max' configuration option.",
+        129005: "{category} is missing 'duration' configuration option.",
+        129006: "{message} is missing 'max' configuration option.",
+        129007: "{message} is missing 'duration' configuration option.",
     }
 
     MSG_FORMAT = "(%s-%s) %s %s"
+
+    valid_categories = ['ALL', 'ERROR', 'INFO', 'DEBUG', 'TRACE']
 
     def __init__(self, config, level='NOTSET', filename=None, console=None):
         self.console = console
@@ -558,10 +591,25 @@ class Logger():
         self.logged_ids = {}
         self.throttle_config = {}
         if 'throttle' in config:
-            self.throttle_config['category'] = copy.deepcopy(config['throttle'].get('category', {}))
+            self.throttle_config['category'] = {}
+            if 'category' in config['throttle']:
+                for category in config['throttle']['category'].sections:
+                    if category not in Logger.valid_categories:
+                        raise ValueError(Logger.msgX[129003].format(category=category, valid_categories=Logger.valid_categories))
+                    self.throttle_config['category'][category] = config['throttle']['category'][category]
+                    if 'max' not in config['throttle']['category'][category]:
+                        raise ValueError(Logger.msgX[129004].format(category=category))
+                    if 'duration' not in config['throttle']['category'][category]:
+                        raise ValueError(Logger.msgX[129005].format(category=category))
+                    config['throttle']['category'][category]['max'] = to_int(config['throttle']['category'][category]['max'])
+                    config['throttle']['category'][category]['duration'] = to_int(config['throttle']['category'][category]['duration'])
 
             self.throttle_config['message'] = {}
             for message in config['throttle'].get('messages', configobj.ConfigObj({})).sections:
+                if 'max' not in config['throttle']['messages'][message]:
+                    raise ValueError(Logger.msgX[129006].format(message=message))
+                if 'duration' not in config['throttle']['messages'][message]:
+                    raise ValueError(Logger.msgX[129007].format(message=message))
                 if 'messages' in config['throttle']['messages'][message]:
                     for message_id in weeutil.weeutil.option_as_list(config['throttle']['messages'][message]['messages']):
                         if message_id in self.throttle_config['message']:
@@ -609,6 +657,10 @@ class Logger():
             file_handler.setLevel(self.level)
             file_handler.setFormatter(formatter)
             self._logmsg.addHandler(file_handler)
+
+        # Logging is setup, now safe to log a mwssage about using throttling option
+        if 'throttle' in config:
+            self.info(122001, Logger.msgX[122001])
 
     def _is_throttled(self, logging_level, msg_id):
         if msg_id is not None and msg_id in self.throttle_config['message']:
@@ -2467,7 +2519,11 @@ class MQTTSubscribeService(StdService):
         logging_filename = service_dict.get('logging_filename', None)
         logging_level = service_dict.get('logging_level', 'NOTSET')
         console = to_bool(service_dict.get('console', False))
-        self.logger = Logger({'mode': 'Service'}, level=logging_level, filename=logging_filename, console=console)
+
+        self.logger = Logger({'mode': 'Service', 'throttle': service_dict.get('logging', {}).get('throttle', {})},
+                             level=logging_level,
+                             filename=logging_filename,
+                             console=console)
         self.logger.log_environment(config_dict)
 
         self.enable = to_bool(service_dict.get('enable', True))
@@ -2913,6 +2969,7 @@ class MQTTSubscribeConfiguration():
             'console': ['MQTTSubscribe'],
             'keepalive': ['MQTTSubscribe'],
             'protocol': ['MQTTSubscribe'],
+            'logging': ['MQTTSubscribe'],
             'logging_filename': ['MQTTSubscribe'],
             'logging_level': ['MQTTSubscribe'],
             'message_callback': ['MQTTSubscribe'],
