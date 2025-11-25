@@ -694,7 +694,7 @@ class Logger():
             return True
 
         now = int(time.time())
-        window = now // throttle_config['duration']
+        window = int(now // throttle_config['duration'])
 
         if msg_id not in self.logged_ids:
             self.logged_ids[msg_id] = {}
