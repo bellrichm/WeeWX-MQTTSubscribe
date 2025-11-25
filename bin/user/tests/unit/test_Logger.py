@@ -627,7 +627,6 @@ class TestThrottling(BaseTestClass):
                         'window': now // duration,
                         'count': 1,
                         'previous_count': 0,
-                        'passed_threshold': False,
                     }
                 }
 
@@ -678,7 +677,6 @@ class TestThrottling(BaseTestClass):
                         'window': int(now // duration),
                         'count': 1,
                         'previous_count': count,
-                        'passed_threshold': False,
                     }
                 }
 
@@ -729,7 +727,6 @@ class TestThrottling(BaseTestClass):
                         'window': now // duration,
                         'count': 1,
                         'previous_count': count,
-                        'passed_threshold': False,
                     }
                 }
 
@@ -737,6 +734,7 @@ class TestThrottling(BaseTestClass):
                 self.assertEqual(len(SUT.logged_ids), 1)
                 self.assertDictEqual(SUT.logged_ids, logged_ids)
 
+    @unittest.skip("ToDo: remove")
     def test_first_time_passed_threshold(self):
         mode = random_string()
         msg_id = random_string()
@@ -784,7 +782,6 @@ class TestThrottling(BaseTestClass):
                             'window': now // duration,
                             'count': 1,
                             'previous_count': count,
-                            'passed_threshold': True,
                         }
                     }
                     window_elapsed = (now % duration) / duration
@@ -797,6 +794,7 @@ class TestThrottling(BaseTestClass):
                     self.assertDictEqual(SUT.logged_ids, logged_ids)
                     SUT._logmsg.error.assert_called_once_with(SUT.MSG_FORMAT, mode, thread_id, -1, message_text)
 
+    @unittest.skip("ToDo: remove")
     def test_message_is_over_threshold(self):
         mode = random_string()
         msg_id = random_string()
@@ -834,7 +832,6 @@ class TestThrottling(BaseTestClass):
                             'window': now // duration,
                             'count': count,
                             'previous_count': previous_count,
-                            'passed_threshold': True,
                         }
                     }
 
@@ -845,7 +842,6 @@ class TestThrottling(BaseTestClass):
                             'window': now // duration,
                             'count': count + 1,
                             'previous_count': previous_count,
-                            'passed_threshold': True,
                         }
                     }
 

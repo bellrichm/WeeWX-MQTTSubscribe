@@ -511,6 +511,7 @@ import datetime
 import json
 import locale
 import logging
+import math
 import os
 import platform
 import random
@@ -701,25 +702,22 @@ class Logger():
             self.logged_ids[msg_id]['window'] = window
             self.logged_ids[msg_id]['count'] = 1
             self.logged_ids[msg_id]['previous_count'] = 0
-            self.logged_ids[msg_id]['passed_threshold'] = False
             return False
 
         if window != self.logged_ids[msg_id]['window']:
             self.logged_ids[msg_id]['previous_count'] = self.logged_ids[msg_id]['count']
             self.logged_ids[msg_id]['count'] = 0
             self.logged_ids[msg_id]['window'] = window
-            self.logged_ids[msg_id]['passed_threshold'] = False
 
         self.logged_ids[msg_id]['count'] += 1
         window_elapsed = (now % throttle_config['duration']) / throttle_config['duration']
-        threshold = self.logged_ids[msg_id]['previous_count'] * (1 - window_elapsed) + self.logged_ids[msg_id]['count']
+        threshold = math.floor(self.logged_ids[msg_id]['previous_count'] * (1 - window_elapsed) + self.logged_ids[msg_id]['count'])
 
         if threshold < throttle_config['max']:
             return False
 
-        if not self.logged_ids[msg_id]['passed_threshold']:
+        if threshold % throttle_config['max'] == 0:
             self.error(None, Logger.msgX[124001].format(count=threshold))
-            self.logged_ids[msg_id]['passed_threshold'] = True
             return False
 
         return True
