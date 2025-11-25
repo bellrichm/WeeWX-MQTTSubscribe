@@ -293,17 +293,17 @@ class TestInintialization(BaseTestClass):
                 'category': {
                     'ALL': {
                         'duration': random.randint(1, 10),
-                        'max': random.randint(1, 10),                        
+                        'max': random.randint(1, 10),
                     },
                     logging_level: {
                         'duration': random.randint(1, 10),
-                        'max': random.randint(1, 10),                        
+                        'max': random.randint(1, 10),
                     },
-                },                
+                },
                 'messages': {
                     message_id: {
                         'duration': random.randint(1, 10),
-                        'max': random.randint(1, 10),                        
+                        'max': random.randint(1, 10),
                     }
                 }
             }
@@ -327,17 +327,17 @@ class TestInintialization(BaseTestClass):
                 'category': {
                     'ALL': {
                         'duration': random.randint(1, 10),
-                        'max': random.randint(1, 10),                        
+                        'max': random.randint(1, 10),
                     },
                     logging_level: {
                         'duration': random.randint(1, 10),
-                        'max': random.randint(1, 10),                        
+                        'max': random.randint(1, 10),
                     },
-                },                
+                },
                 'messages': {
                     message_id: {
                         'duration': random.randint(1, 10),
-                        'max': random.randint(1, 10),                        
+                        'max': random.randint(1, 10),
                     }
                 }
             }
@@ -361,17 +361,17 @@ class TestInintialization(BaseTestClass):
                 'category': {
                     'ALL': {
                         'duration': random.randint(1, 10),
-                        'max': random.randint(1, 10),                        
+                        'max': random.randint(1, 10),
                     },
                     logging_level: {
                         'duration': random.randint(1, 10),
-                        'max': random.randint(1, 10),                        
+                        'max': random.randint(1, 10),
                     },
-                },                
+                },
                 'messages': {
                     message_id: {
                         'duration': random.randint(1, 10),
-                        'max': random.randint(1, 10),                        
+                        'max': random.randint(1, 10),
                     }
                 }
             }
@@ -395,13 +395,13 @@ class TestInintialization(BaseTestClass):
                 'category': {
                     logging_level: {
                         'duration': random.randint(1, 10),
-                        'max': random.randint(1, 10),                        
+                        'max': random.randint(1, 10),
                     },
-                },                
+                },
                 'messages': {
                     message_id: {
                         'duration': random.randint(1, 10),
-                        'max': random.randint(1, 10),                        
+                        'max': random.randint(1, 10),
                     }
                 }
             }
@@ -524,7 +524,7 @@ class TestThrottling(BaseTestClass):
 
                 SUT.logged_ids = {
                     msg_id: {
-                        'count': random.randint(1,10),
+                        'count': random.randint(1, 10),
                     }
                 }
 
