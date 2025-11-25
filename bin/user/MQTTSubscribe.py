@@ -166,6 +166,8 @@ CONFIG_SPEC_TEXT = """ \
     # ToDo: Need to 'document' via comments
     [[logging]]
         [[[throttle]]]
+            max =
+            duration =
             [[[[category]]]]
                 [[[[[ALL]]]]]
                     max =
@@ -663,7 +665,9 @@ class Logger():
             self.info(122001, Logger.msgX[122001])
 
     def _is_throttled(self, logging_level, msg_id):
-        if msg_id is not None and msg_id in self.throttle_config['message']:
+        if msg_id is None:
+            return False
+        elif msg_id in self.throttle_config['message']:
             return self._check_message(msg_id, self.throttle_config['message'][msg_id])
         elif logging_level in self.throttle_config['category']:
             return self._check_message(msg_id, self.throttle_config['category'][logging_level])
@@ -683,7 +687,7 @@ class Logger():
 
             if self.logged_ids[msg_id]['count'] % throttle_config['max'] == 0:
                 self.logged_ids[msg_id]['count'] += 1
-                self.error(124002, Logger.msgX[124002].format(count=self.logged_ids[msg_id]['count'], max=throttle_config['max']))
+                self.error(None, Logger.msgX[124002].format(count=self.logged_ids[msg_id]['count'], max=throttle_config['max']))
                 return False
 
             self.logged_ids[msg_id]['count'] += 1
@@ -714,9 +718,10 @@ class Logger():
             return False
 
         if not self.logged_ids[msg_id]['passed_threshold']:
-            self.error(124001, Logger.msgX[124001].format(count=threshold))
+            self.error(None, Logger.msgX[124001].format(count=threshold))
+            self.logged_ids[msg_id]['passed_threshold'] = True
+            return False
 
-        self.logged_ids[msg_id]['passed_threshold'] = True
         return True
 
     def get_handlers(self, logger):
