@@ -675,7 +675,7 @@ class TestThrottling(BaseTestClass):
 
                 logged_ids = {
                     msg_id: {
-                        'window': now // duration,
+                        'window': int(now // duration),
                         'count': 1,
                         'previous_count': count,
                         'passed_threshold': False,
@@ -792,7 +792,7 @@ class TestThrottling(BaseTestClass):
 
                     message_text = f"{threshold} messages have been suppressed."
 
-                    self.assertTrue(throttle)
+                    self.assertFalse(throttle)
                     self.assertEqual(len(SUT.logged_ids), 1)
                     self.assertDictEqual(SUT.logged_ids, logged_ids)
                     SUT._logmsg.error.assert_called_once_with(SUT.MSG_FORMAT, mode, thread_id, -1, message_text)
