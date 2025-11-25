@@ -522,10 +522,16 @@ class TestThrottling(BaseTestClass):
 
                 SUT = Logger(config)
 
+                SUT.logged_ids = {
+                    msg_id: {
+                        'count': random.randint(1,10),
+                    }
+                }
+
                 throttle = SUT._check_message(msg_id, SUT.throttle_config['message'][msg_id])
 
                 self.assertTrue(throttle)
-                self.assertEqual(len(SUT.logged_ids), 0)
+                self.assertEqual(len(SUT.logged_ids), 1)
                 self.assertEqual(mock_time.timer.call_count, 0)
 
     def test_max_is_none(self):

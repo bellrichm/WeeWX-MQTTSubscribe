@@ -541,6 +541,7 @@ class Logger():
         # informational messages
         # error messages
         124001: "{count} messages have been suppressed.",
+        124002: "{count} messages have been suppressed of {max}.",
         # exception messages
         129001: "{message_id} has been configured multiple times",
         129002: "{message_id} has been configured multiple times",
@@ -620,16 +621,25 @@ class Logger():
         return False
 
     def _check_message(self, msg_id, throttle_config):
-        if throttle_config['duration'] == 0:
-            # ToDo: This is dangerous because a message will never be logged.
-            # And there is no trace anywwhere why....
-            return True
-
         if throttle_config['max'] is None:
             return False
 
+        if throttle_config['duration'] == 0:
+            if msg_id not in self.logged_ids:
+                self.logged_ids[msg_id] = {}
+                self.logged_ids[msg_id]['count'] = 0
+
+            if self.logged_ids[msg_id]['count'] % throttle_config['max'] == 0:
+                self.logged_ids[msg_id]['count'] += 1
+                self.error(124002, Logger.msgX[124002].format(count=self.logged_ids[msg_id]['count'], max=throttle_config['max']))
+                return False
+
+            self.logged_ids[msg_id]['count'] += 1
+            return True
+
         now = int(time.time())
         window = now // throttle_config['duration']
+
         if msg_id not in self.logged_ids:
             self.logged_ids[msg_id] = {}
             self.logged_ids[msg_id]['window'] = window
