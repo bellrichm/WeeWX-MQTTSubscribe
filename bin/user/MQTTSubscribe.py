@@ -701,6 +701,46 @@ class Logger():
             self.logged_ids[msg_id] = {}
             self.logged_ids[msg_id]['window'] = window
             self.logged_ids[msg_id]['count'] = 1
+            return False
+
+        if window != self.logged_ids[msg_id]['window']:
+            self.logged_ids[msg_id]['count'] = 0
+            self.logged_ids[msg_id]['window'] = window
+
+        self.logged_ids[msg_id]['count'] += 1
+
+        if self.logged_ids[msg_id]['count'] > throttle_config['max']:
+            if self.logged_ids[msg_id]['count'] % throttle_config['max'] == 0:
+                self.error(None, Logger.msgX[124001].format(count=self.logged_ids[msg_id]['count']))
+                return False
+            return True
+
+        return False
+
+    def _check_message_sliding(self, msg_id, throttle_config):
+        if throttle_config['max'] is None:
+            return False
+
+        if throttle_config['duration'] == 0:
+            if msg_id not in self.logged_ids:
+                self.logged_ids[msg_id] = {}
+                self.logged_ids[msg_id]['count'] = 0
+
+            if self.logged_ids[msg_id]['count'] % throttle_config['max'] == 0:
+                self.logged_ids[msg_id]['count'] += 1
+                self.error(None, Logger.msgX[124002].format(count=self.logged_ids[msg_id]['count'], max=throttle_config['max']))
+                return False
+
+            self.logged_ids[msg_id]['count'] += 1
+            return True
+
+        now = int(time.time())
+        window = int(now // throttle_config['duration'])
+
+        if msg_id not in self.logged_ids:
+            self.logged_ids[msg_id] = {}
+            self.logged_ids[msg_id]['window'] = window
+            self.logged_ids[msg_id]['count'] = 1
             self.logged_ids[msg_id]['previous_count'] = 0
             return False
 
@@ -713,14 +753,13 @@ class Logger():
         window_elapsed = (now % throttle_config['duration']) / throttle_config['duration']
         threshold = math.floor(self.logged_ids[msg_id]['previous_count'] * (1 - window_elapsed) + self.logged_ids[msg_id]['count'])
 
-        if threshold < throttle_config['max']:
-            return False
+        if threshold > throttle_config['max']:
+            if threshold % throttle_config['max'] == 0:
+                self.error(None, Logger.msgX[124001].format(count=threshold))
+                return False
+            return True
 
-        if threshold % throttle_config['max'] == 0:
-            self.error(None, Logger.msgX[124001].format(count=threshold))
-            return False
-
-        return True
+        return False
 
     def get_handlers(self, logger):
         """ recursively get parent handlers """

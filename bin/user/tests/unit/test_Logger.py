@@ -197,11 +197,11 @@ class TestInintialization(BaseTestClass):
         messages_name = random_string()
         message_ids = [random_string(), random_string()]
         duration = random.randint(1, 10)
-        max = random.randint(1, 10)
+        max_count = random.randint(1, 10)
         message = {
             messages_name: {
                 'duration': duration,
-                'max': max,
+                'max': max_count,
                 'messages': message_ids,
             }
         }
@@ -222,7 +222,7 @@ class TestInintialization(BaseTestClass):
         for message_id in message_ids:
             expected_throttle_config['message'][message_id] = {
                 'duration': duration,
-                'max': max,
+                'max': max_count,
             }
 
         SUT = Logger(config)
@@ -501,7 +501,7 @@ class TestThrottling(BaseTestClass):
     def test_duration_is_zero(self):
         msg_id = random_string()
         duration = 0
-        max = random.randint(1, 1000)
+        max_count = random.randint(1, 1000)
 
         config_dict = {
             'mode': random_string(),
@@ -509,7 +509,7 @@ class TestThrottling(BaseTestClass):
                 'messages': {
                     msg_id: {
                         'duration': duration,
-                        'max': max
+                        'max': max_count,
                     }
                 }
             }
@@ -537,7 +537,7 @@ class TestThrottling(BaseTestClass):
     def test_first_message_duration_is_zero(self):
         msg_id = random_string()
         duration = 0
-        max = random.randint(1, 1000)
+        max_count = random.randint(1, 1000)
 
         config_dict = {
             'mode': random_string(),
@@ -545,7 +545,7 @@ class TestThrottling(BaseTestClass):
                 'messages': {
                     msg_id: {
                         'duration': duration,
-                        'max': max
+                        'max': max_count,
                     }
                 }
             }
@@ -567,7 +567,7 @@ class TestThrottling(BaseTestClass):
     def test_max_is_none(self):
         msg_id = random_string()
         duration = random.randint(60, 600)
-        max = 'None'
+        max_count = 'None'
 
         config_dict = {
             'mode': random_string(),
@@ -575,7 +575,7 @@ class TestThrottling(BaseTestClass):
                 'messages': {
                     msg_id: {
                         'duration': duration,
-                        'max': max
+                        'max': max_count,
                     }
                 }
             }
@@ -597,7 +597,7 @@ class TestThrottling(BaseTestClass):
     def test_first_time_message_is_logged(self):
         msg_id = random_string()
         duration = random.randint(60, 600)
-        max = random.randint(1, 1000)
+        max_count = random.randint(1, 1000)
         now = int(time.time())
 
         config_dict = {
@@ -606,7 +606,7 @@ class TestThrottling(BaseTestClass):
                 'messages': {
                     msg_id: {
                         'duration': duration,
-                        'max': max
+                        'max': max_count,
                     }
                 }
             }
@@ -626,7 +626,6 @@ class TestThrottling(BaseTestClass):
                     msg_id: {
                         'window': now // duration,
                         'count': 1,
-                        'previous_count': 0,
                     }
                 }
 
@@ -637,9 +636,8 @@ class TestThrottling(BaseTestClass):
     def test_new_window(self):
         msg_id = random_string()
         duration = random.randint(60, 600)
-        max = random.randint(1, 1000)
+        max_count = random.randint(1, 1000)
         count = random.randint(1, 100)
-        previous_count = random.randint(1, 100)
         now = time.time()
 
         config_dict = {
@@ -648,7 +646,7 @@ class TestThrottling(BaseTestClass):
                 'messages': {
                     msg_id: {
                         'duration': duration,
-                        'max': max
+                        'max': max_count,
                     }
                 }
             }
@@ -666,7 +664,6 @@ class TestThrottling(BaseTestClass):
                     msg_id: {
                         'window': -1,
                         'count': count,
-                        'previous_count': previous_count,
                     }
                 }
 
@@ -676,7 +673,6 @@ class TestThrottling(BaseTestClass):
                     msg_id: {
                         'window': int(now // duration),
                         'count': 1,
-                        'previous_count': count,
                     }
                 }
 
@@ -688,8 +684,7 @@ class TestThrottling(BaseTestClass):
         msg_id = random_string()
         duration = random.randint(60, 600)
         count = random.randint(1, 100)
-        previous_count = random.randint(1, 100)
-        max = count + previous_count + 1
+        max_count = count + 1
         now = time.time()
 
         config_dict = {
@@ -698,7 +693,7 @@ class TestThrottling(BaseTestClass):
                 'messages': {
                     msg_id: {
                         'duration': duration,
-                        'max': max
+                        'max': max_count,
                     }
                 }
             }
@@ -716,7 +711,6 @@ class TestThrottling(BaseTestClass):
                     msg_id: {
                         'window': -1,
                         'count': count,
-                        'previous_count': previous_count,
                     }
                 }
 
@@ -726,7 +720,6 @@ class TestThrottling(BaseTestClass):
                     msg_id: {
                         'window': now // duration,
                         'count': 1,
-                        'previous_count': count,
                     }
                 }
 
@@ -740,8 +733,7 @@ class TestThrottling(BaseTestClass):
         msg_id = random_string()
         duration = random.randint(60, 600)
         count = random.randint(1, 100)
-        previous_count = random.randint(1, 100)
-        max = count - 2
+        max_count = count - 2
         now = duration
 
         config_dict = {
@@ -750,7 +742,7 @@ class TestThrottling(BaseTestClass):
                 'messages': {
                     msg_id: {
                         'duration': duration,
-                        'max': max
+                        'max': max_count,
                     }
                 }
             }
@@ -771,7 +763,6 @@ class TestThrottling(BaseTestClass):
                         msg_id: {
                             'window': -1,
                             'count': count,
-                            'previous_count': previous_count,
                         }
                     }
 
@@ -781,7 +772,6 @@ class TestThrottling(BaseTestClass):
                         msg_id: {
                             'window': now // duration,
                             'count': 1,
-                            'previous_count': count,
                         }
                     }
                     window_elapsed = (now % duration) / duration
@@ -800,8 +790,7 @@ class TestThrottling(BaseTestClass):
         msg_id = random_string()
         duration = random.randint(60, 600)
         count = random.randint(1, 100)
-        previous_count = random.randint(1, 100)
-        max = count - 2
+        max_count = count - 2
         now = duration
 
         config_dict = {
@@ -810,7 +799,7 @@ class TestThrottling(BaseTestClass):
                 'messages': {
                     msg_id: {
                         'duration': duration,
-                        'max': max
+                        'max': max_count,
                     }
                 }
             }
@@ -831,7 +820,6 @@ class TestThrottling(BaseTestClass):
                         msg_id: {
                             'window': now // duration,
                             'count': count,
-                            'previous_count': previous_count,
                         }
                     }
 
@@ -841,7 +829,6 @@ class TestThrottling(BaseTestClass):
                         msg_id: {
                             'window': now // duration,
                             'count': count + 1,
-                            'previous_count': previous_count,
                         }
                     }
 
