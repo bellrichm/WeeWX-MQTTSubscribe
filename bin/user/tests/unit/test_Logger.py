@@ -727,13 +727,13 @@ class TestThrottling(BaseTestClass):
                 self.assertEqual(len(SUT.logged_ids), 1)
                 self.assertDictEqual(SUT.logged_ids, logged_ids)
 
-    @unittest.skip("ToDo: remove")
-    def test_first_time_passed_threshold(self):
+    def test_passed_threshold_multiple_times(self):
         mode = random_string()
         msg_id = random_string()
         duration = random.randint(60, 600)
-        count = random.randint(1, 100)
-        max_count = count - 2
+        max_count = random.randint(1, 100)
+        count = max_count * random.randint(2, 9) - 1
+        threshold = count + 1
         now = duration
 
         config_dict = {
@@ -761,7 +761,7 @@ class TestThrottling(BaseTestClass):
 
                     SUT.logged_ids = {
                         msg_id: {
-                            'window': -1,
+                            'window': now // duration,
                             'count': count,
                         }
                     }
@@ -771,11 +771,9 @@ class TestThrottling(BaseTestClass):
                     logged_ids = {
                         msg_id: {
                             'window': now // duration,
-                            'count': 1,
+                            'count': threshold,
                         }
                     }
-                    window_elapsed = (now % duration) / duration
-                    threshold = count * (1 - window_elapsed) + 1
 
                     message_text = f"{threshold} messages have been suppressed."
 
@@ -784,7 +782,6 @@ class TestThrottling(BaseTestClass):
                     self.assertDictEqual(SUT.logged_ids, logged_ids)
                     SUT._logmsg.error.assert_called_once_with(SUT.MSG_FORMAT, mode, thread_id, -1, message_text)
 
-    @unittest.skip("ToDo: remove")
     def test_message_is_over_threshold(self):
         mode = random_string()
         msg_id = random_string()
