@@ -163,31 +163,62 @@ CONFIG_SPEC_TEXT = """ \
         # Default is tlsv12.
         tls_version = tlsv12
 
-    # ToDo: Need to 'document' via comments
     [[logging]]
+        # The configuration to control throttling the logging.
+        # Throttling uses a fixed window rate limit algorithm.
+        # But, every 'max' messages in a 'window' will always be logged.
+        #
+        # Throttling logging may result in important log messages being missed.
+        # This may make it hard, to impossible, to debug problems.
+        #
+        # EXPERIMENTAL and should be used at your own risk.
         [[[throttle]]]
-            max =
-            duration =
             [[[[category]]]]
+                # Configuration data for 'every' message that is logged.
+                # This can be overriden for specific logging levels and/or specific messages.
                 [[[[[ALL]]]]]
+                    # The maximum number of messages to be logged in the specified interval.
                     max =
+                    # The time interval in seconds for which the logged messages will be limited.
                     duration =
+                # Configuration data for error level messages.
+                # This can be overriden for specific messages.
                 [[[[[ERROR]]]]]
+                    # The maximum number of messages to be logged in the specified interval.
                     max =
+                    # The time interval in seconds for which the logged messages will be limited.
                     duration =
+                # Configuration data for informational level messages.
+                # This can be overriden for specific messages.
                 [[[[[INFO]]]]]
+                    # The maximum number of messages to be logged in the specified interval.
                     max =
+                    # The time interval in seconds for which the logged messages will be limited.
                     duration =
+                # Configuration data for debug level messages.
+                # This can be overriden for specific messages.
                 [[[[[DEBUG]]]]]
+                    # The maximum number of messages to be logged in the specified interval.
                     max =
+                    # The time interval in seconds for which the logged messages will be limited.
                     duration =
+                # Configuration data for trace level messages.
+                # This can be overriden for specific messages.
                 [[[[[TRACE]]]]]
+                    # The maximum number of messages to be logged in the specified interval.
                     max =
+                    # The time interval in seconds for which the logged messages will be limited.
                     duration =
+            # Configuration data for specific messages.
+            # Each subsection is a specific message or list of messages.
             [[[[messages]]]]
                 [[[[[REPLACE_ME]]]]]
+                    # The maximum number of messages to be logged in the specified interval.
                     max =
+                    # The time interval in seconds for which the logged messages will be limited.
                     duration =
+                    # Optional list of messages for which this section is for
+                    # If omitted, the section name is ised as the message id.
                     messages =
 
     # Configuration for the message callback.
