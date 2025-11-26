@@ -136,6 +136,105 @@ class TestInintialization(BaseTestClass):
         SUT = Logger(config)
         self.assertDictEqual(SUT.throttle_config, expected_throttle_config)
 
+    def test_invalid_category_specified(self):
+        category_name = random_string()
+        category = {
+            category_name: {}
+        }
+
+        config_dict = {
+            'mode': random_string(),
+            'throttle': {
+                'category': copy.deepcopy(category),
+            }
+        }
+        config = configobj.ConfigObj(config_dict)
+        with self.assertRaises(ValueError) as error:
+            Logger(config)
+
+        self.assertEqual(error.exception.args[0],
+                         f"{category_name} is not valid. Valid categories are ['ALL', 'ERROR', 'INFO', 'DEBUG', 'TRACE']")
+
+    def test_category_missing_max(self):
+        category_name = 'ERROR'
+        category = {
+            category_name: {
+                'duration': random.randint(1, 10),
+            }
+        }
+
+        config_dict = {
+            'mode': random_string(),
+            'throttle': {
+                'category': copy.deepcopy(category),
+            }
+        }
+        config = configobj.ConfigObj(config_dict)
+
+        with self.assertRaises(ValueError) as error:
+            Logger(config)
+        self.assertEqual(error.exception.args[0], f"{category_name} is missing 'max' configuration option.")
+
+    def test_category_missing_duration(self):
+        category_name = 'ERROR'
+        category = {
+            category_name: {
+                'max': random.randint(1, 10),
+            }
+        }
+
+        config_dict = {
+            'mode': random_string(),
+            'throttle': {
+                'category': copy.deepcopy(category),
+            }
+        }
+        config = configobj.ConfigObj(config_dict)
+
+        with self.assertRaises(ValueError) as error:
+            Logger(config)
+        self.assertEqual(error.exception.args[0], f"{category_name} is missing 'duration' configuration option.")
+
+    def test_messages_missing_max(self):
+        message_id = random_string()
+        message = {
+            message_id: {
+                'duration': random.randint(1, 10),
+            }
+        }
+
+        config_dict = {
+            'mode': random_string(),
+            'throttle': {
+                'messages': copy.deepcopy(message),
+            }
+        }
+        config = configobj.ConfigObj(config_dict)
+
+        with self.assertRaises(ValueError) as error:
+            Logger(config)
+        self.assertEqual(error.exception.args[0], f"{message_id} is missing 'max' configuration option.")
+
+    def test_messages_missing_duration(self):
+        message_id = random_string()
+        message = {
+            message_id: {
+                'max': random.randint(1, 10),
+            }
+        }
+
+        config_dict = {
+            'mode': random_string(),
+            'throttle': {
+                'messages': copy.deepcopy(message),
+            }
+        }
+        config = configobj.ConfigObj(config_dict)
+
+        with self.assertRaises(ValueError) as error:
+            Logger(config)
+        self.assertEqual(error.exception.args[0], f"{message_id} is missing 'duration' configuration option.")
+
     def test_no_messages_specified_in_message_section(self):
         message_id = random_string()
         message = {
@@ -530,7 +629,7 @@ class TestThrottling(BaseTestClass):
 
                 throttle = SUT._check_message(msg_id, SUT.throttle_config['message'][msg_id])
 
-                self.assertTrue(throttle)
+                self.assertTrue(throttle, f"SUT logged ids: {SUT.logged_ids}")
                 self.assertEqual(len(SUT.logged_ids), 1)
                 self.assertEqual(mock_time.timer.call_count, 0)
 
@@ -829,7 +928,7 @@ class TestThrottling(BaseTestClass):
                         }
                     }
 
-                    self.assertTrue(throttle)
+                    self.assertTrue(throttle, f"SUT logged ids: {SUT.logged_ids} expected: {logged_ids}")
                     self.assertEqual(len(SUT.logged_ids), 1)
                     self.assertDictEqual(SUT.logged_ids, logged_ids)
 
