@@ -786,8 +786,8 @@ class TestThrottling(BaseTestClass):
         mode = random_string()
         msg_id = random_string()
         duration = random.randint(60, 600)
-        count = random.randint(1, 100)
-        max_count = count - 2
+        count = random.randint(10, 100)
+        max_count = count - 3
         now = duration
 
         config_dict = {
