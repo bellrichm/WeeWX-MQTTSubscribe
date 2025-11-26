@@ -600,7 +600,7 @@ class Logger():
         # informational messages
         122001: "Throttling messages is an experimental option. It has limited support and may cause one to miss important messages.",
         # error messages
-        124001: "{count} messages have been suppressed.",
+        124001: "{count} messages have been suppressed in window id: {window}.",
         124002: "{count} messages have been suppressed of {max}.",
         # exception messages
         129001: "{message_id} has been configured multiple times",
@@ -742,7 +742,7 @@ class Logger():
 
         if self.logged_ids[msg_id]['count'] > throttle_config['max']:
             if self.logged_ids[msg_id]['count'] % throttle_config['max'] == 0:
-                self.error(None, Logger.msgX[124001].format(count=self.logged_ids[msg_id]['count']))
+                self.error(None, Logger.msgX[124001].format(count=self.logged_ids[msg_id]['count'] - throttle_config['max'], window=window))
                 return False
             return True
 

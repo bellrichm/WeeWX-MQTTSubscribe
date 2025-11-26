@@ -834,6 +834,7 @@ class TestThrottling(BaseTestClass):
         count = max_count * random.randint(2, 9) - 1
         threshold = count + 1
         now = duration
+        window = int(now // duration)
 
         config_dict = {
             'mode': mode,
@@ -860,7 +861,7 @@ class TestThrottling(BaseTestClass):
 
                     SUT.logged_ids = {
                         msg_id: {
-                            'window': int(now // duration),
+                            'window': window,
                             'count': count,
                         }
                     }
@@ -869,12 +870,12 @@ class TestThrottling(BaseTestClass):
 
                     logged_ids = {
                         msg_id: {
-                            'window': int(now // duration),
+                            'window': window,
                             'count': threshold,
                         }
                     }
 
-                    message_text = f"{threshold} messages have been suppressed."
+                    message_text = f"{threshold - max_count} messages have been suppressed in window id: {window}."
 
                     self.assertFalse(throttle)
                     self.assertEqual(len(SUT.logged_ids), 1)
