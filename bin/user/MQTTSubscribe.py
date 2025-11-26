@@ -163,6 +163,64 @@ CONFIG_SPEC_TEXT = """ \
         # Default is tlsv12.
         tls_version = tlsv12
 
+    [[logging]]
+        # The configuration to control throttling the logging.
+        # Throttling uses a fixed window rate limit algorithm.
+        # But, every 'max' messages in a 'window' will always be logged.
+        #
+        # Throttling logging may result in important log messages being missed.
+        # This may make it hard, to impossible, to debug problems.
+        #
+        # EXPERIMENTAL and should be used at your own risk.
+        [[[throttle]]]
+            [[[[category]]]]
+                # Configuration data for 'every' message that is logged.
+                # This can be overriden for specific logging levels and/or specific messages.
+                [[[[[ALL]]]]]
+                    # The maximum number of messages to be logged in the specified interval.
+                    max =
+                    # The time interval in seconds for which the logged messages will be limited.
+                    duration =
+                # Configuration data for error level messages.
+                # This can be overriden for specific messages.
+                [[[[[ERROR]]]]]
+                    # The maximum number of messages to be logged in the specified interval.
+                    max =
+                    # The time interval in seconds for which the logged messages will be limited.
+                    duration =
+                # Configuration data for informational level messages.
+                # This can be overriden for specific messages.
+                [[[[[INFO]]]]]
+                    # The maximum number of messages to be logged in the specified interval.
+                    max =
+                    # The time interval in seconds for which the logged messages will be limited.
+                    duration =
+                # Configuration data for debug level messages.
+                # This can be overriden for specific messages.
+                [[[[[DEBUG]]]]]
+                    # The maximum number of messages to be logged in the specified interval.
+                    max =
+                    # The time interval in seconds for which the logged messages will be limited.
+                    duration =
+                # Configuration data for trace level messages.
+                # This can be overriden for specific messages.
+                [[[[[TRACE]]]]]
+                    # The maximum number of messages to be logged in the specified interval.
+                    max =
+                    # The time interval in seconds for which the logged messages will be limited.
+                    duration =
+            # Configuration data for specific messages.
+            # Each subsection is a specific message or list of messages.
+            [[[[messages]]]]
+                [[[[[REPLACE_ME]]]]]
+                    # The maximum number of messages to be logged in the specified interval.
+                    max =
+                    # The time interval in seconds for which the logged messages will be limited.
+                    duration =
+                    # Optional list of messages for which this section is for
+                    # If omitted, the section name is ised as the message id.
+                    messages =
+
     # Configuration for the message callback.
     # DEPRECATED - use [[[message]]] under [[topics]]
     [[message_callback]]
@@ -484,6 +542,7 @@ import datetime
 import json
 import locale
 import logging
+import math
 import os
 import platform
 import random
@@ -539,15 +598,23 @@ class Logger():
         # trace message
         # debug messages
         # informational messages
+        122001: "Throttling messages is an experimental option. It has limited support and may cause one to miss important messages.",
         # error messages
-        124001: "{count} messages have been suppressed.",
+        124001: "{count} messages have been suppressed in window id: {window}.",
         124002: "{count} messages have been suppressed of {max}.",
         # exception messages
         129001: "{message_id} has been configured multiple times",
         129002: "{message_id} has been configured multiple times",
+        129003: "{category} is not valid. Valid categories are {valid_categories}",
+        129004: "{category} is missing 'max' configuration option.",
+        129005: "{category} is missing 'duration' configuration option.",
+        129006: "{message} is missing 'max' configuration option.",
+        129007: "{message} is missing 'duration' configuration option.",
     }
 
     MSG_FORMAT = "(%s-%s) %s %s"
+
+    valid_categories = ['ALL', 'ERROR', 'INFO', 'DEBUG', 'TRACE']
 
     def __init__(self, config, level='NOTSET', filename=None, console=None):
         self.console = console
@@ -558,10 +625,25 @@ class Logger():
         self.logged_ids = {}
         self.throttle_config = {}
         if 'throttle' in config:
-            self.throttle_config['category'] = copy.deepcopy(config['throttle'].get('category', {}))
+            self.throttle_config['category'] = {}
+            if 'category' in config['throttle']:
+                for category in config['throttle']['category'].sections:
+                    if category not in Logger.valid_categories:
+                        raise ValueError(Logger.msgX[129003].format(category=category, valid_categories=Logger.valid_categories))
+                    self.throttle_config['category'][category] = config['throttle']['category'][category]
+                    if 'max' not in config['throttle']['category'][category]:
+                        raise ValueError(Logger.msgX[129004].format(category=category))
+                    if 'duration' not in config['throttle']['category'][category]:
+                        raise ValueError(Logger.msgX[129005].format(category=category))
+                    config['throttle']['category'][category]['max'] = to_int(config['throttle']['category'][category]['max'])
+                    config['throttle']['category'][category]['duration'] = to_int(config['throttle']['category'][category]['duration'])
 
             self.throttle_config['message'] = {}
             for message in config['throttle'].get('messages', configobj.ConfigObj({})).sections:
+                if 'max' not in config['throttle']['messages'][message]:
+                    raise ValueError(Logger.msgX[129006].format(message=message))
+                if 'duration' not in config['throttle']['messages'][message]:
+                    raise ValueError(Logger.msgX[129007].format(message=message))
                 if 'messages' in config['throttle']['messages'][message]:
                     for message_id in weeutil.weeutil.option_as_list(config['throttle']['messages'][message]['messages']):
                         if message_id in self.throttle_config['message']:
@@ -610,8 +692,14 @@ class Logger():
             file_handler.setFormatter(formatter)
             self._logmsg.addHandler(file_handler)
 
+        # Logging is setup, now safe to log a mwssage about using throttling option
+        if 'throttle' in config:
+            self.info(122001, Logger.msgX[122001])
+
     def _is_throttled(self, logging_level, msg_id):
-        if msg_id is not None and msg_id in self.throttle_config['message']:
+        if msg_id is None:
+            return False
+        elif msg_id in self.throttle_config['message']:
             return self._check_message(msg_id, self.throttle_config['message'][msg_id])
         elif logging_level in self.throttle_config['category']:
             return self._check_message(msg_id, self.throttle_config['category'][logging_level])
@@ -631,41 +719,78 @@ class Logger():
 
             if self.logged_ids[msg_id]['count'] % throttle_config['max'] == 0:
                 self.logged_ids[msg_id]['count'] += 1
-                self.error(124002, Logger.msgX[124002].format(count=self.logged_ids[msg_id]['count'], max=throttle_config['max']))
+                self.error(None, Logger.msgX[124002].format(count=self.logged_ids[msg_id]['count'], max=throttle_config['max']))
                 return False
 
             self.logged_ids[msg_id]['count'] += 1
             return True
 
         now = int(time.time())
-        window = now // throttle_config['duration']
+        window = int(now // throttle_config['duration'])
+
+        if msg_id not in self.logged_ids:
+            self.logged_ids[msg_id] = {}
+            self.logged_ids[msg_id]['window'] = window
+            self.logged_ids[msg_id]['count'] = 1
+            return False
+
+        if window != self.logged_ids[msg_id]['window']:
+            self.logged_ids[msg_id]['count'] = 0
+            self.logged_ids[msg_id]['window'] = window
+
+        self.logged_ids[msg_id]['count'] += 1
+
+        if self.logged_ids[msg_id]['count'] > throttle_config['max']:
+            if self.logged_ids[msg_id]['count'] % throttle_config['max'] == 0:
+                self.error(None, Logger.msgX[124001].format(count=self.logged_ids[msg_id]['count'] - throttle_config['max'], window=window))
+                return False
+            return True
+
+        return False
+
+    def _check_message_sliding(self, msg_id, throttle_config):
+        if throttle_config['max'] is None:
+            return False
+
+        if throttle_config['duration'] == 0:
+            if msg_id not in self.logged_ids:
+                self.logged_ids[msg_id] = {}
+                self.logged_ids[msg_id]['count'] = 0
+
+            if self.logged_ids[msg_id]['count'] % throttle_config['max'] == 0:
+                self.logged_ids[msg_id]['count'] += 1
+                self.error(None, Logger.msgX[124002].format(count=self.logged_ids[msg_id]['count'], max=throttle_config['max']))
+                return False
+
+            self.logged_ids[msg_id]['count'] += 1
+            return True
+
+        now = int(time.time())
+        window = int(now // throttle_config['duration'])
 
         if msg_id not in self.logged_ids:
             self.logged_ids[msg_id] = {}
             self.logged_ids[msg_id]['window'] = window
             self.logged_ids[msg_id]['count'] = 1
             self.logged_ids[msg_id]['previous_count'] = 0
-            self.logged_ids[msg_id]['passed_threshold'] = False
             return False
 
         if window != self.logged_ids[msg_id]['window']:
             self.logged_ids[msg_id]['previous_count'] = self.logged_ids[msg_id]['count']
             self.logged_ids[msg_id]['count'] = 0
             self.logged_ids[msg_id]['window'] = window
-            self.logged_ids[msg_id]['passed_threshold'] = False
 
         self.logged_ids[msg_id]['count'] += 1
         window_elapsed = (now % throttle_config['duration']) / throttle_config['duration']
-        threshold = self.logged_ids[msg_id]['previous_count'] * (1 - window_elapsed) + self.logged_ids[msg_id]['count']
+        threshold = math.floor(self.logged_ids[msg_id]['previous_count'] * (1 - window_elapsed) + self.logged_ids[msg_id]['count'])
 
-        if threshold < throttle_config['max']:
-            return False
+        if threshold > throttle_config['max']:
+            if threshold % throttle_config['max'] == 0:
+                self.error(None, Logger.msgX[124001].format(count=threshold))
+                return False
+            return True
 
-        if not self.logged_ids[msg_id]['passed_threshold']:
-            self.error(124001, Logger.msgX[124001].format(count=threshold))
-
-        self.logged_ids[msg_id]['passed_threshold'] = True
-        return True
+        return False
 
     def get_handlers(self, logger):
         """ recursively get parent handlers """
@@ -2467,7 +2592,11 @@ class MQTTSubscribeService(StdService):
         logging_filename = service_dict.get('logging_filename', None)
         logging_level = service_dict.get('logging_level', 'NOTSET')
         console = to_bool(service_dict.get('console', False))
-        self.logger = Logger({'mode': 'Service'}, level=logging_level, filename=logging_filename, console=console)
+
+        self.logger = Logger({'mode': 'Service', 'throttle': service_dict.get('logging', {}).get('throttle', {})},
+                             level=logging_level,
+                             filename=logging_filename,
+                             console=console)
         self.logger.log_environment(config_dict)
 
         self.enable = to_bool(service_dict.get('enable', True))
@@ -2913,6 +3042,7 @@ class MQTTSubscribeConfiguration():
             'console': ['MQTTSubscribe'],
             'keepalive': ['MQTTSubscribe'],
             'protocol': ['MQTTSubscribe'],
+            'logging': ['MQTTSubscribe'],
             'logging_filename': ['MQTTSubscribe'],
             'logging_level': ['MQTTSubscribe'],
             'message_callback': ['MQTTSubscribe'],
