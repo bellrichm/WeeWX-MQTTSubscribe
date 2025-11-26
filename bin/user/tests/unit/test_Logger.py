@@ -624,7 +624,7 @@ class TestThrottling(BaseTestClass):
 
                 logged_ids = {
                     msg_id: {
-                        'window': now // duration,
+                        'window': int(now // duration),
                         'count': 1,
                     }
                 }
@@ -718,7 +718,7 @@ class TestThrottling(BaseTestClass):
 
                 logged_ids = {
                     msg_id: {
-                        'window': now // duration,
+                        'window': int(now // duration),
                         'count': 1,
                     }
                 }
@@ -761,7 +761,7 @@ class TestThrottling(BaseTestClass):
 
                     SUT.logged_ids = {
                         msg_id: {
-                            'window': now // duration,
+                            'window': int(now // duration),
                             'count': count,
                         }
                     }
@@ -770,7 +770,7 @@ class TestThrottling(BaseTestClass):
 
                     logged_ids = {
                         msg_id: {
-                            'window': now // duration,
+                            'window': int(now // duration),
                             'count': threshold,
                         }
                     }
@@ -815,7 +815,7 @@ class TestThrottling(BaseTestClass):
 
                     SUT.logged_ids = {
                         msg_id: {
-                            'window': now // duration,
+                            'window': int(now // duration),
                             'count': count,
                         }
                     }
@@ -824,7 +824,7 @@ class TestThrottling(BaseTestClass):
 
                     logged_ids = {
                         msg_id: {
-                            'window': now // duration,
+                            'window': int(now // duration),
                             'count': count + 1,
                         }
                     }
