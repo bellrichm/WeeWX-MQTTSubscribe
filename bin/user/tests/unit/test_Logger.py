@@ -236,7 +236,8 @@ class TestInintialization(BaseTestClass):
         self.assertEqual(error.exception.args[0], f"{message_id} is missing 'duration' configuration option.")
 
     def test_no_messages_specified_in_message_section(self):
-        message_id = random_string()
+        msg_id_int = random.randint(1000, 9999)
+        message_id = str(msg_id_int)
         message = {
             message_id: {
                 'duration': random.randint(1, 10),
@@ -255,7 +256,7 @@ class TestInintialization(BaseTestClass):
         expected_throttle_config = {
             'category': {},
             'message': {
-                message_id: copy.deepcopy(message[message_id])
+                msg_id_int: copy.deepcopy(message[message_id])
             },
         }
 
@@ -264,7 +265,8 @@ class TestInintialization(BaseTestClass):
 
     def test_single_message_specified_in_message_section(self):
         messages_name = random_string()
-        message_ids = random_string()
+        msg_id_int = random.randint(1000, 9999)
+        message_ids = str(msg_id_int)
         message = {
             messages_name: {
                 'duration': random.randint(1, 10),
@@ -284,17 +286,17 @@ class TestInintialization(BaseTestClass):
         expected_throttle_config = {
             'category': {},
             'message': {
-                message_ids: copy.deepcopy(message[messages_name])
+                msg_id_int: copy.deepcopy(message[messages_name])
             },
         }
-        del expected_throttle_config['message'][message_ids]['messages']
+        del expected_throttle_config['message'][msg_id_int]['messages']
 
         SUT = Logger(config)
         self.assertDictEqual(SUT.throttle_config, expected_throttle_config)
 
     def test_multiple_messages_specified_in_message_section(self):
         messages_name = random_string()
-        message_ids = [random_string(), random_string()]
+        message_ids = [str(random.randint(1000, 9999)), str(random.randint(1000, 9999))]
         duration = random.randint(1, 10)
         max_count = random.randint(1, 10)
         message = {
@@ -319,7 +321,7 @@ class TestInintialization(BaseTestClass):
             },
         }
         for message_id in message_ids:
-            expected_throttle_config['message'][message_id] = {
+            expected_throttle_config['message'][int(message_id)] = {
                 'duration': duration,
                 'max': max_count,
             }
@@ -329,7 +331,8 @@ class TestInintialization(BaseTestClass):
 
     def test_message_id_in_list_already_specified(self):
         messages_name = random_string()
-        message_ids = random_string()
+        msg_id_int = random.randint(1000, 9999)
+        message_ids = str(msg_id_int)
         message = {
             message_ids: {
                 'duration': random.randint(1, 10),
@@ -357,9 +360,10 @@ class TestInintialization(BaseTestClass):
 
     def test_message_id_already_specified(self):
         messages_name = random_string()
-        message_ids = random_string()
+        msg_id_int = random.randint(1000, 9999)
+        message_ids = str(msg_id_int)
         message = {
-            messages_name: {
+            str(messages_name): {
                 'duration': random.randint(1, 10),
                 'max': random.randint(1, 10),
                 'messages': message_ids,
@@ -385,7 +389,8 @@ class TestInintialization(BaseTestClass):
 
     def test_is_throttled_all_level_id_set(self):
         logging_level = 'ERROR'
-        message_id = random_string()
+        msg_id_int = random.randint(1000, 9999)
+        message_id = str(msg_id_int)
 
         config_dict = {
             'mode': random_string(),
@@ -412,13 +417,14 @@ class TestInintialization(BaseTestClass):
 
         SUT = Logger(config)
         with mock.patch.object(Logger, '_check_message') as mock_check_message:
-            SUT._is_throttled(logging_level, message_id)
+            SUT._is_throttled(logging_level, msg_id_int)
 
-            mock_check_message.assert_called_once_with(message_id, config_dict['throttle']['messages'][message_id])
+            mock_check_message.assert_called_once_with(msg_id_int, config_dict['throttle']['messages'][message_id])
 
     def test_is_throttled_all_level_set(self):
         logging_level = 'ERROR'
-        message_id = random_string()
+        msg_id_int = random.randint(1000, 9999)
+        message_id = str(msg_id_int)
         random_message_id = random_string()
 
         config_dict = {
@@ -452,7 +458,8 @@ class TestInintialization(BaseTestClass):
 
     def test_is_throttled_all_set(self):
         logging_level = 'ERROR'
-        message_id = random_string()
+        msg_id_int = random.randint(1000, 9999)
+        message_id = str(msg_id_int)
         random_message_id = random_string()
 
         config_dict = {
@@ -485,7 +492,8 @@ class TestInintialization(BaseTestClass):
 
     def test_is_throttled_no_match(self):
         logging_level = 'ERROR'
-        message_id = random_string()
+        msg_id_int = random.randint(1000, 9999)
+        message_id = str(msg_id_int)
         random_message_id = random_string()
 
         config_dict = {
@@ -598,7 +606,8 @@ class TestLogging(BaseTestClass):
 
 class TestThrottling(BaseTestClass):
     def test_duration_is_zero(self):
-        msg_id = random_string()
+        msg_id_int = random.randint(1000, 9999)
+        msg_id = str(msg_id_int)
         duration = 0
         max_count = random.randint(1, 1000)
 
@@ -627,14 +636,15 @@ class TestThrottling(BaseTestClass):
                     }
                 }
 
-                throttle = SUT._check_message(msg_id, SUT.throttle_config['message'][msg_id])
+                throttle = SUT._check_message(msg_id, SUT.throttle_config['message'][msg_id_int])
 
                 self.assertTrue(throttle, f"SUT logged ids: {SUT.logged_ids}")
                 self.assertEqual(len(SUT.logged_ids), 1)
                 self.assertEqual(mock_time.timer.call_count, 0)
 
     def test_first_message_duration_is_zero(self):
-        msg_id = random_string()
+        msg_id_int = random.randint(1000, 9999)
+        msg_id = str(msg_id_int)
         duration = 0
         max_count = random.randint(1, 1000)
 
@@ -657,14 +667,15 @@ class TestThrottling(BaseTestClass):
 
                 SUT = Logger(config)
 
-                throttle = SUT._check_message(msg_id, SUT.throttle_config['message'][msg_id])
+                throttle = SUT._check_message(msg_id, SUT.throttle_config['message'][msg_id_int])
 
                 self.assertTrue(throttle)
                 self.assertEqual(len(SUT.logged_ids), 1)
                 self.assertEqual(mock_time.timer.call_count, 0)
 
     def test_max_is_none(self):
-        msg_id = random_string()
+        msg_id_int = random.randint(1000, 9999)
+        msg_id = str(msg_id_int)
         duration = random.randint(60, 600)
         max_count = 'None'
 
@@ -687,14 +698,15 @@ class TestThrottling(BaseTestClass):
 
                 SUT = Logger(config)
 
-                throttle = SUT._check_message(msg_id, SUT.throttle_config['message'][msg_id])
+                throttle = SUT._check_message(msg_id, SUT.throttle_config['message'][msg_id_int])
 
                 self.assertFalse(throttle)
                 self.assertEqual(len(SUT.logged_ids), 0)
                 self.assertEqual(mock_time.timer.call_count, 0)
 
     def test_first_time_message_is_logged(self):
-        msg_id = random_string()
+        msg_id_int = random.randint(1000, 9999)
+        msg_id = str(msg_id_int)
         duration = random.randint(60, 600)
         max_count = random.randint(1, 1000)
         now = int(time.time())
@@ -719,7 +731,7 @@ class TestThrottling(BaseTestClass):
 
                 SUT = Logger(config)
 
-                throttle = SUT._check_message(msg_id, SUT.throttle_config['message'][msg_id])
+                throttle = SUT._check_message(msg_id, SUT.throttle_config['message'][msg_id_int])
 
                 logged_ids = {
                     msg_id: {
@@ -734,6 +746,8 @@ class TestThrottling(BaseTestClass):
 
     def test_new_window(self):
         msg_id = random_string()
+        msg_id_int = random.randint(1000, 9999)
+        msg_id = str(msg_id_int)
         duration = random.randint(60, 600)
         max_count = random.randint(1, 1000)
         count = random.randint(1, 100)
@@ -766,7 +780,7 @@ class TestThrottling(BaseTestClass):
                     }
                 }
 
-                throttle = SUT._check_message(msg_id, SUT.throttle_config['message'][msg_id])
+                throttle = SUT._check_message(msg_id, SUT.throttle_config['message'][msg_id_int])
 
                 logged_ids = {
                     msg_id: {
@@ -780,7 +794,8 @@ class TestThrottling(BaseTestClass):
                 self.assertDictEqual(SUT.logged_ids, logged_ids)
 
     def test_message_within_threshold(self):
-        msg_id = random_string()
+        msg_id_int = random.randint(1000, 9999)
+        msg_id = str(msg_id_int)
         duration = random.randint(60, 600)
         count = random.randint(1, 100)
         max_count = count + 1
@@ -813,7 +828,7 @@ class TestThrottling(BaseTestClass):
                     }
                 }
 
-                throttle = SUT._check_message(msg_id, SUT.throttle_config['message'][msg_id])
+                throttle = SUT._check_message(msg_id, SUT.throttle_config['message'][msg_id_int])
 
                 logged_ids = {
                     msg_id: {
@@ -828,7 +843,8 @@ class TestThrottling(BaseTestClass):
 
     def test_passed_threshold_multiple_times(self):
         mode = random_string()
-        msg_id = random_string()
+        msg_id_int = random.randint(1000, 9999)
+        msg_id = str(msg_id_int)
         duration = random.randint(60, 600)
         max_count = random.randint(1, 100)
         count = max_count * random.randint(2, 9) - 1
@@ -866,7 +882,7 @@ class TestThrottling(BaseTestClass):
                         }
                     }
 
-                    throttle = SUT._check_message(msg_id, SUT.throttle_config['message'][msg_id])
+                    throttle = SUT._check_message(msg_id, SUT.throttle_config['message'][msg_id_int])
 
                     logged_ids = {
                         msg_id: {
@@ -884,7 +900,8 @@ class TestThrottling(BaseTestClass):
 
     def test_message_is_over_threshold(self):
         mode = random_string()
-        msg_id = random_string()
+        msg_id_int = random.randint(1000, 9999)
+        msg_id = str(msg_id_int)
         duration = random.randint(60, 600)
         count = random.randint(10, 100)
         max_count = count - 3
@@ -920,7 +937,7 @@ class TestThrottling(BaseTestClass):
                         }
                     }
 
-                    throttle = SUT._check_message(msg_id, SUT.throttle_config['message'][msg_id])
+                    throttle = SUT._check_message(msg_id, SUT.throttle_config['message'][msg_id_int])
 
                     logged_ids = {
                         msg_id: {
