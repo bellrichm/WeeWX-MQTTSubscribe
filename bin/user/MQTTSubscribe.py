@@ -717,10 +717,11 @@ class Logger():
                 self.logged_ids[msg_id] = {}
                 self.logged_ids[msg_id]['count'] = 0
 
-            if self.logged_ids[msg_id]['count'] % throttle_config['max'] == 0:
-                self.logged_ids[msg_id]['count'] += 1
-                self.error(None, Logger.msgX[124002].format(count=self.logged_ids[msg_id]['count'], max=throttle_config['max']))
-                return False
+            if self.logged_ids[msg_id]['count'] > throttle_config['max']:
+                if self.logged_ids[msg_id]['count'] % throttle_config['max'] == 0:
+                    self.logged_ids[msg_id]['count'] += 1
+                    self.error(None, Logger.msgX[124002].format(count=self.logged_ids[msg_id]['count'], max=throttle_config['max']))
+                    return False
 
             self.logged_ids[msg_id]['count'] += 1
             return True
