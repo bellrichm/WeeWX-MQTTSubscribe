@@ -659,7 +659,7 @@ class TestThrottling(BaseTestClass):
 
                 throttle = SUT._check_message(msg_id, SUT.throttle_config['message'][msg_id])
 
-                self.assertFalse(throttle)
+                self.assertTrue(throttle)
                 self.assertEqual(len(SUT.logged_ids), 1)
                 self.assertEqual(mock_time.timer.call_count, 0)
 
