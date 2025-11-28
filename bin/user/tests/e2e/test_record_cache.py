@@ -78,7 +78,7 @@ WEEWX_ROOT = tmp
 
 """ # noqa
 
-@unittest.skip("Enable when issue 178 is completed.")
+# @unittest.skip("Enable when issue 178 is completed.")
 class test_record_cache(unittest.TestCase):
     def test_new_loop_packet(self):
         with mock.patch('user.MQTTSubscribe.RecordCache') as mock_cache:

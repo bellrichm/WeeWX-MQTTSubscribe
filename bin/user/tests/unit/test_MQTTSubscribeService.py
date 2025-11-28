@@ -150,7 +150,7 @@ class atestInitialization(unittest.TestCase):
 
                 user.MQTTSubscribe.MQTTSubscribeService(mock_StdEngine, config_dict)
 
-    # @unittest.skip("Skipping while developing 178. Remove when released. Run in 'production' code.")
+    @unittest.skip("Skipping while developing 178. Remove when released. Run in 'production' code.")
     def test_caching_invalid_software_generation(self):
         mock_StdEngine = mock.Mock()
 
@@ -296,7 +296,7 @@ class Testnew_loop_packet(unittest.TestCase):
 
                 SUT.shutDown()
 
-    @unittest.skip("Enable when issue 178 is completed (around line 2456)")
+    # @unittest.skip("Enable when issue 178 is completed (around line 2456)")
     def test_cached_field_in_packet(self):
         topic = random_string()
         current_time = int(time.time() + 0.5)

@@ -2628,8 +2628,8 @@ class MQTTSubscribeService(StdService):
         self.cache = RecordCache(self.logger)
 
         # ToDo: Remove when issue 178 is complete
-        archive_dict = config_dict.get('StdArchive', {})
-        record_generation = archive_dict.get('record_generation', "none").lower()
+        # archive_dict = config_dict.get('StdArchive', {})
+        # record_generation = archive_dict.get('record_generation', "none").lower()
 
         if self.binding not in ('loop', 'archive'):
             raise ValueError(MQTTSubscribeService.msgX[29003].format(binding=self.binding))
@@ -2641,8 +2641,8 @@ class MQTTSubscribeService(StdService):
             self.bind(weewx.NEW_LOOP_PACKET, self.new_loop_packet)
 
         # ToDo: Remove when issue 178 is complete
-        if self.subscriber.cached_fields and record_generation != 'software' and self.binding == 'loop':
-            raise ValueError(MQTTSubscribeService.msgX[29004].format(record_generation=record_generation))
+        # if self.subscriber.cached_fields and record_generation != 'software' and self.binding == 'loop':
+        #     raise ValueError(MQTTSubscribeService.msgX[29004].format(record_generation=record_generation))
 
     def shutDown(self):  # need to override parent - pylint: disable=invalid-name
         """Run when an engine shutdown is requested."""
