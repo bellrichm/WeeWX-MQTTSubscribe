@@ -646,17 +646,19 @@ class Logger():
                     raise ValueError(Logger.msgX[129007].format(message=message))
                 if 'messages' in config['throttle']['messages'][message]:
                     for message_id in weeutil.weeutil.option_as_list(config['throttle']['messages'][message]['messages']):
-                        if message_id in self.throttle_config['message']:
+                        message_id_int = to_int(message_id)
+                        if message_id_int in self.throttle_config['message']:
                             raise ValueError(Logger.msgX[129001].format(message_id=message_id))
-                        self.throttle_config['message'][message_id] = {}
-                        self.throttle_config['message'][message_id]['duration'] = to_int(config['throttle']['messages'][message]['duration'])
-                        self.throttle_config['message'][message_id]['max'] = to_int(config['throttle']['messages'][message]['max'])
+                        self.throttle_config['message'][message_id_int] = {}
+                        self.throttle_config['message'][message_id_int]['duration'] = to_int(config['throttle']['messages'][message]['duration'])
+                        self.throttle_config['message'][message_id_int]['max'] = to_int(config['throttle']['messages'][message]['max'])
                 else:
-                    if message in self.throttle_config['message']:
+                    message_id_int = to_int(message)
+                    if message_id_int in self.throttle_config['message']:
                         raise ValueError(Logger.msgX[129002].format(message_id=message))
-                    self.throttle_config['message'][message] = {}
-                    self.throttle_config['message'][message]['duration'] = to_int(config['throttle']['messages'][message]['duration'])
-                    self.throttle_config['message'][message]['max'] = to_int(config['throttle']['messages'][message]['max'])
+                    self.throttle_config['message'][message_id_int] = {}
+                    self.throttle_config['message'][message_id_int]['duration'] = to_int(config['throttle']['messages'][message]['duration'])
+                    self.throttle_config['message'][message_id_int]['max'] = to_int(config['throttle']['messages'][message]['max'])
         else:
             self.throttle_config['category'] = {}
             self.throttle_config['message'] = {}
@@ -717,10 +719,11 @@ class Logger():
                 self.logged_ids[msg_id] = {}
                 self.logged_ids[msg_id]['count'] = 0
 
-            if self.logged_ids[msg_id]['count'] % throttle_config['max'] == 0:
-                self.logged_ids[msg_id]['count'] += 1
-                self.error(None, Logger.msgX[124002].format(count=self.logged_ids[msg_id]['count'], max=throttle_config['max']))
-                return False
+            if self.logged_ids[msg_id]['count'] > throttle_config['max']:
+                if self.logged_ids[msg_id]['count'] % throttle_config['max'] == 0:
+                    self.logged_ids[msg_id]['count'] += 1
+                    self.error(None, Logger.msgX[124002].format(count=self.logged_ids[msg_id]['count'], max=throttle_config['max']))
+                    return False
 
             self.logged_ids[msg_id]['count'] += 1
             return True
