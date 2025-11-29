@@ -585,7 +585,7 @@ import weewx.drivers
 from weewx.engine import StdEngine, StdService
 # pylint: enable=wrong-import-position
 
-VERSION = '3.1.0-rc07'
+VERSION = '3.1.0-rc08a'
 DRIVER_NAME = 'MQTTSubscribeDriver'
 DRIVER_VERSION = VERSION
 
@@ -751,7 +751,7 @@ class Logger():
 
         return False
 
-    def _check_message_sliding(self, msg_id, throttle_config): # Currently not being used - pragma: no cover
+    def _check_message_sliding(self, msg_id, throttle_config):  # Currently not being used - pragma: no cover
         if throttle_config['max'] is None:
             return False
 
