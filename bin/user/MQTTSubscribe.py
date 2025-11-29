@@ -751,7 +751,7 @@ class Logger():
 
         return False
 
-    def _check_message_sliding(self, msg_id, throttle_config):
+    def _check_message_sliding(self, msg_id, throttle_config): # Currently not being used - pragma: no cover
         if throttle_config['max'] is None:
             return False
 
