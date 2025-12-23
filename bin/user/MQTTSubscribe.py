@@ -570,7 +570,7 @@ if user_root is not None:
     sys.path.append(user_root + '/..')
 
 # This is the timestamp of the achive record being processed.
-# It is 'captured' via the NEw_ARCHIVE_RECORD event but due to WeeWX processing, updated via the END_ARCHIVE_PERIOD.
+# It is 'captured' via the NEW_ARCHIVE_RECORD event but due to WeeWX processing, updated via the END_ARCHIVE_PERIOD.
 # It is added to every log message.
 global_archive_timestamp = -1
 
@@ -585,7 +585,7 @@ import weewx.drivers
 from weewx.engine import StdEngine, StdService
 # pylint: enable=wrong-import-position
 
-VERSION = '3.1.0-rc08b'
+VERSION = '3.1.0'
 DRIVER_NAME = 'MQTTSubscribeDriver'
 DRIVER_VERSION = VERSION
 
@@ -2711,7 +2711,7 @@ class MQTTSubscribeService(StdService):
                                                                          record=to_sorted_string(event.record)))
         self.next_archive_timestamp = int(event.record['dateTime'] + event.record['interval'] * 120)
 
-    def end_archive_period(self, event):
+    def end_archive_period(self, _event):
         """ Handle the end archive period event."""
         global global_archive_timestamp
         global_archive_timestamp = self.next_archive_timestamp
@@ -2806,7 +2806,7 @@ class MQTTSubscribeDriver(weewx.drivers.AbstractDevice):
                                                                         record=to_sorted_string(event.record)))
         self.next_archive_timestamp = int(event.record['dateTime'] + event.record['interval'] * 120)
 
-    def end_archive_period(self, event):
+    def end_archive_period(self, _event):
         """ Handle the end archive period event."""
         global global_archive_timestamp
         global_archive_timestamp = self.next_archive_timestamp
@@ -3479,6 +3479,7 @@ For more inforation see, https://github.com/bellrichm/WeeWX-MQTTSubscribe/wiki/M
 
         self.config_dict = configobj.ConfigObj(config_path, file_error=True)
 
+        section = ''
         if self.simulation_type == 'service':
             section = 'MQTTSubscribeService'
         elif self.simulation_type == 'driver':
