@@ -1,28 +1,10 @@
-name: Keep the versions up-to-date
+name: TEST the versioning workflow
 
-env:
-  ACTIONS_STEP_DEBUG: true
-  
 on:
   release:
     types:
       - published
-      - released
-      - edited
-  push: # (1)
-    tags:
-      - 'v?[0-9]+.[0-9]+.[0-9]+'
-    branches-ignore:
-      - '**'
-    paths-ignore:
-      - '**'
 
 jobs:
-  actions-tagger:
-    runs-on: windows-latest
-    #permissions: # (2)
-    #  contents: write
-    steps:
-      - uses: Actions-R-Us/actions-tagger@v2
-        with:
-          publish_latest_tag: true
+  version:
+    uses: weewx-extensions/development_tools/.github/workflows/versioning.yml@v3

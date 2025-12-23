@@ -3,16 +3,9 @@ name: Stale Issues
 on:
   schedule:
   - cron: "0 0 * * *"
+  # - cron: "25 * * * *"
+  #workflow_dispatch:
 
 jobs:
   stale:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/stale@v3
-      with:
-        repo-token: ${{ secrets.GITHUB_TOKEN }}
-        only-labels: 'Info Needed'
-        stale-issue-message: 'This issue has been marked stale because it has been waiting for more information for 4 weeks.'
-        close-issue-message: 'This issue has been closed because the requested information has not been provided.'
-        days-before-stale: 28
-        days-before-close: 7
+    uses: weewx-extensions/development_tools/.github/workflows/stale.yml@v1.0.0

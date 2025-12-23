@@ -11,6 +11,9 @@ Build Improvements
 - Build migrated from Appveyor to Github.
 - More and improved tests.
 
+python 3.9 or higher is now required.
+- Earlier versions might work, but are no longer tested and therefore not officially supported.
+
 V3.0.0
 *** IMPORTANT ***
 - python 3.7 or higher is now required.
