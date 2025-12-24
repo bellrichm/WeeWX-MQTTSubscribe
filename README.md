@@ -1,5 +1,7 @@
 # WeeWX-MQTTSubscribe
 
+This repository has a new home at, https://github.com/weewx-mqtt/subscribe.
+
 A Weewx service and driver that receives data from multiple MQTT topics.
 
 Currently MQTT payloads of json, keyword (field1=value, field2=value..),
