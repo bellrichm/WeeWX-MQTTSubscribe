@@ -1,6 +1,6 @@
 # WeeWX-MQTTSubscribe
 
-This repository has a new home at, https://github.com/weewx-mqtt/subscribe.
+**This repository has a new home at, https://github.com/weewx-mqtt/subscribe.**
 
 A Weewx service and driver that receives data from multiple MQTT topics.
 
